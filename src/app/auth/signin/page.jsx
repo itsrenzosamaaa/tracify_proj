@@ -20,7 +20,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import GoogleLogo from "../../../../public/google.svg";
 import Link from "next/link";
-import { signIn, useSession } from "next-auth/react"; // Import signIn
+import { signIn } from "next-auth/react"; // Import signIn
 import { useRouter } from "next/navigation";
 import { Paper } from "@mui/material";
 
@@ -41,15 +41,33 @@ export default function Home() {
   const [error, setError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect only if the session is authenticated
-    if (status === "authenticated") {
-      router.push(`/${session?.user?.role}/dashboard`);
+    const fetchAccounts = async () => {
+      try {
+        const response = await fetch('/api/accounts', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+    
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+    
+        const data = await response.json();
+        setAccounts(data);
+        console.log('Fetched accounts: ', data);
+            
+      } catch (error) {
+        console.error('Error fetching accounts:', error.message);
+      }
     }
-  }, [session, status, router]);
+
+    fetchAccounts();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -59,6 +77,10 @@ export default function Home() {
     const account = accounts.find(
       (acc) => acc.username === text && acc.password === password
     );
+
+    console.log(text);
+    console.log(password);
+    console.log(account);
 
     if (account) {
       router.push(`/${account.role.toLowerCase()}/dashboard`);
@@ -72,10 +94,6 @@ export default function Home() {
     // Initiate Google sign-in
     signIn('google', { callbackUrl: '/' }); // Redirect after sign-in
   };
-
-  if (status === "loading") {
-    return <div>Loading...</div>; // or you can show a loading spinner
-  }
 
   return (
     <>
