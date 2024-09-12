@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import { getUserbyEmail } from "@/lib/userService";
 
 export const authOptions = {
     providers: [
@@ -46,22 +47,39 @@ export const authOptions = {
         signIn: '/auth/signin',
     },
     session: {
-        jwt: false,
+        jwt: true,
     },
     callbacks: {
-        async session({ session, token }) {
-            // Include the email and other token properties in the session
-            session.user.email = token.email;
-            session.user.role = token.role; // You can add other properties like 'role' if needed
-            return session;
-        },
         async jwt({ token, user, account }) {
             // Initial sign-in
             if (account && user) {
-                token.email = user.email; // Add email to token
-                token.role = 'office'; // Optionally, assign a role
+                // Set the email from GoogleProvider or CredentialsProvider
+                token.email = user.email;
+
+                // Fetch the user from your database by email
+                const dbUser = await getUserbyEmail(token.email);
+
+                if (dbUser) {
+                    // Check if the email from the provider matches the one in your database
+                    if (dbUser.email === token.email) {
+                        // Add role or other properties to the token based on the user
+                        token.role = dbUser.role || 'office'; // Assuming 'office' is the default role
+                    } else {
+                        throw new Error('Email mismatch!'); // Handle the mismatch case if needed
+                    }
+                } else {
+                    throw new Error('User not found!');
+                }
             }
             return token;
+        },
+
+        async session({ session, token }) {
+            // Pass the email and role to the session object
+            session.user.email = token.email;
+            session.user.role = token.role || 'office'; // Default role
+
+            return session;
         },
     },
 }
