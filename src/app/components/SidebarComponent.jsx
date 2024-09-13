@@ -103,8 +103,6 @@ export default function App({ arr, avtr }) {
     setSearch('');
   };
 
-  console.log(search);
-
   const DrawerContent = ({ arr, toggleDrawer }) => (
     <Box sx={{ width: 250 }} role="presentation">
       <Box

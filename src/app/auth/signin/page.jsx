@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import {
   Box,
@@ -20,7 +20,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import GoogleLogo from "../../../../public/google.svg";
 import Link from "next/link";
-import { signIn } from "next-auth/react"; // Import signIn
+import { signIn, getSession } from "next-auth/react"; // Import signIn
 import { useRouter } from "next/navigation";
 import { Paper } from "@mui/material";
 
@@ -34,66 +34,73 @@ const StyledLink = styled(Link)`
 `;
 
 export default function Home() {
-  const [accounts, setAccounts] = useState([]);
   const [text, setText] = useState("");
   const [password, setPassword] = useState("");
   const [togglePassword, setTogglePassword] = useState("password");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        const response = await fetch('/api/accounts', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-    
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-    
-        const data = await response.json();
-        setAccounts(data);
-        console.log('Fetched accounts: ', data);
-            
-      } catch (error) {
-        console.error('Error fetching accounts:', error.message);
-      }
-    }
-
-    fetchAccounts();
-  }, []);
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(false);
+    setError("");
     setIsLoading(true);
 
-    const account = accounts.find(
-      (acc) => acc.username === text && acc.password === password
-    );
+    const result = await signIn("credentials", {
+      redirect: false,
+      username: text,
+      password: password,
+    });
 
-    console.log(text);
-    console.log(password);
-    console.log(account);
+    console.log("Google sign-in result:", result);
 
-    if (account) {
-      router.push(`/${account.role.toLowerCase()}/dashboard`);
+    if (result.ok) {
+      const session = await getSession();
+      console.log(session)
+
+      if (session && session.user.role) {
+        const userRole = session.user.role.toLowerCase();
+        return router.push(`/${userRole}/dashboard`);
+      } else {
+        setError("Failed to fetch role.");
+        setIsLoading(false);
+      }
     } else {
-      setError(true);
+      setError("Invalid Credentials!!");
       setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    // Initiate Google sign-in
-    signIn('google', { callbackUrl: '/' }); // Redirect after sign-in
+    try {
+      // Initiate Google sign-in
+      const result = await signIn('google', { redirect: false });
+
+      console.log("Google sign-in result:", result);
+
+      if (result?.error) {
+        console.error("Google sign-in error:", result.error);
+        setError("Google sign-in failed.");
+        return;
+      }
+
+      // Fetch session data
+      const session = await getSession();
+      console.log("Session after Google sign-in:", session);
+
+      if (session?.user?.role) {
+        const userRole = session.user.role.toLowerCase();
+        router.push(`/${userRole}/dashboard`);
+      } else {
+        setError("Failed to fetch user role from session.");
+      }
+    } catch (error) {
+      console.error("Error in handleGoogleSignIn:", error);
+      setError("An unexpected error occurred.");
+    }
   };
+
 
   return (
     <>
@@ -192,7 +199,7 @@ export default function Home() {
                     Sign in using Google
                   </Button>
                   <Typography color="danger">
-                    {error && "Invalid Credentials!"}
+                    {error && error}
                   </Typography>
                 </Stack>
               </Box>

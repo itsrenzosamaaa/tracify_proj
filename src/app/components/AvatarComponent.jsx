@@ -31,7 +31,7 @@ const AvatarComponent = ({ role }) => {
         </MenuButton>
         <Menu>
           <MenuItem>Profile</MenuItem>
-          <MenuItem component={Link} href="/">
+          <MenuItem onClick={() => signOut({ callbackUrl: '/' })}>
             Logout
           </MenuItem>
         </Menu>
