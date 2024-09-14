@@ -14,7 +14,7 @@ export default function Layout({ children }) {
       <head>
         <title>Office Dashboard</title>
       </head>
-      <body style={{ backgroundColor: "whitesmoke", color: '#333333' }}>
+      <body style={{ backgroundColor: "whitesmoke", }}>
         <SidebarComponent arr={navigation} avtr="Office" />
         {children}
       </body>

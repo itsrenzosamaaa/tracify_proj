@@ -1,7 +1,9 @@
 import accounts from "./models/accounts";
+import dbConnect from "./mongodb";
 
 const getUserbyEmail = async (email) => {
     try {
+        await dbConnect();
         const user = await accounts.findOne({ email }).lean();
         return user;
     } catch (error) {

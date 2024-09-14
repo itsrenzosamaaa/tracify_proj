@@ -18,12 +18,20 @@ export async function POST(request) {
       console.log(isPasswordValid);
 
       if (isPasswordValid) {
-        return NextResponse.json({
+        const userResponse = {
           id: user._id,
+          firstname: user.name?.firstname,
+          lastname: user.name?.lastname,
           username: user.username,
           email: user.email,
           role: user.role,
-        });
+        };
+
+        if (user.name?.middlename) {
+          userResponse.middlename = user.name.middlename;
+        }
+
+        return NextResponse.json(userResponse);
       } else {
         console.log("Invalid password");
         return NextResponse.json(

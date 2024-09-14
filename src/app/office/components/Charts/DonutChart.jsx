@@ -51,11 +51,7 @@ const DonutChart = () => {
   const series = [44, 55, 41]; // Data corresponding to the labels
 
   return (
-    <Paper elevation={2} sx={{ padding: "1rem", height: "31.5rem" }}>
-      <h1>Hello, Officer</h1>
-      <p>This is the current reported items as of now...</p>
-      <Chart options={options} series={series} type="donut" height={350} />
-    </Paper>
+    <Chart options={options} series={series} type="donut" height={350} />
   );
 };
 

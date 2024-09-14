@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import {
   Box,
@@ -13,6 +13,7 @@ import {
   IconButton,
   Button,
   Divider,
+  CircularProgress,
 } from "@mui/joy";
 import PersonIcon from "@mui/icons-material/Person";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
@@ -20,9 +21,11 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import GoogleLogo from "../../public/google.svg";
 import Link from "next/link";
-import { signIn, getSession } from "next-auth/react"; // Import signIn
+import { getSession, signIn, useSession } from "next-auth/react"; // Import signIn and useSession
 import { useRouter } from "next/navigation";
 import { Paper } from "@mui/material";
+import Loading from "./components/Loading";
+import Authenticated from "./components/Authenticated";
 
 const StyledLink = styled(Link)`
   text-decoration: none;
@@ -40,7 +43,17 @@ export default function Home() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const { data: session, status } = useSession(); // Use useSession to get session and status
   const router = useRouter();
+
+  useEffect(() => {
+    console.log("Session: ", session)
+    console.log("Status: ", status)
+    if (status === "authenticated") {
+      const userRole = session.user.role.toLowerCase();
+      router.push(`/${userRole}/dashboard`);
+    }
+  }, [status, session, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,15 +66,11 @@ export default function Home() {
       password: password,
     });
 
-    console.log("Google sign-in result:", result);
-
     if (result.ok) {
       const session = await getSession();
-      console.log(session)
-
       if (session && session.user.role) {
         const userRole = session.user.role.toLowerCase();
-        return router.push(`/${userRole}/dashboard`);
+        router.push(`/${userRole}/dashboard`);
       } else {
         setError("Failed to fetch role.");
         setIsLoading(false);
@@ -73,34 +82,18 @@ export default function Home() {
   };
 
   const handleGoogleSignIn = async () => {
-    try {
-      // Initiate Google sign-in
-      const result = await signIn('google', { redirect: false });
-
-      console.log("Google sign-in result:", result);
-
-      if (result?.error) {
-        console.error("Google sign-in error:", result.error);
-        setError("Google sign-in failed.");
-        return;
-      }
-
-      // Fetch session data
-      const session = await getSession();
-      console.log("Session after Google sign-in:", session);
-
-      if (session?.user?.role) {
-        const userRole = session.user.role.toLowerCase();
-        router.push(`/${userRole}/dashboard`);
-      } else {
-        setError("Failed to fetch user role from session.");
-      }
-    } catch (error) {
-      console.error("Error in handleGoogleSignIn:", error);
-      setError("An unexpected error occurred.");
-    }
+    await signIn("google", { redirect: false, prompt: "select_account" }); // Ensure Google sign-in does not redirect automatically
   };
 
+  if (status === "loading") {
+    return (
+      <Loading />
+    )
+  } else if (status === "authenticated") {
+    return (
+      <Authenticated name={session.user.firstname} />
+    )
+  }
 
   return (
     <>
@@ -145,11 +138,11 @@ export default function Home() {
                       disabled={isLoading}
                       onChange={(e) => setPassword(e.target.value)}
                       endDecorator={
-                        password === "" ? null : (
+                        password !== "" && (
                           <IconButton
                             onClick={() =>
-                              setTogglePassword((i) =>
-                                i === "password" ? "text" : "password"
+                              setTogglePassword((prev) =>
+                                prev === "password" ? "text" : "password"
                               )
                             }
                           >
@@ -194,7 +187,7 @@ export default function Home() {
                     startDecorator={<GoogleLogo width={30} height={30} />}
                     disabled={isLoading}
                     sx={{ marginTop: "1rem" }}
-                    onClick={handleGoogleSignIn} // Trigger Google Sign-In
+                    onClick={handleGoogleSignIn}
                   >
                     Sign in using Google
                   </Button>
