@@ -1,4 +1,4 @@
-import { Grid, Typography } from '@mui/joy'
+import { CircularProgress, Grid, Typography } from '@mui/joy'
 import { Paper } from '@mui/material'
 import React from 'react'
 
@@ -9,6 +9,7 @@ const Loading = ({ name }) => {
                 <Paper elevation={3} sx={{ padding: '2rem', textAlign: 'center' }}>
                     <Typography level="body-lg" fontWeight="700">Welcome back, {name}</Typography>
                     <Typography>Redirecting you to the dashboard...</Typography>
+                    <CircularProgress />
                 </Paper>
             </Grid>
         </Grid>
