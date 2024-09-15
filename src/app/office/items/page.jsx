@@ -9,19 +9,19 @@ import Link from "@mui/joy/Link";
 const Items = () => {
   const [items, setItems] = useState([]);
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const response = await fetch('/api/found-items');
-        const data = await response.json();
-        setItems(data);
-      } catch (error) {
-        console.error("Failed to fetch items: ", error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchItems = async () => {
+  //     try {
+  //       const response = await fetch('/api/found-items');
+  //       const data = await response.json();
+  //       setItems(data);
+  //     } catch (error) {
+  //       console.error("Failed to fetch items: ", error);
+  //     }
+  //   };
 
-    fetchItems()
-  }, []);
+  //   fetchItems()
+  // }, []);
 
   return (
     <>

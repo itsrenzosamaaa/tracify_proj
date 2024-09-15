@@ -53,7 +53,7 @@ export default function Home() {
       const userRole = session.user.role.toLowerCase();
       router.push(`/${userRole}/dashboard`);
     }
-  }, [status, session]);
+  }, [status, session, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

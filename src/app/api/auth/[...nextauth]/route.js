@@ -2,6 +2,9 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import getUserbyEmail from "@/lib/userService";
+import dbConnect from "@/lib/mongodb";
+import accounts from "@/lib/models/accounts";
+import bcrypt from "bcryptjs";
 
 export const authOptions = {
   providers: [
@@ -13,48 +16,24 @@ export const authOptions = {
       },
       async authorize(credentials) {
         try {
-          const res = await fetch(
-            `${process.env.NEXTAUTH_URL}/api/authenticate`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                username: credentials.username,
-                password: credentials.password,
-              }),
-            }
-          );
+          await dbConnect();
+          const user = await accounts.findOne({
+            username: credentials.username,
+          });
 
-          const data = await res.json();
-
-          if (res.ok && data.email) {
-            const dbUser = await getUserbyEmail(data.email);
-
-            if (dbUser) {
-              const user = {
-                id: dbUser._id.toString(),
-                firstname: dbUser.name?.firstname,
-                lastname: dbUser.name?.lastname,
-                username: dbUser.username,
-                email: dbUser.email,
-                role: dbUser.role,
-              };
-
-              if (dbUser.name?.middlename) {
-                user.middlename = dbUser.name.middlename;
-              }
-
-              return user;
-            } else {
-              console.error("User not found in the database.");
-              return null;
-            }
+          if (user && bcrypt.compareSync(credentials.password, user.password)) {
+            // Return user if valid
+            return {
+              id: user._id.toString(),
+              firstname: user.name?.firstname,
+              lastname: user.name?.lastname,
+              username: user.username,
+              email: user.email,
+              role: user.role,
+              middlename: user.name?.middlename || null,
+            };
           } else {
-            console.error(
-              "Authentication response is invalid or missing email."
-            );
+            console.error("Invalid username or password");
             return null;
           }
         } catch (error) {
@@ -78,11 +57,10 @@ export const authOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 60,
+    maxAge: 60 * 60, // 1 hour
   },
   callbacks: {
     async signIn({ user, account }) {
-      // Check if the user is signing in with Google and if their email is in the database
       if (account.provider === "google" && user.email) {
         try {
           const dbUser = await getUserbyEmail(user.email);
@@ -103,11 +81,10 @@ export const authOptions = {
           return false;
         }
       }
-      return true; // Allow sign-in for other providers or cases
+      return true;
     },
 
     async jwt({ token, user }) {
-      // Add user info to the token on sign-in
       if (user) {
         token.id = user.id;
         token.firstname = user.firstname;
@@ -115,13 +92,12 @@ export const authOptions = {
         token.lastname = user.lastname;
         token.username = user.username;
         token.email = user.email;
-        token.role = user.role; // Default role if not provided
+        token.role = user.role;
       }
       return token;
     },
 
     async session({ session, token }) {
-      // Add token info to the session object
       if (token) {
         session.user.id = token.id;
         session.user.firstname = token.firstname;
