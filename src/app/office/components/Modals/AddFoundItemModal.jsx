@@ -15,15 +15,16 @@ import {
   ModalOverflow,
 } from "@mui/joy";
 import { FormControlLabel, Radio, RadioGroup } from "@mui/material";
-import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
 import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
 import React, { useState } from "react";
 import dayjs from "dayjs";
+import { useSession } from "next-auth/react";
 
 const AddFoundItemModal = ({ open, onClose }) => {
+  const session = useSession();
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
@@ -39,20 +40,23 @@ const AddFoundItemModal = ({ open, onClose }) => {
     const status = "Published"; // or whatever status you want to set
 
     const formData = new FormData();
+    formData.append("isFoundItem", true);
+    formData.append("reportedByNotUser", true);
+    formData.append("whoReported", session.user?.username)
     formData.append("name", name);
     formData.append("category", category);
     formData.append("description", description);
     formData.append("location", location);
     formData.append("date", date.toISOString());
     formData.append("time", time.toISOString());
-    formData.append("finder", finder);
+    formData.append("user", finder);
     formData.append("status", status);
     if (image) {
       formData.append("image", image);
     }
 
     try {
-      const response = await fetch('/api/found-items', {
+      const response = await fetch('/api/items', {
         method: 'POST',
         body: formData,
       });

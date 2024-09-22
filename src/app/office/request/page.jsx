@@ -1,9 +1,27 @@
-import React from "react";
+'use client'
+
+import React, { useState, useEffect } from "react";
 import { Box, Breadcrumbs, Typography, Link } from "@mui/joy";
 import { Paper, Grid } from "@mui/material";
 import RequestsTable from "../components/Table/RequestsTable";
 
 const Request = () => {
+  const [items, setItems] = useState([]);
+
+  const fetchItems = async () => {
+    try {
+      const response = await fetch('/api/items');
+      const data = await response.json();
+      setItems(data);
+    } catch (error) {
+      console.error("Failed to fetch items: ", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
   return (
     <>
       <Box
@@ -36,7 +54,7 @@ const Request = () => {
             </Breadcrumbs>
           </Grid>
         </Paper>
-        <RequestsTable />
+        <RequestsTable items={items} />
       </Box>
     </>
   );

@@ -33,7 +33,7 @@ const Dashboard = () => {
               }}
             >
               <Typography level="h2" sx={{ display: 'inline-block', width: '100%' }}>
-                {status === 'loading' ? "Loading..." : `Welcome, ${session.user?.firstname}!`}
+                {status === 'loading' ? "Loading..." : `Welcome back, ${session.user?.username}!`}
               </Typography>
               <Typography sx={{ display: 'inline-block', width: '100%' }}>
                 {status === 'loading' ? "Fetching details, please wait..." : "This is the current reported items as of now..."}

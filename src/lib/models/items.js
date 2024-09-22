@@ -1,6 +1,18 @@
 import mongoose from "mongoose";
 
-const FoundItemsSchema = new mongoose.Schema({
+const ItemsSchema = new mongoose.Schema({
+    isFoundItem: {
+        type: Boolean,
+        required: true,
+    },
+    reportedByNotUser: {
+        type: Boolean,
+        required: true,
+    },
+    whoReported: {
+        type: String,
+        required: true,
+    },
     name: {
         type: String,
         required: true,
@@ -25,7 +37,7 @@ const FoundItemsSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    finder: {
+    user: {
         type: String,
         required: true,
     },
@@ -35,9 +47,8 @@ const FoundItemsSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Published', 'Reserved'],
-        default: 'Published',
+        enum: ['Request', 'Validating', 'Published', 'Reserved', 'Resolved', 'Invalid', 'Missing'],
     },
 });
 
-export default mongoose.models.FoundItems || mongoose.model('FoundItems', FoundItemsSchema);
+export default mongoose.models.Items || mongoose.model('Items', ItemsSchema);

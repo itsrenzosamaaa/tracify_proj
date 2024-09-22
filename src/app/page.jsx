@@ -91,7 +91,7 @@ export default function Home() {
     )
   } else if (status === "authenticated") {
     return (
-      <Authenticated name={session.user.firstname} />
+      <Authenticated name={session.user.firstname} username={session.user.username} />
     )
   }
 

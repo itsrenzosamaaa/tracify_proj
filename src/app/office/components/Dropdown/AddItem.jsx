@@ -1,12 +1,23 @@
 import { Dropdown, MenuButton, Menu, MenuItem } from "@mui/joy";
-import React, { useState } from "react";
+import React from "react";
 import AddFoundItemModal from "../Modals/AddFoundItemModal";
 import AddLostItemModal from "../Modals/AddLostItemModal";
 import AddIcon from "@mui/icons-material/Add";
 
-const AddItem = () => {
-  const [openFoundModal, setOpenFoundModal] = useState(false);
-  const [openLostModal, setOpenLostModal] = useState(false);
+const AddItem = ({ onAddItem }) => {
+  const [openFoundModal, setOpenFoundModal] = React.useState(false);
+  const [openLostModal, setOpenLostModal] = React.useState(false);
+
+  const handleCloseFoundModal = () => {
+    setOpenFoundModal(false);
+    onAddItem(); // Refresh items after closing the modal
+  };
+
+  const handleCloseLostModal = () => {
+    setOpenLostModal(false);
+    onAddItem(); // Refresh items after closing the modal
+  };
+
   return (
     <>
       <Dropdown>
@@ -27,11 +38,11 @@ const AddItem = () => {
 
       <AddFoundItemModal
         open={openFoundModal}
-        onClose={() => setOpenFoundModal(false)}
+        onClose={handleCloseFoundModal}
       />
       <AddLostItemModal
         open={openLostModal}
-        onClose={() => setOpenLostModal(false)}
+        onClose={handleCloseLostModal}
       />
     </>
   );

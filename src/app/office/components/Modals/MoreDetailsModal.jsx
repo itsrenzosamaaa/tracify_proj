@@ -24,8 +24,8 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 const MoreDetailsModal = ({
-  nya,
   isFoundItem,
+  reportedByNotUser,
   status,
   id,
   name,
@@ -34,7 +34,7 @@ const MoreDetailsModal = ({
   date,
   time,
 }) => {
-  const [open, setOpen] = useState(nya || false);
+  const [open, setOpen] = useState(false);
 
   return (
     <>
@@ -185,9 +185,14 @@ const MoreDetailsModal = ({
                 </>
               ) : status === "Published" ? (
                 <>
-                  <Button sx={{ width: "100%" }} color="danger">
-                    Validating
-                  </Button>
+                  {
+                    !reportedByNotUser ?
+                      <Button sx={{ width: "100%" }} color="danger">
+                        Validating
+                      </Button> : <Button sx={{ width: "100%" }} color="danger">
+                        Invalid
+                      </Button>
+                  }
                   <Button sx={{ width: "100%" }}>Reserved</Button>
                 </>
               ) : status === "Reserved" ? (

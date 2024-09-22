@@ -1,34 +1,40 @@
-'use client'
+'use client';
 
 import React, { useEffect, useState } from "react";
 import TableComponent from "../components/Table/ItemsTable";
-import { Box, Breadcrumbs, Typography } from "@mui/joy";
+import { Box, Breadcrumbs, Typography, Button } from "@mui/joy";
 import { Paper, Grid } from "@mui/material";
 import Link from "@mui/joy/Link";
 
 const Items = () => {
   const [items, setItems] = useState([]);
+  const [openAddItemModal, setOpenAddItemModal] = useState(false);
 
-  // useEffect(() => {
-  //   const fetchItems = async () => {
-  //     try {
-  //       const response = await fetch('/api/found-items');
-  //       const data = await response.json();
-  //       setItems(data);
-  //     } catch (error) {
-  //       console.error("Failed to fetch items: ", error);
-  //     }
-  //   };
+  const fetchItems = async () => {
+    try {
+      const response = await fetch('/api/items');
+      const data = await response.json();
+      setItems(data);
+    } catch (error) {
+      console.error("Failed to fetch items: ", error);
+    }
+  };
 
-  //   fetchItems()
-  // }, []);
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const handleAddItem = async () => {
+    await fetchItems(); // Re-fetch items when a new item is added
+    setOpenAddItemModal(false); // Close the modal
+  };
 
   return (
     <>
       <Box
         sx={{
-          marginTop: "60px", // Ensure space for header
-          marginLeft: { xs: "0px", lg: "250px" }, // Shift content when sidebar is visible on large screens
+          marginTop: "60px",
+          marginLeft: { xs: "0px", lg: "250px" },
           padding: "20px",
           transition: "margin-left 0.3s ease",
         }}
@@ -55,7 +61,7 @@ const Items = () => {
             </Breadcrumbs>
           </Grid>
         </Paper>
-        <TableComponent items={items} />
+        <TableComponent items={items} onAddItem={handleAddItem} />
       </Box>
     </>
   );

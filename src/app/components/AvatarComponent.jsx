@@ -5,7 +5,6 @@ import MenuButton from "@mui/joy/MenuButton";
 import MenuItem from "@mui/joy/MenuItem";
 import Dropdown from "@mui/joy/Dropdown";
 import Avatar from "@mui/joy/Avatar";
-import Link from "next/link";
 import { Typography } from "@mui/joy";
 import { signOut } from "next-auth/react";
 
@@ -30,7 +29,6 @@ const AvatarComponent = ({ role }) => {
           <Typography color="inherit" sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}>{role}</Typography>
         </MenuButton>
         <Menu>
-          <MenuItem>Profile</MenuItem>
           <MenuItem onClick={() => signOut({ callbackUrl: '/' })}>
             Logout
           </MenuItem>

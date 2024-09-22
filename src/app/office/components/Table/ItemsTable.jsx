@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import React, { useState } from "react";
-import { Input, Table, Box, Chip, Button } from "@mui/joy";
+import { Input, Table, Box, Button } from "@mui/joy";
 import {
   Paper,
   FormControl,
@@ -18,20 +18,10 @@ import {
 import MoreDetailsModal from "../Modals/MoreDetailsModal";
 import AddItem from "../Dropdown/AddItem";
 
-// const prefixFound = "FI-";
-// const prefixLost = "LI-";
-
-// const stats = [
-//   { status: "Validating", color: "#FFC107", fontColor: "#000000" },
-//   { status: "Published", color: "#4CAF50", fontColor: "#FFFFFF" },
-//   { status: "Reserved", color: "#2196F3", fontColor: "#FFFFFF" },
-//   { status: 'Cleared', color: '#4CAF50', fontColor: "#FFFFFF" },
-// ];
-
-const TableComponent = ({ items }) => {
+const TableComponent = ({ items, onAddItem }) => {
   const [itemCategory, setItemCategory] = useState(true);
 
-  // const filteredRows = data.filter((item) => item.isFoundItem === itemCategory);
+  const filteredRows = items.filter((item) => item.isFoundItem === itemCategory);
 
   return (
     <Paper elevation={2}>
@@ -66,7 +56,7 @@ const TableComponent = ({ items }) => {
             />
           </RadioGroup>
         </FormControl>
-        <AddItem />
+        <AddItem onAddItem={onAddItem} />
       </Box>
       <TableContainer
         component={Paper}
@@ -90,117 +80,35 @@ const TableComponent = ({ items }) => {
         >
           <TableHead>
             <TableRow>
-              <TableCell
-                sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", width: { xs: '20%' } }}
-              >
-                ID
-              </TableCell>
-              <TableCell
-                sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", display: { xs: 'none', lg: 'table-cell' } }}
-              >
-                Item
-              </TableCell>
-              <TableCell
-                sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", display: { xs: 'none', lg: 'table-cell' } }}
-              >
-                Category
-              </TableCell>
-              <TableCell
-                sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", width: { xs: '30%', lg: '20%' } }}
-              >
-                Status
-              </TableCell>
-              <TableCell
-                sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}
-              >
-                Actions
-              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", width: { xs: '20%' } }}>Date</TableCell>
+              <TableCell sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", display: { xs: 'none', lg: 'table-cell' } }}>Item</TableCell>
+              <TableCell sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", display: { xs: 'none', lg: 'table-cell' } }}>Category</TableCell>
+              <TableCell sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", width: { xs: '30%', lg: '20%' } }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            <TableRow>
-              <TableCell>
-                <Input
-                  placeholder="ID"
-                  size="small"
-                  sx={{ padding: { xs: "0.5rem", lg: "1rem" } }}
-                />
-              </TableCell>
-              <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
-                <Input
-                  placeholder="Item"
-                  size="small"
-                  sx={{ padding: { xs: "0.5rem", lg: "1rem" } }}
-                />
-              </TableCell>
-              <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
-                <Input
-                  placeholder="Category"
-                  size="small"
-                  sx={{ padding: { xs: "0.5rem", lg: "1rem" } }}
-                />
-              </TableCell>
-              <TableCell>
-                <Input
-                  placeholder="Status"
-                  size="small"
-                  sx={{ padding: { xs: "0.5rem", lg: "1rem" } }}
-                />
-              </TableCell>
-              <TableCell></TableCell>
-            </TableRow>
-            {items.map((item) => (
+            {filteredRows.map((item) => (
               <TableRow key={item._id}>
-                <TableCell>{item._id}</TableCell>
-                <TableCell>{item.name}</TableCell>
                 <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <Button variant="solid">Details</Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {/* {filteredRows.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell sx={{ padding: "0.5rem" }}>{row.id}</TableCell>
-                <TableCell sx={{ padding: "0.5rem", display: { xs: 'none', lg: 'table-cell' } }}>{row.name}</TableCell>
-                <TableCell sx={{ padding: "0.5rem", display: { xs: 'none', lg: 'table-cell' } }}>{row.category}</TableCell>
-                <TableCell sx={{ padding: "0.5rem" }}>
-                  {stats.map((chi) =>
-                    row.status === chi.status ? (
-                      <Chip
-                        variant="solid"
-                        sx={{
-                          backgroundColor: chi.color,
-                          color: chi.fontColor,
-                          "--Chip-minHeight": { lg: "35px", xs: "15px" },
-                          "--Chip-paddingInline": { lg: "25px", xs: "12px" },
-                          xs: {
-                            "--Chip-minHeight": "15px",
-                            "--Chip-paddingInline": "12px",
-                          },
-                        }}
-                        key={chi.status}
-                      >
-                        {chi.status}
-                      </Chip>
-                    ) : null
-                  )}
-                </TableCell>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.category}</TableCell>
+                <TableCell>{item.status}</TableCell>
                 <TableCell>
                   <MoreDetailsModal
-                    nya={false}
-                    isFoundItem={row.isFoundItem}
-                    status={row.status}
-                    id={row.id}
-                    name={row.name}
-                    category={row.category}
-                    location={row.location}
-                    date={row.date}
-                    time={row.time}
+                    isFoundItem={item.isFoundItem}
+                    reportedByNotUser={item.reportedByNotUser}
+                    status={item.status}
+                    id={item._id}
+                    name={item.name}
+                    category={item.category}
+                    location={item.location}
+                    date={item.date}
+                    time={item.time}
                   />
                 </TableCell>
               </TableRow>
-            ))} */}
+            ))}
           </TableBody>
         </Table>
       </TableContainer>

@@ -3,8 +3,9 @@ import SidebarComponent from "../components/SidebarComponent";
 
 const navigation = [
   { menu: "Home", url: "/user/dashboard" },
-  { menu: "Match Items", url: "" },
-  { menu: "Ratings", url: "" },
+  { menu: "Profile", url: "/user/profile" },
+  { menu: "Match Items", url: "/user/match-items" },
+  { menu: "Ratings", url: "user/ratings" },
 ];
 
 export default function Layout({ children }) {
