@@ -28,12 +28,9 @@ export const authOptions = {
               id: user._id.toString(),
               firstname: user.firstname,
               lastname: user.lastname,
-              firstname: user.firstname,
-              lastname: user.lastname,
               username: user.username,
               email: user.email,
               role: user.role,
-              middlename: user.middlename || null,
               middlename: user.middlename || null,
             };
           } else {
@@ -70,9 +67,6 @@ export const authOptions = {
           const dbUser = await getUserbyEmail(user.email);
           if (dbUser) {
             user.id = dbUser._id.toString();
-            user.firstname = dbUser.firstname;
-            user.middlename = dbUser.middlename || null;
-            user.lastname = dbUser.lastname;
             user.firstname = dbUser.firstname;
             user.middlename = dbUser.middlename || null;
             user.lastname = dbUser.lastname;
