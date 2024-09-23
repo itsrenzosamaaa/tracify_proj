@@ -13,19 +13,19 @@ import {
 
 const CreateUserForm = () => {
     const [formData, setFormData] = useState({
+        id: '',
         firstname: '',
         middlename: '',
         lastname: '',
         username: '',
         password: '',
         email: '',
+        contactNumber: '',
         role: '',
-        userType: '',
+        userRole: '',
         schoolCategory: '',
-        department: '',
-        year: '',
-        course: '',
-        position: '',
+        officeName: '',
+        officeAddress: '',
     });
 
     const handleChange = (e) => {
@@ -75,177 +75,7 @@ const CreateUserForm = () => {
                 transition: 'margin-left 0.3s ease',
             }}
         >
-            <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel>Role</InputLabel>
-                    <Select name="role" value={formData.role} onChange={handleChange} required>
-                        <MenuItem value="admin">Admin</MenuItem>
-                        <MenuItem value="office">Officer</MenuItem>
-                        <MenuItem value="user">User</MenuItem>
-                    </Select>
-                </FormControl>
-
-                {/* Conditionally render name fields based on "user" role */}
-                {formData.role === 'user' && (
-                    <>
-                        {/* Name Fields (only visible when role is 'user') */}
-                        <TextField
-                            label="First Name"
-                            name="firstname"
-                            value={formData.firstname}
-                            onChange={handleChange}
-                            fullWidth
-                            required
-                            sx={{ mb: 2 }}
-                        />
-                        <TextField
-                            label="Middle Name"
-                            name="middlename"
-                            value={formData.middlename}
-                            onChange={handleChange}
-                            fullWidth
-                            sx={{ mb: 2 }}
-                        />
-                        <TextField
-                            label="Last Name"
-                            name="lastname"
-                            value={formData.lastname}
-                            onChange={handleChange}
-                            fullWidth
-                            required
-                            sx={{ mb: 2 }}
-                        />
-
-                        {/* User Type Selection */}
-                        <FormControl fullWidth sx={{ mb: 2 }}>
-                            <InputLabel>User Type</InputLabel>
-                            <Select name="userType" value={formData.userType} onChange={handleChange} required>
-                                <MenuItem value="student">Student</MenuItem>
-                                <MenuItem value="teacher">Teacher</MenuItem>
-                            </Select>
-                        </FormControl>
-
-                        {/* Student-specific fields */}
-                        {formData.userType === 'student' && (
-                            <>
-                                <TextField
-                                    label="Year"
-                                    name="year"
-                                    value={formData.year}
-                                    onChange={handleChange}
-                                    fullWidth
-                                    required
-                                    sx={{ mb: 2 }}
-                                />
-                                <TextField
-                                    label="Course"
-                                    name="course"
-                                    value={formData.course}
-                                    onChange={handleChange}
-                                    fullWidth
-                                    required
-                                    sx={{ mb: 2 }}
-                                />
-                            </>
-                        )}
-
-                        {/* Teacher-specific fields */}
-                        {formData.userType === 'teacher' && (
-                            <>
-                                <TextField
-                                    label="Department"
-                                    name="department"
-                                    value={formData.department}
-                                    onChange={handleChange}
-                                    fullWidth
-                                    required
-                                    sx={{ mb: 2 }}
-                                />
-                                <TextField
-                                    label="Position"
-                                    name="position"
-                                    value={formData.position}
-                                    onChange={handleChange}
-                                    fullWidth
-                                    required
-                                    sx={{ mb: 2 }}
-                                />
-                            </>
-                        )}
-                    </>
-                )}
-
-                {/* Officer-specific fields */}
-                {formData.role === 'office' && (
-                    <>
-                        <FormControl fullWidth sx={{ mb: 2 }}>
-                            <InputLabel>School Category</InputLabel>
-                            <Select
-                                name="schoolCategory"
-                                value={formData.schoolCategory}
-                                onChange={handleChange}
-                                required
-                            >
-                                <MenuItem value="Basic Education Department">Basic Education</MenuItem>
-                                <MenuItem value="Higher Education Department">Higher Education</MenuItem>
-                            </Select>
-                        </FormControl>
-
-                        {formData.schoolCategory === 'Higher Education Department' && (
-                            <FormControl fullWidth sx={{ mb: 2 }}>
-                                <InputLabel>Department</InputLabel>
-                                <Select
-                                    name="department"
-                                    value={formData.department}
-                                    onChange={handleChange}
-                                    required
-                                >
-                                    <MenuItem value="CCS">CCS</MenuItem>
-                                    <MenuItem value="CBE">CBE</MenuItem>
-                                    <MenuItem value="CTE">CTE</MenuItem>
-                                </Select>
-                            </FormControl>
-                        )}
-                    </>
-                )}
-
-                {/* Username and Password */}
-                <TextField
-                    label="Username"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    fullWidth
-                    required
-                    sx={{ mb: 2 }}
-                />
-                <TextField
-                    label="Password"
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    fullWidth
-                    required
-                    sx={{ mb: 2 }}
-                />
-
-                {/* Email */}
-                <TextField
-                    label="Email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    fullWidth
-                    required
-                    sx={{ mb: 2 }}
-                />
-
-                {/* Submit Button */}
-                <Button type="submit" variant="contained" color="primary">
-                    Create Account
-                </Button>
-            </Box>
+            
         </Box>
     );
 };

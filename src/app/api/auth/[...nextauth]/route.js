@@ -22,15 +22,16 @@ export const authOptions = {
           });
 
           if (user && bcrypt.compareSync(credentials.password, user.password)) {
+            console.log(user)
             // Return user if valid
             return {
               id: user._id.toString(),
-              firstname: user.name?.firstname,
-              lastname: user.name?.lastname,
+              firstname: user.firstname,
+              lastname: user.lastname,
               username: user.username,
               email: user.email,
               role: user.role,
-              middlename: user.name?.middlename || null,
+              middlename: user.middlename || null,
             };
           } else {
             console.error("Invalid username or password");
@@ -66,9 +67,9 @@ export const authOptions = {
           const dbUser = await getUserbyEmail(user.email);
           if (dbUser) {
             user.id = dbUser._id.toString();
-            user.firstname = dbUser.name?.firstname;
-            user.middlename = dbUser.name?.middlename || null;
-            user.lastname = dbUser.name?.lastname;
+            user.firstname = dbUser.firstname;
+            user.middlename = dbUser.middlename || null;
+            user.lastname = dbUser.lastname;
             user.username = dbUser.username;
             user.email = dbUser.email;
             user.role = dbUser.role;
