@@ -12,6 +12,7 @@ import AddUser from '../components/AddUser';
 const CreateUserForm = () => {
     const [formData, setFormData] = useState({
         id: '',
+        id: '',
         firstname: '',
         middlename: '',
         lastname: '',
@@ -19,7 +20,9 @@ const CreateUserForm = () => {
         password: '',
         email: '',
         contactNumber: '',
+        contactNumber: '',
         role: '',
+        userRole: '',
         userRole: '',
         schoolCategory: '',
         officeName: '',

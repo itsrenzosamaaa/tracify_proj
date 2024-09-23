@@ -32,6 +32,9 @@ const accountSchema = new mongoose.Schema({
   contactNumber: {
     type: String,
   },
+  contactNumber: {
+    type: String,
+  },
   role: {
     type: String,
     required: true,
