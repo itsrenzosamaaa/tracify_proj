@@ -9,7 +9,7 @@ export default function Layout({ children }) {
   return (
     <html>  
       <head>
-        <title>Office Dashboard</title>
+        <title>Admin Dashboard</title>
       </head>
       <body style={{ backgroundColor: "whitesmoke", }}>
         <SidebarComponent arr={navigation} avtr="Admin" />
