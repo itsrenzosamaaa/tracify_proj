@@ -10,24 +10,6 @@ import AddOffice from '../components/AddOffice';
 import AddUser from '../components/AddUser';
 
 const CreateUserForm = () => {
-    const [formData, setFormData] = useState({
-        id: '',
-        id: '',
-        firstname: '',
-        middlename: '',
-        lastname: '',
-        username: '',
-        password: '',
-        email: '',
-        contactNumber: '',
-        contactNumber: '',
-        role: '',
-        userRole: '',
-        userRole: '',
-        schoolCategory: '',
-        officeName: '',
-        officeAddress: '',
-    });
     const [openAddAdmin, setOpenAddAdmin] = useState(false);
     const [openAddOffice, setOpenAddOffice] = useState(false);
     const [openAddUser, setOpenAddUser] = useState(false);
@@ -36,43 +18,6 @@ const CreateUserForm = () => {
         setOpenAddAdmin(false);
         setOpenAddOffice(false);
         setOpenAddUser(false);
-    };
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        let preparedData = { ...formData };
-
-        // Remove empty fields
-        Object.keys(preparedData).forEach((key) => {
-            if (!preparedData[key]) {
-                delete preparedData[key];
-            }
-        });
-
-        try {
-            const response = await fetch('/api/accounts', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(preparedData),
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                alert('Account created successfully!');
-            } else {
-                alert(`Error: ${data.error}`);
-            }
-        } catch (error) {
-            console.error('Error creating account:', error);
-            alert('Failed to create account');
-        }
     };
 
     return (

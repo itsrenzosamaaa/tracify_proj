@@ -62,7 +62,7 @@ const Dashboard = () => {
             {/* Welcome Section */}
             <Paper elevation={2} sx={{ padding: '1rem', marginBottom: '20px', maxWidth: '100%' }}>
               <Typography level="h2" gutterBottom>
-                Welcome back, {session?.user?.firstname || 'User'}!
+                Welcome back, {session?.user?.roleData?.firstname || 'Guest'}!
               </Typography>
               <Typography>
                 You are logged in as {session?.user?.role || 'Role'}.

@@ -59,8 +59,8 @@ export default function Home() {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-
     const result = await signIn("credentials", {
+
       redirect: false,
       username: text,
       password: password,
@@ -91,7 +91,7 @@ export default function Home() {
     )
   } else if (status === "authenticated") {
     return (
-      <Authenticated name={session.user.firstname} username={session.user.username} />
+      <Authenticated session={session} />
     )
   }
 

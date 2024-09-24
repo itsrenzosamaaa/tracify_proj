@@ -1,9 +1,40 @@
-import React from "react";
+'use client'
+
+import React, { useState, useEffect } from "react";
 import { Box, Typography, Breadcrumbs, Link } from "@mui/joy";
 import { Paper, Grid } from "@mui/material";
 import UsersTable from "../components/Table/UsersTable";
+import { useSession } from "next-auth/react";
 
 const Users = () => {
+  const [users, setUsers] = useState([]);
+  const { data: session, status } = useSession();
+  console.log("data: ", session)
+  console.log("status: ", status)
+
+  // const fetchUsers = async () => {
+  //   if (session?.data?.roleData?.schoolCategory) {
+  //     try {
+  //       const response = await fetch('/api/user');
+  //       const data = await response.json();
+  //       console.log(data);
+  //       const bedUsers = data.filter(user => user.schoolCategory === session.user.roleData.schoolCategory);
+  //       console.log(bedUsers)
+  //       setUsers(bedUsers);
+  //     } catch (error) {
+  //       console.error("Error fetching users: ", error);
+  //     }
+  //   } else {
+  //     console.error("Session or schoolCategory data is not available");
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   if(status === 'authenticated'){
+  //     fetchUsers();
+  //   };
+  // }, [status, session]);
+
   return (
     <>
       <Box
@@ -14,61 +45,65 @@ const Users = () => {
           transition: "margin-left 0.3s ease",
         }}
       >
-        <Grid container spacing={2}>
-          <Grid item xs={12} lg={7.5}>
-            <Paper
-              elevation={2}
-              sx={{
-                padding: "1rem",
-                marginBottom: "1rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                height: '4.47rem',
-              }}
-            >
-              <Typography level="h3">Users</Typography>
-              <Breadcrumbs aria-label="breadcrumbs">
-                <Link color="neutral" href="/office/dashboard">
-                  Home
-                </Link>
-                <Typography>Users</Typography>
-              </Breadcrumbs>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} lg={4.5}>
-            <Paper
-              elevation={2}
-              sx={{
-                padding: "1rem",
-                marginBottom: "1rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Box>
-                <Typography level="body-md" sx={{ fontWeight: "700" }}>
-                  Office Name:
-                </Typography>
-                <Typography level="body-md" sx={{ fontWeight: "700" }}>
-                  Office Location:
-                </Typography>
-                <Typography level="body-md" sx={{ fontWeight: "700" }}>
-                  School Category:
-                </Typography>
-              </Box>
-              <Box sx={{ textAlign: 'right' }}>
-                <Typography level="body-md">SASO</Typography>
-                <Typography level="body-md">
-                  3rd Floor of RLO Building
-                </Typography>
-                <Typography level="body-md">Higher Education</Typography>
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
-        <UsersTable />
+        {status === 'loading' ? 'PAG TAGA HULAT MAN DAW' : (
+          <>
+            <Grid container spacing={2}>
+              <Grid item xs={12} lg={7.5}>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    padding: "1rem",
+                    marginBottom: "1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    height: '4.47rem',
+                  }}
+                >
+                  <Typography level="h3">Users</Typography>
+                  <Breadcrumbs aria-label="breadcrumbs">
+                    <Link color="neutral" href="/office/dashboard">
+                      Home
+                    </Link>
+                    <Typography>Users</Typography>
+                  </Breadcrumbs>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} lg={4.5}>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    padding: "1rem",
+                    marginBottom: "1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Box>
+                    <Typography level="body-md" sx={{ fontWeight: "700" }}>
+                      Office Name:
+                    </Typography>
+                    <Typography level="body-md" sx={{ fontWeight: "700" }}>
+                      Office Location:
+                    </Typography>
+                    <Typography level="body-md" sx={{ fontWeight: "700" }}>
+                      School Category:
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography level="body-md">{session.user.roleData.officeName}</Typography>
+                    <Typography level="body-md">
+                      {session.user.roleData.officeAddress}
+                    </Typography>
+                    <Typography level="body-md">{session.user.roleData.schoolCategory}</Typography>
+                  </Box>
+                </Paper>
+              </Grid>
+            </Grid>
+            <UsersTable users={users} />
+          </>
+        )}
       </Box>
     </>
   );

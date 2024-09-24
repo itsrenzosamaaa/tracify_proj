@@ -11,16 +11,7 @@ import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import React from "react";
 import Link from "next/link";
 
-const users = [
-  { role: "Student", id: "C-2021-0001", name: "John Doe", email: "john@example.com" },
-  { role: "Teacher", id: "T-2021-0001", name: "Jane Doe", email: "jane@example.com" },
-  { role: "Janitor", id: "J-2021-0001", name: "Jim Smith", email: "jim@example.com" },
-  { role: "Student", id: "C-2021-0002", name: "John Doe", email: "john@example.com" },
-  { role: "Teacher", id: "T-2021-0002", name: "Jane Doe", email: "jane@example.com" },
-  { role: "Janitor", id: "J-2021-0002", name: "Jim Smith", email: "jim@example.com" },
-];
-
-const UsersTable = () => {
+const UsersTable = ({ users }) => {
   return (
     <TableContainer
       component={Paper}
@@ -43,7 +34,7 @@ const UsersTable = () => {
       >
         <TableHead>
           <TableRow>
-            {["ID", "Name", "Role", "Actions"].map((header) => (
+            {["ID", "Name", "Email", "Actions"].map((header) => (
               <TableCell
                 key={header}
                 sx={{
@@ -84,7 +75,7 @@ const UsersTable = () => {
             {/* Adjusted Role Input */}
             <TableCell sx={{ display: { xs: "none", lg: "table-cell" } }}>
               <Input
-                placeholder="Role"
+                placeholder="Email"
                 size="small"
                 sx={{
                   padding: { xs: "0.5rem", lg: "1rem" },
@@ -100,15 +91,15 @@ const UsersTable = () => {
           {users.map((user) => {
             return (
               <TableRow key={user.id}>
-                <TableCell sx={{ padding: "0.5rem" }}>{user.id}</TableCell>
-                <TableCell sx={{ padding: "0.5rem" }}>{user.name}</TableCell>
+                <TableCell sx={{ padding: "0.5rem" }}>{user.accountId}</TableCell>
+                <TableCell sx={{ padding: "0.5rem" }}>{user.firstname.split(' ')[0]}</TableCell>
                 <TableCell
                   sx={{
                     padding: "0.5rem",
                     display: { xs: "none", lg: "table-cell" },
                   }}
                 >
-                  {user.role}
+                  {user.email}
                 </TableCell>
                 <TableCell sx={{ padding: "0.5rem" }}>
                   <Button component={Link} href={`/office/users/${user.id}`} sx={{ display: { xs: "none", lg: "block" }, width: { lg: '7rem' } }}>

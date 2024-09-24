@@ -4,6 +4,8 @@ import GoogleProvider from "next-auth/providers/google";
 import getUserbyEmail from "@/lib/userService";
 import dbConnect from "@/lib/mongodb";
 import accounts from "@/lib/models/accounts";
+import Office from "@/lib/models/office";
+import User from "@/lib/models/user";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
@@ -17,21 +19,21 @@ export const authOptions = {
       async authorize(credentials) {
         try {
           await dbConnect();
-          const user = await accounts.findOne({
-            username: credentials.username,
-          });
-
-          if (user && bcrypt.compareSync(credentials.password, user.password)) {
-            console.log(user);
-            // Return user if valid
+          const account = await accounts.findOne({ username: credentials.username });
+      
+          if (account && bcrypt.compareSync(credentials.password, account.password)) {
+            let roleData = null;
+            if (account.role === "office") {
+              roleData = await Office.findOne({ accountId: account.id }).lean();
+            } else if (account.role === "user") {
+              roleData = await User.findOne({ accountId: account.id }).lean();
+            }
             return {
-              id: user._id.toString(),
-              firstname: user.firstname,
-              lastname: user.lastname,
-              username: user.username,
-              email: user.email,
-              role: user.role,
-              middlename: user.middlename || null,
+              id: account.id.toString(),
+              username: account.username,
+              email: account.email,
+              role: account.role,
+              roleData,
             };
           } else {
             console.error("Invalid username or password");
@@ -41,7 +43,7 @@ export const authOptions = {
           console.error("Error authorizing user:", error);
           return null;
         }
-      },
+      }      
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -73,8 +75,18 @@ export const authOptions = {
             user.username = dbUser.username;
             user.email = dbUser.email;
             user.role = dbUser.role;
+
+            let roleData = null;
+            if (user.role === "office") {
+              roleData = await Office.findOne({ email: user.email }).lean();
+            } else if (user.role === "user") {
+              roleData = await User.findOne({ email: user.email }).lean();
+            }
+            user.roleData = roleData;
+
             return true;
           } else {
+            console.error("User not found in the database.");
             return false; // Deny sign-in if email not found in the database
           }
         } catch (error) {
@@ -88,12 +100,12 @@ export const authOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.firstname = user.firstname;
-        token.middlename = user.middlename;
-        token.lastname = user.lastname;
         token.username = user.username;
         token.email = user.email;
         token.role = user.role;
+        if (user.roleData) {
+          token.roleData = user.roleData; // Add office/user details
+        }
       }
       return token;
     },
@@ -101,12 +113,10 @@ export const authOptions = {
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id;
-        session.user.firstname = token.firstname;
-        session.user.middlename = token.middlename;
-        session.user.lastname = token.lastname;
         session.user.username = token.username;
         session.user.email = token.email;
         session.user.role = token.role;
+        session.user.roleData = token.roleData || null; // Include role-specific data
       }
       return session;
     },

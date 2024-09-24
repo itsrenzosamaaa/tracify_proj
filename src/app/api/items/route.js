@@ -1,7 +1,7 @@
 import dbConnect from "@/lib/mongodb";
 import Items from "@/lib/models/items";
 
-export async function GET(request) {
+export async function GET() {
   await dbConnect();
 
   try {
