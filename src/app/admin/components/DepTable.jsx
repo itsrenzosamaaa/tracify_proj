@@ -2,6 +2,7 @@ import React from 'react';
 import { Table, Typography, Button, IconButton } from '@mui/joy';
 import { TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { MoreHoriz } from '@mui/icons-material';
+import Link from 'next/link';
 
 const DepTable = ({ data, type }) => {
     return (
@@ -42,6 +43,8 @@ const DepTable = ({ data, type }) => {
                                         display: { xs: 'none', lg: 'block' },
                                         minWidth: '80px', // Consistent button size for large screens
                                     }}
+                                    component={Link}
+                                    href={`/admin/basic_department/edit_officer/${item.accountId}`}
                                 >
                                     More Details
                                 </Button>
@@ -49,8 +52,10 @@ const DepTable = ({ data, type }) => {
                                     size="small"
                                     sx={{
                                         display: { xs: 'block', lg: 'none' },
-                                        minWidth: '40px', // Small button size for small screens
+                                        minWidth: '40px',
                                     }}
+                                    component={Link}
+                                    href={`/admin/basic_department/edit_officer/${item.accountId}`}
                                 >
                                     <MoreHoriz />
                                 </IconButton>

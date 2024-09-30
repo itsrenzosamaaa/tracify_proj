@@ -33,20 +33,27 @@ const Dashboard = () => {
               }}
             >
               <Typography level="h2" sx={{ display: 'inline-block', width: '100%' }}>
-                {status === 'loading' ? "Loading..." : `Welcome back, ${session.user?.username}!`}
+                {status === 'loading' ? "Loading..." : `Welcome back, ${session?.user?.roleData?.officeName || 'User'}!`}
               </Typography>
               <Typography sx={{ display: 'inline-block', width: '100%' }}>
-                {status === 'loading' ? "Fetching details, please wait..." : "This is the current reported items as of now..."}
+                {status === 'loading' ? "Fetching details, please wait..." : `You are logged in as ${session?.user?.role?.charAt(0).toUpperCase() + session?.user?.role?.slice(1) || ''}.`}
               </Typography>
             </Skeleton>
           </Paper>
 
-          <Paper elevation={2} sx={{ padding: "1rem" }}>
-            <DonutChart />
+          <Paper elevation={2} sx={{ padding: "1rem", marginBottom: '1.2rem' }}>
+            <Skeleton loading={status === 'loading'} sx={{ height: '100%', width: '100%' }}>
+              <DonutChart />
+            </Skeleton>
           </Paper>
         </Grid>
+
         <Grid item xs={12} sm={12} md={5} lg={4}>
-          <Updates />
+          <Paper elevation={2} sx={{ padding: "1rem" }}>
+            <Skeleton loading={status === 'loading'} sx={{ height: '100%', width: '100%' }}>
+              <Updates />
+            </Skeleton>
+          </Paper>
         </Grid>
       </Grid>
     </Box>

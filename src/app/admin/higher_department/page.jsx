@@ -123,10 +123,8 @@ const HigherDepartment = () => {
                                 </RadioGroup>
                             </FormControl>
                             <Box sx={{ gap: 2 }}>
-                                <Button disabled={loading} onClick={() => setOpenAddOffice(true)}>Add Office</Button>
-                                <AddOffice openModal={openAddOffice} onClose={closeModal} schoolCategory="Higher Education" fetchOfficers={fetchOfficers} />
-                                <Button disabled={loading} onClick={() => setOpenAddUser(true)}>Add User</Button>
-                                <AddUser openModal={openAddUser} onClose={closeModal} schoolCategory="Higher Education" fetchUsers={fetchUsers} />
+                                <Button disabled={loading} component={Link} href='/admin/higher_department/add_officer'>Add Office</Button>
+                                <Button disabled={loading} component={Link} href='/admin/higher_department/add_user'>Add User</Button>
                             </Box>
                         </Box>
                         <Box>

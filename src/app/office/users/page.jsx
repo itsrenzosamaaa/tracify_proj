@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from "react";
-import { Box, Typography, Breadcrumbs, Link } from "@mui/joy";
+import { Box, Typography, Breadcrumbs, Link, Button } from "@mui/joy";
 import { Paper, Grid } from "@mui/material";
 import UsersTable from "../components/Table/UsersTable";
 import { useSession } from "next-auth/react";
@@ -12,28 +12,20 @@ const Users = () => {
   console.log("data: ", session)
   console.log("status: ", status)
 
-  // const fetchUsers = async () => {
-  //   if (session?.data?.roleData?.schoolCategory) {
-  //     try {
-  //       const response = await fetch('/api/user');
-  //       const data = await response.json();
-  //       console.log(data);
-  //       const bedUsers = data.filter(user => user.schoolCategory === session.user.roleData.schoolCategory);
-  //       console.log(bedUsers)
-  //       setUsers(bedUsers);
-  //     } catch (error) {
-  //       console.error("Error fetching users: ", error);
-  //     }
-  //   } else {
-  //     console.error("Session or schoolCategory data is not available");
-  //   }
-  // };
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/user');
+      const data = await response.json();
+      console.log(data)
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching users: ", error);
+    }
+  };
 
-  // useEffect(() => {
-  //   if(status === 'authenticated'){
-  //     fetchUsers();
-  //   };
-  // }, [status, session]);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   return (
     <>
@@ -101,7 +93,14 @@ const Users = () => {
                 </Paper>
               </Grid>
             </Grid>
-            <UsersTable users={users} />
+            <Paper elevation={2}>
+              <Box sx={{ padding: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                <Button component={Link} href="/office/users/add_user">
+                  Add User
+                </Button>
+              </Box>
+              <UsersTable users={users} session={session} />
+            </Paper>
           </>
         )}
       </Box>

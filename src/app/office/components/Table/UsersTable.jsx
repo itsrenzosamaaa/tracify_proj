@@ -1,6 +1,5 @@
 import { Table, Input, Button } from "@mui/joy";
 import {
-  Paper,
   TableContainer,
   TableHead,
   TableBody,
@@ -11,11 +10,12 @@ import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import React from "react";
 import Link from "next/link";
 
-const UsersTable = ({ users }) => {
+const UsersTable = ({ users, session }) => {
+
+  const filteredUsers = users.filter(usersSC => usersSC.schoolCategory === session.user.roleData.schoolCategory);
+
   return (
     <TableContainer
-      component={Paper}
-      elevation={2}
       sx={{
         borderRadius: 2,
         maxWidth: "100%",
@@ -88,7 +88,7 @@ const UsersTable = ({ users }) => {
           </TableRow>
 
           {/* Data Row */}
-          {users.map((user) => {
+          {filteredUsers.map((user) => {
             return (
               <TableRow key={user.id}>
                 <TableCell sx={{ padding: "0.5rem" }}>{user.accountId}</TableCell>

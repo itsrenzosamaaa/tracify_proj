@@ -116,7 +116,7 @@ const AddUserPage = ({ category, setRole, sessionRole }) => {
             }, 1000);
 
             if (countdown === 0) {
-                router.push(`/${sessionRole}/${category === "Basic Education" ? "basic_department" : "higher_department"}`);
+                router.push(`/${sessionRole}/basic_department`);
             }
 
             return () => clearInterval(timer);
@@ -247,7 +247,7 @@ const AddUserPage = ({ category, setRole, sessionRole }) => {
                         <Typography level="body1">
                             User has been added successfully. Redirecting in {countdown} seconds...
                         </Typography>
-                        <Button onClick={() => router.push(`/${sessionRole}/${category === "Basic Education" ? "basic_department" : "higher_department"}`)} sx={{ mt: 2 }}>
+                        <Button onClick={() => router.push(`/${sessionRole}/${category === "Basic Education" ? "basic_department" : "higher_education"}`)} sx={{ mt: 2 }}>
                             Redirect now
                         </Button>
                     </ModalDialog>

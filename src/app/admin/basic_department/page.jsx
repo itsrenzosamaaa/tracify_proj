@@ -4,15 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { Box, Grid, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import { Breadcrumbs, Link, Typography, Button } from '@mui/joy';
 import DepTable from "../components/DepTable";
-import AddOffice from '../components/AddOffice';
-import AddUser from '../components/AddUser';
 
 const BasicDepartment = () => {
   const [officers, setOfficers] = useState([]);
   const [users, setUsers] = useState([]);
   const [isOfficerSelected, setIsOfficerSelected] = useState(true); // New state to toggle between officers and users
-  const [openAddOffice, setOpenAddOffice] = useState(false);
-  const [openAddUser, setOpenAddUser] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Fetch Officers
@@ -37,11 +33,6 @@ const BasicDepartment = () => {
     } catch (error) {
       console.error("Failed to fetch users: ", error);
     }
-  };
-
-  const closeModal = () => {
-    setOpenAddOffice(false);
-    setOpenAddUser(false);
   };
 
   useEffect(() => {
@@ -123,10 +114,8 @@ const BasicDepartment = () => {
                 </RadioGroup>
               </FormControl>
               <Box sx={{ gap: 2 }}>
-                <Button disabled={loading} onClick={() => setOpenAddOffice(true)}>Add Office</Button>
-                <AddOffice openModal={openAddOffice} onClose={closeModal} schoolCategory="Basic Education" fetchOfficers={fetchOfficers} />
-                <Button disabled={loading} onClick={() => setOpenAddUser(true)}>Add User</Button>
-                <AddUser openModal={openAddUser} onClose={closeModal} schoolCategory="Basic Education" fetchUsers={fetchUsers} />
+                <Button disabled={loading} component={Link} href='/admin/higher_department/add_officer' sx={{ textDecoration: 'none' }}>Add Office</Button>
+                <Button disabled={loading} component={Link} href='/admin/higher_department/add_user' sx={{ textDecoration: 'none' }}>Add User</Button>
               </Box>
             </Box>
             <Box>
