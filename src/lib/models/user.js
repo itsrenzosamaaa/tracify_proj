@@ -31,6 +31,17 @@ const userSchema = new mongoose.Schema({
   lastname: {
     type: String,
   },
+  successfulFoundItems: {
+    type: Number,
+    default: 0,
+  },
+  ratedUsers: {
+    type: Number,
+    default: 0,
+  },
+  birthDate: {
+    type: Date,
+  }
 });
 
 export default mongoose.models.User || mongoose.model("User", userSchema);

@@ -8,24 +8,56 @@ import { useSession } from "next-auth/react";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const [officer, setOfficer] = useState({});
   const { data: session, status } = useSession();
-  console.log("data: ", session)
-  console.log("status: ", status)
+  const [isClient, setIsClient] = useState(false); // State to track if client-side rendering
 
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch('/api/user');
-      const data = await response.json();
-      console.log(data)
-      setUsers(data);
-    } catch (error) {
-      console.error("Error fetching users: ", error);
-    }
-  };
+  // Ensure the component only renders on the client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/user');
+        const data = await response.json();
+        const categorizedUsers = data.filter(categUser => categUser.schoolCategory === session.user.roleData.schoolCategory);
+        if (response.ok) {
+          setUsers(categorizedUsers);
+        } else {
+          console.error('Failed to fetch users:', data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching users: ", error);
+      }
+    };
+
+    const fetchOfficer = async () => {
+      try {
+        const response = await fetch('/api/office');
+        const data = await response.json();
+        const categorizedOfficer = data.find(office => office.accountId === session.user.id);
+        if (response.ok) {
+          setOfficer(categorizedOfficer);
+        } else {
+          console.error('Failed to fetch officer:', data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching officer: ", error);
+      }
+    };
+
+    if (isClient && status === 'authenticated' && session?.user?.roleData?.schoolCategory) {
+      fetchUsers();
+      fetchOfficer();
+    }
+  }, [isClient, session?.user?.roleData?.schoolCategory, status, session?.user?.id]);
+
+  if (!isClient) {
+    // Prevent rendering on the server
+    return null;
+  }
 
   return (
     <>
@@ -84,11 +116,11 @@ const Users = () => {
                     </Typography>
                   </Box>
                   <Box sx={{ textAlign: 'right' }}>
-                    <Typography level="body-md">{session.user.roleData.officeName}</Typography>
+                    <Typography level="body-md">{officer?.officeName}</Typography>
                     <Typography level="body-md">
-                      {session.user.roleData.officeAddress}
+                      {officer?.officeAddress}
                     </Typography>
-                    <Typography level="body-md">{session.user.roleData.schoolCategory}</Typography>
+                    <Typography level="body-md">{officer?.schoolCategory}</Typography>
                   </Box>
                 </Paper>
               </Grid>
@@ -99,7 +131,7 @@ const Users = () => {
                   Add User
                 </Button>
               </Box>
-              <UsersTable users={users} session={session} />
+              <UsersTable users={users} />
             </Paper>
           </>
         )}

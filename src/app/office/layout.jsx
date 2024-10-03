@@ -2,10 +2,11 @@ import React from "react";
 import SidebarComponent from "../components/SidebarComponent";
 
 const navigation = [
-  { forMenu: true, menu: "Home", url: "/office/dashboard" },
-  { forMenu: true, menu: "Items", url: "/office/items" },
-  { forMenu: true, menu: "Requests", url: "/office/request" },
-  { forMenu: true, menu: "Users", url: "/office/users" },
+  { menu: "Home", url: "/office/dashboard" },
+  { menu: "Profile", url: "/office/profile" },
+  { menu: "Items", url: "/office/items" },
+  { menu: "Requests", url: "/office/request" },
+  { menu: "Users", url: "/office/users" },
 ];
 
 export default function Layout({ children }) {

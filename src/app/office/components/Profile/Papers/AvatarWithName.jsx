@@ -14,11 +14,11 @@ const AvatarWithName = ({ user }) => {
                         alignItems: "center",
                     }}
                 >
-                    <Avatar src={user.avatar} sx={{ width: 76, height: 76, marginBottom: '1rem' }}>
-                        <Typography level="h2">{user.name.charAt(0).toUpperCase()}</Typography>
+                    <Avatar sx={{ width: 76, height: 76, marginBottom: '1rem' }}>
+                        <Typography level="h2">{user.firstname.charAt(0).toUpperCase()}</Typography>
                     </Avatar>
-                    <Typography level='body-lg' fontWeight='500'>{user.name}</Typography>
-                    <Typography level='body-sm' fontWeight='400'>{user.role}</Typography>
+                    <Typography level='body-lg' fontWeight='500'>{user.firstname} {user.middlename} {user.lastname}</Typography>
+                    <Typography level='body-sm' fontWeight='400'>{user.userRole.charAt(0).toUpperCase() + user.userRole.slice(1)}</Typography>
                 </Box>
             </Paper>
         </>

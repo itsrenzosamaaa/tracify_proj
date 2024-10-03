@@ -1,15 +1,16 @@
-// app/admin/basic_department/edit_officer/[id]/route.js
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import office from '@/lib/models/office';
 
 export async function GET(req, { params }) {
-    const { accountId } = params;
+    const { id } = params;
 
     await dbConnect(); // Connect to your MongoDB database
 
     try {
-        const officer = await office.findOne(accountId).lean(); // Fetch officer by ID
+        const officer = await office.findOne({ accountId: id }).lean(); // Fetch officer by ID
+
+        console.log(officer)
 
         if (!officer) {
             return NextResponse.json({ message: 'Officer not found' }, { status: 404 });
@@ -22,14 +23,14 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-    const { accountId } = params; // Get the office ID from the URL
+    const { id } = params; // Get the office ID from the URL
 
     await dbConnect(); // Connect to MongoDB
 
     try {
         const formData = await req.json();
         const updatedOffice = await office.findOneAndUpdate(
-            accountId,
+            { accountId: id },
             { $set: formData },
             { new: true }
         );  

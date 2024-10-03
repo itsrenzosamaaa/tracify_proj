@@ -98,7 +98,7 @@ const AddOfficePage = ({ category, setRole, sessionRole }) => {
             // Clear interval when modal closes or component unmounts
             return () => clearInterval(timer);
         }
-    }, [showSuccessModal, countdown, router]);
+    }, [showSuccessModal, countdown, router, category, sessionRole]);
 
     return (
         <Box

@@ -44,7 +44,7 @@ const DepTable = ({ data, type }) => {
                                         minWidth: '80px', // Consistent button size for large screens
                                     }}
                                     component={Link}
-                                    href={`/admin/basic_department/edit_officer/${item.accountId}`}
+                                    href={`/admin/${item.schoolCategory === 'Higher Education' ? 'higher_department' : 'basic_department'}/${type === 'officer' ? 'edit_officer' : 'edit_user'}/${item.accountId}`}
                                 >
                                     More Details
                                 </Button>
@@ -55,7 +55,7 @@ const DepTable = ({ data, type }) => {
                                         minWidth: '40px',
                                     }}
                                     component={Link}
-                                    href={`/admin/basic_department/edit_officer/${item.accountId}`}
+                                    href={`/admin/${item.schoolCategory === 'Higher Education' ? 'higher_department' : 'basic_department'}/${type === 'officer' ? 'edit_officer' : 'edit_user'}/${item.accountId}`}
                                 >
                                     <MoreHoriz />
                                 </IconButton>

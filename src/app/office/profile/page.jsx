@@ -2,15 +2,15 @@
 
 import {
     FormLabel, Input, Button, Stack, Typography, Box,
-    Container, Select, Option, Snackbar,
+    Container, Snackbar,
 } from '@mui/joy';
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Paper } from '@mui/material';
+import { useSession } from 'next-auth/react';
 
-const ViewProfilePage = ({ accountId }) => {
+const Page = () => {
+    const { data: session, status } = useSession();
     const [officeData, setOfficeData] = useState({});
-    const [schoolCategory, setSchoolCategory] = useState('');
     const [officeName, setOfficeName] = useState('');
     const [officeAddress, setOfficeAddress] = useState('');
     const [contactNumber, setContactNumber] = useState('');
@@ -20,30 +20,31 @@ const ViewProfilePage = ({ accountId }) => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const response = await fetch(`/api/office/${accountId}`);
-                const data = await response.json();
-                if (response.ok) {
-                    setOfficeData(data);
-                    setSchoolCategory(data.schoolCategory);
-                    setOfficeName(data.officeName);
-                    setOfficeAddress(data.officeAddress);
-                    setContactNumber(data.contactNumber);
-                    setEmail(data.email);
-                } else {
-                    console.error('Failed to fetch officer data:', data.message);
-                }
-            } catch (error) {
-                console.error('Failed to fetch office data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
+        if (status === 'authenticated' && session?.user?.id) {
+            fetchData(session.user.id);
+        }
+    }, [session?.user?.id, status]);
 
-        fetchData();
-    }, [accountId]);
+    const fetchData = async (accountId) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/api/office/${accountId}`);
+            const data = await response.json();
+            if (response.ok) {
+                setOfficeData(data);
+                setOfficeName(data.officeName);
+                setOfficeAddress(data.officeAddress);
+                setContactNumber(data.contactNumber);
+                setEmail(data.email);
+            } else {
+                console.error('Failed to fetch office data:', data.message);
+            }
+        } catch (error) {
+            console.error('Failed to fetch office data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleFieldChange = (setter) => (event) => {
         setter(event.target.value);
@@ -53,14 +54,12 @@ const ViewProfilePage = ({ accountId }) => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await fetch(`/api/office/${accountId}`, {
+            const response = await fetch(`/api/office/${officeData.accountId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    schoolCategory,
-                    accountId,
                     officeName,
                     officeAddress,
                     contactNumber,
@@ -70,7 +69,6 @@ const ViewProfilePage = ({ accountId }) => {
 
             if (response.ok) {
                 const result = await response.json();
-                console.log('Update success:', result);
                 setOfficeData(result);
                 setSnackbarOpen(true);
                 setEditMode(false);
@@ -85,7 +83,6 @@ const ViewProfilePage = ({ accountId }) => {
     };
 
     const handleCancel = () => {
-        setSchoolCategory(officeData.schoolCategory);
         setOfficeName(officeData.officeName);
         setOfficeAddress(officeData.officeAddress);
         setContactNumber(officeData.contactNumber);
@@ -112,23 +109,7 @@ const ViewProfilePage = ({ accountId }) => {
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                     <FormLabel sx={{ minWidth: '120px' }}>Account ID</FormLabel>
-                                    <Typography>{accountId}</Typography> {/* Display as Typography */}
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <FormLabel sx={{ minWidth: '120px' }}>School Category</FormLabel>
-                                    {editMode ? (
-                                        <Select
-                                            required
-                                            value={schoolCategory}
-                                            onChange={(e, value) => setSchoolCategory(value)}
-                                            sx={{ flex: 1 }}
-                                        >
-                                            <Option value="Basic Education">Basic Education Department</Option>
-                                            <Option value="Higher Education">Higher Education Department</Option>
-                                        </Select>
-                                    ) : (
-                                        <Typography>{schoolCategory}</Typography> // Display as Typography
-                                    )}
+                                    <Typography>{officeData.accountId}</Typography> {/* Display as Typography */}
                                 </Box>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                     <FormLabel sx={{ minWidth: '120px' }}>Office Name</FormLabel>
@@ -216,4 +197,4 @@ const ViewProfilePage = ({ accountId }) => {
     );
 };
 
-export default ViewProfilePage;
+export default Page;

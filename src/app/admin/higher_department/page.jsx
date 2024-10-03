@@ -4,15 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { Box, Grid, Paper, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import { Breadcrumbs, Link, Typography, Button } from '@mui/joy';
 import DepTable from "../components/DepTable";
-import AddOffice from '../components/AddOffice';
-import AddUser from '../components/AddUser';
 
 const HigherDepartment = () => {
     const [officers, setOfficers] = useState([]);
     const [users, setUsers] = useState([]);
     const [isOfficerSelected, setIsOfficerSelected] = useState(true); // New state to toggle between officers and users
-    const [openAddOffice, setOpenAddOffice] = useState(false);
-    const [openAddUser, setOpenAddUser] = useState(false);
     const [loading, setLoading] = useState(true);
 
     const closeModal = () => {
@@ -82,7 +78,7 @@ const HigherDepartment = () => {
                         <Grid container spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
                             <Grid item xs={12} lg={6}>
                                 <Typography level="h2">
-                                    Higher Education ({isOfficerSelected ? "Officers" : "Users"})
+                                    Higher Department ({isOfficerSelected ? "Officers" : "Users"})
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} lg={6} sx={{ textAlign: 'right' }}>

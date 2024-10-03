@@ -3,12 +3,12 @@ import dbConnect from '@/lib/mongodb';
 import users from '@/lib/models/user';
 
 export async function GET(req, { params }) {
-    const { accountId } = params;
+    const { id } = params;
 
     await dbConnect(); // Connect to your MongoDB database
 
     try {
-        const user = await users.findOne(accountId).lean(); // Fetch officer by ID
+        const user = await users.findOne({ accountId : id }).lean(); // Fetch officer by ID
 
         if (!user) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -21,14 +21,14 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-    const { accountId } = params; // Get the office ID from the URL
+    const { id } = params; // Get the office ID from the URL
 
     await dbConnect(); // Connect to MongoDB
 
     try {
         const formData = await req.json();
         const updatedUser = await users.findOneAndUpdate(
-            accountId,
+            { accountId : id },
             { $set: formData },
             { new: true }
         );  

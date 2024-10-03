@@ -19,7 +19,7 @@ const Bio = ({ user }) => {
                 }}
             >
                 <Typography variant="body2" sx={{ textAlign: 'center', wordBreak: 'break-word' }}>
-                    {user.bio}
+                    hahaha
                 </Typography>
             </Box>
         </Paper>

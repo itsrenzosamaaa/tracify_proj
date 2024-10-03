@@ -1,6 +1,19 @@
-'use client'
+'use client';
 
-import { FormLabel, Input, Modal, ModalDialog, Button, Stack, Typography, Box, Container, Select, Option } from '@mui/joy';
+import {
+    FormLabel,
+    Input,
+    Button,
+    Stack,
+    Typography,
+    Box,
+    Container,
+    Select,
+    Option,
+    Snackbar,
+    Alert,
+} from '@mui/joy';
+import { Paper } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -13,54 +26,54 @@ const EditUserPage = ({ accountId, category, sessionRole }) => {
     const [contactNumber, setContactNumber] = useState('');
     const [schoolCategory, setSchoolCategory] = useState('');
     const [loading, setLoading] = useState(false);
-    const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
-    const [countdown, setCountdown] = useState(5); // Countdown timer
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [editMode, setEditMode] = useState(false); // State for editing mode
+    const [initialData, setInitialData] = useState({}); // Store initial user data
     const router = useRouter();
 
-    const fetchData = async () => {
-        try {
-            const response = await fetch(`/api/user/${accountId}`); // Fetch office data from your API
-            const data = await response.json();
-            setUserRole(data.userRole)
-            setFirstName(data.firstname)
-            setMiddleName(data.middlename)
-            setLastName(data.lastname)
-            setEmail(data.email)
-            setContactNumber(data.contactNumber)
-            setSchoolCategory(data.schoolCategory)
-        } catch (error) {
-            console.error('Failed to fetch office data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Fetch user data for editing
     useEffect(() => {
-        fetchData();
-    }, []);
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`/api/user/${accountId}`);
+                const data = await response.json();
+                setUserRole(data.userRole);
+                setFirstName(data.firstname);
+                setMiddleName(data.middlename);
+                setLastName(data.lastname);
+                setEmail(data.email);
+                setContactNumber(data.contactNumber);
+                setSchoolCategory(data.schoolCategory);
 
-    useEffect(() => {
-        if (showSuccessModal) {
-            const timer = setInterval(() => {
-                setCountdown((prevCountdown) => prevCountdown - 1);
-            }, 1000);
-
-            // Redirect when countdown reaches 0
-            if (countdown === 0) {
-                router.push(`/${sessionRole}/${category === "Basic Education" ? "basic_department" : "higher_department"}`);
+                // Store initial data
+                setInitialData({
+                    userRole: data.userRole,
+                    firstname: data.firstname,
+                    middlename: data.middlename,
+                    lastname: data.lastname,
+                    email: data.email,
+                    contactNumber: data.contactNumber,
+                    schoolCategory: data.schoolCategory,
+                });
+            } catch (error) {
+                console.error('Failed to fetch user data:', error);
+            } finally {
+                setLoading(false);
             }
+        };
 
-            // Clear interval when modal closes or component unmounts
-            return () => clearInterval(timer);
-        }
-    }, [showSuccessModal, countdown, router]);
+        fetchData();
+    }, [accountId]);
 
+
+    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            const response = await fetch(`/api/office/${accountId}`, {
+            const response = await fetch(`/api/user/${accountId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -68,8 +81,10 @@ const EditUserPage = ({ accountId, category, sessionRole }) => {
                 body: JSON.stringify({
                     schoolCategory,
                     accountId,
-                    officeName,
-                    officeAddress,
+                    userRole,
+                    firstname: firstName,
+                    middlename: middleName,
+                    lastname: lastName,
                     contactNumber,
                     email,
                 }),
@@ -78,128 +93,181 @@ const EditUserPage = ({ accountId, category, sessionRole }) => {
             if (response.ok) {
                 const result = await response.json();
                 console.log('Update success:', result);
-                setShowSuccessModal(true);
+                setInitialData(result);
+                setSnackbarOpen(true);
+                setEditMode(false); // Exit edit mode after successful update
             } else {
                 console.error('Update failed');
             }
         } catch (error) {
-            console.error('Error updating office data:', error);
+            console.error('Error updating user data:', error);
         } finally {
             setLoading(false);
         }
     };
 
+    // Handle cancel action to revert data
+    const handleCancel = () => {
+        setUserRole(initialData.userRole);
+        setFirstName(initialData.firstname);
+        setMiddleName(initialData.middlename);
+        setLastName(initialData.lastname);
+        setEmail(initialData.email);
+        setContactNumber(initialData.contactNumber);
+        setSchoolCategory(initialData.schoolCategory);
+        setEditMode(false); // Exit edit mode
+    };
+
     return (
         <Box
             sx={{
-                marginTop: '60px', // Ensure space for header
-                marginLeft: { xs: '0px', lg: '250px' }, // Shift content when sidebar is visible on large screens
+                marginTop: '60px',
+                marginLeft: { xs: '0px', lg: '250px' },
                 padding: '20px',
                 transition: 'margin-left 0.3s ease',
             }}
         >
-            <Container sx={{ mt: 4 }}>
-                <Typography level="h4" sx={{ mb: 2 }}>Add Office</Typography>
+            <Paper elevation={2} sx={{ padding: '1rem' }}>
+                <Container sx={{ mt: 4 }}>
+                    <Typography level="h4" sx={{ mb: 2 }}>Edit User</Typography>
 
-                {/* Main Form */}
-                <form onSubmit={handleSubmit}>
-                    <Stack spacing={2}>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <FormLabel sx={{ minWidth: '120px' }}>Account ID</FormLabel>
-                                <Input
-                                    type="text"
-                                    value={accountId}
-                                    disabled
-                                    required
-                                    sx={{ flex: 1 }}
-                                />
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <FormLabel sx={{ minWidth: '120px' }}>School Category</FormLabel>
-                                <Select
-                                    required
-                                    value={schoolCategory}
-                                    onChange={(e, value) => setSchoolCategory(value)}
-                                    sx={{ flex: 1 }}
-                                >
-                                    <Option value="Basic Education">Basic Education Department</Option>
-                                    <Option value="Higher Education">Higher Education Department</Option>
-                                </Select>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <FormLabel sx={{ minWidth: '120px' }}>User Role</FormLabel>
-                                <Select
-                                    required
-                                    value={userRole}
-                                    onChange={(e, value) => setUserRole(value)}
-                                    sx={{ flex: 1 }}
-                                >
-                                    <Option value="student">Student</Option>
-                                    <Option value="teacher">Teacher</Option>
-                                </Select>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <FormLabel sx={{ minWidth: '120px' }}>Office Name</FormLabel>
-                                <Input
-                                    type="text"
-                                    value={officeName}
-                                    onChange={(e) => setOfficeName(e.target.value)}
-                                    required
-                                    sx={{ flex: 1 }}
-                                />
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <FormLabel sx={{ minWidth: '120px' }}>Office Address</FormLabel>
-                                <Input
-                                    type="text"
-                                    value={officeAddress}
-                                    onChange={(e) => setOfficeAddress(e.target.value)}
-                                    required
-                                    sx={{ flex: 1 }}
-                                />
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <FormLabel sx={{ minWidth: '120px' }}>Email</FormLabel>
-                                <Input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    sx={{ flex: 1 }}
-                                />
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <FormLabel sx={{ minWidth: '120px' }}>Contact Number</FormLabel>
-                                <Input
-                                    type="text"
-                                    value={contactNumber}
-                                    onChange={(e) => setContactNumber(e.target.value)}
-                                    required
-                                    sx={{ flex: 1 }}
-                                />
-                            </Box>
+                    {/* Main Form */}
+                    <form onSubmit={handleSubmit}>
+                        <Stack spacing={2}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <FormLabel sx={{ minWidth: '120px' }}>Account ID</FormLabel>
+                                    <Typography>{accountId}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <FormLabel sx={{ minWidth: '120px' }}>School Category</FormLabel>
+                                    {editMode ? (
+                                        <Select
+                                            required
+                                            value={schoolCategory}
+                                            onChange={(e, value) => setSchoolCategory(value)}
+                                            sx={{ flex: 1 }}
+                                        >
+                                            <Option value="Basic Education">Basic Education Department</Option>
+                                            <Option value="Higher Education">Higher Education Department</Option>
+                                        </Select>
+                                    ) : (
+                                        <Typography>{schoolCategory}</Typography>
+                                    )}
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <FormLabel sx={{ minWidth: '120px' }}>User Role</FormLabel>
+                                    {editMode ? (
+                                        <Select
+                                            required
+                                            value={userRole}
+                                            onChange={(e, value) => setUserRole(value)}
+                                            sx={{ flex: 1 }}
+                                        >
+                                            <Option value="student">Student</Option>
+                                            <Option value="teacher">Teacher</Option>
+                                        </Select>
+                                    ) : (
+                                        <Typography>{userRole.charAt(0).toUpperCase() + userRole.slice(1)}</Typography>
+                                    )}
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <FormLabel sx={{ minWidth: '120px' }}>First Name</FormLabel>
+                                    {editMode ? (
+                                        <Input
+                                            type="text"
+                                            value={firstName}
+                                            onChange={(e) => setFirstName(e.target.value)}
+                                            required
+                                            sx={{ flex: 1 }}
+                                        />
+                                    ) : (
+                                        <Typography>{firstName}</Typography>
+                                    )}
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <FormLabel sx={{ minWidth: '120px' }}>Middle Name</FormLabel>
+                                    {editMode ? (
+                                        <Input
+                                            type="text"
+                                            value={middleName}
+                                            onChange={(e) => setMiddleName(e.target.value)}
+                                            required
+                                            sx={{ flex: 1 }}
+                                        />
+                                    ) : (
+                                        <Typography>{middleName}</Typography>
+                                    )}
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <FormLabel sx={{ minWidth: '120px' }}>Last Name</FormLabel>
+                                    {editMode ? (
+                                        <Input
+                                            type="text"
+                                            value={lastName}
+                                            onChange={(e) => setLastName(e.target.value)}
+                                            required
+                                            sx={{ flex: 1 }}
+                                        />
+                                    ) : (
+                                        <Typography>{lastName}</Typography>
+                                    )}
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <FormLabel sx={{ minWidth: '120px' }}>Email</FormLabel>
+                                    {editMode ? (
+                                        <Input
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                            sx={{ flex: 1 }}
+                                        />
+                                    ) : (
+                                        <Typography>{email}</Typography>
+                                    )}
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <FormLabel sx={{ minWidth: '120px' }}>Contact Number</FormLabel>
+                                    {editMode ? (
+                                        <Input
+                                            type="text"
+                                            value={contactNumber}
+                                            onChange={(e) => setContactNumber(e.target.value)}
+                                            required
+                                            sx={{ flex: 1 }}
+                                        />
+                                    ) : (
+                                        <Typography>{contactNumber}</Typography>
+                                    )}
+                                </Box>
 
-                            <Button type="submit" sx={{ mt: 2 }} loading={loading}>
-                                Add Office
-                            </Button>
-                        </Box>
-                    </Stack>
-                </form>
+                                {/* Edit and Cancel buttons */}
+                                <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                                    {editMode ? (
+                                        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                            <Button type="submit" loading={loading}>
+                                                Save Changes
+                                            </Button>
+                                            <Button variant="outlined" onClick={handleCancel}>
+                                                Cancel
+                                            </Button>
+                                        </Box>
+                                    ) : (
+                                        <Button variant="solid" onClick={() => setEditMode(true)} sx={{ mt: 2 }}>
+                                            Edit Profile
+                                        </Button>
+                                    )}
+                                </Stack>
+                            </Box>
+                        </Stack>
+                    </form>
 
-                {/* Success Modal */}
-                <Modal open={showSuccessModal}>
-                    <ModalDialog>
-                        <Typography level="h3">Success!</Typography>
-                        <Typography level="body1">
-                            Office has been added successfully. Redirecting in {countdown} seconds...
-                        </Typography>
-                        <Button onClick={() => router.push(`/${sessionRole}/${category}`)} sx={{ mt: 2 }}>
-                            Redirect now
-                        </Button>
-                    </ModalDialog>
-                </Modal>
-            </Container>
+                    <Snackbar variant="solid" color="success" open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+                        User profile updated successfully!
+                    </Snackbar>
+                </Container>
+            </Paper>
         </Box>
     );
 };

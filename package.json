@@ -19,6 +19,7 @@
     "apexcharts": "^3.52.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
+    "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",
     "formidable": "^3.5.1",
     "mongodb": "^6.9.0",

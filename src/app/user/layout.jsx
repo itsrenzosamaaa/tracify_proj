@@ -5,7 +5,7 @@ const navigation = [
   { menu: "Home", url: "/user/dashboard" },
   { menu: "Profile", url: "/user/profile" },
   { menu: "Match Items", url: "/user/match-items" },
-  { menu: "Ratings", url: "user/ratings" },
+  { menu: "Ratings", url: "/user/ratings" },
 ];
 
 export default function Layout({ children }) {

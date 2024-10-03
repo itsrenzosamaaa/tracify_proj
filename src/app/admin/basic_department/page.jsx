@@ -114,8 +114,8 @@ const BasicDepartment = () => {
                 </RadioGroup>
               </FormControl>
               <Box sx={{ gap: 2 }}>
-                <Button disabled={loading} component={Link} href='/admin/higher_department/add_officer' sx={{ textDecoration: 'none' }}>Add Office</Button>
-                <Button disabled={loading} component={Link} href='/admin/higher_department/add_user' sx={{ textDecoration: 'none' }}>Add User</Button>
+                <Button disabled={loading} component={Link} href='/admin/basic_department/add_officer' sx={{ textDecoration: 'none' }}>Add Office</Button>
+                <Button disabled={loading} component={Link} href='/admin/basic_department/add_user' sx={{ textDecoration: 'none' }}>Add User</Button>
               </Box>
             </Box>
             <Box>

@@ -10,9 +10,7 @@ import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import React from "react";
 import Link from "next/link";
 
-const UsersTable = ({ users, session }) => {
-
-  const filteredUsers = users.filter(usersSC => usersSC.schoolCategory === session.user.roleData.schoolCategory);
+const UsersTable = ({ users }) => {
 
   return (
     <TableContainer
@@ -88,11 +86,11 @@ const UsersTable = ({ users, session }) => {
           </TableRow>
 
           {/* Data Row */}
-          {filteredUsers.map((user) => {
+          {users.map((user) => {
             return (
               <TableRow key={user.id}>
                 <TableCell sx={{ padding: "0.5rem" }}>{user.accountId}</TableCell>
-                <TableCell sx={{ padding: "0.5rem" }}>{user.firstname.split(' ')[0]}</TableCell>
+                <TableCell sx={{ padding: "0.5rem" }}>{user.firstname}</TableCell>
                 <TableCell
                   sx={{
                     padding: "0.5rem",
@@ -102,10 +100,10 @@ const UsersTable = ({ users, session }) => {
                   {user.email}
                 </TableCell>
                 <TableCell sx={{ padding: "0.5rem" }}>
-                  <Button component={Link} href={`/office/users/${user.id}`} sx={{ display: { xs: "none", lg: "block" }, width: { lg: '7rem' } }}>
+                  <Button component={Link} href={`/office/users/${user.accountId}`} sx={{ display: { xs: "none", lg: "block" }, width: { lg: '7rem' } }}>
                     View Profile
                   </Button>
-                  <Button component={Link} href={`/office/users/${user.id}`} sx={{ display: { xs: "block", lg: "none" }, width: { xs: '3.5rem' } }}>
+                  <Button component={Link} href={`/office/users/${user.accountId}`} sx={{ display: { xs: "block", lg: "none" }, width: { xs: '3.5rem' } }}>
                     <PersonSearchIcon />
                   </Button>
                 </TableCell>

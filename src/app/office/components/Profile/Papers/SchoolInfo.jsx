@@ -13,19 +13,46 @@ const SchoolInfo = ({ user }) => {
                     justifyContent: "space-between",
                 }}
             >
-
                 <Box sx={{ fontWeight: 700 }}>
                     <Typography>School Category:</Typography>
-                    <Typography>Grade/Year:</Typography>
-                    <Typography>Course/Section:</Typography>
+                    <Typography>Email Address:</Typography>
+                    <Typography>Contact Number:</Typography>
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
-                    <Typography>{user.schoolCategory}</Typography>
-                    <Typography>{user.levelORAMBOT}</Typography>
-                    <Typography>{user.course}</Typography>
+                    <Typography
+                        sx={{
+                            maxWidth: { xs: '150px', lg: 'none' }, // No limit on large screens
+                            whiteSpace: { xs: 'nowrap', lg: 'normal' }, // Allow wrapping on large screens
+                            overflow: { xs: 'hidden', lg: 'visible' }, // Show overflow on large screens
+                            textOverflow: { xs: 'ellipsis', lg: 'clip' }, // Remove ellipsis on large screens
+                        }}
+                    >
+                        {user.schoolCategory}
+                    </Typography>
+                    <Typography
+                        sx={{
+                            maxWidth: { xs: '150px', lg: 'none' },
+                            whiteSpace: { xs: 'nowrap', lg: 'normal' },
+                            overflow: { xs: 'hidden', lg: 'visible' },
+                            textOverflow: { xs: 'ellipsis', lg: 'clip' },
+                        }}
+                    >
+                        {user.email}
+                    </Typography>
+                    <Typography
+                        sx={{
+                            maxWidth: { xs: '150px', lg: 'none' },
+                            whiteSpace: { xs: 'nowrap', lg: 'normal' },
+                            overflow: { xs: 'hidden', lg: 'visible' },
+                            textOverflow: { xs: 'ellipsis', lg: 'clip' },
+                        }}
+                    >
+                        {user.contactNumber}
+                    </Typography>
                 </Box>
             </Box>
         </Paper>
+
     )
 }
 

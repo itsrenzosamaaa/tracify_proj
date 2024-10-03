@@ -17,7 +17,10 @@ const trophyImages = {
 const ProgBadgeDisplay = ({ user }) => {
     const [open, setOpen] = useState(false);
     let trophy = trophyImages.blank;
-    let multiplier = user.successfulFoundItems * 500;
+    let multiplierSFI = user.successfulFoundItems * 500;
+    let multiplierRateToUser = user.ratedUsers * 250;
+    const multiplier = multiplierSFI +  multiplierRateToUser;
+
     let endPoints = ' / 500';
 
     if (multiplier >= 500 && multiplier <= 2499) {
@@ -50,7 +53,7 @@ const ProgBadgeDisplay = ({ user }) => {
                     maxHeight: '8.75rem',
                 }}
             >
-                <Image src={trophy} alt='Trophy' width='76' height='76' onClick={() => setOpen(true)} />
+                <Image src={trophy} alt='Trophy' width='76' height='76' onClick={() => setOpen(true)} priority />
                 <Modal
                     aria-labelledby="modal-title"
                     aria-describedby="modal-desc"
@@ -79,7 +82,7 @@ const ProgBadgeDisplay = ({ user }) => {
                             </Box>
                             <Box sx={{ textAlign: 'right' }}>
                                 <Typography level="body-md" color='primary-main'>{user.successfulFoundItems}</Typography>
-                                <Typography level="body-md" color='primary-main'>0</Typography>
+                                <Typography level="body-md" color='primary-main'>{user.ratedUsers}</Typography>
                             </Box>
                         </Box>
                     </Sheet>

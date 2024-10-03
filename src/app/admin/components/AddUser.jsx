@@ -60,6 +60,9 @@ const AddUserPage = ({ category, setRole, sessionRole }) => {
             email,
             schoolCategory: category,
             contactNumber,
+            successfulFoundItems: 0,
+            ratedUsers: 0,
+            birthDate: null,
         };
 
         try {
@@ -121,7 +124,7 @@ const AddUserPage = ({ category, setRole, sessionRole }) => {
 
             return () => clearInterval(timer);
         }
-    }, [countdown, showSuccessModal])
+    }, [countdown, showSuccessModal, category, router, sessionRole])
 
     return (
         <Box
