@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Paper } from '@mui/material';
 import { Box, Modal, Typography, Button, ModalDialog, ModalClose, Input, FormLabel, Stack, FormHelperText } from '@mui/joy';
 import { useSession } from "next-auth/react";  // Import useSession to handle session state
+import dayjs from "dayjs";
 
 // Function to calculate age based on birthdate
 const calculateAge = (birthDate) => {
@@ -17,6 +18,8 @@ const calculateAge = (birthDate) => {
     }
     return age;
 };
+
+// Utility function to format date from YYYY-MM-DD to MM/DD/YYYY
 
 const PersonalInfo = ({ user }) => {
     const { data: session, status } = useSession();  // Use useSession to get session status
@@ -46,11 +49,30 @@ const PersonalInfo = ({ user }) => {
             return;
         }
 
+        const formattedDate = dayjs(birthdate).format('MMMM D, YYYY');
+
         // Simulated API call (Replace with actual API call logic)
         try {
-            alert(`Birthdate set to: ${birthdate}`);
-            setSuccess(true);
-            onClose();
+            const response = await fetch(`/api/user/${user.accountId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    birthDate: formattedDate,
+
+                }),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Birthday set to: ", data.birthDate);
+
+                setSuccess(true);
+                setBirthdate('');
+                onClose();
+            }else{
+                setError('Failed to update birthdate.');
+            }
         } catch (error) {
             setError('Error updating birthdate. Please try again.');
         }
@@ -82,15 +104,15 @@ const PersonalInfo = ({ user }) => {
                         <Typography>{user.accountId}</Typography>
 
                         <Typography
-                            color={session.user.role === 'user' ? 'primary' : ''}
-                            onClick={() => session.user.role === 'user' && setOpen(true)}
+                            color={session.user.role === 'user' && !user.birthDate ? 'primary' : ''}
+                            onClick={() => session.user.role === 'user' && setOpen(!user.birthDate ? true : false)}
                             sx={{
-                                cursor: session.user.role === 'user' ? 'pointer' : 'default',
-                                textDecoration: session.user.role === 'user' ? 'underline' : '',
+                                cursor: session.user.role === 'user' && !user.birthDate ? 'pointer' : 'default',
+                                textDecoration: session.user.role === 'user' && !user.birthDate ? 'underline' : '',
                             }}
                         >
                             {user.birthDate
-                                ? new Date(user.birthDate).toLocaleDateString()
+                                ? dayjs(user.birthDate).format('MMMM D, YYYY') // Format the date for display
                                 : session.user.role === 'user'
                                     ? "Set your Birthday"
                                     : "Not yet provided"
@@ -113,7 +135,7 @@ const PersonalInfo = ({ user }) => {
                                     name="birthdate"
                                     slotProps={{
                                         input: {
-                                            max: new Date(),
+                                            max: new Date().toISOString().split('T')[0],
                                         },
                                     }}
                                     value={birthdate}
