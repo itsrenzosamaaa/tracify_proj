@@ -3,51 +3,65 @@ import mongoose from "mongoose";
 const ItemsSchema = new mongoose.Schema({
     isFoundItem: {
         type: Boolean,
-        required: true,
     },
-    reportedByNotUser: {
-        type: Boolean,
-        required: true,
-    },
-    whoReported: {
+    officerId: {
         type: String,
-        required: true,
     },
     name: {
         type: String,
-        required: true,
     },
     category: {
         type: String,
-        required: true,
     },
     description: {
         type: String,
-        required: true,
     },
     location: {
         type: String,
-        required: true,
     },
     date: {
-        type: String,
-        required: true,
+        type: Date,
+
     },
     time: {
         type: String,
-        required: true,
     },
-    user: {
+    finder: {
         type: String,
-        required: true,
+    },
+    owner: {
+        type: String,
     },
     image: {
         type: String,
-        required: false, // Handle image uploads (optional)
+    },
+    reason: {
+        type: String,
     },
     status: {
         type: String,
         enum: ['Request', 'Validating', 'Published', 'Reserved', 'Resolved', 'Invalid', 'Missing'],
+    },
+    dateReported: {
+        type: Date,
+    },
+    dateApproved: {
+        type: Date,
+    },
+    dateInvalid: {
+        type: Date,
+    },
+    dateSurrendered: {
+        type: Date,
+    },
+    dateReserved: {
+        type: Date,
+    },
+    dateResolved: {
+        type: Date,
+    },
+    dateMissing: {
+        type: Date,
     },
 });
 

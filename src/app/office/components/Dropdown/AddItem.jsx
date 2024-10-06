@@ -1,23 +1,10 @@
 import { Dropdown, MenuButton, Menu, MenuItem } from "@mui/joy";
-import React from "react";
-import AddFoundItemModal from "../Modals/AddFoundItemModal";
-import AddLostItemModal from "../Modals/AddLostItemModal";
+import React, { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
+import { useRouter } from "next/navigation";
 
-const AddItem = ({ onAddItem }) => {
-  const [openFoundModal, setOpenFoundModal] = React.useState(false);
-  const [openLostModal, setOpenLostModal] = React.useState(false);
-
-  const handleCloseFoundModal = () => {
-    setOpenFoundModal(false);
-    onAddItem(); // Refresh items after closing the modal
-  };
-
-  const handleCloseLostModal = () => {
-    setOpenLostModal(false);
-    onAddItem(); // Refresh items after closing the modal
-  };
-
+const AddItem = () => {
+  const router = useRouter();
   return (
     <>
       <Dropdown>
@@ -29,21 +16,12 @@ const AddItem = ({ onAddItem }) => {
           Add Item
         </MenuButton>
         <Menu>
-          <MenuItem onClick={() => setOpenFoundModal(true)}>
+          <MenuItem onClick={() => router.push('items/add_found_item')}>
             Found Item
           </MenuItem>
           <MenuItem onClick={() => setOpenLostModal(true)}>Lost Item</MenuItem>
         </Menu>
       </Dropdown>
-
-      <AddFoundItemModal
-        open={openFoundModal}
-        onClose={handleCloseFoundModal}
-      />
-      <AddLostItemModal
-        open={openLostModal}
-        onClose={handleCloseLostModal}
-      />
     </>
   );
 };

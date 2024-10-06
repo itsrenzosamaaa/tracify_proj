@@ -1,70 +1,76 @@
+import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Items from "@/lib/models/items";
+import cloudinary from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function GET() {
-  await dbConnect();
-
   try {
-    // Fetch items from the database
-    const items = await Items.find(); // You can customize the query as needed
+    await dbConnect();
+    const items = await Items.find();
 
-    return new Response(JSON.stringify(items), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json(items, { status: 200 });
   } catch (error) {
     console.error("Error fetching items: ", error);
-    return new Response(JSON.stringify({ error: "Failed to fetch items" }), {
-      status: 500,
-    });
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch items" },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(request) {
-  await dbConnect();
-
-  const formData = await request.formData();
-
-  const isFoundItem = formData.get("isFoundItem");
-  const reportedByNotUser = formData.get("reportedByNotUser");
-  const name = formData.get("name");
-  const category = formData.get("category");
-  const description = formData.get("description");
-  const location = formData.get("location");
-  const date = formData.get("date");
-  const time = formData.get("time");
-  const user = formData.get("user");
-  const status = formData.get("status");
-
-  // Handle file upload (if needed, you need additional middleware for handling files)
-  // const image = formData.get('image'); // You'll need middleware for handling file uploads
-
+export async function POST(req) {
   try {
-    const newItem = new Items({
+    const {
       isFoundItem,
-      reportedByNotUser,
+      officerId,
       name,
       category,
       description,
       location,
-      date: new Date(date).toLocaleDateString(),
-      time: new Date(time).toLocaleTimeString(),
-      user,
+      date,
+      time,
+      finder,
+      image,
       status,
-      // imageUrl: image ? `/uploads/${image.name}` : null // Example path for file URL if used
+    } = await req.json();
+    await dbConnect();
+
+    const uploadResponse = await cloudinary.uploader.upload(image, {
+      public_id: `items/${Date.now()}_${name.replace(/\s+/g, "_")}`,
+      overwrite: true,
+      folder: "items",
     });
 
-    console.log(newItem);
+    const newItem = new Items({
+      isFoundItem,
+      officerId,
+      name,
+      category,
+      description,
+      location,
+      date,
+      time,
+      finder,
+      image: uploadResponse.secure_url,
+      status,
+    });
 
     await newItem.save();
-    return new Response(
-      JSON.stringify({ message: "Item added successfully" }),
-      { status: 200 }
+    return NextResponse.json(
+      { success: true, message: "Item added" },
+      { status: 201 }
     );
   } catch (error) {
     console.error("Error adding item: ", error);
-    return new Response(JSON.stringify({ error: "Failed to add item" }), {
-      status: 500,
-    });
+    return NextResponse.json(
+      { success: false, message: "Failed to create item" },
+      { status: 500 }
+    );
   }
 }

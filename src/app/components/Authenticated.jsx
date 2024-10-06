@@ -2,7 +2,7 @@ import { CircularProgress, Grid, Typography } from '@mui/joy'
 import { Paper } from '@mui/material'
 import React from 'react'
 
-const Loading = ({ session }) => {
+const Authenticated = ({ session }) => {
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} sx={{ height: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -16,4 +16,4 @@ const Loading = ({ session }) => {
     )
 }
 
-export default Loading
+export default Authenticated

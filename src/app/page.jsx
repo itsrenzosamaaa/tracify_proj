@@ -60,7 +60,6 @@ export default function Home() {
     setError("");
     setIsLoading(true);
     const result = await signIn("credentials", {
-
       redirect: false,
       username: text,
       password: password,
