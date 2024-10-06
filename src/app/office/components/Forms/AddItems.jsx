@@ -87,8 +87,6 @@ const AddItems = ({ session, isFoundItem }) => {
 
         const status = itemSurrendered ? "Published" : "Validating";
 
-        console.log({ name, category, description, location, date, time, finderId, image, status });
-
         const formData = {
             isFoundItem,
             officerId: session.user.id,
