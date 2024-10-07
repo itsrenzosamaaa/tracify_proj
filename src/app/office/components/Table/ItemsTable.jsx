@@ -105,6 +105,7 @@ const TableComponent = ({ items, onAddItem }) => {
                     location={item.location}
                     date={item.date}
                     time={item.time}
+                    image={item.image}
                   />
                 </TableCell>
               </TableRow>

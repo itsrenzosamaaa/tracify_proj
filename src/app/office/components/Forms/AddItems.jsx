@@ -61,11 +61,21 @@ const AddItems = ({ session, isFoundItem }) => {
     // Hook for the dropzone, always called unconditionally
     const onDrop = (acceptedFiles) => {
         const file = acceptedFiles[0]; // Get the first selected file
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setImage(reader.result); // Set the image state to the base64 URL for preview
-        };
-        reader.readAsDataURL(file); // Convert the file to base64 URL
+        if (file) {
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/png'];
+            if (validImageTypes.includes(file.type)) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setImage(reader.result); // Set the image state to the base64 URL for preview
+                };
+                reader.readAsDataURL(file); // Convert the file to base64 URL
+            } else {
+                alert('Please upload a valid image file (JPEG, PNG, GIF)');
+                setImage(null);
+            }
+        } else {
+            setImage(null);
+        }
     };
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
@@ -113,6 +123,7 @@ const AddItems = ({ session, isFoundItem }) => {
             console.log("Item saved successfully:", result);
             setShowSuccessModal(true);
         } else {
+            alert('Invalid');
             console.error('Failed to save item.');
         }
     };

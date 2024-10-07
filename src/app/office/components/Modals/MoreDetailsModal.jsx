@@ -22,6 +22,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { CldImage } from "next-cloudinary";
 
 const MoreDetailsModal = ({
   isFoundItem,
@@ -33,6 +34,7 @@ const MoreDetailsModal = ({
   location,
   date,
   time,
+  image,
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -161,9 +163,11 @@ const MoreDetailsModal = ({
                 </Typography>
               </TabPanel>
               <TabPanel value={2}>
-                <Typography>
-                  <b>Third</b> tab panel
-                </Typography>
+                <CldImage
+                  src={image}
+                  width={50}
+                  height={50}
+                />
               </TabPanel>
             </Tabs>
             <Box
