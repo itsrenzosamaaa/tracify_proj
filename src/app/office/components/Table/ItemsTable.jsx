@@ -90,22 +90,13 @@ const TableComponent = ({ items, onAddItem }) => {
           <TableBody>
             {filteredRows.map((item) => (
               <TableRow key={item._id}>
-                <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+                <TableCell>{item.itemId}</TableCell>
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.category}</TableCell>
                 <TableCell>{item.status}</TableCell>
                 <TableCell>
                   <MoreDetailsModal
-                    isFoundItem={item.isFoundItem}
-                    reportedByNotUser={item.reportedByNotUser}
-                    status={item.status}
-                    id={item._id}
-                    name={item.name}
-                    category={item.category}
-                    location={item.location}
-                    date={item.date}
-                    time={item.time}
-                    image={item.image}
+                    item={item}
                   />
                 </TableCell>
               </TableRow>

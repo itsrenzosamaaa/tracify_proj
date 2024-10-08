@@ -23,19 +23,9 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { CldImage } from "next-cloudinary";
+import dayjs from "dayjs";
 
-const MoreDetailsModal = ({
-  isFoundItem,
-  reportedByNotUser,
-  status,
-  id,
-  name,
-  category,
-  location,
-  date,
-  time,
-  image,
-}) => {
+const MoreDetailsModal = ({ item }) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -111,7 +101,7 @@ const MoreDetailsModal = ({
                         <Grid3x3Icon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{id}</td>
+                    <td>{item.itemId}</td>
                   </tr>
                   <tr>
                     <td>
@@ -119,7 +109,7 @@ const MoreDetailsModal = ({
                         <InventoryIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{name}</td>
+                    <td>{item.name}</td>
                   </tr>
                   <tr>
                     <td>
@@ -127,33 +117,33 @@ const MoreDetailsModal = ({
                         <CategoryIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{category}</td>
+                    <td>{item.category}</td>
                   </tr>
                   <tr>
                     <td>
                       <abbr
-                        title={isFoundItem ? "Found Location" : "Lost Location"}
+                        title={item.isFoundItem ? "Found Location" : "Lost Location"}
                       >
                         <LocationOnIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{location}</td>
+                    <td>{item.location}</td>
                   </tr>
                   <tr>
                     <td>
-                      <abbr title={isFoundItem ? "Found Date" : "Lost Date"}>
+                      <abbr title={item.isFoundItem ? "Found Date" : "Lost Date"}>
                         <CalendarMonthIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{date}</td>
+                    <td>{dayjs(item.date).format('MMMM D, YYYY')}</td>
                   </tr>
                   <tr>
-                    <td>
-                      <abbr title={isFoundItem ? "Found Time" : "Lost Time"}>
+                    <td> 
+                      <abbr title={item.isFoundItem ? "Found Time" : "Lost Time"}>
                         <AccessTimeIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{time}</td>
+                    <td>{item.time}</td>
                   </tr>
                 </Table>
               </TabPanel>
@@ -164,9 +154,12 @@ const MoreDetailsModal = ({
               </TabPanel>
               <TabPanel value={2}>
                 <CldImage
-                  src={image}
-                  width={50}
-                  height={50}
+                  src={item.image}
+                  alt={item.name}
+                  width={0}
+                  height={0}
+                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  style={{ width: '100%', height: 'auto', objectFit: 'cover', marginBottom: '1rem' }}
                 />
               </TabPanel>
             </Tabs>
@@ -177,7 +170,7 @@ const MoreDetailsModal = ({
                 justifyContent: "center",
               }}
             >
-              {status === "Validating" ? (
+              {item.status === "Validating" ? (
                 <>
                   <Button
                     sx={{ width: "100%", fontSize: "0.8rem" }}
@@ -187,10 +180,10 @@ const MoreDetailsModal = ({
                   </Button>
                   <Button sx={{ width: "100%" }}>Published</Button>
                 </>
-              ) : status === "Published" ? (
+              ) : item.status === "Published" ? (
                 <>
                   {
-                    !reportedByNotUser ?
+                    !item.officerId ?
                       <Button sx={{ width: "100%" }} color="danger">
                         Validating
                       </Button> : <Button sx={{ width: "100%" }} color="danger">
@@ -199,7 +192,7 @@ const MoreDetailsModal = ({
                   }
                   <Button sx={{ width: "100%" }}>Reserved</Button>
                 </>
-              ) : status === "Reserved" ? (
+              ) : item.status === "Reserved" ? (
                 <>
                   <Button sx={{ width: "100%" }} color="danger">
                     Published

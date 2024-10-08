@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const ItemsSchema = new mongoose.Schema({
+    itemId: {
+        type: String,
+        unique: true,
+    },
     isFoundItem: {
         type: Boolean,
     },
@@ -21,7 +25,6 @@ const ItemsSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-
     },
     time: {
         type: String,

@@ -12,7 +12,8 @@ const Request = () => {
     try {
       const response = await fetch('/api/items');
       const data = await response.json();
-      setItems(data);
+      const filteredStatus = data.filter(item => item.status === 'Request');
+      setItems(filteredStatus);
     } catch (error) {
       console.error("Failed to fetch items: ", error);
     }

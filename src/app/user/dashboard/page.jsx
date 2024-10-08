@@ -1,29 +1,43 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Grid, Button, Table } from "@mui/joy";
 import { Paper, TableBody, TableCell, TableHead, TableRow, TablePagination, Divider, Chip } from "@mui/material";
-import { Star, StarBorder, Badge } from '@mui/icons-material';
 import { useSession } from "next-auth/react";
+import { formatDistanceToNow } from 'date-fns';
+import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
+  const router = useRouter();
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const response = await fetch('/api/items');
+        const data = await response.json();
+        console.log(data)
+        if (session?.user?.id) {
+          const userItems = data.filter(item => item.owner === session.user.id || item.finder === session.user.id);
+          setItems(userItems);
+          console.log(items)
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    if (status === 'authenticated') {
+      fetchItems();
+    }
+  }, [status, session, items])
 
   const PaperOverview = [
-    { title: 'Total Lost Items', quantity: 25 },
-    { title: 'Total Found Items', quantity: 15 },
-    { title: 'Pending Requests', quantity: 5 },
-    { title: 'Resolved Cases', quantity: 10 },
-  ];
-
-  const recentItems = [
-    { type: 'Lost', item: 'Blue Wallet', time: '2 hours ago' },
-    { type: 'Found', item: 'Red Umbrella', time: '1 hour ago' },
-    { type: 'Lost', item: 'Black Backpack', time: '3 hours ago' },
-    { type: 'Lost', item: 'Green Hat', time: '4 hours ago' },
-    { type: 'Found', item: 'Yellow Scarf', time: '5 hours ago' },
-    { type: 'Lost', item: 'White Shoes', time: '6 hours ago' },
-    { type: 'Found', item: 'Black Sunglasses', time: '7 hours ago' },
+    { title: 'Total Found Items', quantity: items.filter(item => item.isFoundItem).length },
+    { title: 'Total Lost Items', quantity: items.filter(item => !item.isFoundItem).length },
+    { title: 'Pending Requests', quantity: items.filter(item => item.status === "Request").length },
+    { title: 'Resolved Cases', quantity: items.filter(item => item.status === "Resolved").length }, 
   ];
 
   const updates = [
@@ -96,11 +110,19 @@ const Dashboard = () => {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {recentItems.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((report, index) => (
+                        {items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((report, index) => (
                           <TableRow key={index}>
-                            <TableCell>{report.type}</TableCell>
-                            <TableCell>{report.item}</TableCell>
-                            <TableCell>{report.time}</TableCell>
+                            <TableCell>
+                              <Chip label={report.isFoundItem ? "Found" : "Lost"} color={report.isFoundItem ? "success" : "error"} />
+                            </TableCell>
+                            <TableCell>{report.name}</TableCell>
+                            <TableCell>
+                              {
+                                report.isFoundItem
+                                  ? formatDistanceToNow(new Date(report.dateSurrendered || report.dateApproved), { addSuffix: true })
+                                  : formatDistanceToNow(new Date(report.dateMissing), { addSuffix: true })
+                              }
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -108,7 +130,7 @@ const Dashboard = () => {
                   </Box>
                   <TablePagination
                     component="div"
-                    count={recentItems.length}
+                    count={items.length}
                     page={page}
                     onPageChange={handleChangePage}
                     rowsPerPage={rowsPerPage}
@@ -159,11 +181,11 @@ const Dashboard = () => {
                     <Typography level="h3" gutterBottom>
                       Quick Actions
                     </Typography>
-                    <Button sx={{ marginRight: '10px' }}>
-                      Report Lost Item
-                    </Button>
-                    <Button>
+                    <Button sx={{ marginRight: '10px' }} onClick={() => router.push('dashboard/add_found_item')}>
                       Report Found Item
+                    </Button>
+                    <Button color="danger" onClick={() => router.push('dashboard/add_lost_item')}>
+                      Report Lost Item
                     </Button>
                   </Paper>
                 </Box>

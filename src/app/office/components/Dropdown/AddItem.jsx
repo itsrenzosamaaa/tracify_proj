@@ -19,7 +19,7 @@ const AddItem = () => {
           <MenuItem onClick={() => router.push('items/add_found_item')}>
             Found Item
           </MenuItem>
-          <MenuItem onClick={() => setOpenLostModal(true)}>Lost Item</MenuItem>
+          <MenuItem onClick={() => router.push('items/add_lost_item')}>Lost Item</MenuItem>
         </Menu>
       </Dropdown>
     </>

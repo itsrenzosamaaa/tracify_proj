@@ -6,7 +6,7 @@ import AddItems from '../../components/Forms/AddItems';
 import { Box } from '@mui/joy';
 import Loading from '@/app/components/Loading';
 
-const AddFoundItemPage = () => {
+const AddLostItemPage = () => {
     const { data: session, status } = useSession();
     console.log(session)
 
@@ -27,9 +27,9 @@ const AddFoundItemPage = () => {
 
     return (
         <>
-            <AddItems session={session} isFoundItem={true} />
+            <AddItems session={session} isFoundItem={false} />
         </>
     )
 }
 
-export default AddFoundItemPage
+export default AddLostItemPage
