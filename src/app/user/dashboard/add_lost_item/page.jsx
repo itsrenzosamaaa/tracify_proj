@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import React from 'react'
 import ReportItemComponent from '../../components/ReportItems';
 
-const AddFoundPage = () => {
+const AddLostPage = () => {
     const { data: session, status } = useSession();
     if (status === 'loading') {
         return <Loading />
@@ -13,9 +13,9 @@ const AddFoundPage = () => {
 
     return (
         <>
-            <ReportItemComponent isFoundItem={true} session={session} />
+            <ReportItemComponent isFoundItem={false} session={session} />
         </>
     )
 }
 
-export default AddFoundPage
+export default AddLostPage

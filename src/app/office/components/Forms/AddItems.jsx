@@ -121,7 +121,8 @@ const AddItems = ({ session, isFoundItem }) => {
 
         const formData = {
             isFoundItem,
-            officerId: session.user.id,
+            itemSchoolCategory : session.user.roleData.schoolCategory,
+            officerId: session.user.roleData.accountId,
             name,
             category,
             description,

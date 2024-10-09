@@ -30,6 +30,7 @@ export async function POST(req) {
 
     const {
       isFoundItem,
+      itemSchoolCategory,
       officerId = null, // Set default value correctly
       name,
       category,
@@ -85,6 +86,7 @@ export async function POST(req) {
     // Create a new item
     const newItem = new Items({
       itemId,
+      itemSchoolCategory,
       isFoundItem,
       officerId,
       name,

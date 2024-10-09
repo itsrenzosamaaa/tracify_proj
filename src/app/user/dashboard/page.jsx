@@ -11,17 +11,17 @@ const Dashboard = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [items, setItems] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchItems = async () => {
       try {
         const response = await fetch('/api/items');
         const data = await response.json();
-        console.log(data)
         if (session?.user?.id) {
-          const userItems = data.filter(item => item.owner === session.user.id || item.finder === session.user.id);
+          const userItems = data.filter(item => item.owner === session.user.roleData.accountId || item.finder === session.user.roleData.accountId);
           setItems(userItems);
-          console.log(items)
         }
       } catch (error) {
         console.error(error);
@@ -31,7 +31,7 @@ const Dashboard = () => {
     if (status === 'authenticated') {
       fetchItems();
     }
-  }, [status, session, items])
+  }, [status, session])
 
   const PaperOverview = [
     { title: 'Total Found Items', quantity: items.filter(item => item.isFoundItem).length },
@@ -46,9 +46,6 @@ const Dashboard = () => {
     { type: 'Badge', user: 'John Doe', badge: 'Gold', time: '3 hours ago' },
     { type: 'Rating', user: 'Jane Smith', rating: 4, time: '4 hours ago' },
   ];
-
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -117,11 +114,7 @@ const Dashboard = () => {
                             </TableCell>
                             <TableCell>{report.name}</TableCell>
                             <TableCell>
-                              {
-                                report.isFoundItem
-                                  ? formatDistanceToNow(new Date(report.dateSurrendered || report.dateApproved), { addSuffix: true })
-                                  : formatDistanceToNow(new Date(report.dateMissing), { addSuffix: true })
-                              }
+                              {formatDistanceToNow(new Date(report.dateReported || report.dateMissing), { addSuffix: true })}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -135,6 +128,7 @@ const Dashboard = () => {
                     onPageChange={handleChangePage}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
+                    rowsPerPageOptions={[5, 10, 25, 50, 100]}
                   />
                 </Paper>
               </Grid>

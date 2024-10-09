@@ -4,24 +4,27 @@ import React, { useState, useEffect } from "react";
 import { Box, Breadcrumbs, Typography, Link } from "@mui/joy";
 import { Paper, Grid } from "@mui/material";
 import RequestsTable from "../components/Table/RequestsTable";
+import { useSession } from "next-auth/react";
 
 const Request = () => {
+  const { data: session, status } = useSession();
   const [items, setItems] = useState([]);
 
-  const fetchItems = async () => {
-    try {
-      const response = await fetch('/api/items');
-      const data = await response.json();
-      const filteredStatus = data.filter(item => item.status === 'Request');
-      setItems(filteredStatus);
-    } catch (error) {
-      console.error("Failed to fetch items: ", error);
-    }
-  };
-
   useEffect(() => {
-    fetchItems();
-  }, []);
+    const fetchItems = async () => {
+      try {
+        const response = await fetch('/api/items');
+        const data = await response.json();
+        const filteredStatus = data.filter(item => item.status === 'Request' && item.itemSchoolCategory === session.user.roleData.schoolCategory);
+        setItems(filteredStatus);
+      } catch (error) {
+        console.error("Failed to fetch items: ", error);
+      }
+    };
+    if (status === 'authenticated') {
+      fetchItems();
+    }
+  }, [session, status]);
 
   return (
     <>

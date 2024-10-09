@@ -19,10 +19,10 @@ const Profile = () => {
     const { data: session, status } = useSession();
 
     useEffect(() => {
-        if (status === 'authenticated' && session?.user?.id) {
-            fetchData(session.user.id);
+        if (status === 'authenticated' && session?.user?.roleData.accountId) {
+            fetchData(session.user.roleData.accountId);
         }
-    }, [session?.user?.id, status]);
+    }, [session?.user?.roleData.accountId, status]);
 
     const fetchData = async (accountId) => {
         setLoading(true);

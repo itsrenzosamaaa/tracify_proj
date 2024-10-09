@@ -21,6 +21,8 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import dayjs from "dayjs";
+import { CldImage } from "next-cloudinary";
 
 const RequestDetailsModal = ({
   nya,
@@ -31,6 +33,7 @@ const RequestDetailsModal = ({
   location,
   date,
   time,
+  image,
 }) => {
   const [open, setOpen] = useState(nya || false);
 
@@ -139,7 +142,7 @@ const RequestDetailsModal = ({
                         <CalendarMonthIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{date}</td>
+                    <td>{dayjs(date).format('MMMM D, YYYY')}</td>
                   </tr>
                   <tr>
                     <td>
@@ -157,9 +160,14 @@ const RequestDetailsModal = ({
                 </Typography>
               </TabPanel>
               <TabPanel value={2}>
-                <Typography>
-                  <b>Third</b> tab panel
-                </Typography>
+                <CldImage
+                  src={image}
+                  alt={name}
+                  width={0}
+                  height={0}
+                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  style={{ width: '100%', height: 'auto', objectFit: 'cover', marginBottom: '1rem' }}
+                />
               </TabPanel>
             </Tabs>
             <Button>Approve</Button>

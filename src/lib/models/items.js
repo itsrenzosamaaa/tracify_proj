@@ -5,6 +5,10 @@ const ItemsSchema = new mongoose.Schema({
         type: String,
         unique: true,
     },
+    itemSchoolCategory: {
+        type: String,
+        enum: ["Basic Education", "Higher Education"],
+    },
     isFoundItem: {
         type: Boolean,
     },

@@ -8,13 +8,13 @@ import Link from "@mui/joy/Link";
 
 const Items = () => {
   const [items, setItems] = useState([]);
-  const [openAddItemModal, setOpenAddItemModal] = useState(false);
 
   const fetchItems = async () => {
     try {
       const response = await fetch('/api/items');
       const data = await response.json();
-      setItems(data);
+      const filteredData = data.filter(item => item.status !== "Request" && item.status !== "Resolved");
+      setItems(filteredData);
     } catch (error) {
       console.error("Failed to fetch items: ", error);
     }
@@ -23,11 +23,6 @@ const Items = () => {
   useEffect(() => {
     fetchItems();
   }, []);
-
-  const handleAddItem = async () => {
-    await fetchItems(); // Re-fetch items when a new item is added
-    setOpenAddItemModal(false); // Close the modal
-  };
 
   return (
     <>
@@ -61,7 +56,7 @@ const Items = () => {
             </Breadcrumbs>
           </Grid>
         </Paper>
-        <TableComponent items={items} onAddItem={handleAddItem} />
+        <TableComponent items={items} />
       </Box>
     </>
   );

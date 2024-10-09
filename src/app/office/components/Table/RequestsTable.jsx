@@ -17,102 +17,6 @@ import {
 import React, { useState } from "react";
 import RequestDetailsModal from "../Modals/RequestDetailsModal";
 
-// const prefixFound = "FI-";
-// const prefixLost = "LI-";
-
-// const data = [
-//   {
-//     isFoundItem: true,
-//     id: prefixFound + String(11).padStart(4, "0"),
-//     name: "Wallet",
-//     category: "Accessories",
-//     location: "RLO Building 3rd Floor",
-//     date: "09-21-2024",
-//     time: "1:00PM",
-//   },
-//   {
-//     isFoundItem: true,
-//     id: prefixFound + String(12).padStart(4, "0"),
-//     name: "Keys",
-//     category: "Accessories",
-//     location: "RLO Building 3rd Floor",
-//     date: "09-21-2024",
-//     time: "1:00PM",
-//   },
-//   {
-//     isFoundItem: true,
-//     id: prefixFound + String(13).padStart(4, "0"),
-//     name: "Charger",
-//     category: "Electronics",
-//     location: "RLO Building 3rd Floor",
-//     date: "09-21-2024",
-//     time: "1:00PM",
-//   },
-//   {
-//     isFoundItem: true,
-//     id: prefixFound + String(14).padStart(4, "0"),
-//     name: "Airpods",
-//     category: "Electronics",
-//     location: "RLO Building 3rd Floor",
-//     date: "09-21-2024",
-//     time: "1:00PM",
-//   },
-//   {
-//     isFoundItem: true,
-//     id: prefixFound + String(15).padStart(4, "0"),
-//     name: "T-Shirt",
-//     category: "Clothing",
-//     location: "RLO Building 3rd Floor",
-//     date: "09-21-2024",
-//     time: "1:00PM",
-//   },
-//   {
-//     isFoundItem: false,
-//     id: prefixLost + String(16).padStart(4, "0"),
-//     name: "T-Shirt",
-//     category: "Clothing",
-//     location: "RLO Building 3rd Floor",
-//     date: "09-21-2024",
-//     time: "1:00PM",
-//   },
-//   {
-//     isFoundItem: false,
-//     id: prefixLost + String(17).padStart(4, "0"),
-//     name: "T-Shirt",
-//     category: "Clothing",
-//     location: "RLO Building 3rd Floor",
-//     date: "09-21-2024",
-//     time: "1:00PM",
-//   },
-//   {
-//     isFoundItem: false,
-//     id: prefixLost + String(18).padStart(4, "0"),
-//     name: "T-Shirt",
-//     category: "Clothing",
-//     location: "RLO Building 3rd Floor",
-//     date: "09-21-2024",
-//     time: "1:00PM",
-//   },
-//   {
-//     isFoundItem: false,
-//     id: prefixLost + String(19).padStart(4, "0"),
-//     name: "T-Shirt",
-//     category: "Clothing",
-//     location: "RLO Building 3rd Floor",
-//     date: "09-21-2024",
-//     time: "1:00PM",
-//   },
-//   {
-//     isFoundItem: false,
-//     id: prefixLost + String(20).padStart(4, "0"),
-//     name: "T-Shirt",
-//     category: "Clothing",
-//     location: "RLO Building 3rd Floor",
-//     date: "09-21-2024",
-//     time: "1:00PM",
-//   },
-// ];
-
 const RequestsTable = ({items}) => {
   const [itemCategory, setItemCategory] = useState(true);
 
@@ -242,7 +146,7 @@ const RequestsTable = ({items}) => {
             </TableRow>
             {filteredRows.map((row) => (
               <TableRow key={row._id}>
-                <TableCell sx={{ padding: "0.5rem" }}>{row.id}</TableCell>
+                <TableCell sx={{ padding: "0.5rem" }}>{row.itemId}</TableCell>
                 <TableCell
                   sx={{ padding: "0.5rem", width: { xs: "30%", lg: "20%" } }}
                 >
@@ -260,12 +164,13 @@ const RequestsTable = ({items}) => {
                   <RequestDetailsModal
                     nya={false}
                     isFoundItem={row.isFoundItem}
-                    id={row._id}
+                    id={row.itemId}
                     name={row.name}
                     category={row.category}
                     location={row.location}
                     date={row.date}
                     time={row.time}
+                    image={row.image}
                   />
                 </TableCell>
               </TableRow>
