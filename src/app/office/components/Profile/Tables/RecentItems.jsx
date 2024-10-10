@@ -3,20 +3,9 @@
 import React, { useState } from 'react';
 import { Paper, TableContainer, TableHead, TableRow, TableBody, TableCell, TablePagination } from '@mui/material';
 import { Box, Table, Typography, Button, Divider } from '@mui/joy';
+import { formatDistanceToNow } from 'date-fns';
 
-const prefixFound = 'FI-';
-
-const foundItems = [
-    { id: prefixFound + String(21).padStart(4, "0"), name: 'Wallet', date: '09/21/2024' },
-    { id: prefixFound + String(22).padStart(4, "0"), name: 'T-Shirt', date: '09/21/2024' },
-    { id: prefixFound + String(23).padStart(4, "0"), name: 'Earphones', date: '09/21/2024' },
-    { id: prefixFound + String(24).padStart(4, "0"), name: 'Laptop', date: '09/20/2024' },
-    { id: prefixFound + String(25).padStart(4, "0"), name: 'Book', date: '09/20/2024' },
-    { id: prefixFound + String(26).padStart(4, "0"), name: 'Umbrella', date: '09/19/2024' },
-    { id: prefixFound + String(27).padStart(4, "0"), name: 'Headphones', date: '09/18/2024' },
-];
-
-const RecentFoundItems = () => {
+const RecentItems = ({ items, name }) => {
     // State to manage pagination
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5); // Items per page
@@ -33,7 +22,7 @@ const RecentFoundItems = () => {
     };
 
     // Paginate the found items
-    const paginatedItems = foundItems.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    const paginatedItems = items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
     return (
         <Paper elevation={2}>
@@ -47,19 +36,18 @@ const RecentFoundItems = () => {
             >
                 <Divider>
                     <Typography level="body-lg" fontWeight="500">
-                        Recent Found Items
+                        Recent {name} Items
                     </Typography>
                 </Divider>
                 <TableContainer
                     sx={{
-                        height: '300px', // Set fixed height
+                        height: '320px', // Set fixed height
                         overflowY: 'auto', // Enable scrolling when overflow
                     }}
                 >
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow>
-                                <TableCell>ID</TableCell>
                                 <TableCell>Item</TableCell>
                                 <TableCell>Date</TableCell>
                                 <TableCell>Action</TableCell>
@@ -67,12 +55,11 @@ const RecentFoundItems = () => {
                         </TableHead>
                         <TableBody>
                             {paginatedItems.map((item) => (
-                                <TableRow key={item.id}>
-                                    <TableCell>{item.id}</TableCell>
+                                <TableRow key={item._id}>
                                     <TableCell>{item.name}</TableCell>
-                                    <TableCell>{item.date}</TableCell>
+                                    <TableCell>{formatDistanceToNow(new Date(item.dateReported), { addSuffix: true })}</TableCell>
                                     <TableCell>
-                                        <Button>Details</Button>
+                                        <Button color={item.isFoundItem ? "success" : "danger"}>Details</Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -82,7 +69,7 @@ const RecentFoundItems = () => {
                 {/* Pagination controls */}
                 <TablePagination
                     component="div"
-                    count={foundItems.length} // Total number of items
+                    count={items.length} // Total number of items
                     page={page}
                     onPageChange={handleChangePage}
                     rowsPerPage={rowsPerPage}
@@ -94,4 +81,4 @@ const RecentFoundItems = () => {
     );
 };
 
-export default RecentFoundItems;
+export default RecentItems;

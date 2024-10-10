@@ -13,6 +13,12 @@ import {
   DialogContent,
   Table,
   IconButton,
+  ButtonGroup,
+  Chip,
+  Stepper,
+  Step,
+  StepIndicator,
+  Stack
 } from "@mui/joy";
 import CategoryIcon from "@mui/icons-material/Category";
 import Grid3x3Icon from "@mui/icons-material/Grid3x3";
@@ -24,18 +30,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import dayjs from "dayjs";
 import { CldImage } from "next-cloudinary";
 
-const RequestDetailsModal = ({
-  nya,
-  isFoundItem,
-  id,
-  name,
-  category,
-  location,
-  date,
-  time,
-  image,
-}) => {
-  const [open, setOpen] = useState(nya || false);
+const RequestDetailsModal = ({ row }) => {
+  const [open, setOpen] = useState(false);
 
   return (
     <>
@@ -66,7 +62,7 @@ const RequestDetailsModal = ({
       >
         <ModalDialog sx={{ maxWidth: "300px", width: "100%" }}>
           <ModalClose variant="plain" sx={{ m: 1 }} />
-          <DialogTitle id="modal-title">Modal Dialog</DialogTitle>
+          <DialogTitle id="modal-title">Request Item Details</DialogTitle>
           <DialogContent sx={{ padding: 0 }}>
             <Tabs
               variant="outlined"
@@ -79,7 +75,7 @@ const RequestDetailsModal = ({
                 <Tab>Records</Tab>
                 <Tab>Image</Tab>
               </TabList>
-              <TabPanel value={0}>
+              <TabPanel value={0} sx={{ height: '300px' }}>
                 <Table
                   size="sm"
                   sx={{
@@ -110,7 +106,7 @@ const RequestDetailsModal = ({
                         <Grid3x3Icon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{id}</td>
+                    <td>{row.itemId}</td>
                   </tr>
                   <tr>
                     <td>
@@ -118,7 +114,7 @@ const RequestDetailsModal = ({
                         <InventoryIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{name}</td>
+                    <td>{row.name}</td>
                   </tr>
                   <tr>
                     <td>
@@ -126,43 +122,93 @@ const RequestDetailsModal = ({
                         <CategoryIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{category}</td>
+                    <td>{row.category}</td>
                   </tr>
                   <tr>
                     <td>
-                      <abbr title={isFoundItem ? "Found Location" : "Lost Location"}>
+                      <abbr title={row.isFoundItem ? "Found Location" : "Lost Location"}>
                         <LocationOnIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{location}</td>
+                    <td>{row.location}</td>
                   </tr>
                   <tr>
                     <td>
-                      <abbr title={isFoundItem ? "Found Date" : "Lost Date"}>
+                      <abbr title={row.isFoundItem ? "Found Date" : "Lost Date"}>
                         <CalendarMonthIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{dayjs(date).format('MMMM D, YYYY')}</td>
+                    <td>{dayjs(row.date).format('MMMM D, YYYY')}</td>
                   </tr>
                   <tr>
                     <td>
-                      <abbr title={isFoundItem ? "Found Time" : "Lost Time"}>
+                      <abbr title={row.isFoundItem ? "Found Time" : "Lost Time"}>
                         <AccessTimeIcon fontSize="small" />
                       </abbr>
                     </td>
-                    <td>{time}</td>
+                    <td>{row.time}</td>
                   </tr>
                 </Table>
               </TabPanel>
-              <TabPanel value={1}>
-                <Typography>
-                  <b>Second</b> tab panel
-                </Typography>
+              <TabPanel value={1} sx={{ height: '300px' }}>
+                <Stepper orientation="vertical">
+                  <Step
+                    indicator={
+                      <StepIndicator variant="solid" color="primary">
+                        1
+                      </StepIndicator>
+                    }
+                  >
+                    <Typography>Billing Address</Typography>
+
+                    <Stack spacing={1}>
+                      <Typography level="body-sm">
+                        Ron Swanson <br />
+                        14 Lakeshore Drive <br />
+                        Pawnee, IN 12345 <br />
+                        United States <br />
+                        T: 555-555-5555
+                      </Typography>
+                      <ButtonGroup variant="plain" spacing={1}>
+                        <Chip
+                          color="primary"
+                          variant="solid"
+                          onClick={() => {
+                            // do something...
+                          }}
+                        >
+                          Next
+                        </Chip>
+                        <Chip
+                          color="neutral"
+                          variant="outlined"
+                          onClick={() => {
+                            // do something...
+                          }}
+                        >
+                          Edit
+                        </Chip>
+                      </ButtonGroup>
+                    </Stack>
+                  </Step>
+                  <Step indicator={<StepIndicator>2</StepIndicator>}>
+                    <div>
+                      <Typography level="title-sm">Shipping Address</Typography>
+                      <Typography level="body-xs">Pending</Typography>
+                    </div>
+                  </Step>
+                  <Step indicator={<StepIndicator>3</StepIndicator>}>
+                    <div>
+                      <Typography level="title-sm">Shipping Method</Typography>
+                      <Typography level="body-xs">Pending</Typography>
+                    </div>
+                  </Step>
+                </Stepper>
               </TabPanel>
-              <TabPanel value={2}>
+              <TabPanel value={2} sx={{ height: '300px' }}>
                 <CldImage
-                  src={image}
-                  alt={name}
+                  src={row.image}
+                  alt={row.name}
                   width={0}
                   height={0}
                   sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"

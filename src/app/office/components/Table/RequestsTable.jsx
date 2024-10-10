@@ -162,15 +162,7 @@ const RequestsTable = ({items}) => {
                 </TableCell>
                 <TableCell sx={{ padding: "0.5rem" }}>
                   <RequestDetailsModal
-                    nya={false}
-                    isFoundItem={row.isFoundItem}
-                    id={row.itemId}
-                    name={row.name}
-                    category={row.category}
-                    location={row.location}
-                    date={row.date}
-                    time={row.time}
-                    image={row.image}
+                    row={row}
                   />
                 </TableCell>
               </TableRow>

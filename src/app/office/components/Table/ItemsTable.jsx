@@ -18,7 +18,7 @@ import {
 import MoreDetailsModal from "../Modals/MoreDetailsModal";
 import AddItem from "../Dropdown/AddItem";
 
-const TableComponent = ({ items, onAddItem }) => {
+const TableComponent = ({ items }) => {
   const [itemCategory, setItemCategory] = useState(true);
 
   const filteredRows = items.filter((item) => item.isFoundItem === itemCategory);
@@ -56,7 +56,7 @@ const TableComponent = ({ items, onAddItem }) => {
             />
           </RadioGroup>
         </FormControl>
-        <AddItem onAddItem={onAddItem} />
+        <AddItem />
       </Box>
       <TableContainer
         component={Paper}

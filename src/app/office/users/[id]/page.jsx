@@ -8,14 +8,15 @@ import Bio from '../../components/Profile/Papers/Bio';
 import ProgBadgeDisplay from '../../components/Profile/Papers/ProgBadgeDisplay';
 import PersonalInfo from '../../components/Profile/Papers/PersonalInfo';
 import SchoolInfo from '../../components/Profile/Papers/SchoolInfo';
-import RecentFoundItems from '../../components/Profile/Tables/RecentFoundItems';
-import RecentLostItems from '../../components/Profile/Tables/RecentLostItems';
 import RecentRatingsFromUser from '../../components/Profile/Tables/RecentRatingsFromUser';
 import { useSession } from 'next-auth/react';
+import RecentItems from '../../components/Profile/Tables/RecentItems';
 
 const UserProfile = ({ params }) => {
     const { id } = params;
     const [user, setUser] = useState(null);
+    const [foundItems, setFoundItems] = useState([]);
+    const [lostItems, setLostItems] = useState([]);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -33,7 +34,26 @@ const UserProfile = ({ params }) => {
             }
         };
 
+        const fetchItems = async () => {
+            try {
+                const response = await fetch('/api/items/');
+                const data = await response.json();
+
+                if (response.ok) {
+                    const filteredFoundItems = data.filter(item => item.isFoundItem && item.finder === id);
+                    const filteredLostItems = data.filter(item => !item.isFoundItem && item.owner === id);
+                    setFoundItems(filteredFoundItems);
+                    setLostItems(filteredLostItems);
+                } else {
+                    console.error('Failed to fetch item data:', data.message);
+                }
+            } catch (error) {
+                console.error('Failed to fetch item data:', error);
+            }
+        }
+
         fetchUser();
+        fetchItems();
     }, [id]);
 
     return (
@@ -94,10 +114,10 @@ const UserProfile = ({ params }) => {
                         </Grid>
                         <Grid container spacing={2} sx={{ marginBottom: "1rem", }}>
                             <Grid item xs={12} lg={6}>
-                                <RecentFoundItems />
+                                <RecentItems items={foundItems} name="Found" />
                             </Grid>
                             <Grid item xs={12} lg={6}>
-                                <RecentLostItems />
+                                <RecentItems items={lostItems} name="Lost" />
                             </Grid>
                         </Grid>
                         <Grid container spacing={2} sx={{ marginBottom: "1rem", }}>

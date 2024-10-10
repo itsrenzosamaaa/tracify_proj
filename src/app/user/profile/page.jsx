@@ -9,18 +9,22 @@ import Bio from '@/app/office/components/Profile/Papers/Bio';
 import ProgBadgeDisplay from '@/app/office/components/Profile/Papers/ProgBadgeDisplay';
 import PersonalInfo from '@/app/office/components/Profile/Papers/PersonalInfo';
 import SchoolInfo from '@/app/office/components/Profile/Papers/SchoolInfo';
-import RecentFoundItems from '@/app/office/components/Profile/Tables/RecentFoundItems';
-import RecentLostItems from '@/app/office/components/Profile/Tables/RecentLostItems';
 import RecentRatingsFromUser from '@/app/office/components/Profile/Tables/RecentRatingsFromUser';
+import RecentItems from '@/app/office/components/Profile/Tables/RecentItems';
 
 const Profile = () => {
     const [profile, setProfile] = useState(null);
+    const [foundItems, setFoundItems] = useState([]);
+    const [lostItems, setLostItems] = useState([]);
     const [loading, setLoading] = useState(true); // Loading state
     const { data: session, status } = useSession();
 
     useEffect(() => {
         if (status === 'authenticated' && session?.user?.roleData.accountId) {
+            setLoading(true);
             fetchData(session.user.roleData.accountId);
+            fetchItems(session.user.roleData.accountId)
+            setLoading(false);
         }
     }, [session?.user?.roleData.accountId, status]);
 
@@ -36,8 +40,23 @@ const Profile = () => {
             }
         } catch (error) {
             console.error('Failed to fetch user data:', error);
-        } finally {
-            setLoading(false);
+        }
+    };
+
+    const fetchItems = async (accountId) => {
+        try {
+            const response = await fetch('/api/items');
+            const data = await response.json();
+            if (response.ok) {
+                const filteredFoundItems = data.filter(item => item.isFoundItem && item.finder === accountId);
+                const filteredLostItems = data.filter(item => !item.isFoundItem && item.owner === accountId);
+                setFoundItems(filteredFoundItems);
+                setLostItems(filteredLostItems);
+            } else {
+                console.error('Failed to fetch item data:', data.message);
+            }
+        } catch (error) {
+            console.error('Failed to fetch item data:', error);
         }
     };
 
@@ -101,10 +120,10 @@ const Profile = () => {
             </Grid>
             <Grid container spacing={2} sx={{ marginBottom: '1rem' }}>
                 <Grid item xs={12} lg={6}>
-                    <RecentFoundItems />
+                    <RecentItems items={foundItems} name="Found" />
                 </Grid>
                 <Grid item xs={12} lg={6}>
-                    <RecentLostItems />
+                    <RecentItems items={lostItems} name="Lost" />
                 </Grid>
             </Grid>
             <Grid container spacing={2} sx={{ marginBottom: '1rem' }}>
