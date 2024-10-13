@@ -7,7 +7,6 @@ const navigation = [
   { icon: <HomeIcon />, menu: "Basic Department", url: "/admin/basic_department" },
   { icon: <HomeIcon />, menu: "Higher Department", url: "/admin/higher_department" },
   { icon: <HomeIcon />, menu: "Roles", url: "/admin/roles" },
-  { icon: <HomeIcon />, menu: "Permissions", url: "/admin/permissions" },
   { icon: <HomeIcon />, menu: "Users", url: "/admin/users" },
 ];
 

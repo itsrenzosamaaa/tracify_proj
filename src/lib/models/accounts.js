@@ -1,22 +1,27 @@
 import mongoose from "mongoose";
 
 const accountSchema = new mongoose.Schema({
-  id: {
+  firstname: {
+    type: String,
+  },
+  lastname: {
     type: String,
   },
   username: {
     type: String,
-    required: true,
     unique: true,
   },
   password: {
     type: String,
-    required: true,
+  },
+  contactNumber: {
+    type: String,
+  },
+  emailAddress: {
+    type: String,
   },
   role: {
     type: String,
-    required: true,
-    enum: ["admin", "office", "user"], // Define valid roles
   },
 });
 

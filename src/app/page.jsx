@@ -50,10 +50,9 @@ export default function Home() {
     console.log("Session: ", session)
     console.log("Status: ", status)
     if (status === "authenticated") {
-      const userRole = session.user.role.toLowerCase();
-      router.push(`/${userRole}/dashboard`);
+      router.push('dashboard');
     }
-  }, [status, session, router]);
+  }, [status, router, session]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,8 +67,7 @@ export default function Home() {
     if (result.ok) {
       const session = await getSession();
       if (session && session.user.role) {
-        const userRole = session.user.role.toLowerCase();
-        router.push(`/${userRole}/dashboard`);
+        router.push(`/dashboard`);
       } else {
         setError("Failed to fetch role.");
         setIsLoading(false);

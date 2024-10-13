@@ -19,6 +19,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { Typography, Input, Button } from "@mui/joy";
 import SearchIcon from '@mui/icons-material/Search';
 import KeyboardTabIcon from '@mui/icons-material/KeyboardTab';
+import { useSession } from "next-auth/react";
+import Loading from "./Loading";
 
 // Updated Styled Link
 const StyledLink = styled(Link)`
@@ -30,10 +32,10 @@ const StyledLink = styled(Link)`
   }
 `;
 
-// Sidebar Container with dynamic width
+// Sidebar Container with dynamic width for desktop
 const SidebarContainer = styled(Box)`
-  width: ${({ collapsed }) => (collapsed ? "80px" : "250px")};
-  height: 100%;
+  width: 250px;
+  height: 100vh;
   position: fixed;
   top: 0;
   left: 0;
@@ -69,7 +71,7 @@ const SidebarItem = styled(ListItem)`
 
 // Icon styles
 const IconContainer = styled(ListItemIcon)`
-  color: #000000;
+  color: #ffffff;
 `;
 
 // Header styles
@@ -83,26 +85,67 @@ const Header = styled(Box)`
   top: 0;
   right: 0;
   z-index: 1200;
-  transition: width 0.3s ease;
-  @media (min-width: 1199px) {
-    width: ${({ collapsed }) => (collapsed ? "calc(100% - 80px)" : "calc(100% - 250px)")};
-  }
-  @media (max-width: 1199px) {
-    width: 100%;
-    padding: 0 0px;
-    height: 50px;
+  width: 100%;
+  transition: left 0.3s ease;
+  @media (min-width: 1200px) {
+    left: 250px;
   }
 `;
 
-export default function App({ arr, avtr }) {
+// Main App Component
+export default function App() {
   const [search, setSearch] = useState("");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  let navigation = [];
+
+  // Handling authenticated session and adding routes
+  if (status === "authenticated") {
+    if (session.user.roleData.viewAdminDashboard || session.user.roleData.viewOfficerDashboard || session.user.roleData.viewUserDashboard) {
+      navigation.push({ menu: 'Home', url: '/dashboard' })
+    }
+    if (session.user.roleData.viewUserProfile) {
+      navigation.push({ menu: 'Profile', url: '/profile' });
+    }
+    if (session.user.roleData.monitorItems) {
+      navigation.push({ menu: 'Items', url: '/items' });
+    }
+    if (session.user.roleData.matchItems) {
+      navigation.push({ menu: 'Match Items', url: '/match-items' });
+    }
+    if (session.user.roleData.viewRequestReportedItems) {
+      navigation.push({ menu: 'Reported Items', url: '/reported-items' });
+    }
+    if (session.user.roleData.viewRequestItemRetrieval) {
+      navigation.push({ menu: 'Item Retrieval', url: '/item-retrieval' });
+    }
+    if (session.user.roleData.viewItemCategories) {
+      navigation.push({ menu: 'Item Categories', url: '/item-categories' });
+    }
+    if (session.user.roleData.viewBadges) {
+      navigation.push({ menu: 'Badges', url: '/badges' });
+    }
+    if (session.user.roleData.viewRatings) {
+      navigation.push({ menu: 'Ratings', url: '/ratings' });
+    }
+    if (session.user.roleData.viewRoles) {
+      navigation.push({ menu: 'Roles', url: '/roles' });
+    }
+    if (session.user.roleData.viewUserList) {
+      navigation.push({ menu: 'Users', url: '/users' });
+    }
+  }
+
+  if (status === 'loading') {
+    return <Loading />;
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const getData = arr.find(
+    const getData = navigation.find(
       (list) => search.toLowerCase() === list.menu.toLowerCase()
     );
     if (getData) {
@@ -113,24 +156,24 @@ export default function App({ arr, avtr }) {
     setSearch("");
   };
 
-  const DrawerContent = ({ arr, toggleDrawer, collapsed }) => {
+  const DrawerContent = ({ navigation, toggleMobileDrawer, collapsed }) => {
     const pathname = usePathname();
 
     return (
       <Box role="presentation">
         <SidebarHeader>
           {!collapsed && <h2>Tracify</h2>}
-          <IconButton onClick={toggleDesktopDrawer} sx={{ color: 'inherit' }}>
-            {collapsed ? <MenuIcon /> : <CloseIcon onClick={toggleMobileDrawer} />}
+          <IconButton sx={{ display: { xs: 'block', lg: 'none' }, color: 'inherit' }}>
+            <CloseIcon onClick={toggleMobileDrawer} />
           </IconButton>
         </SidebarHeader>
         <Divider />
         <List>
-          {arr.map((item, index) => (
+          {navigation.map((item, index) => (
             <StyledLink href={item.url} key={index}>
               <SidebarItem selected={pathname === item.url} disablePadding>
                 <ListItemButton>
-                  <IconContainer selected={pathname === item.url}>
+                  <IconContainer>
                     {item.icon}
                   </IconContainer>
                   {!collapsed && <ListItemText primary={item.menu} />}
@@ -141,10 +184,6 @@ export default function App({ arr, avtr }) {
         </List>
       </Box>
     );
-  };
-
-  const toggleDesktopDrawer = () => {
-    setCollapsed(!collapsed);
   };
 
   const toggleMobileDrawer = () => {
@@ -163,27 +202,28 @@ export default function App({ arr, avtr }) {
         >
           <MenuIcon />
         </IconButton>
-        <form onSubmit={handleSubmit}>
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{ width: { xs: "12rem", lg: "18rem" }, marginLeft: { lg: "1.5rem" } }}
-            startDecorator={<SearchIcon />}
-            endDecorator={
-              <Button type="submit" variant="solid">
-                <Typography color="inherit" sx={{ display: { xs: "none", lg: "block" } }}>Enter</Typography>
-                <KeyboardTabIcon sx={{ display: { xs: "block", lg: "none" } }} />
-              </Button>
-            }
-          />
-        </form>
-        <Box sx={{ flex: 1 }} />
-        <AvatarComponent role={avtr} />
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <form onSubmit={handleSubmit}>
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              sx={{ width: { xs: "12rem", lg: "18rem" }, marginLeft: { lg: "1.5rem" } }}
+              startDecorator={<SearchIcon />}
+              endDecorator={
+                <Button type="submit" variant="solid">
+                  <Typography color="inherit" sx={{ display: { xs: "none", lg: "block" } }}>Enter</Typography>
+                  <KeyboardTabIcon sx={{ display: { xs: "block", lg: "none" } }} />
+                </Button>
+              }
+            />
+          </form>
+          <AvatarComponent role={session.user.role} />
+        </Box>
       </Header>
 
       {/* Fixed Sidebar for Desktop */}
       <SidebarContainer collapsed={collapsed}>
-        <DrawerContent arr={arr} onClose={toggleDesktopDrawer} collapsed={collapsed} />
+        <DrawerContent navigation={navigation} toggleMobileDrawer={toggleMobileDrawer} collapsed={collapsed} />
       </SidebarContainer>
 
       {/* Mobile Drawer */}
@@ -195,7 +235,7 @@ export default function App({ arr, avtr }) {
         aria-label="Main Navigation Menu"
         sx={{ display: { xs: "block", lg: "none" } }}
       >
-        <DrawerContent arr={arr} toggleDrawer={toggleMobileDrawer} collapsed={false} />
+        <DrawerContent navigation={navigation} toggleMobileDrawer={toggleMobileDrawer} collapsed={collapsed} />
       </Drawer>
     </div>
   );

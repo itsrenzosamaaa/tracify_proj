@@ -1,15 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
 import { Button } from '@mui/joy';
-import { Settings, Add } from "@mui/icons-material";
+import { BarChart, Notifications, Settings, Logout, Add } from "@mui/icons-material";
 import dynamic from 'next/dynamic';
 
-// Dynamically import the Chart component to avoid SSR issues
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-const Page = () => {
+const AdminDashboard = () => {
     const [isClient, setIsClient] = useState(false);
 
     // Make sure to only render on the client
@@ -47,19 +46,8 @@ const Page = () => {
         }
     };
 
-    if (!isClient) {
-        return null; // Render nothing on the server
-    }
-
     return (
-        <Box
-            sx={{
-                marginTop: '60px',
-                marginLeft: { xs: '0px', lg: '250px' },
-                padding: '20px',
-                transition: 'margin-left 0.3s ease',
-            }}
-        >
+        <>
             <Grid container spacing={3}>
                 <Grid item xs={12} sm={6} md={3}>
                     <Card>
@@ -96,19 +84,16 @@ const Page = () => {
             </Grid>
 
             {/* User & Item Trends Chart */}
-            <Box sx={{ mt: 4 }}>
-                <Typography variant="h6" gutterBottom>Item Reports Over Time</Typography>
-                <Card>
-                    <CardContent>
-                        <Chart
-                            options={chartData.options}
-                            series={chartData.series}
-                            type="line"
-                            height={350}
-                        />
-                    </CardContent>
-                </Card>
-            </Box>
+            {isClient && (
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant="h6" gutterBottom>Item Reports Over Time</Typography>
+                    <Card>
+                        <CardContent>
+                            <Chart options={chartData.options} series={chartData.series} type="line" height={350} />
+                        </CardContent>
+                    </Card>
+                </Box>
+            )}
 
             {/* Recent System Logs */}
             <Box sx={{ mt: 4 }}>
@@ -127,8 +112,8 @@ const Page = () => {
                 <Button startDecorator={<Settings />}>System Settings</Button>
                 <Button color="warning">Generate Reports</Button>
             </Box>
-        </Box>
+        </>
     );
 };
 
-export default Page;
+export default AdminDashboard;

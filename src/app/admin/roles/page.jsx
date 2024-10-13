@@ -1,15 +1,28 @@
 'use client'
 
-import React, { useState } from 'react';
-import { Box, Typography, Table, Stack, FormLabel, Input, FormControl, Button } from '@mui/joy';
-import { Paper, Grid, TableContainer, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Table, Stack, FormLabel, Input, FormControl, Button, Chip, Modal, ModalDialog, ModalClose, DialogContent } from '@mui/joy';
+import { Card, Grid, CardContent, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { useRouter } from 'next/navigation';
 
 const Page = () => {
-    const [name, setName] = useState('');
+    const router = useRouter();
+    const [roles, setRoles] = useState([]);
+    const [open, setOpen] = useState(false);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-    }
+    useEffect(() => {
+        const fetchRoles = async () => {
+            try {
+                const response = await fetch('/api/roles');
+                const data = await response.json();
+                setRoles(data);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        fetchRoles();
+    }, [])
 
     return (
         <>
@@ -23,50 +36,66 @@ const Page = () => {
             >
                 <Grid container spacing={2}>
                     <Grid item lg={12}>
-                        <Paper elevation={2} sx={{ padding: "1rem", marginBottom: 2 }}> {/* Add marginBottom for spacing */}
-                            <Typography level='h4'>Add Role</Typography>
-                            <form onSubmit={handleSubmit} sx={{ alignContent: 'center' }}>
-                                <Box sx={{ padding: '1rem', width: '50%', display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <FormLabel>Name</FormLabel>
-                                    <Input type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
-                                    <Button>Add Role</Button>
-                                </Box>
-                            </form>
-                        </Paper>
-                        <Paper elevation={2} sx={{ marginBottom: 2 }}> {/* Add marginBottom for spacing */}
-                            <Box sx={{ padding: "1rem" }}>
-                                <Typography level='h4'>Manage Roles</Typography>
+                        <Box sx={{ mt: 4 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Typography level='h4' gutterBottom>Manage Roles</Typography>
+                                <Button onClick={() => router.push('roles/add_role')} startDecorator={<AddIcon />}>Add Role</Button>
                             </Box>
-                            <TableContainer
-                                component={Paper}
-                                elevation={2}
-                                sx={{
-                                    borderRadius: 2,
-                                    overflow: "hidden",
-                                    maxWidth: "100%",
-                                    width: "100%",
-                                }}
-                            >
-                                <Table
-                                    variant="outlined"
-                                >
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell sx={{ width: '20%' }}>Role</TableCell>
-                                            <TableCell sx={{ width: '50%' }}>Permissions</TableCell>
-                                            <TableCell>Actions</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        <TableRow>
-                                            <TableCell sx={{ width: '20%' }}></TableCell>
-                                            <TableCell sx={{ width: '50%' }}></TableCell>
-                                            <TableCell></TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </Paper>
+                            <Card>
+                                <CardContent>
+                                    <Table
+                                        variant="outlined"
+                                        sx={{
+                                            borderRadius: 2,
+                                            overflow: "hidden",
+                                            maxWidth: "100%",
+                                            width: "100%",
+                                        }}
+                                    >
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell sx={{ width: '20%' }}>Role</TableCell>
+                                                <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>User Type</TableCell>
+                                                <TableCell>Actions</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {roles ? (
+                                                roles.map(role => (
+                                                    <TableRow key={role._id}>
+                                                        <TableCell sx={{ width: '20%' }}>{role.name}</TableCell>
+                                                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
+                                                            {role.userType}
+                                                        </TableCell>
+                                                        <TableCell sx={{ display: 'flex', gap: 1 }}>
+                                                            <Button onClick={() => setOpen(true)}>View Permissions</Button>
+                                                            <Button>Edit</Button>
+                                                            <Button color="danger">Delete</Button>
+                                                            <Modal open={open} onClose={() => setOpen(false)}>
+                                                                <ModalDialog>
+                                                                    <Typography level="h4">Permissions List</Typography>
+                                                                    <ModalClose />
+                                                                    <DialogContent>
+                                                                        {Object.entries(role.permissions).map(([key, value]) => (
+                                                                            value ? <Chip key={key}>{key} </Chip> : null
+                                                                        ))}
+                                                                    </DialogContent>
+                                                                </ModalDialog>
+                                                            </Modal>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={3} align="center">Loading roles...</TableCell>
+                                                </TableRow>
+                                            )}
+
+                                        </TableBody>
+                                    </Table>
+                                </CardContent>
+                            </Card>
+                        </Box>
                     </Grid>
                 </Grid>
             </Box>

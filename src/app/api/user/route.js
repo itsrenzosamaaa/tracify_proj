@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import User from "@/lib/models/user";
+import bcrypt from "bcrypt";
+
+const hashPassword = async (password, saltRounds = 10) => {
+  try {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    return hashedPassword;
+  } catch (error) {
+    console.error("Error hashing password:", error);
+    throw new Error("Error hashing password");
+  }
+};
 
 export async function GET() {
   try {
@@ -22,12 +33,21 @@ export async function POST(req) {
   await dbConnect();
 
   try {
-    const formData = await req.json();
-    const newUser = new User(formData);
+    const { password, ...formData } = await req.json();
+    console.log("Received formData:", formData);
+    console.log("Password:", password);
 
-    await newUser.save();
+    const hashedPassword = await hashPassword(password);
+    console.log("Hashed Password:", hashedPassword);
 
-    console.log("User created successfully");
+    const newAccount = new User({
+      ...formData,
+      password: hashedPassword,
+    });
+
+    await newAccount.save();
+
+    console.log("Account created successfully");
 
     return NextResponse.json(
       { success: true, message: "Account created" },
