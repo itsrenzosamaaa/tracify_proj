@@ -6,7 +6,7 @@ import { Grid, Table, TableHead, TableBody, TableRow, TableCell, TablePagination
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const ViewUsers = ({ users, roles, fetchUsers, session }) => {
+const ViewBadges = ({ users, roles, fetchUsers, session }) => {
     const [firstname, setFirstname] = useState('');
     const [lastname, setLastname] = useState('');
     const [username, setUsername] = useState('');
@@ -31,34 +31,32 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
             role: selectedRole,
         };
 
-        console.log(formData)
+        try {
+            const response = await fetch('/api/user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
 
-        // try {
-        //     const response = await fetch('/api/user', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify(formData),
-        //     });
-
-        //     if (response.ok) {
-        //         alert('User created successfully');
-        //         // Reset fields
-        //         setFirstname('');
-        //         setLastname('');
-        //         setUsername('');
-        //         setPassword('');
-        //         setContactNumber('');
-        //         setEmailAddress('');
-        //         setSelectedRole('');
-        //         fetchUsers(); // Refresh users list after adding a new one
-        //     } else {
-        //         alert('Error creating user');
-        //     }
-        // } catch (error) {
-        //     console.error(error);
-        // }
+            if (response.ok) {
+                alert('User created successfully');
+                // Reset fields
+                setFirstname('');
+                setLastname('');
+                setUsername('');
+                setPassword('');
+                setContactNumber('');
+                setEmailAddress('');
+                setSelectedRole('');
+                fetchUsers(); // Refresh users list after adding a new one
+            } else {
+                alert('Error creating user');
+            }
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const handleChangePage = (event, newPage) => {
@@ -71,7 +69,7 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
     };
 
     // Handle the case where session or session.user may be undefined
-    const isAddUserAllowed = session?.user?.roleData?.addUser ?? false;
+    const isAddBadgesAllowed = session?.user?.roleData?.addBadges ?? false;
 
     return (
         <>
@@ -79,7 +77,7 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
                 <Grid item lg={7} xs={12}>
                     <Box sx={{ mt: 4 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography level='h4' gutterBottom>Manage Users</Typography>
+                            <Typography level='h4' gutterBottom>Manage Badges</Typography>
                         </Box>
                         <Card sx={{ height: '426px' }}>
                             <CardContent sx={{ padding: 0 }}>
@@ -107,13 +105,24 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
                                                 users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user, index) => (
                                                     <TableRow key={index}>
                                                         <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>{user.firstname} {user.lastname}</TableCell>
-                                                        <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>{user.role}</TableCell>
+                                                        <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>{roles.map(role => role._id === user.role ? role.name : '')}</TableCell>
                                                         <TableCell sx={{ width: { lg: '30%' }, display: { xs: 'none', lg: 'table-cell' } }}>{user.emailAddress}</TableCell>
-                                                        <TableCell sx={{ display: 'flex', gap: 1 }}>
-                                                            <Button sx={{ display: { xs: 'none', lg: 'block' } }}>Edit</Button>
-                                                            <Button sx={{ display: { xs: 'none', lg: 'block' } }} color="danger">Delete</Button>
-                                                            <Button size='small' sx={{ display: { xs: 'block', lg: 'none' } }}><EditIcon /></Button>
-                                                            <Button size='small' sx={{ display: { xs: 'block', lg: 'none' } }} color="danger"><DeleteIcon /></Button>
+                                                        <TableCell>
+                                                            {session.user.id !== user._id && (
+                                                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                    {/* Full buttons for larger screens */}
+                                                                    <Button sx={{ display: { xs: 'none', lg: 'block' } }}>Edit</Button>
+                                                                    <Button sx={{ display: { xs: 'none', lg: 'block' } }} color="danger">Delete</Button>
+
+                                                                    {/* Icon buttons for smaller screens */}
+                                                                    <Button size="small" sx={{ display: { xs: 'block', lg: 'none' } }}>
+                                                                        <EditIcon />
+                                                                    </Button>
+                                                                    <Button size="small" sx={{ display: { xs: 'block', lg: 'none' } }} color="danger">
+                                                                        <DeleteIcon />
+                                                                    </Button>
+                                                                </Box>
+                                                            )}
                                                         </TableCell>
                                                     </TableRow>
                                                 ))
@@ -144,55 +153,67 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
                             <CardContent>
                                 <form onSubmit={handleSubmit}>
                                     <Stack spacing={2}>
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                            <FormControl fullWidth>
-                                                <FormLabel>Username</FormLabel>
-                                                <Input
-                                                    disabled={!isAddUserAllowed}
-                                                    name="username"
-                                                    value={username}
-                                                    onChange={(e) => setUsername(e.target.value)}
-                                                    required
-                                                />
-                                            </FormControl>
-                                            <FormControl fullWidth>
-                                                <FormLabel>Password</FormLabel>
-                                                <Input
-                                                    disabled={!isAddUserAllowed}
-                                                    name="password"
-                                                    type="password"
-                                                    value={password}
-                                                    onChange={(e) => setPassword(e.target.value)}
-                                                    required
-                                                />
-                                            </FormControl>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                                            <Grid container spacing={2} sx={{ width: '100%' }}>
+                                                <Grid item xs={12} sm={6}>
+                                                    <FormControl fullWidth>
+                                                        <FormLabel>Username</FormLabel>
+                                                        <Input
+                                                            disabled={!isAddBadgesAllowed}
+                                                            name="username"
+                                                            value={username}
+                                                            onChange={(e) => setUsername(e.target.value)}
+                                                            required
+                                                        />
+                                                    </FormControl>
+                                                </Grid>
+                                                <Grid item xs={12} sm={6}>
+                                                    <FormControl fullWidth>
+                                                        <FormLabel>Password</FormLabel>
+                                                        <Input
+                                                            disabled={!isAddBadgesAllowed}
+                                                            name="password"
+                                                            type="password"
+                                                            value={password}
+                                                            onChange={(e) => setPassword(e.target.value)}
+                                                            required
+                                                        />
+                                                    </FormControl>
+                                                </Grid>
+                                            </Grid>
+
+                                            <Grid container spacing={2} sx={{ width: '100%', marginTop: '6px' }}>
+                                                <Grid item xs={12} sm={6}>
+                                                    <FormControl fullWidth>
+                                                        <FormLabel>First Name</FormLabel>
+                                                        <Input
+                                                            disabled={!isAddBadgesAllowed}
+                                                            name="firstname"
+                                                            value={firstname}
+                                                            onChange={(e) => setFirstname(e.target.value)}
+                                                            required
+                                                        />
+                                                    </FormControl>
+                                                </Grid>
+                                                <Grid item xs={12} sm={6}>
+                                                    <FormControl fullWidth>
+                                                        <FormLabel>Last Name</FormLabel>
+                                                        <Input
+                                                            disabled={!isAddBadgesAllowed}
+                                                            name="lastname"
+                                                            value={lastname}
+                                                            onChange={(e) => setLastname(e.target.value)}
+                                                            required
+                                                        />
+                                                    </FormControl>
+                                                </Grid>
+                                            </Grid>
                                         </Box>
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                            <FormControl fullWidth>
-                                                <FormLabel>First Name</FormLabel>
-                                                <Input
-                                                    disabled={!isAddUserAllowed}
-                                                    name="firstname"
-                                                    value={firstname}
-                                                    onChange={(e) => setFirstname(e.target.value)}
-                                                    required
-                                                />
-                                            </FormControl>
-                                            <FormControl fullWidth>
-                                                <FormLabel>Last Name</FormLabel>
-                                                <Input
-                                                    disabled={!isAddUserAllowed}
-                                                    name="lastname"
-                                                    value={lastname}
-                                                    onChange={(e) => setLastname(e.target.value)}
-                                                    required
-                                                />
-                                            </FormControl>
-                                        </Box>
+
                                         <FormControl>
                                             <FormLabel>Contact Number</FormLabel>
                                             <Input
-                                                disabled={!isAddUserAllowed}
+                                                disabled={!isAddBadgesAllowed}
                                                 name="contactNumber"
                                                 value={contactNumber}
                                                 onChange={(e) => setContactNumber(e.target.value)}
@@ -202,7 +223,7 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
                                         <FormControl>
                                             <FormLabel>Email Address</FormLabel>
                                             <Input
-                                                disabled={!isAddUserAllowed}
+                                                disabled={!isAddBadgesAllowed}
                                                 name="email"
                                                 type="email"
                                                 value={emailAddress}
@@ -213,7 +234,7 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
                                         <FormControl>
                                             <FormLabel>Role</FormLabel>
                                             <Select
-                                                disabled={!isAddUserAllowed}
+                                                disabled={!isAddBadgesAllowed}
                                                 name="role"
                                                 value={selectedRole}
                                                 onChange={(e, value) => setSelectedRole(value)}
@@ -221,7 +242,7 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
                                             >
                                                 {roles.length > 0 ? (
                                                     roles.map(role => (
-                                                        <Option key={role._id} value={role.name}>
+                                                        <Option key={role._id} value={role._id}>
                                                             {role.name}
                                                         </Option>
                                                     ))
@@ -233,7 +254,7 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
                                             </Select>
                                         </FormControl>
 
-                                        <Button disabled={!isAddUserAllowed} type="submit" fullWidth>Add Category</Button>
+                                        <Button disabled={!isAddBadgesAllowed} type="submit" fullWidth>Add User</Button>
                                     </Stack>
                                 </form>
                             </CardContent>
@@ -245,4 +266,4 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
     );
 }
 
-export default ViewUsers;
+export default ViewBadges;

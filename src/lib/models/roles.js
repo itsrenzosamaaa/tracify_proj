@@ -23,11 +23,6 @@ const roleSchema = new mongoose.Schema({
     addRole: { type: Boolean, default: false },
     editRole: { type: Boolean, default: false },
     deleteRole: { type: Boolean, default: false },
-    // Item Category Management
-    viewItemCategories: { type: Boolean, default: false },
-    addItemCategory: { type: Boolean, default: false },
-    editItemCategory: { type: Boolean, default: false },
-    deleteItemCategory: { type: Boolean, default: false },
     // Dashboard access
     viewAdminDashboard: { type: Boolean, default: false },
     viewOfficerDashboard: { type: Boolean, default: false },

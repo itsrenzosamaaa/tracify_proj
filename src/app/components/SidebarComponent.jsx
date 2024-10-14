@@ -104,37 +104,36 @@ export default function App() {
 
   // Handling authenticated session and adding routes
   if (status === "authenticated") {
-    if (session.user.roleData.viewAdminDashboard || session.user.roleData.viewOfficerDashboard || session.user.roleData.viewUserDashboard) {
+    const roleData = session?.user?.roleData;
+
+    if (roleData.viewAdminDashboard || roleData.viewOfficerDashboard || roleData.viewUserDashboard) {
       navigation.push({ menu: 'Home', url: '/dashboard' })
     }
-    if (session.user.roleData.viewUserProfile) {
+    if (roleData.viewUserProfile) {
       navigation.push({ menu: 'Profile', url: '/profile' });
     }
-    if (session.user.roleData.monitorItems) {
+    if (roleData.monitorItems) {
       navigation.push({ menu: 'Items', url: '/items' });
     }
-    if (session.user.roleData.matchItems) {
+    if (roleData.matchItems) {
       navigation.push({ menu: 'Match Items', url: '/match-items' });
     }
-    if (session.user.roleData.viewRequestReportedItems) {
+    if (roleData.viewRequestReportedItems) {
       navigation.push({ menu: 'Reported Items', url: '/reported-items' });
     }
-    if (session.user.roleData.viewRequestItemRetrieval) {
+    if (roleData.viewRequestItemRetrieval) {
       navigation.push({ menu: 'Item Retrieval', url: '/item-retrieval' });
     }
-    if (session.user.roleData.viewItemCategories) {
-      navigation.push({ menu: 'Item Categories', url: '/item-categories' });
-    }
-    if (session.user.roleData.viewBadges) {
+    if (roleData.viewBadges) {
       navigation.push({ menu: 'Badges', url: '/badges' });
     }
-    if (session.user.roleData.viewRatings) {
+    if (roleData.viewRatings) {
       navigation.push({ menu: 'Ratings', url: '/ratings' });
     }
-    if (session.user.roleData.viewRoles) {
+    if (roleData.viewRoles) {
       navigation.push({ menu: 'Roles', url: '/roles' });
     }
-    if (session.user.roleData.viewUserList) {
+    if (roleData.viewUserList) {
       navigation.push({ menu: 'Users', url: '/users' });
     }
   }
@@ -202,7 +201,7 @@ export default function App() {
         >
           <MenuIcon />
         </IconButton>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ width: { xs: '85%', lg: '80%' }, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <form onSubmit={handleSubmit}>
             <Input
               value={search}
@@ -217,7 +216,7 @@ export default function App() {
               }
             />
           </form>
-          <AvatarComponent role={session.user.role} />
+          <AvatarComponent role={session.user.firstname} />
         </Box>
       </Header>
 

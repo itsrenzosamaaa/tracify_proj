@@ -26,7 +26,7 @@ export const authOptions = {
             account &&
             bcrypt.compareSync(credentials.password, account.password)
           ) {
-            const roleData = await roles.findOne({ name: account.role });
+            const roleData = await roles.findOne({ _id: account.role });
             return {
               id: account._id.toString(),
               firstname: account.firstname,

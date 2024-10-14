@@ -9,7 +9,24 @@ import { Box } from '@mui/joy';
 
 const DashboardPage = () => {
   const { data: session, status } = useSession();
+  const [role, setRole] = useState(null);
   const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await fetch('/api/roles');
+        const data = await response.json();
+        const findRole = data.find(role => role._id === session.user.role);
+        setRole(findRole.userType);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    if(status === 'authenticated'){
+      fetchRoles();
+    }
+  }, [session, status])
 
   useEffect(() => {
     setIsClient(true);
@@ -29,9 +46,9 @@ const DashboardPage = () => {
           transition: 'margin-left 0.3s ease',
         }}
       >
-        {session.user.role === 'Admin' && <AdminDashboard />}
-        {session.user.role === 'Officer' && <OfficeDashboard />}
-        {session.user.role === 'User' && <UserDashboard />}
+        {role === 'Admin' && <AdminDashboard />}
+        {role === 'Officer' && <OfficeDashboard />}
+        {role === 'User' && <UserDashboard />}
       </Box>
     </>
   )
