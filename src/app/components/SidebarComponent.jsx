@@ -100,29 +100,34 @@ export default function App() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  let navigation = [];
+  let navigation = [{ menu: 'Home', url: '/dashboard' }];
 
   // Handling authenticated session and adding routes
   if (status === "authenticated") {
     const roleData = session?.user?.roleData;
 
-    if (roleData.viewAdminDashboard || roleData.viewOfficerDashboard || roleData.viewUserDashboard) {
-      navigation.push({ menu: 'Home', url: '/dashboard' })
-    }
     if (roleData.viewUserProfile) {
       navigation.push({ menu: 'Profile', url: '/profile' });
     }
-    if (roleData.monitorItems) {
-      navigation.push({ menu: 'Items', url: '/items' });
+    if (roleData.viewMyItems) {
+      navigation.push({ menu: 'My Items', url: '/my-items' });
+    }
+    if (roleData.viewRequestReportedFoundItems
+      || roleData.viewValidatingItems
+      || roleData.viewPublishedItems
+      || roleData.viewRequestItemRetrieval
+      || roleData.viewReservedItems) {
+      navigation.push({ menu: 'Found Items', url: '/found-items' });
+    }
+    if (roleData.viewRequestReportedLostItems
+      || roleData.viewMissingItems) {
+      navigation.push({ menu: 'Lost Items', url: '/lost-items' });
+    }
+    if (roleData.viewItemHistory) {
+      navigation.push({ menu: 'Item History', url: '/item-history' });
     }
     if (roleData.matchItems) {
       navigation.push({ menu: 'Match Items', url: '/match-items' });
-    }
-    if (roleData.viewRequestReportedItems) {
-      navigation.push({ menu: 'Reported Items', url: '/reported-items' });
-    }
-    if (roleData.viewRequestItemRetrieval) {
-      navigation.push({ menu: 'Item Retrieval', url: '/item-retrieval' });
     }
     if (roleData.viewBadges) {
       navigation.push({ menu: 'Badges', url: '/badges' });

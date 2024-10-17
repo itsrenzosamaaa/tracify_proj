@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import users from '@/lib/models/user';
+import user from '@/lib/models/user';
 
 export async function GET(req, { params }) {
     const { id } = params;
@@ -8,13 +8,13 @@ export async function GET(req, { params }) {
     await dbConnect(); // Connect to your MongoDB database
 
     try {
-        const user = await users.findOne({ accountId : id }).lean(); // Fetch officer by ID
+        const findUser = await user.findOne({ _id : id }).lean(); // Fetch officer by ID
 
-        if (!user) {
+        if (!findUser) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
 
-        return NextResponse.json(user); // Return the officer data
+        return NextResponse.json(findUser); // Return the officer data
     } catch (error) {
         return NextResponse.json({ message: 'Error fetching user' }, { status: 500 });
     }

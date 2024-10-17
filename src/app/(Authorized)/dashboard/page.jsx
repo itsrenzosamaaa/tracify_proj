@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react';
 import AdminDashboard from '@/app/components/AdminDashboard';
-import OfficeDashboard from '@/app/components/OfficeDashboard';
 import UserDashboard from '@/app/components/UserDashboard';
-import { Box } from '@mui/joy';
+import Loading from '@/app/components/Loading';
 
 const DashboardPage = () => {
   const { data: session, status } = useSession();
@@ -23,33 +22,29 @@ const DashboardPage = () => {
         console.error(error);
       }
     }
-    if(status === 'authenticated'){
+
+    if (status === 'authenticated') {
       fetchRoles();
     }
   }, [session, status])
+
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  if (status === 'loading' || !isClient) {
-    return null; // Don't render anything during loading or server-side
+  if (!isClient) {
+    return null;
+  }
+
+  if (status === 'loading') {
+    return <Loading />;
   }
 
   return (
     <>
-      <Box
-        sx={{
-          marginTop: '60px', // Ensure space for header
-          marginLeft: { xs: '0px', lg: '250px' }, // Shift content when sidebar is visible on large screens
-          padding: '20px',
-          transition: 'margin-left 0.3s ease',
-        }}
-      >
-        {role === 'Admin' && <AdminDashboard />}
-        {role === 'Officer' && <OfficeDashboard />}
-        {role === 'User' && <UserDashboard />}
-      </Box>
+      {role === 'Admin' && <AdminDashboard session={session} />}
+      {role === 'User' && <UserDashboard session={session} />}
     </>
   )
 }

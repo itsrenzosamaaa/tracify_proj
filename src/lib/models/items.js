@@ -1,18 +1,10 @@
 import mongoose from "mongoose";
 
 const ItemsSchema = new mongoose.Schema({
-    itemId: {
-        type: String,
-        unique: true,
-    },
-    itemSchoolCategory: {
-        type: String,
-        enum: ["Basic Education", "Higher Education"],
-    },
     isFoundItem: {
         type: Boolean,
     },
-    officerId: {
+    user_id: {
         type: String,
     },
     name: {
@@ -33,12 +25,6 @@ const ItemsSchema = new mongoose.Schema({
     time: {
         type: String,
     },
-    finder: {
-        type: String,
-    },
-    owner: {
-        type: String,
-    },
     image: {
         type: String,
     },
@@ -49,27 +35,15 @@ const ItemsSchema = new mongoose.Schema({
         type: String,
         enum: ['Request', 'Validating', 'Published', 'Reserved', 'Resolved', 'Invalid', 'Missing'],
     },
-    dateReported: {
-        type: Date,
-    },
-    dateApproved: {
-        type: Date,
-    },
-    dateInvalid: {
-        type: Date,
-    },
-    dateSurrendered: {
-        type: Date,
-    },
-    dateReserved: {
+    dateRequest: {
         type: Date,
     },
     dateResolved: {
         type: Date,
     },
-    dateMissing: {
+    dateInvalid: {
         type: Date,
-    },
+    }
 });
 
 export default mongoose.models.Items || mongoose.model('Items', ItemsSchema);

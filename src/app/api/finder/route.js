@@ -1,24 +1,18 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
-import Items from "@/lib/models/items";
-import cloudinary from "cloudinary";
-
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import finder from "@/lib/models/finder";
+import items from "@/lib/models/items";
 
 export async function GET() {
   try {
     await dbConnect();
-    const items = await Items.find();
+    const getFinder = await finder.find().populate(item_id);
 
-    return NextResponse.json(items, { status: 200 });
+    return NextResponse.json(getFinder, { status: 200 });
   } catch (error) {
-    console.error("Error fetching items: ", error);
+    console.error("Error fetching finder: ", error);
     return NextResponse.json(
-      { success: false, message: "Failed to fetch items" },
+      { success: false, message: "Failed to fetch finder" },
       { status: 500 }
     );
   }

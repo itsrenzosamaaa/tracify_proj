@@ -3,11 +3,30 @@
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Grid, Button, Table } from "@mui/joy";
 import { Paper, TableBody, TableCell, TableHead, TableRow, TablePagination, Divider, Chip } from "@mui/material";
+import { formatDistanceToNow } from "date-fns";
 
-const UserDashboard = () => {
+const UserDashboard = ({ session }) => {
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    useEffect(() => {
+        const fetchItems = async () => {
+            try {
+                const response = await fetch('/api/items');
+                const data = await response.json();
+                if (response.ok) {
+                    setItems(data);
+                } else {
+                    console.error('Failed to fetch item data:', data.message);
+                }
+            } catch (error) {
+                console.error('Failed to fetch item data:', error);
+            }
+        };
+
+        fetchItems();
+    }, [])
 
     const PaperOverview = [
         { title: 'Total Found Items', quantity: 8 },
@@ -36,14 +55,20 @@ const UserDashboard = () => {
 
     return (
         <>
-            <Paper elevation={2} sx={{ padding: '1rem', marginBottom: '20px', maxWidth: '100%' }}>
-                <Typography level="h2" gutterBottom>
-                    Welcome back, Guest!
+            <Box sx={{ padding: '1rem', marginBottom: '20px', maxWidth: '100%' }}>
+                <Typography level="h4" gutterBottom sx={{ display: { xs: "block", sm: 'none', md: 'none', lg: 'none' } }}>
+                    Welcome back, {session.user.firstname}!
+                </Typography>
+                <Typography level="h3" gutterBottom sx={{ display: { xs: "none", sm: 'block', md: 'block', lg: 'none' } }}>
+                    Welcome back, {session.user.firstname}!
+                </Typography>
+                <Typography level="h2" gutterBottom sx={{ display: { xs: "none", sm: 'none', md: 'none', lg: 'block' } }}>
+                    Welcome back, {session.user.firstname}!     
                 </Typography>
                 <Typography>
-                    You are logged in as Role.
+                    Dashboard Overview
                 </Typography>
-            </Paper>
+            </Box>
 
             {/* Grid Section */}
             <Grid container spacing={2}>
@@ -79,7 +104,7 @@ const UserDashboard = () => {
                                             </TableCell>
                                             <TableCell>{report.name}</TableCell>
                                             <TableCell>
-                                                {new Date()}
+                                                {formatDistanceToNow(new Date(report.dateReported), { addSuffix: true })}
                                             </TableCell>
                                         </TableRow>
                                     ))}

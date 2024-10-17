@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
-import { Button } from '@mui/joy';
+import { Box, Grid, Card, CardContent } from "@mui/material";
+import { Typography } from '@mui/joy';
 import { BarChart, Notifications, Settings, Logout, Add } from "@mui/icons-material";
 import dynamic from 'next/dynamic';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ session }) => {
     const [isClient, setIsClient] = useState(false);
 
     // Make sure to only render on the client
@@ -48,36 +48,51 @@ const AdminDashboard = () => {
 
     return (
         <>
+            <Box sx={{ padding: '1rem', marginBottom: '20px', maxWidth: '100%' }}>
+                <Typography level="h4" gutterBottom sx={{ display: { xs: "block", sm: 'none', md: 'none', lg: 'none' } }}>
+                    Welcome back, {session.user.firstname}!
+                </Typography>
+                <Typography level="h3" gutterBottom sx={{ display: { xs: "none", sm: 'block', md: 'block', lg: 'none' } }}>
+                    Welcome back, {session.user.firstname}!
+                </Typography>
+                <Typography level="h2" gutterBottom sx={{ display: { xs: "none", sm: 'none', md: 'none', lg: 'block' } }}>
+                    Welcome back, {session.user.firstname}!
+                </Typography>
+                <Typography>
+                    Dashboard Overview
+                </Typography>
+            </Box>
+
             <Grid container spacing={3}>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={6} lg={3}>
                     <Card>
                         <CardContent>
-                            <Typography variant="h6">Total Users</Typography>
-                            <Typography variant="h4">3000</Typography>
+                            <Typography level="h6">Total Users</Typography>
+                            <Typography level="h4">3000</Typography>
                         </CardContent>
                     </Card>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={6} lg={3}>
                     <Card>
                         <CardContent>
-                            <Typography variant="h6">Active Officers</Typography>
-                            <Typography variant="h4">50</Typography>
+                            <Typography level="h6">Items Monitored</Typography>
+                            <Typography level="h4">50</Typography>
                         </CardContent>
                     </Card>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={6} lg={3}>
                     <Card>
                         <CardContent>
-                            <Typography variant="h6">Items Processed</Typography>
-                            <Typography variant="h4">1200</Typography>
+                            <Typography level="h6">Items Resolved</Typography>
+                            <Typography level="h4">1200</Typography>
                         </CardContent>
                     </Card>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={6} lg={3}>
                     <Card>
                         <CardContent>
-                            <Typography variant="h6">System Logs</Typography>
-                            <Typography variant="h4">150</Typography>
+                            <Typography level="h6">System Logs</Typography>
+                            <Typography level="h4">150</Typography>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -86,7 +101,7 @@ const AdminDashboard = () => {
             {/* User & Item Trends Chart */}
             {isClient && (
                 <Box sx={{ mt: 4 }}>
-                    <Typography variant="h6" gutterBottom>Item Reports Over Time</Typography>
+                    <Typography level="h6" gutterBottom>Item Reports Over Time</Typography>
                     <Card>
                         <CardContent>
                             <Chart options={chartData.options} series={chartData.series} type="line" height={350} />
@@ -97,20 +112,13 @@ const AdminDashboard = () => {
 
             {/* Recent System Logs */}
             <Box sx={{ mt: 4 }}>
-                <Typography variant="h6" gutterBottom>Recent System Logs</Typography>
+                <Typography level="h6" gutterBottom>Recent System Logs</Typography>
                 <Card>
                     <CardContent>
                         <Typography>System upgraded by John Doe at 10:30 AM.</Typography>
                         <Typography>User Mary Smith added a new officer at 9:00 AM.</Typography>
                     </CardContent>
                 </Card>
-            </Box>
-
-            {/* Quick Actions */}
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-                <Button startDecorator={<Add />}>Add New User</Button>
-                <Button startDecorator={<Settings />}>System Settings</Button>
-                <Button color="warning">Generate Reports</Button>
             </Box>
         </>
     );

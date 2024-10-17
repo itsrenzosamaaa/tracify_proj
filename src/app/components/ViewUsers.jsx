@@ -94,9 +94,8 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
                                     >
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>Name</TableCell>
-                                                <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>Role</TableCell>
-                                                <TableCell sx={{ width: { lg: '30%' }, display: { xs: 'none', lg: 'table-cell' } }}>Email Address</TableCell>
+                                                <TableCell>Name</TableCell>
+                                                <TableCell>Role</TableCell>
                                                 <TableCell>Actions</TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -104,21 +103,20 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
                                             {users.length > 0 ? (
                                                 users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user, index) => (
                                                     <TableRow key={index}>
-                                                        <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>{user.firstname} {user.lastname}</TableCell>
-                                                        <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>{roles.map(role => role._id === user.role ? role.name : '')}</TableCell>
-                                                        <TableCell sx={{ width: { lg: '30%' }, display: { xs: 'none', lg: 'table-cell' } }}>{user.emailAddress}</TableCell>
+                                                        <TableCell>{user.firstname} {user.lastname}</TableCell>
+                                                        <TableCell>{roles.map(role => role._id === user.role ? role.name : '')}</TableCell>
                                                         <TableCell>
                                                             {session.user.id !== user._id && (
                                                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                                                     {/* Full buttons for larger screens */}
-                                                                    <Button sx={{ display: { xs: 'none', lg: 'block' } }}>Edit</Button>
-                                                                    <Button sx={{ display: { xs: 'none', lg: 'block' } }} color="danger">Delete</Button>
+                                                                    <Button disabled={!session?.user?.roleData?.editUser} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}>Edit</Button>
+                                                                    <Button disabled={!session?.user?.roleData?.deleteUser} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }} color="danger">Delete</Button>
 
                                                                     {/* Icon buttons for smaller screens */}
-                                                                    <Button size="small" sx={{ display: { xs: 'block', lg: 'none' } }}>
+                                                                    <Button disabled={!session?.user?.roleData?.editUser} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }}>
                                                                         <EditIcon />
                                                                     </Button>
-                                                                    <Button size="small" sx={{ display: { xs: 'block', lg: 'none' } }} color="danger">
+                                                                    <Button disabled={!session?.user?.roleData?.deleteUser} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }} color="danger">
                                                                         <DeleteIcon />
                                                                     </Button>
                                                                 </Box>

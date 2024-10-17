@@ -32,20 +32,22 @@ const AddRole = () => {
         addRole: false,
         editRole: false,
         deleteRole: false,
-        viewAdminDashboard: false,
-        viewOfficerDashboard: false,
-        viewUserDashboard: false,
         viewUserProfile: false,
-        editUserProfile: false,
-        monitorItems: false,
         publishItems: false,
         reportItems: false,
         matchItems: false,
-        viewRequestReportedItems: false,
+        viewMyItems: false,
+        viewRequestReportedFoundItems: false,
+        viewValidatingItems: false,
+        viewPublishedItems: false,
         viewRequestItemRetrieval: false,
+        viewReservedItems: false,
+        viewItemHistory: false,
+        viewRequestReportedLostItems: false,
+        viewMissingItems: false,
         viewBadges: false,
         addBadge: false,
-        updateBadge: false,
+        editBadge: false,
         deleteBadge: false,
         awardBadgesToUser: false,
         removeBadgesToUser: false,
@@ -130,7 +132,6 @@ const AddRole = () => {
                                             sx={{ flex: 1 }}
                                         >
                                             <Option value="Admin">Admin</Option>
-                                            <Option value="Officer">Officer</Option>
                                             <Option value="User">User</Option>
                                         </Select>
                                     </Box>

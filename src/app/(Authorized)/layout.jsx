@@ -1,5 +1,6 @@
 import React from "react";
 import SidebarComponent from "../components/SidebarComponent";
+import { Box } from "@mui/joy";
 
 export default function Layout({ children }) {
   return (
@@ -9,7 +10,16 @@ export default function Layout({ children }) {
       </head>
       <body style={{ backgroundColor: "whitesmoke", }}>
         <SidebarComponent />
-        {children}
+        <Box
+          sx={{
+            marginTop: '60px',
+            marginLeft: { xs: '0px', lg: '250px' },
+            padding: '20px',
+            transition: 'margin-left 0.3s ease',
+          }}
+        >
+          {children}
+        </Box>
       </body>
     </html>
   );
