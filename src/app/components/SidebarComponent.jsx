@@ -17,10 +17,21 @@ import AvatarComponent from "./AvatarComponent";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Typography, Input, Button } from "@mui/joy";
-import SearchIcon from '@mui/icons-material/Search';
 import KeyboardTabIcon from '@mui/icons-material/KeyboardTab';
 import { useSession } from "next-auth/react";
 import Loading from "./Loading";
+import Image from "next/image";
+import HomeIcon from '@mui/icons-material/Home';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LuggageIcon from '@mui/icons-material/Luggage';
+import SearchIcon from '@mui/icons-material/Search';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import HistoryIcon from '@mui/icons-material/History';
+import LinkIcon from '@mui/icons-material/Link';
+import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
+import StarRateIcon from '@mui/icons-material/StarRate';
+import SecurityIcon from '@mui/icons-material/Security';
+import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 
 // Updated Styled Link
 const StyledLink = styled(Link)`
@@ -36,6 +47,7 @@ const StyledLink = styled(Link)`
 const SidebarContainer = styled(Box)`
   width: 250px;
   height: 100vh;
+  background-color: #fff;
   position: fixed;
   top: 0;
   left: 0;
@@ -49,9 +61,9 @@ const SidebarContainer = styled(Box)`
 
 // Sidebar Header
 const SidebarHeader = styled(Box)`
-  height: 28px;
+  height: 50px;
   padding: 16px;
-  background-color: #1a237e;
+  background-color: #FFFFFF;
   display: flex;
   align-items: center;
   color: #fff;
@@ -59,25 +71,59 @@ const SidebarHeader = styled(Box)`
 `;
 
 // Sidebar Item Styles
+// Sidebar Item Styles (with selected state)
 const SidebarItem = styled(ListItem)`
-  &:hover {
-    background-color: #3d5afe;
-    transform: scale(1.05);
-    transition: transform 0.2s ease, background-color 0.2s ease;
+  &.Mui-selected {
+    background-color: #3d5afe; /* Background color when selected */
+    color: #fff; /* Text color when selected */
+    
+    & .MuiListItemText-primary {
+      color: #fff; /* Text color when selected */
+    }
+
+    & .MuiListItemIcon-root {
+      color: #fff; /* Icon color when selected */
+    }
   }
+  
+  &:hover {
+    background-color: #3d5afe; /* Change background color on hover */
+    transform: scale(1.05); /* Scale effect on hover */
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: #fff;
+    
+    & .MuiListItemText-primary {
+      color: #fff;
+    }
+
+    & .MuiListItemIcon-root {
+      color: #fff;
+    }
+  }
+  
   border-radius: 8px;
   margin-bottom: 0.5rem;
 `;
 
-// Icon styles
-const IconContainer = styled(ListItemIcon)`
-  color: #ffffff;
+// Icon Item Styles (for selected state as well)
+const IconItem = styled(ListItemIcon)`
+  &.Mui-selected {
+    color: #fff; /* Icon color when selected */
+  }
+
+  &:hover {
+    color: #fff; /* Icon color on hover */
+    transform: scale(1.2);
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
 `;
+
 
 // Header styles
 const Header = styled(Box)`
   height: 60px;
-  background-color: #1a237e;
+  background-color: #3d5afe;
   color: #fff;
   display: flex;
   align-items: center;
@@ -100,51 +146,55 @@ export default function App() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  let navigation = [{ menu: 'Home', url: '/dashboard' }];
+  let navigation = [{ icon: <HomeIcon />, menu: 'Home', url: '/dashboard' }];
 
   // Handling authenticated session and adding routes
   if (status === "authenticated") {
     const roleData = session?.user?.roleData;
 
     if (roleData.viewUserProfile) {
-      navigation.push({ menu: 'Profile', url: '/profile' });
+      navigation.push({ icon: <AccountCircleIcon />, menu: 'Profile', url: '/profile' });
     }
     if (roleData.viewMyItems) {
-      navigation.push({ menu: 'My Items', url: '/my-items' });
+      navigation.push({ icon: <LuggageIcon />, menu: 'My Items', url: '/my-items' });
     }
     if (roleData.viewRequestReportedFoundItems
       || roleData.viewValidatingItems
       || roleData.viewPublishedItems
       || roleData.viewRequestItemRetrieval
       || roleData.viewReservedItems) {
-      navigation.push({ menu: 'Found Items', url: '/found-items' });
+      navigation.push({ icon: <SearchIcon />, menu: 'Found Items', url: '/found-items' });
     }
     if (roleData.viewRequestReportedLostItems
       || roleData.viewMissingItems) {
-      navigation.push({ menu: 'Lost Items', url: '/lost-items' });
+      navigation.push({ icon: <QuestionMarkIcon />, menu: 'Lost Items', url: '/lost-items' });
     }
     if (roleData.viewItemHistory) {
-      navigation.push({ menu: 'Item History', url: '/item-history' });
+      navigation.push({ icon: <HistoryIcon />, menu: 'Item History', url: '/item-history' });
     }
     if (roleData.matchItems) {
-      navigation.push({ menu: 'Match Items', url: '/match-items' });
+      navigation.push({ icon: <LinkIcon />, menu: 'Match Items', url: '/match-items' });
     }
     if (roleData.viewBadges) {
-      navigation.push({ menu: 'Badges', url: '/badges' });
+      navigation.push({ icon: <EmojiEventsOutlinedIcon />, menu: 'Badges', url: '/badges' });
     }
     if (roleData.viewRatings) {
-      navigation.push({ menu: 'Ratings', url: '/ratings' });
+      navigation.push({ icon: <StarRateIcon />, menu: 'Ratings', url: '/ratings' });
     }
     if (roleData.viewRoles) {
-      navigation.push({ menu: 'Roles', url: '/roles' });
+      navigation.push({ icon: <SecurityIcon />, menu: 'Roles', url: '/roles' });
     }
     if (roleData.viewUserList) {
-      navigation.push({ menu: 'Users', url: '/users' });
+      navigation.push({ icon: <PeopleOutlineIcon />, menu: 'Users', url: '/users' });
     }
   }
 
   if (status === 'loading') {
     return <Loading />;
+  }
+
+  if (status === "unauthenticated") {
+    return router.push('/');
   }
 
   const handleSubmit = (e) => {
@@ -166,8 +216,8 @@ export default function App() {
     return (
       <Box role="presentation">
         <SidebarHeader>
-          {!collapsed && <h2>Tracify</h2>}
-          <IconButton sx={{ display: { xs: 'block', lg: 'none' }, color: 'inherit' }}>
+          {!collapsed && <Image width="150" height="150" src="/tracify_logo.png" alt="tracify" />}
+          <IconButton sx={{ display: { xs: 'block', lg: 'none' } }}>
             <CloseIcon onClick={toggleMobileDrawer} />
           </IconButton>
         </SidebarHeader>
@@ -177,9 +227,9 @@ export default function App() {
             <StyledLink href={item.url} key={index}>
               <SidebarItem selected={pathname === item.url} disablePadding>
                 <ListItemButton>
-                  <IconContainer>
+                  <IconItem>
                     {item.icon}
-                  </IconContainer>
+                  </IconItem>
                   {!collapsed && <ListItemText primary={item.menu} />}
                 </ListItemButton>
               </SidebarItem>
@@ -199,9 +249,9 @@ export default function App() {
       {/* Header */}
       <Header collapsed={collapsed}>
         <IconButton
+          color="inherit"
           onClick={toggleMobileDrawer}
           variant="outlined"
-          color="inherit"
           sx={{ display: { xs: "block", lg: "none" }, marginX: 2 }}
         >
           <MenuIcon />

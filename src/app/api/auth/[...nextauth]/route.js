@@ -30,7 +30,10 @@ export const authOptions = {
             return {
               id: account._id.toString(),
               firstname: account.firstname,
-              role: account.role,
+              email: account.email,
+              roleName: roleData.name,
+              schoolCategory: roleData.schoolCategory,
+              userType: roleData.userType,
               roleData: roleData.permissions,
             };
           } else {
@@ -66,10 +69,13 @@ export const authOptions = {
         try {
           const dbUser = await getUserbyEmail(user.email);
           if (dbUser) {
-            const roleData = await roles.findOne({ name: account.role });
+            const roleData = await roles.findOne({ _id: dbUser.role });
             user.id = dbUser._id.toString();
             user.firstname = dbUser.firstname;
-            user.role = dbUser.role;
+            user.email = dbUser.email;
+            user.roleName = roleData.name;
+            user.schoolCategory = roleData.schoolCategory;
+            user.userType = roleData.userType;
             user.roleData = roleData.permissions;
 
             return true;
@@ -89,7 +95,10 @@ export const authOptions = {
       if (user) {
         token.id = user.id;
         token.firstname = user.firstname;
-        token.role = user.role;
+        token.email = user.email;
+        token.roleName = user.name;
+        token.schoolCategory = user.schoolCategory;
+        token.userType = user.userType;
         if (user.roleData) {
           token.roleData = user.roleData; // Add office/user details
         }
@@ -101,7 +110,10 @@ export const authOptions = {
       if (token) {
         session.user.id = token.id;
         session.user.firstname = token.firstname;
-        session.user.role = token.role;
+        session.user.email = token.email;
+        session.user.roleName = token.name;
+        session.user.schoolCategory = token.schoolCategory;
+        session.user.userType = token.userType;
         session.user.roleData = token.roleData || null; // Include role-specific data
       }
       return session;

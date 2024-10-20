@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { Paper } from "@mui/material";
 import Loading from "./components/Loading";
 import Authenticated from "./components/Authenticated";
+import Image from "next/image";
 
 const StyledLink = styled(Link)`
   text-decoration: none;
@@ -103,14 +104,12 @@ export default function Home() {
           <Paper elevation={2} sx={{ height: "100%" }}>
             <Box
               sx={{
-                paddingTop: "4rem",
-                paddingBottom: "2rem",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Typography level="h1">Tracify</Typography>
+              <Image width="200" height="200" src="/tracify_logo1.png" alt="tracify" />
             </Box>
             <form onSubmit={handleSubmit}>
               <Box sx={{ padding: "1rem", textAlign: "center" }}>

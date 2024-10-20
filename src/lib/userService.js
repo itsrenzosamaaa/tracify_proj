@@ -5,8 +5,8 @@ const getUserbyEmail = async (email) => {
   try {
     await dbConnect();
 
-    const user = await user.findOne({ emailAddress: email }).lean();
-    return user;
+    const findUser = await user.findOne({ emailAddress: email }).lean();
+    return findUser;
   } catch (error) {
     console.error("Error fetching user:", error);
     return null;

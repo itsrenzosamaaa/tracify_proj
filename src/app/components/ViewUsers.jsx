@@ -5,6 +5,7 @@ import { Box, Typography, FormLabel, Input, FormControl, Button, Card, CardConte
 import { Grid, Table, TableHead, TableBody, TableRow, TableCell, TablePagination } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
 const ViewUsers = ({ users, roles, fetchUsers, session }) => {
     const [firstname, setFirstname] = useState('');
@@ -73,11 +74,13 @@ const ViewUsers = ({ users, roles, fetchUsers, session }) => {
 
     return (
         <>
+            <TitleBreadcrumbs title="Manage Users" text="Users" />
+
             <Grid container spacing={2}>
                 <Grid item lg={7} xs={12}>
                     <Box sx={{ mt: 4 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography level='h4' gutterBottom>Manage Users</Typography>
+                            <Typography level='h4' gutterBottom>View Users</Typography>
                         </Box>
                         <Card sx={{ height: '426px' }}>
                             <CardContent sx={{ padding: 0 }}>

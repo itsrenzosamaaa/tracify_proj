@@ -1,39 +1,31 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Typography, Grid, Box, Link, Breadcrumbs, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } from '@mui/joy'
-import { Paper } from '@mui/material'
+import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } from '@mui/joy'
+import { Paper, Badge } from '@mui/material'
 import CheckIcon from '@mui/icons-material/Check';
 import ItemsTable from './Table/ItemsTable'
 import AddIcon from '@mui/icons-material/Add';
+import PublishFoundItem from './Modal/PublishFoundItem';
+import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
 const FoundItemsList = ({ items }) => {
     const [status, setStatus] = useState('Request');
+    const [open, setOpen] = useState(false);
 
     const filteredItems = items.filter(item => item.status === status)
+    const statusOptions = ['Request', 'Validating', 'Published', 'Reserved'];
 
     return (
         <>
-            <Box sx={{ marginBottom: '1rem' }}>
-                <Typography level="h5" letterSpacing={2} sx={{ fontSize: '24px', fontWeight: 'bold', mt: 5 }}>
-                    List of Found Items
-                </Typography>
-                <Grid item xs={12} sx={{ mt: 2 }}>
-                    <Breadcrumbs aria-label="breadcrumb" sx={{ fontSize: { xs: '14px', sm: '15px', md: '15px' } }}>
-                        <Link letterSpacing={2} underline="hover" color="inherit" href="/dashboard">
-                            Home
-                        </Link>
-                        <Typography letterSpacing={2} color="text.primary" sx={{ fontSize: { xs: '14px', sm: '15px', md: '15px' } }}>Found Items</Typography>
-                    </Breadcrumbs>
-                </Grid>
-            </Box>
+            <TitleBreadcrumbs title="List of Found Items" text="Found Items" />
 
             <Grid container spacing={2}>
                 <Grid item xs={12} lg={12}>
                     <Paper elevation={2} sx={{ padding: '1rem' }}>
                         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <FormControl>
-                                <FormLabel>Select Status</FormLabel>
+                                <FormLabel>Filter by Status</FormLabel>
                                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
                                     <RadioGroup
                                         name="status-selection"
@@ -41,9 +33,9 @@ const FoundItemsList = ({ items }) => {
                                         orientation="horizontal"
                                         sx={{ flexWrap: 'wrap', gap: 1 }}
                                     >
-                                        {['Request', 'Validating', 'Published', 'Reserved'].map((name) => {
+                                        {statusOptions.map((name) => {
                                             const checked = status === name;
-                                            return (
+                                            const chipContent = (
                                                 <Chip
                                                     key={name}
                                                     variant="plain"
@@ -68,11 +60,22 @@ const FoundItemsList = ({ items }) => {
                                                     />
                                                 </Chip>
                                             );
+
+                                            return (
+                                                <Badge
+                                                    key={name}
+                                                    badgeContent={1}
+                                                    color="error"
+                                                >
+                                                    {chipContent}
+                                                </Badge>
+                                            );
                                         })}
                                     </RadioGroup>
                                 </Box>
                             </FormControl>
-                            <Button startDecorator={<AddIcon />}>Publish a Found Item</Button>
+                            <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Found Item</Button>
+                            <PublishFoundItem open={open} onClose={() => setOpen(false)} />
                         </Box>
                         <ItemsTable items={filteredItems} />
                     </Paper>

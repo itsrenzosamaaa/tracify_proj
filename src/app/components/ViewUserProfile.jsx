@@ -8,23 +8,12 @@ import Bio from './Profile/Bio';
 import ProgBadgeDisplay from './Profile/ProgBadgeDisplay';
 import RecentRatingsFromUser from './Profile/RecentRatingsFromUser';
 import RecentItems from './Profile/RecentItems';
+import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
 const ViewUserProfile = ({ profile, role, foundItems, lostItems }) => {
     return (
         <>
-            <Box sx={{ marginBottom: '1rem' }}>
-                <Typography level="h5" letterSpacing={2} sx={{ fontSize: '24px', fontWeight: 'bold', mt: 5 }}>
-                    Profile
-                </Typography>
-                <Grid item xs={12} sx={{ mt: 2 }}>
-                    <Breadcrumbs aria-label="breadcrumb" sx={{ fontSize: { xs: '14px', sm: '15px', md: '15px' } }}>
-                        <Link letterSpacing={2} underline="hover" color="inherit" href="/dashboard">
-                            Home
-                        </Link>
-                        <Typography letterSpacing={2} color="text.primary" sx={{ fontSize: { xs: '14px', sm: '15px', md: '15px' } }}>Profile</Typography>
-                    </Breadcrumbs>
-                </Grid>
-            </Box>
+            <TitleBreadcrumbs title="Profile" text="Profile" />
             <Grid container spacing={2} sx={{ marginBottom: '1rem' }}>
                 <Grid item xs={12} sm={12} md={4} lg={4}>
                     <AvatarWithName role={role} user={profile} />
