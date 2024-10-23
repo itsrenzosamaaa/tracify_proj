@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
 import { useSession } from 'next-auth/react';
+import { FindInPageRounded } from '@mui/icons-material';
 
 const PublishFoundItem = ({ open, onClose }) => {
     const [users, setUsers] = useState([]);
@@ -13,7 +14,9 @@ const PublishFoundItem = ({ open, onClose }) => {
     const [location, setLocation] = useState('');
     const [foundDate, setFoundDate] = useState('');
     const [image, setImage] = useState(null);
+    const [studentFindItem, setStudentFindItem] = useState(false);
     const [itemIdentifiable, setItemIdentifiable] = useState(false);
+    const [finder, setFinder] = useState('');
     const [owner, setOwner] = useState('');
     const { data: session, status } = useSession();
 
@@ -26,7 +29,7 @@ const PublishFoundItem = ({ open, onClose }) => {
     //             const data = await response.json();
     //             const filteredUsers = data.filter(user => )
     //         } catch (error) {
-                
+
     //         }
     //     }
     // }, [])
@@ -127,8 +130,31 @@ const PublishFoundItem = ({ open, onClose }) => {
                                     )}
                                 </FormControl>
                                 <FormControl>
+                                    <Checkbox label="Did the student find this item?" checked={studentFindItem} onChange={(e) => setStudentFindItem(e.target.checked)} />
+                                </FormControl>
+                                <FormControl>
                                     <Checkbox label="Is the item identifiable to owner?" checked={itemIdentifiable} onChange={(e) => setItemIdentifiable(e.target.checked)} />
                                 </FormControl>
+                                {studentFindItem &&
+                                    <FormControl>
+                                        <FormLabel>Who is the finder?</FormLabel>
+                                        <Autocomplete
+                                            placeholder="Select a finder"
+                                            options={users || []}  // Ensure users is an array
+                                            value={finder}  // Ensure value corresponds to an option in users
+                                            onChange={(event, value) => {
+                                                setOwner(value); // Update state with selected user
+                                            }}
+                                            getOptionLabel={(user) => {
+                                                if (!user || !user.firstname || !user.lastname) {
+                                                    return 'No Options'; // Safeguard in case user data is undefined
+                                                }
+                                                return `${user.firstname} ${user.lastname}`; // Correctly format user names
+                                            }}
+                                            isOptionEqualToValue={(option, value) => option.id === value?.id} // Ensure comparison by unique identifier
+                                        />
+                                    </FormControl>
+                                }
                                 {itemIdentifiable &&
                                     <FormControl>
                                         <FormLabel>Who is the owner?</FormLabel>

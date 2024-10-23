@@ -5,20 +5,17 @@ import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } fr
 import { Paper, Badge } from '@mui/material'
 import CheckIcon from '@mui/icons-material/Check';
 import ItemsTable from './Table/ItemsTable'
-import AddIcon from '@mui/icons-material/Add';
-import PublishLostItem from './Modal/PublishLostItems';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
-const LostItemsList = ({ items }) => {
-    const [status, setStatus] = useState('Missing');
-    const [open, setOpen] = useState(false);
+const ItemRetrievalList = ({ items }) => {
+    const [status, setStatus] = useState('Claim Request');
 
     const filteredItems = items.filter(item => item.status === status)
-    const statusOptions = ['Missing', 'Request'];
+    const statusOptions = ['Claim Request', 'Reserved'];
 
     return (
         <>
-            <TitleBreadcrumbs title="List of Reported Lost Items" text="Lost Items" />
+            <TitleBreadcrumbs title="List of Claim Requests" text="Item Retrieval" />
 
             <Grid container spacing={2}>
                 <Grid item xs={12} lg={12}>
@@ -60,6 +57,7 @@ const LostItemsList = ({ items }) => {
                                                     />
                                                 </Chip>
                                             );
+
                                             return (
                                                 <Badge
                                                     key={name}
@@ -73,8 +71,6 @@ const LostItemsList = ({ items }) => {
                                     </RadioGroup>
                                 </Box>
                             </FormControl>
-                            <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Lost Item</Button>
-                            <PublishLostItem open={open} onClose={() => setOpen(false)} />
                         </Box>
                         <ItemsTable items={filteredItems} />
                     </Paper>
@@ -84,4 +80,4 @@ const LostItemsList = ({ items }) => {
     )
 }
 
-export default LostItemsList;
+export default ItemRetrievalList;

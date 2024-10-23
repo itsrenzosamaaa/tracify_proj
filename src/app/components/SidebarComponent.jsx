@@ -25,13 +25,15 @@ import HomeIcon from '@mui/icons-material/Home';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LuggageIcon from '@mui/icons-material/Luggage';
 import SearchIcon from '@mui/icons-material/Search';
-import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import HistoryIcon from '@mui/icons-material/History';
 import LinkIcon from '@mui/icons-material/Link';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import StarRateIcon from '@mui/icons-material/StarRate';
 import SecurityIcon from '@mui/icons-material/Security';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
+import FindInPageIcon from '@mui/icons-material/FindInPage';
+import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 // Updated Styled Link
 const StyledLink = styled(Link)`
@@ -150,42 +152,39 @@ export default function App() {
 
   // Handling authenticated session and adding routes
   if (status === "authenticated") {
-    const roleData = session?.user?.roleData;
-
-    if (roleData.viewUserProfile) {
+    if (session?.user?.userType === 'student') {
       navigation.push({ icon: <AccountCircleIcon />, menu: 'Profile', url: '/profile' });
-    }
-    if (roleData.viewMyItems) {
       navigation.push({ icon: <LuggageIcon />, menu: 'My Items', url: '/my-items' });
-    }
-    if (roleData.viewRequestReportedFoundItems
-      || roleData.viewValidatingItems
-      || roleData.viewPublishedItems
-      || roleData.viewRequestItemRetrieval
-      || roleData.viewReservedItems) {
-      navigation.push({ icon: <SearchIcon />, menu: 'Found Items', url: '/found-items' });
-    }
-    if (roleData.viewRequestReportedLostItems
-      || roleData.viewMissingItems) {
-      navigation.push({ icon: <QuestionMarkIcon />, menu: 'Lost Items', url: '/lost-items' });
-    }
-    if (roleData.viewItemHistory) {
-      navigation.push({ icon: <HistoryIcon />, menu: 'Item History', url: '/item-history' });
-    }
-    if (roleData.matchItems) {
       navigation.push({ icon: <LinkIcon />, menu: 'Match Items', url: '/match-items' });
-    }
-    if (roleData.viewBadges) {
-      navigation.push({ icon: <EmojiEventsOutlinedIcon />, menu: 'Badges', url: '/badges' });
-    }
-    if (roleData.viewRatings) {
       navigation.push({ icon: <StarRateIcon />, menu: 'Ratings', url: '/ratings' });
-    }
-    if (roleData.viewRoles) {
-      navigation.push({ icon: <SecurityIcon />, menu: 'Roles', url: '/roles' });
-    }
-    if (roleData.viewUserList) {
-      navigation.push({ icon: <PeopleOutlineIcon />, menu: 'Users', url: '/users' });
+    } else {
+      // Check role-based permissions for non-students
+      const roleData = session?.user?.permissions;
+
+      if (roleData?.manageRequestReportedFoundItems) {
+        navigation.push({ icon: <FindInPageIcon />, menu: 'Reported Items', url: '/found-items' });
+      }
+      if (roleData?.manageRequestItemRetrieval) {
+        navigation.push({ icon: <MoveToInboxIcon />, menu: 'Item Retrieval', url: '/item-retrieval' });
+      }
+      if (roleData?.manageRequestReportedLostItems) {
+        navigation.push({ icon: <HelpOutlineIcon />, menu: 'Lost Items', url: '/lost-items' });
+      }
+      if (roleData?.viewItemHistory) {
+        navigation.push({ icon: <HistoryIcon />, menu: 'Item History', url: '/item-history' });
+      }
+      if (roleData?.viewBadges) {
+        navigation.push({ icon: <EmojiEventsOutlinedIcon />, menu: 'Badges', url: '/badges' });
+      }
+      if (roleData?.viewRoles) {
+        navigation.push({ icon: <SecurityIcon />, menu: 'Roles', url: '/roles' });
+      }
+      if (roleData?.viewAdminsList) {
+        navigation.push({ icon: <PeopleOutlineIcon />, menu: 'Admin Users', url: '/admin-users' });
+      }
+      if (roleData?.viewStudentsList) {
+        navigation.push({ icon: <PeopleOutlineIcon />, menu: 'Student Users', url: '/student-users' });
+      }
     }
   }
 

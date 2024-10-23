@@ -7,8 +7,7 @@ import UserDashboard from '@/app/components/Dashboard/UserDashboard';
 import Loading from '@/app/components/Loading';
 
 const DashboardPage = () => {
-  const { data: session, status } = useSession();
-  const [role, setRole] = useState(null);
+  const { data: session, status } = useSession();1
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -25,8 +24,8 @@ const DashboardPage = () => {
 
   return (
     <>
-      {session.user.userType === 'Admin' && <AdminDashboard session={session} />}
-      {session.user.userType === 'User' && <UserDashboard session={session} />}
+      {session.user.userType === 'admin' && <AdminDashboard session={session} />}
+      {session.user.userType === 'student' && <UserDashboard session={session} />}
     </>
   )
 }

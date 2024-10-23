@@ -60,7 +60,7 @@ const ViewBadges = ({ users = [], roles, session }) => {
                 <Grid item lg={7} xs={12}>
                     <Box sx={{ mt: 4 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography level='h4' gutterBottom>Manage Badges</Typography>
+                            <Typography level='h4' gutterBottom>View Badges</Typography>
                         </Box>
                         <Card sx={{ height: '426px' }}>
                             <CardContent sx={{ padding: 0 }}>
@@ -77,41 +77,29 @@ const ViewBadges = ({ users = [], roles, session }) => {
                                     >
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>Name</TableCell>
-                                                <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>Role</TableCell>
-                                                <TableCell sx={{ width: { lg: '30%' }, display: { xs: 'none', lg: 'table-cell' } }}>Email Address</TableCell>
-                                                <TableCell>Actions</TableCell>
+                                                {/* Image column: hidden on xs and sm screens */}
+                                                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, width: { md: '15%' } }}>Image</TableCell>
+                                                {/* Title column: width adjusted for xs and lg */}
+                                                <TableCell sx={{ width: { xs: '70%', md: '40%' } }}>Title</TableCell>
+                                                {/* Actions column */}
+                                                <TableCell sx={{ width: { xs: '30%', md: '20%' } }}>Actions</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {/* {users.length > 0 ? (
-                                                users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user, index) => (
-                                                    <TableRow key={index}>
-                                                        <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>{user.firstname} {user.lastname}</TableCell>
-                                                        <TableCell sx={{ width: { xs: '30%', lg: '20%' } }}>{roles.map(role => role._id === user.role ? role.name : '')}</TableCell>
-                                                        <TableCell sx={{ width: { lg: '30%' }, display: { xs: 'none', lg: 'table-cell' } }}>{user.emailAddress}</TableCell>
-                                                        <TableCell>
-                                                            {session.user.id !== user._id && (
-                                                                <Box sx={{ display: 'flex', gap: 1 }}>
-                                                                    <Button sx={{ display: { xs: 'none', lg: 'block' } }}>Edit</Button>
-                                                                    <Button sx={{ display: { xs: 'none', lg: 'block' } }} color="danger">Delete</Button>
-
-                                                                    <Button size="small" sx={{ display: { xs: 'block', lg: 'none' } }}>
-                                                                        <EditIcon />
-                                                                    </Button>
-                                                                    <Button size="small" sx={{ display: { xs: 'block', lg: 'none' } }} color="danger">
-                                                                        <DeleteIcon />
-                                                                    </Button>
-                                                                </Box>
-                                                            )}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))
-                                            ) : (
-                                                <TableRow>
-                                                    <TableCell colSpan={3} align="center">Loading users...</TableCell>
-                                                </TableRow>
-                                            )} */}
+                                            <TableRow>
+                                                {/* Image cell: hidden on xs and sm */}
+                                                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Image Content</TableCell>
+                                                {/* Title cell */}
+                                                <TableCell>Sample Title</TableCell>
+                                                {/* Actions: stack buttons vertically on smaller screens */}
+                                                <TableCell>
+                                                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1 }}>
+                                                        <Button size="small">View</Button>
+                                                        <Button size="small">Edit</Button>
+                                                        <Button size="small" color="danger">Delete</Button>
+                                                    </Box>
+                                                </TableCell>
+                                            </TableRow>
                                         </TableBody>
                                     </Table>
                                 </Box>
@@ -154,7 +142,7 @@ const ViewBadges = ({ users = [], roles, session }) => {
                                                 onChange={(e) => setDescription(e.target.value)}
                                                 required
                                             />
-                                            <FormHelperText>Provide a description on how users can obtain this badge.</FormHelperText>
+                                            <FormHelperText>Provide a description on how students can obtain this badge.</FormHelperText>
                                         </FormControl>
                                         <FormControl>
                                             <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>

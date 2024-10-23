@@ -1,10 +1,12 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Box, Typography, Table, Button, Chip, Modal, ModalDialog, ModalClose, DialogContent } from '@mui/joy';
+import { Box, Typography, Table, Button, Chip, Modal, ModalDialog, ModalClose, DialogContent, Input } from '@mui/joy';
 import { Card, Grid, CardContent, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
+import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
+import SearchIcon from "@mui/icons-material/Search"
 
 const ViewRoles = ({ roles, session }) => {
     const router = useRouter();
@@ -12,14 +14,16 @@ const ViewRoles = ({ roles, session }) => {
 
     return (
         <>
+            <TitleBreadcrumbs title="Manage Roles" text="Roles" />
             <Grid container spacing={2}>
                 <Grid item lg={12}>
                     <Box sx={{ mt: 4 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography level='h4' gutterBottom>Manage Roles</Typography>
-                            <Button onClick={() => router.push('roles/add_role')} startDecorator={<AddIcon />}>Add Role</Button>
-                        </Box>
+                        <Typography level='h4' gutterBottom>View Roles</Typography>
                         <Card>
+                            <Box sx={{ padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Input startDecorator={<SearchIcon />} />
+                                <Button onClick={() => router.push('roles/add_role')} startDecorator={<AddIcon />}>Add Role</Button>
+                            </Box>
                             <CardContent>
                                 <Table
                                     variant="outlined"
@@ -33,7 +37,6 @@ const ViewRoles = ({ roles, session }) => {
                                     <TableHead>
                                         <TableRow>
                                             <TableCell sx={{ width: '30%' }}>Role</TableCell>
-                                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>User Type</TableCell>
                                             <TableCell>Actions</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -42,13 +45,10 @@ const ViewRoles = ({ roles, session }) => {
                                             roles.map(role => (
                                                 <TableRow key={role._id}>
                                                     <TableCell sx={{ width: '30%' }}>{role.name}</TableCell>
-                                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
-                                                        {role.userType}
-                                                    </TableCell>
                                                     <TableCell sx={{ display: 'flex', gap: 1 }}>
-                                                        <Button onClick={() => setOpen(role._id)}>View Permissions</Button>
-                                                        {session.user.roleData.editRole && <Button>Edit</Button>}
-                                                        {session.user.roleData.deleteRole && <Button color="danger">Delete</Button>}
+                                                        <Button size="small1" onClick={() => setOpen(role._id)}>View Permissions</Button>
+                                                        {session.user.roleData.editRole && <Button size="small1">Edit</Button>}
+                                                        {session.user.roleData.deleteRole && <Button size="small1" color="danger">Delete</Button>}
                                                         <Modal open={open === role._id} onClose={() => setOpen(null)}>
                                                             <ModalDialog>
                                                                 <Typography level="h4">Permissions List</Typography>

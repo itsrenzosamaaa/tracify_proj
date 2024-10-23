@@ -10,15 +10,15 @@ import PublishFoundItem from './Modal/PublishFoundItem';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
 const FoundItemsList = ({ items }) => {
-    const [status, setStatus] = useState('Request');
+    const [status, setStatus] = useState('Published');
     const [open, setOpen] = useState(false);
 
     const filteredItems = items.filter(item => item.status === status)
-    const statusOptions = ['Request', 'Validating', 'Published', 'Reserved'];
+    const statusOptions = ['Published', 'Request', 'Validating'];
 
     return (
         <>
-            <TitleBreadcrumbs title="List of Found Items" text="Found Items" />
+            <TitleBreadcrumbs title="List of Reported Found Items" text="Found Items" />
 
             <Grid container spacing={2}>
                 <Grid item xs={12} lg={12}>

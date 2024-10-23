@@ -10,13 +10,13 @@ import RecentRatingsFromUser from './Profile/RecentRatingsFromUser';
 import RecentItems from './Profile/RecentItems';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
-const ViewUserProfile = ({ profile, role, foundItems, lostItems }) => {
+const ViewUserProfile = ({ profile, foundItems = [], lostItems = [] }) => {
     return (
         <>
             <TitleBreadcrumbs title="Profile" text="Profile" />
             <Grid container spacing={2} sx={{ marginBottom: '1rem' }}>
                 <Grid item xs={12} sm={12} md={4} lg={4}>
-                    <AvatarWithName role={role} user={profile} />
+                    <AvatarWithName user={profile} />
                 </Grid>
                 <Grid item xs={12} sm={12} md={4} lg={4}>
                     <Bio user={profile} />

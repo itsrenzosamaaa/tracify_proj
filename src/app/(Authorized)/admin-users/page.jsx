@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react';
 import { Box } from '@mui/joy';
-import ViewUsers from '@/app/components/ViewUsers';
+import ViewAdminUsers from '@/app/components/ViewAdminUsers';
 
 const UsersPage = () => {
     const { data: session, status } = useSession();
-    const [users, setUsers] = useState([]);
+    const [adminUsers, setAdminUsers] = useState([]);
     const [roles, setRoles] = useState([]);
 
     const fetchRoles = async () => {
@@ -20,19 +20,19 @@ const UsersPage = () => {
         }
     }
 
-    const fetchUsers = async () => {
+    const fetchAdminUsers = async () => {
         try {
-            const response = await fetch('/api/user');
+            const response = await fetch('/api/admin-users');
             const data = await response.json();
-            setUsers(data);
+            setAdminUsers(data);
         } catch (error) {
             console.error(error);
         }
     }
 
     useEffect(() => {
+        fetchAdminUsers();
         fetchRoles();
-        fetchUsers();
     }, []);
 
     if (status === 'loading') {
@@ -41,7 +41,7 @@ const UsersPage = () => {
 
     return (
         <>
-            <ViewUsers users={users} roles={roles} fetchUsers={fetchUsers} session={session} />
+            <ViewAdminUsers users={adminUsers} roles={roles} fetchAdminUsers={fetchAdminUsers} session={session} />
         </>
     )
 }

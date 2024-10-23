@@ -1,10 +1,11 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import getUserbyEmail from "@/lib/userService";
 import dbConnect from "@/lib/mongodb";
-import roles from "@/lib/models/roles";
-import user from "@/lib/models/user";
+import Roles from "@/lib/models/roles";
+import Account from "@/lib/models/account";
+import Admin from "@/lib/models/admin";
+import Student from "@/lib/models/student";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
@@ -18,7 +19,7 @@ export const authOptions = {
       async authorize(credentials) {
         try {
           await dbConnect();
-          const account = await user.findOne({
+          const account = await Account.findOne({
             username: credentials.username,
           });
 
@@ -26,16 +27,7 @@ export const authOptions = {
             account &&
             bcrypt.compareSync(credentials.password, account.password)
           ) {
-            const roleData = await roles.findOne({ _id: account.role });
-            return {
-              id: account._id.toString(),
-              firstname: account.firstname,
-              email: account.email,
-              roleName: roleData.name,
-              schoolCategory: roleData.schoolCategory,
-              userType: roleData.userType,
-              roleData: roleData.permissions,
-            };
+            return await getUserDetails(account);
           } else {
             console.error("Invalid username or password");
             return null;
@@ -51,7 +43,7 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
-          prompt: "select_account", // Force the user to select an account
+          prompt: "select_account",
         },
       },
     }),
@@ -64,62 +56,107 @@ export const authOptions = {
     maxAge: 60 * 60, // 1 hour
   },
   callbacks: {
-    async signIn({ user, account }) {
-      if (account.provider === "google" && user.email) {
-        try {
-          const dbUser = await getUserbyEmail(user.email);
-          if (dbUser) {
-            const roleData = await roles.findOne({ _id: dbUser.role });
-            user.id = dbUser._id.toString();
-            user.firstname = dbUser.firstname;
-            user.email = dbUser.email;
-            user.roleName = roleData.name;
-            user.schoolCategory = roleData.schoolCategory;
-            user.userType = roleData.userType;
-            user.roleData = roleData.permissions;
-
-            return true;
-          } else {
+    async signIn({ user, account, profile }) {
+      try {
+        // If Google sign-in, find user by email
+        if (account.provider === "google" && user.email) {
+          await dbConnect();
+          const dbAccount = await Account.findOne({ emailAddress: user.email });
+          if (!dbAccount) {
             console.error("User not found in the database.");
-            return false; // Deny sign-in if email not found in the database
+            return false;
           }
-        } catch (error) {
-          console.error("Error checking user in database:", error);
-          return false;
+          const userDetails = await getUserDetails(dbAccount);
+
+          if (!userDetails) {
+            return false;
+          }
+
+          // Return the user details so they are passed to jwt callback
+          return userDetails;
         }
+        return true;
+      } catch (error) {
+        console.error("Error during sign-in:", error);
+        return false;
       }
-      return true;
     },
 
     async jwt({ token, user }) {
       if (user) {
+        // When user is available (for initial sign-in), store details in token
         token.id = user.id;
         token.firstname = user.firstname;
+        token.lastname = user.lastname;
+        token.contactNumber = user.contact_number;
         token.email = user.email;
-        token.roleName = user.name;
-        token.schoolCategory = user.schoolCategory;
+        token.schoolCategory = user.school_category;
         token.userType = user.userType;
-        if (user.roleData) {
-          token.roleData = user.roleData; // Add office/user details
-        }
+        token.office_name = user.office_name;
+        token.office_location = user.office_location;
+        token.roleName = user.roleName;
+        token.permissions = user.permissions;
       }
       return token;
     },
 
     async session({ session, token }) {
+      // Attach token data to session
       if (token) {
         session.user.id = token.id;
         session.user.firstname = token.firstname;
+        session.user.lastname = token.lastname;
+        session.user.contactNumber = token.contactNumber;
         session.user.email = token.email;
-        session.user.roleName = token.name;
         session.user.schoolCategory = token.schoolCategory;
         session.user.userType = token.userType;
-        session.user.roleData = token.roleData || null; // Include role-specific data
+        session.user.office_name = token.office_name;
+        session.user.office_location = token.office_location;
+        session.user.roleName = token.roleName;
+        session.user.permissions = token.permissions;
       }
       return session;
     },
   },
 };
+
+// Helper function to get user details based on account data
+async function getUserDetails(account) {
+  let details = null;
+  let userType = "";
+  let roleData = null;
+
+  if (account.type === "admin") {
+    details = await Admin.findOne({ account: account._id });
+    if (!details) {
+      console.error("Admin details not found.");
+      return null;
+    }
+    roleData = await Roles.findOne({ _id: details.role });
+    userType = "admin";
+  } else {
+    details = await Student.findOne({ account: account._id });
+    if (!details) {
+      console.error("Student details not found.");
+      return null;
+    }
+    userType = "student";
+  }
+
+  return {
+    id: details._id.toString(),
+    firstname: details.firstname,
+    lastname: details.lastname,
+    email: account.emailAddress,
+    contact_number: details.contactNumber,
+    school_category: details.school_category,
+    userType: userType,
+    office_name: details.office_name || null,
+    office_location: details.office_location || null,
+    roleName: roleData ? roleData.name : null,
+    permissions: roleData ? roleData.permissions : null,
+  };
+}
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
