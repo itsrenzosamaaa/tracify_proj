@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const FoundItemSchema = new mongoose.Schema({
   finder: {
     type: mongoose.Types.ObjectId,
-    ref: "User",
+    ref: "Student",
   },
   name: {
     type: String,
@@ -32,6 +32,7 @@ const FoundItemSchema = new mongoose.Schema({
       "Request",
       "Validating",
       "Published",
+      "Claim Request",
       "Reserved",
       "Resolved",
       "Invalid",
@@ -61,7 +62,7 @@ const FoundItemSchema = new mongoose.Schema({
   },
   monitoredBy: {
     type: mongoose.Types.ObjectId,
-    ref: "User",
+    ref: "Admin",
   },
 });
 

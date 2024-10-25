@@ -40,7 +40,6 @@ const FoundItemsList = ({ items }) => {
                                                     key={name}
                                                     variant="plain"
                                                     color={checked ? 'primary' : 'neutral'}
-                                                    startDecorator={checked && <CheckIcon sx={{ zIndex: 1, pointerEvents: 'none' }} />}
                                                     onClick={() => setStatus(name)} // Update status when Chip is clicked
                                                     sx={{ cursor: 'pointer' }}
                                                 >

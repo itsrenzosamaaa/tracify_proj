@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const LostItemSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Types.ObjectId,
-    ref: "User",
+    ref: "Student",
   },
   name: {
     type: String,

@@ -7,7 +7,7 @@ import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
 
-const ViewBadges = ({ users = [], roles, session }) => {
+const ViewBadges = ({ session, badges }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState(null);
@@ -50,8 +50,7 @@ const ViewBadges = ({ users = [], roles, session }) => {
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-    // Handle the case where session or session.user may be undefined
-    const isAddBadgesAllowed = session?.user?.roleData?.addBadges ?? false;
+    const isAddBadgesAllowed = session?.user?.permissions?.addBadge ?? false;
 
     return (
         <>
@@ -105,7 +104,7 @@ const ViewBadges = ({ users = [], roles, session }) => {
                                 </Box>
                                 <TablePagination
                                     component="div"
-                                    count={users}
+                                    count={badges}
                                     page={page}
                                     onPageChange={handleChangePage}
                                     rowsPerPage={rowsPerPage}

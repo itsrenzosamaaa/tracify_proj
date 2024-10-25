@@ -3,9 +3,8 @@
 import React, { useState } from 'react'
 import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } from '@mui/joy'
 import { Paper, Badge } from '@mui/material'
-import CheckIcon from '@mui/icons-material/Check';
-import ItemsTable from './Table/ItemsTable'
 import AddIcon from '@mui/icons-material/Add';
+import ItemsTable from './Table/ItemsTable'
 import PublishLostItem from './Modal/PublishLostItems';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
@@ -13,7 +12,9 @@ const LostItemsList = ({ items }) => {
     const [status, setStatus] = useState('Missing');
     const [open, setOpen] = useState(false);
 
-    const filteredItems = items.filter(item => item.status === status)
+    // Calculate the number of pending requests
+    const pendingRequestCount = items.filter(item => item.status === status).length;
+    const filteredItems = items.filter(item => item.status === status);
     const statusOptions = ['Missing', 'Request'];
 
     return (
@@ -35,13 +36,14 @@ const LostItemsList = ({ items }) => {
                                     >
                                         {statusOptions.map((name) => {
                                             const checked = status === name;
+                                            const showBadge = name === 'Request' && pendingRequestCount > 0;
+
                                             const chipContent = (
                                                 <Chip
                                                     key={name}
                                                     variant="plain"
                                                     color={checked ? 'primary' : 'neutral'}
-                                                    startDecorator={checked && <CheckIcon sx={{ zIndex: 1, pointerEvents: 'none' }} />}
-                                                    onClick={() => setStatus(name)} // Update status when Chip is clicked
+                                                    onClick={() => setStatus(name)}
                                                     sx={{ cursor: 'pointer' }}
                                                 >
                                                     <Radio
@@ -60,14 +62,19 @@ const LostItemsList = ({ items }) => {
                                                     />
                                                 </Chip>
                                             );
-                                            return (
+
+                                            return showBadge ? (
                                                 <Badge
                                                     key={name}
-                                                    badgeContent={1}
+                                                    badgeContent={pendingRequestCount}
                                                     color="error"
                                                 >
                                                     {chipContent}
                                                 </Badge>
+                                            ) : (
+                                                <React.Fragment key={name}>
+                                                    {chipContent}
+                                                </React.Fragment>
                                             );
                                         })}
                                     </RadioGroup>
@@ -81,7 +88,7 @@ const LostItemsList = ({ items }) => {
                 </Grid>
             </Grid>
         </>
-    )
+    );
 }
 
 export default LostItemsList;

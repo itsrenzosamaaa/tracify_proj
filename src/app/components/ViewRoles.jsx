@@ -47,8 +47,8 @@ const ViewRoles = ({ roles, session }) => {
                                                     <TableCell sx={{ width: '30%' }}>{role.name}</TableCell>
                                                     <TableCell sx={{ display: 'flex', gap: 1 }}>
                                                         <Button size="small1" onClick={() => setOpen(role._id)}>View Permissions</Button>
-                                                        {session.user.roleData.editRole && <Button size="small1">Edit</Button>}
-                                                        {session.user.roleData.deleteRole && <Button size="small1" color="danger">Delete</Button>}
+                                                        {session.user.permissions.editRole && <Button size="small">Edit</Button>}
+                                                        {session.user.permissions.deleteRole && <Button size="small" color="danger">Delete</Button>}
                                                         <Modal open={open === role._id} onClose={() => setOpen(null)}>
                                                             <ModalDialog>
                                                                 <Typography level="h4">Permissions List</Typography>

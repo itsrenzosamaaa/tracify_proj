@@ -4,103 +4,20 @@ import React, { useState } from 'react';
 import { Box, Typography, FormLabel, Input, FormControl, Button, Card, CardContent, Stack, Select, Option, Modal, ModalDialog, ModalClose } from '@mui/joy';
 import { Grid, Table, TableHead, TableBody, TableRow, TableCell, TablePagination } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
+import AddStudentModal from './Modal/AddStudent';
 
 const ViewStudentsUser = ({ users, fetchStudentUsers, session }) => {
     const [editingUserId, setEditingUserId] = useState(null);
     const [isEditMode, setIsEditMode] = useState(false);
-    const [firstname, setFirstname] = useState('');
-    const [lastname, setLastname] = useState('');
-    const [contactNumber, setContactNumber] = useState('');
-    const [schoolCategory, setSchoolCategory] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [emailAddress, setEmailAddress] = useState('');
-    const [open, setOpen] = useState(null);
+    const [deleteModal, setDeleteModal] = useState(null);
+    const [addModal, setAddModal] = useState(false);
 
     // Pagination state
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const accountFormData = {
-            username,
-            password,
-            emailAddress,
-            type: 'student',
-            date_created: new Date(),
-        };
-
-        const studentFormData = {
-            firstname,
-            lastname,
-            contactNumber,
-            school_category: schoolCategory,
-            account: '', // Will be set after account creation
-        };
-
-        try {
-            if (isEditMode && editingUserId) {
-                // Update existing admin user
-                const studentUpdateResponse = await fetch(`/api/student-users/${editingUserId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ ...accountFormData, ...studentFormData }),
-                });
-
-                if (studentUpdateResponse.ok) {
-                    alert('Student user updated successfully');
-                    resetForm();
-                    fetchStudentUsers(); // Refresh the list of users
-                } else {
-                    alert('Error updating student user');
-                }
-            } else {
-                // First, create the account and retrieve its _id
-                const accountResponse = await fetch('/api/accounts', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(accountFormData),
-                });
-
-                const accountData = await accountResponse.json();
-
-                if (accountData.success) {
-                    // Use the _id from accountData to set accountId in studentFormData
-                    studentFormData.account = accountData._id;
-
-                    // Now, create the admin with the account _id
-                    const adminResponse = await fetch('/api/student-users', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(studentFormData),
-                    });
-
-                    if (adminResponse.ok) {
-                        alert('Student user created successfully');
-                        resetForm();
-                        fetchStudentUsers(); // Refresh the list of users
-                    } else {
-                        alert('Error creating student user');
-                    }
-                } else {
-                    alert('Error creating account');
-                }
-            }
-        } catch (error) {
-            console.error(error);
-            alert('An error occurred while creating/updating the user');
-        }
-    };
+    const [rowsPerPage, setRowsPerPage] = useState(5);  
 
     // Function to reset the form after submission or cancelation
     const resetForm = () => {
@@ -113,24 +30,6 @@ const ViewStudentsUser = ({ users, fetchStudentUsers, session }) => {
         setSchoolCategory('');
         setIsEditMode(false); // Exit edit mode after submission
         setEditingUserId(null);
-    };
-
-    const cancelEdit = () => {
-        resetForm();
-        setIsEditMode(false);
-    }
-
-    // Function to handle the Edit button click and populate form with user data
-    const handleEdit = (user) => {
-        setIsEditMode(true);
-        setEditingUserId(user._id); // Track the user being edited
-        setFirstname(user.firstname);
-        setLastname(user.lastname);
-        setUsername(user.account.username);
-        setPassword(''); // You might want to leave this empty for security reasons
-        setContactNumber(user.contactNumber);
-        setEmailAddress(user.account.emailAddress);
-        setSchoolCategory(user.school_category);
     };
 
     const handleDelete = async (accountId) => {
@@ -176,18 +75,17 @@ const ViewStudentsUser = ({ users, fetchStudentUsers, session }) => {
         setPage(0);
     };
 
-    // Handle the case where session or session.user may be undefined
-    const isAddStudentAllowed = session?.user?.roleData?.addStudent ?? false;
-
     return (
         <>
             <TitleBreadcrumbs title="Manage Student Users" text="Student Users" />
 
             <Grid container spacing={2}>
-                <Grid item lg={7} xs={12}>
+                <Grid item lg={12} xs={12}>
                     <Box sx={{ mt: 4 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Typography level='h4' gutterBottom>View Student Users</Typography>
+                            {session?.user?.permissions?.addStudent && <Button startDecorator={<AddIcon />} onClick={() => setAddModal(true)}>Add Student</Button>}
+                            <AddStudentModal open={addModal} onClose={() => setAddModal(false)} />
                         </Box>
                         <Card sx={{ height: '426px' }}>
                             <CardContent sx={{ padding: 0 }}>
@@ -217,17 +115,17 @@ const ViewStudentsUser = ({ users, fetchStudentUsers, session }) => {
                                                             {session.user.id !== user._id && (
                                                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                                                     {/* Full buttons for larger screens */}
-                                                                    <Button onClick={() => handleEdit(user)} disabled={!session?.user?.roleData?.editStudent} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}>Edit</Button>
-                                                                    <Button onClick={() => setOpen(user._id)} disabled={!session?.user?.roleData?.deleteStudent} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }} color="danger">Delete</Button>
+                                                                    <Button disabled={!session?.user?.permissions?.editStudent} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}>Edit</Button>
+                                                                    <Button onClick={() => setDeleteModal(user._id)} disabled={!session?.user?.permissions?.deleteStudent} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }} color="danger">Delete</Button>
 
                                                                     {/* Icon buttons for smaller screens */}
-                                                                    <Button onClick={() => handleEdit(user)} disabled={!session?.user?.roleData?.editStudent} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }}>
+                                                                    <Button disabled={!session?.user?.permissions?.editStudent} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }}>
                                                                         <EditIcon />
                                                                     </Button>
-                                                                    <Button onClick={() => setOpen(user._id)} disabled={!session?.user?.roleData?.deleteStudent} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }} color="danger">
+                                                                    <Button onClick={() => setDeleteModal(user._id)} disabled={!session?.user?.permissions?.deleteStudent} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }} color="danger">
                                                                         <DeleteIcon />
                                                                     </Button>
-                                                                    <Modal open={open === user._id} onClose={() => setOpen(null)}>
+                                                                    <Modal open={deleteModal === user._id} onClose={() => setDeleteModal(null)}>
                                                                         <ModalDialog>
                                                                             <ModalClose aria-label="Close" sx={{ top: '16px', right: '16px' }} />
 
@@ -259,7 +157,7 @@ const ViewStudentsUser = ({ users, fetchStudentUsers, session }) => {
                                                                                     Confirm
                                                                                 </Button>
                                                                                 <Button
-                                                                                    onClick={() => setOpen(null)}
+                                                                                    onClick={() => setDeleteModal(null)}
                                                                                     variant="outlined"
                                                                                     aria-label="Cancel delete"
                                                                                 >
@@ -290,117 +188,6 @@ const ViewStudentsUser = ({ users, fetchStudentUsers, session }) => {
                                     rowsPerPage={rowsPerPage}
                                     onRowsPerPageChange={handleChangeRowsPerPage}
                                 />
-                            </CardContent>
-                        </Card>
-                    </Box>
-                </Grid>
-                <Grid item lg={5} xs={12}>
-                    <Box sx={{ mt: 4 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography level="h4" gutterBottom>{isEditMode ? 'Update Student' : 'Add New Student'}</Typography>
-                            {isEditMode && <Button onClick={cancelEdit} color="danger">Cancel</Button>}
-                        </Box>
-                        <Card>
-                            <CardContent>
-                                <form onSubmit={handleSubmit}>
-                                    <Stack spacing={2}>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                                            <Grid container spacing={2} sx={{ width: '100%' }}>
-                                                <Grid item xs={12} sm={6}>
-                                                    <FormControl fullWidth>
-                                                        <FormLabel>Username</FormLabel>
-                                                        <Input
-                                                            disabled={!isAddStudentAllowed}
-                                                            name="username"
-                                                            value={username}
-                                                            onChange={(e) => setUsername(e.target.value)}
-                                                            required={!isEditMode}
-                                                        />
-                                                    </FormControl>
-                                                </Grid>
-                                                <Grid item xs={12} sm={6}>
-                                                    <FormControl fullWidth>
-                                                        <FormLabel>Password</FormLabel>
-                                                        <Input
-                                                            disabled={!isAddStudentAllowed}
-                                                            name="password"
-                                                            type="password"
-                                                            value={password}
-                                                            onChange={(e) => setPassword(e.target.value)}
-                                                            required={!isEditMode}
-                                                        />
-                                                    </FormControl>
-                                                </Grid>
-                                            </Grid>
-
-                                            <Grid container spacing={2} sx={{ width: '100%', marginTop: '6px' }}>
-                                                <Grid item xs={12} sm={6}>
-                                                    <FormControl fullWidth>
-                                                        <FormLabel>First Name</FormLabel>
-                                                        <Input
-                                                            disabled={!isAddStudentAllowed}
-                                                            name="firstname"
-                                                            value={firstname}
-                                                            onChange={(e) => setFirstname(e.target.value)}
-                                                            required={!isEditMode}
-                                                        />
-                                                    </FormControl>
-                                                </Grid>
-                                                <Grid item xs={12} sm={6}>
-                                                    <FormControl fullWidth>
-                                                        <FormLabel>Last Name</FormLabel>
-                                                        <Input
-                                                            disabled={!isAddStudentAllowed}
-                                                            name="lastname"
-                                                            value={lastname}
-                                                            onChange={(e) => setLastname(e.target.value)}
-                                                            required={!isEditMode}
-                                                        />
-                                                    </FormControl>
-                                                </Grid>
-                                            </Grid>
-                                        </Box>
-
-                                        <FormControl>
-                                            <FormLabel>School Category</FormLabel>
-                                            <Select
-                                                disabled={!isAddStudentAllowed}
-                                                name="role"
-                                                value={schoolCategory}
-                                                onChange={(e, value) => setSchoolCategory(value)}
-                                                required={!isEditMode}
-                                            >
-                                                <Option value="Higher Education">Higher Education</Option>
-                                                <Option value="Basic Education">Basic Education</Option>
-                                            </Select>
-                                        </FormControl>
-                                        <FormControl>
-                                            <FormLabel>Contact Number</FormLabel>
-                                            <Input
-                                                disabled={!isAddStudentAllowed}
-                                                name="contactNumber"
-                                                value={contactNumber}
-                                                onChange={(e) => setContactNumber(e.target.value)}
-                                                required={!isEditMode}
-                                            />
-                                        </FormControl>
-                                        <FormControl>
-                                            <FormLabel>Email Address</FormLabel>
-                                            <Input
-                                                disabled={!isAddStudentAllowed}
-                                                name="email"
-                                                type="email"
-                                                value={emailAddress}
-                                                onChange={(e) => setEmailAddress(e.target.value)}
-                                                required={!isEditMode}
-                                            />
-                                        </FormControl>
-
-                                        <Button disabled={!isAddStudentAllowed} type="submit" fullWidth>
-                                            {isEditMode ? 'Update Student' : 'Add Student'}
-                                        </Button>
-                                    </Stack>
-                                </form>
                             </CardContent>
                         </Card>
                     </Box>

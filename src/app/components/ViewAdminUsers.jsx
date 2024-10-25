@@ -189,7 +189,7 @@ const ViewAdminUsers = ({ users, roles, fetchAdminUsers, session }) => {
     };
 
     // Handle the case where session or session.user may be undefined
-    const isAddAdminAllowed = session?.user?.roleData?.addAdmin ?? false;
+    const isAddAdminAllowed = session?.user?.permissions?.addAdmin ?? false;
 
     return (
         <>
@@ -231,14 +231,14 @@ const ViewAdminUsers = ({ users, roles, fetchAdminUsers, session }) => {
                                                             {session.user.id !== user._id && (
                                                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                                                     {/* Full buttons for larger screens */}
-                                                                    <Button onClick={() => handleEdit(user)} disabled={!session?.user?.roleData?.editAdmin} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}>Edit</Button>
-                                                                    <Button onClick={() => setOpen(user._id)} disabled={!session?.user?.roleData?.deleteAdmin} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }} color="danger">Delete</Button>
+                                                                    <Button onClick={() => handleEdit(user)} disabled={!session?.user?.permissions?.editAdmin} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}>Edit</Button>
+                                                                    <Button onClick={() => setOpen(user._id)} disabled={!session?.user?.permissions?.deleteAdmin} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }} color="danger">Delete</Button>
 
                                                                     {/* Icon buttons for smaller screens */}
-                                                                    <Button onClick={() => handleEdit(user)} disabled={!session?.user?.roleData?.editAdmin} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }}>
+                                                                    <Button onClick={() => handleEdit(user)} disabled={!session?.user?.permissions?.editAdmin} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }}>
                                                                         <EditIcon />
                                                                     </Button>
-                                                                    <Button onClick={() => setOpen(user._id)} disabled={!session?.user?.roleData?.deleteAdmin} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }} color="danger">
+                                                                    <Button onClick={() => setOpen(user._id)} disabled={!session?.user?.permissions?.deleteAdmin} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }} color="danger">
                                                                         <DeleteIcon />
                                                                     </Button>
                                                                     <Modal open={open === user._id} onClose={() => setOpen(null)}>

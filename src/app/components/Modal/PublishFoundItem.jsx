@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
 import { useSession } from 'next-auth/react';
-import { FindInPageRounded } from '@mui/icons-material';
 
 const PublishFoundItem = ({ open, onClose }) => {
     const [users, setUsers] = useState([]);
@@ -22,23 +21,32 @@ const PublishFoundItem = ({ open, onClose }) => {
 
     console.log(session)
 
-    // useEffect(() => {
-    //     const fetchUsers = async () => {
-    //         try {
-    //             const response = await fetch('/api/user');
-    //             const data = await response.json();
-    //             const filteredUsers = data.filter(user => )
-    //         } catch (error) {
-
-    //         }
-    //     }
-    // }, [])
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch('/api/student-users');
+                const data = await response.json();
+                const filteredStudents = data.filter(student => student.school_category === session?.user?.schoolCategory)
+                setUsers(filteredStudents)
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        if(status === 'authenticated'){
+            fetchUsers();
+        }
+    }, [status, session?.user?.schoolCategory]);
 
     const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court'];
 
     const handleSubmit = (e) => {
-        e.preventDefault;
+        e.preventDefault();
+
+        if(finder === owner){
+            return alert('The finder and owner should not be the same student.')
+        }
     };
+
     const onDrop = (acceptedFiles) => {
         const file = acceptedFiles[0]; // Get the first selected file
         if (file) {
@@ -59,6 +67,10 @@ const PublishFoundItem = ({ open, onClose }) => {
     };
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
+
+    if(status === 'loading'){
+        return null;
+    }
     return (
         <>
             <Modal open={open} onClose={onClose}>
@@ -143,7 +155,7 @@ const PublishFoundItem = ({ open, onClose }) => {
                                             options={users || []}  // Ensure users is an array
                                             value={finder}  // Ensure value corresponds to an option in users
                                             onChange={(event, value) => {
-                                                setOwner(value); // Update state with selected user
+                                                setFinder(value); // Update state with selected user
                                             }}
                                             getOptionLabel={(user) => {
                                                 if (!user || !user.firstname || !user.lastname) {
