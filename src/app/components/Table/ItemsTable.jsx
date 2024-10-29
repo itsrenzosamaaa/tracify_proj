@@ -11,13 +11,15 @@ import {
     TablePagination
 } from "@mui/material";
 import React, { useState } from "react";
-import DoneIcon from '@mui/icons-material/Done';
-import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
 import ItemRequestApproveModal from "../Modal/ItemRequestApproveModal";
+import ItemValidatingModal from "../Modal/ItemValidatingModal";
+import ItemPublishedModal from "../Modal/ItemPublishedModal";
 
-const ItemsTable = ({ items }) => {
+const ItemsTable = ({ items, fetch }) => {
     const [approveModal, setApproveModal] = useState(null);
+    const [openValidatingModal, setOpenValidatingModal] = useState(null);
+    const [openPublishedModal, setOpenPublishedModal] = useState(null);
     const [page, setPage] = useState(0); // Current page
     const [rowsPerPage, setRowsPerPage] = useState(5); // Items per page
 
@@ -102,12 +104,22 @@ const ItemsTable = ({ items }) => {
                                     {row.name}
                                 </TableCell>
                                 <TableCell sx={{ display: 'flex', gap: 1 }}>
+                                {
+                                        row.status === 'Validating' 
+                                        &&
+                                        <>
+                                            <Button onClick={() => setOpenValidatingModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button onClick={() => setOpenValidatingModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
+                                            <ItemValidatingModal row={row} open={openValidatingModal} onClose={() => setOpenValidatingModal(null)} fetch={fetch} />
+                                        </>
+                                    }
                                     {
                                         row.status === 'Published' 
                                         &&
                                         <>
-                                            <Button size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
-                                            <Button size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
+                                            <Button onClick={() => setOpenPublishedModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button onClick={() => setOpenPublishedModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
+                                            <ItemPublishedModal row={row} open={openPublishedModal} onClose={() => setOpenPublishedModal(null)} />
                                         </>
                                     }
                                     {
@@ -124,7 +136,7 @@ const ItemsTable = ({ items }) => {
                                         <>
                                             <Button onClick={() => setApproveModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                             <Button onClick={() => setApproveModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
-                                            <ItemRequestApproveModal row={row} open={approveModal} onClose={() => setApproveModal(null)} />
+                                            <ItemRequestApproveModal row={row} open={approveModal} onClose={() => setApproveModal(null)} fetch={fetch} />
                                         </>
                                     }
                                 </TableCell>

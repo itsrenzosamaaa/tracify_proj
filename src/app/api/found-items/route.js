@@ -13,7 +13,15 @@ export async function GET() {
   try {
     await dbConnect();
 
-    const fetchFoundItems = await foundItem.find().populate('finder');
+    const fetchFoundItems = await foundItem.find()
+      .populate({
+          path: 'monitoredBy',
+          populate: {
+              path: 'role', // This populates the role of the monitoredBy
+              model: 'Role', // Ensure this matches your role model name
+          },
+      })
+      .populate('finder');
 
     console.log(fetchFoundItems)
 

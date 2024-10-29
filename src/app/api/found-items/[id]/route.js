@@ -8,7 +8,16 @@ export async function GET(req, { params }) {
     await dbConnect(); // Connect to your MongoDB database
 
     try {
-        const findFoundItem = await found_items.findOne({ _id : id }).lean(); // Fetch officer by ID
+        const findFoundItem = await found_items({ _id: id })
+            .populate({
+                path: 'monitoredBy',
+                populate: {
+                    path: 'role', // This populates the role of the monitoredBy
+                    model: 'Role', // Ensure this matches your role model name
+                },
+            })
+            .populate('finder') // Populate finder if necessary
+            .lean(); // Convert to plain JavaScript object
 
         if (!findFoundItem) {
             return NextResponse.json({ message: 'Lost item not found' }, { status: 404 });
@@ -22,18 +31,18 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
     const { id } = params; // Get the office ID from the URL
-    const { status } = await req.json();
+    const { status, ...fields } = await req.json();
 
     await dbConnect(); // Connect to MongoDB
 
     try {
-        const updateData = { status };
+        const updateData = { status, ...fields };
         if(status === 'Request'){
             updateData.dateRequest = new Date();
         }else if (status === 'Validating'){
             updateData.dateValidating = new Date();
-        }else if (status === 'Tracked'){
-            updateData.dateTracked = new Date();
+        }else if (status === 'Published'){
+            updateData.datePublished = new Date();
         }else if (status === 'Claimed'){
             updateData.dateClaimed = new Date();
         }else if (status === 'Invalid'){

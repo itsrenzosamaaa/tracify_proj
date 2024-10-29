@@ -214,7 +214,7 @@ export default function App() {
     return (
       <Box role="presentation">
         <SidebarHeader>
-          {!collapsed && <Image width="150" height="150" src="/tracify_logo.png" alt="tracify" />}
+          {!collapsed && <Image priority width="150" height="150" src="/tracify_logo.png" alt="tracify" />}
           <IconButton sx={{ display: { xs: 'block', lg: 'none' } }}>
             <CloseIcon onClick={toggleMobileDrawer} />
           </IconButton>

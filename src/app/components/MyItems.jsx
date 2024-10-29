@@ -8,12 +8,15 @@ import { CldImage } from 'next-cloudinary';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
 import Levenshtein from 'fast-levenshtein';
+import InfoIcon from '@mui/icons-material/Info';
+import ConfirmationRetrievalRequest from './Modal/ConfirmationRetrievalRequest';
 
 const MyItemsComponent = ({ session, status }) => {
   const [lostItems, setLostItems] = useState([]);
   const [foundItems, setFoundItems] = useState([]);
   const [requestedItems, setRequestedItems] = useState([]);
   const [suggestedMatches, setSuggestedMatches] = useState([]);
+  const [confirmationRetrievalModal, setConfirmationRetrievalModal] = useState(null);
   const router = useRouter();
 
   const fetchItems = useCallback(async () => {
@@ -308,21 +311,55 @@ const MyItemsComponent = ({ session, status }) => {
             suggestedMatches.map((item, index) => (
               <Card
                 key={index}
-                sx={{ maxWidth: 250, flexShrink: 0, boxShadow: 3, borderRadius: 2 }} // Adjusted maxWidth
+                sx={{
+                    maxWidth: 250,
+                    flexShrink: 0,
+                    boxShadow: 3,
+                    borderRadius: 2,
+                    transition: 'transform 0.2s, box-shadow 0.2s', // Add a transition for hover effects
+                    '&:hover': {
+                        transform: 'scale(1.05)', // Scale up on hover
+                        boxShadow: 6, // Increase shadow on hover
+                    },
+                }}
               >
                 <CldImage
-                  src={item.image}
-                  width={500} // Adjusted width to match smaller card size
-                  height={150} // Adjusted height to match smaller card size
-                  alt={item.name || "Item Image"}
-                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  style={{ objectFit: 'cover' }}
+                    src={item.image}
+                    width={500}
+                    height={150}
+                    alt={item.name || "Item Image"}
+                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    style={{ objectFit: 'cover', borderRadius: '8px 8px 0 0' }} // Rounded top corners
                 />
                 <CardContent>
-                  <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{item.name}</Typography>
-                  <Typography level="body2" sx={{ color: 'text.secondary' }}>{item.description}</Typography>
+                    <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
+                        {item.name}
+                    </Typography>
+                    <Typography level="body2" sx={{ color: 'text.secondary', marginBottom: '0.5rem' }}>
+                        {item.description}
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
+                        <Button
+                            onClick={() => router.push(`/my-items/${item._id}`)}
+                            sx={{ minWidth: '0', padding: '6px 8px' }} // Minimize button size
+                            aria-label={`View details for ${item.name}`} // Accessibility label
+                        >
+                            <InfoIcon />
+                        </Button>
+                        <Button
+                            onClick={() => setConfirmationRetrievalModal(item._id)}
+                            color="success"
+                            variant="contained" // Make it a contained button for better visibility
+                            fullWidth
+                            sx={{ padding: '6px 0' }} // Consistent button padding
+                            aria-label={`Claim request for ${item.name}`} // Accessibility label
+                        >
+                            Claim Request
+                        </Button>
+                    </Box>
                 </CardContent>
-              </Card>
+                <ConfirmationRetrievalRequest open={confirmationRetrievalModal === item._id} onClose={() => setConfirmationRetrievalModal(null)} item={item} />
+            </Card>
             )) :
             <Box
               sx={{
