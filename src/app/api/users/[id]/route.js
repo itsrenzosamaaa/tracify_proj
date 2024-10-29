@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
-import student from "@/lib/models/student";
+import user from "@/lib/models/user";
 
 export async function GET(req, { params }) {
   const { id } = params;
   try {
     await dbConnect();
 
-    const findStudent = await student.findOne({ _id: id }).populate("account").lean();
+    const findUser = await user.findOne({ _id: id }).lean();
 
-    if (!findStudent) {
-      return NextResponse.json({ message: "Student not found" }, { status: 404 });
+    if (!findUser) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(findStudent, { status: 200 });
+    return NextResponse.json(findUser, { status: 200 });
   } catch (error) {
     console.error("Error fetching student:", error);
     return NextResponse.json(

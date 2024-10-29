@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const FoundItemSchema = new mongoose.Schema({
   finder: {
     type: mongoose.Types.ObjectId,
-    ref: "Student",
+    ref: "User",
   },
   name: {
     type: String,
@@ -45,6 +45,9 @@ const FoundItemSchema = new mongoose.Schema({
     type: Date,
   },
   datePublished: {
+    type: Date,
+  },
+  dateClaimRequest: {
     type: Date,
   },
   dateReserved: {

@@ -1,33 +1,37 @@
 'use client'
 
 import LostItemsList from '@/app/components/LostItemsList';
-import React, { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react';
+import React, { useState, useEffect, useCallback } from 'react'
 
 const FoundItemsPage = () => {
   const [items, setItems] = useState([]);
-  console.log(items)
+  const {data: session, status} = useSession();
 
-  // useEffect(() => {
-  //   const fetchItems = async () => {
-  //     try {
-  //       const response = await fetch('/api/items');
-  //       const data = await response.json();
-  //       if (response.ok) {
-  //           const lostItems = data.filter(item => !item.isFoundItem)
-  //           setItems(lostItems);
-  //       } else {
-  //         console.error(data);
-  //       }
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
-  //   fetchItems();
-  // }, [])
+  const fetchItems = useCallback(async () => {
+    try {
+      const response = await fetch('/api/lost-items');
+      const data = await response.json();
+      if (response.ok) {
+        const filteredLostItems = data.filter(item => item?.owner?.school_category === session?.user?.schoolCategory)
+        setItems(filteredLostItems);
+      } else {
+        console.error(data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }, [session?.user?.schoolCategory])
+
+  useEffect(() => {
+    if(status === 'authenticated'){
+      fetchItems();
+    }
+  }, [status, fetchItems])
 
   return (
     <>
-      <LostItemsList items={items} />
+      <LostItemsList items={items} fetchItems={fetchItems} />
     </>
   )
 }

@@ -3,15 +3,22 @@
 import React, { useState } from 'react'
 import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } from '@mui/joy'
 import { Paper, Badge } from '@mui/material'
-import CheckIcon from '@mui/icons-material/Check';
+import AddIcon from '@mui/icons-material/Add';
 import ItemsTable from './Table/ItemsTable'
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
+import PublishItemIdentified from './Modal/PublishItemIdentified';
 
 const ItemRetrievalList = ({ items }) => {
-    const [status, setStatus] = useState('Claim Request');
+    const [status, setStatus] = useState('Reserved');
+    const [open, setOpen] = useState(false);
 
-    const filteredItems = items.filter(item => item.status === status)
-    const statusOptions = ['Claim Request', 'Reserved'];
+    const statusOptions = ['Reserved', 'Claim Request'];
+    const statusCounts = statusOptions.reduce((acc, currentStatus) => {
+        acc[currentStatus] = items.filter(item => item.status === currentStatus).length;
+        return acc;
+    }, {});
+
+    const filteredItems = items.filter(item => item.status === status);
 
     return (
         <>
@@ -32,12 +39,14 @@ const ItemRetrievalList = ({ items }) => {
                                     >
                                         {statusOptions.map((name) => {
                                             const checked = status === name;
+                                            const itemCount = statusCounts[name];
+
                                             const chipContent = (
                                                 <Chip
                                                     key={name}
                                                     variant="plain"
                                                     color={checked ? 'primary' : 'neutral'}
-                                                    onClick={() => setStatus(name)} // Update status when Chip is clicked
+                                                    onClick={() => setStatus(name)}
                                                     sx={{ cursor: 'pointer' }}
                                                 >
                                                     <Radio
@@ -57,19 +66,25 @@ const ItemRetrievalList = ({ items }) => {
                                                 </Chip>
                                             );
 
-                                            return (
+                                            return itemCount > 0 ? (
                                                 <Badge
                                                     key={name}
-                                                    badgeContent={1}
+                                                    badgeContent={itemCount}
                                                     color="error"
                                                 >
                                                     {chipContent}
                                                 </Badge>
+                                            ) : (
+                                                <React.Fragment key={name}>
+                                                    {chipContent}
+                                                </React.Fragment>
                                             );
                                         })}
                                     </RadioGroup>
                                 </Box>
                             </FormControl>
+                            <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Item Identified</Button>
+                            <PublishItemIdentified open={open} onClose={() => setOpen(false)} />
                         </Box>
                         <ItemsTable items={filteredItems} />
                     </Paper>

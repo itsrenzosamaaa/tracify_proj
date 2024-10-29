@@ -21,7 +21,7 @@ const ProfilePage = () => {
     const fetchData = async (accountId) => {
         try {
             setLoading(true); // Set loading to true before fetch
-            const response = await fetch(`/api/student-users/${accountId}`);
+            const response = await fetch(`/api/users/${accountId}`);
             const data = await response.json();
             if (response.ok) {
                 setProfile(data); // Set profile if the fetch was successful

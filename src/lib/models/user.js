@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const adminSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true,
@@ -23,14 +23,7 @@ const adminSchema = new mongoose.Schema({
   },
   school_category: {
     type: String,
-    enum: ["All", "Higher Education", "Basic Education"]
-  },
-  role: {
-    type: mongoose.Types.ObjectId,
-    ref: 'Role',
-  },
-  office_location: {
-    type: String,
+    enum: ["Higher Education", "Basic Education"]
   },
   date_created: {
     type: Date,
@@ -38,5 +31,5 @@ const adminSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.models.Admin ||
-  mongoose.model("Admin", adminSchema);
+export default mongoose.models.User ||
+  mongoose.model("User", userSchema);

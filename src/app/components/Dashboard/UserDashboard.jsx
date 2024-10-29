@@ -3,36 +3,39 @@
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Grid, Button, Table } from "@mui/joy";
 import { Paper, TableBody, TableCell, TableHead, TableRow, TablePagination, Divider, Chip } from "@mui/material";
-import { formatDistanceToNow } from "date-fns";
+import { useRouter } from "next/navigation";
 
-const UserDashboard = ({ session }) => {
+const UserDashboard = ({ session, status }) => {
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const router = useRouter();
+
+    const fetchItems = async (accountId) => {
+        try {
+            const response = await fetch(`/api/items/${accountId}`);
+            const data = await response.json();
+            if (response.ok) {
+                setItems(data);
+            } else {
+                console.error('Failed to fetch item data:', data.message);
+            }
+        } catch (error) {
+            console.error('Failed to fetch item data:', error);
+        }
+    };
 
     useEffect(() => {
-        const fetchItems = async () => {
-            try {
-                const response = await fetch('/api/items');
-                const data = await response.json();
-                if (response.ok) {
-                    setItems(data);
-                } else {
-                    console.error('Failed to fetch item data:', data.message);
-                }
-            } catch (error) {
-                console.error('Failed to fetch item data:', error);
-            }
-        };
-
-        fetchItems();
-    }, [])
+        if(status === 'authenticated' && session?.user?.id){
+            fetchItems(session?.user?.id);
+        }
+    }, [status, session?.user?.id])
 
     const PaperOverview = [
-        { title: 'Total Found Items', quantity: 8 },
-        { title: 'Total Lost Items', quantity: 8 },
-        { title: 'Pending Requests', quantity: 8 },
-        { title: 'Resolved Cases', quantity: 8 },
+        { title: 'Total Found Items', quantity: items.filter(item => item.finder === session?.user?.id).length },
+        { title: 'Total Lost Items', quantity: items.filter(item => item.owner === session?.user?.id).length },
+        { title: 'Pending Requests', quantity: items.filter(item => item.status === 'Request').length },
+        { title: 'Resolved Cases', quantity: items.filter(item => item.status === 'Resolved' || item.status === 'Claimed').length },
     ];
 
     const updates = [
@@ -85,7 +88,7 @@ const UserDashboard = ({ session }) => {
                 <Grid item xs={12} lg={6}>
                     <Paper elevation={2} sx={{ padding: '1rem', display: 'flex', flexDirection: 'column', height: '420px' }}>
                         <Typography level="h3" gutterBottom>
-                            Recent Reports
+                            Recent Items
                         </Typography>
                         <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
                             <Table stickyHeader>
@@ -93,19 +96,17 @@ const UserDashboard = ({ session }) => {
                                     <TableRow>
                                         <TableCell>Type</TableCell>
                                         <TableCell>Item</TableCell>
-                                        <TableCell>Time</TableCell>
+                                        <TableCell>Status</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((report, index) => (
                                         <TableRow key={index}>
                                             <TableCell>
-                                                <Chip label={report.isFoundItem ? "Found" : "Lost"} color={report.isFoundItem ? "success" : "error"} />
+                                                <Chip label={report.finder ? "Found" : "Lost"} color={report.finder ? "success" : "error"} />
                                             </TableCell>
                                             <TableCell>{report.name}</TableCell>
-                                            <TableCell>
-                                                {formatDistanceToNow(new Date(report.dateReported), { addSuffix: true })}
-                                            </TableCell>
+                                            <TableCell>{report.status}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -165,10 +166,10 @@ const UserDashboard = ({ session }) => {
                             <Typography level="h3" gutterBottom>
                                 Quick Actions
                             </Typography>
-                            <Button sx={{ marginRight: '10px' }}>
+                            <Button sx={{ marginRight: '10px' }} onClick={() => router.push('/my-items/report-found-item')}>
                                 Report Found Item
                             </Button>
-                            <Button color="danger">
+                            <Button color="danger" onClick={() => router.push('/my-items/report-lost-item')}>
                                 Report Lost Item
                             </Button>
                         </Paper>

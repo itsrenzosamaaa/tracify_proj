@@ -25,7 +25,7 @@ const DashboardPage = () => {
   return (
     <>
       {session.user.userType === 'admin' && <AdminDashboard session={session} />}
-      {session.user.userType === 'student' && <UserDashboard session={session} />}
+      {session.user.userType === 'user' && <UserDashboard session={session} status={status} />}
     </>
   )
 }

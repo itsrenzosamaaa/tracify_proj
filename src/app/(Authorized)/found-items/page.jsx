@@ -1,32 +1,37 @@
 'use client'
 
 import FoundItemsList from '@/app/components/FoundItemsList'
-import React, { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react';
+import React, { useState, useEffect, useCallback } from 'react'
 
 const FoundItemsPage = () => {
   const [items, setItems] = useState([]);
+  const {data: session, status} = useSession();
 
-  // useEffect(() => {
-  //   const fetchItems = async () => {
-  //     try {
-  //       const response = await fetch('/api/items');
-  //       const data = await response.json();
-  //       if (response.ok) {
-  //         const foundItems = data.filter(item => item.isFoundItem)
-  //         setItems(foundItems);
-  //       } else {
-  //         console.error(data);
-  //       }
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
-  //   fetchItems();
-  // }, [])
+  const fetchItems = useCallback(async () => {
+    try {
+      const response = await fetch('/api/found-items');
+      const data = await response.json();
+      if (response.ok) {
+        const filteredFoundItems = data.filter(item => item?.finder?.school_category === session?.user?.schoolCategory)
+        setItems(filteredFoundItems);
+      } else {
+        console.error(data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }, [session?.user?.schoolCategory])
+
+  useEffect(() => {
+    if(status === 'authenticated'){
+      fetchItems();
+    }
+  }, [status, fetchItems])
 
   return (
     <>
-      <FoundItemsList items={items} />
+      <FoundItemsList items={items} fetchItems={fetchItems} />
     </>
   )
 }

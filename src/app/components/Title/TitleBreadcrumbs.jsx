@@ -4,7 +4,7 @@ import { Box, Typography, Grid, Breadcrumbs, Link } from '@mui/joy'
 const TitleBreadcrumbs = ({ title, text }) => {
     return (
         <>
-            <Box sx={{ marginBottom: '1rem' }}>
+            <Box sx={{ marginBottom: '1rem', display: { xs: 'none', lg: 'block' } }}>
                 <Typography level="h5" letterSpacing={2} sx={{ fontSize: '24px', fontWeight: 'bold', mt: 5 }}>
                     {title}
                 </Typography>

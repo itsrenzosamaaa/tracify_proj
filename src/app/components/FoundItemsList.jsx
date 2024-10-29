@@ -3,18 +3,22 @@
 import React, { useState } from 'react'
 import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } from '@mui/joy'
 import { Paper, Badge } from '@mui/material'
-import CheckIcon from '@mui/icons-material/Check';
 import ItemsTable from './Table/ItemsTable'
 import AddIcon from '@mui/icons-material/Add';
 import PublishFoundItem from './Modal/PublishFoundItem';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
-const FoundItemsList = ({ items }) => {
+const FoundItemsList = ({ items, fetchItems }) => {
     const [status, setStatus] = useState('Published');
     const [open, setOpen] = useState(false);
 
-    const filteredItems = items.filter(item => item.status === status)
     const statusOptions = ['Published', 'Request', 'Validating'];
+    const statusCounts = statusOptions.reduce((acc, currentStatus) => {
+        acc[currentStatus] = items.filter(item => item.status === currentStatus).length;
+        return acc;
+    }, {});
+
+    const filteredItems = items.filter(item => item.status === status);
 
     return (
         <>
@@ -35,12 +39,14 @@ const FoundItemsList = ({ items }) => {
                                     >
                                         {statusOptions.map((name) => {
                                             const checked = status === name;
+                                            const itemCount = statusCounts[name];
+
                                             const chipContent = (
                                                 <Chip
                                                     key={name}
                                                     variant="plain"
                                                     color={checked ? 'primary' : 'neutral'}
-                                                    onClick={() => setStatus(name)} // Update status when Chip is clicked
+                                                    onClick={() => setStatus(name)}
                                                     sx={{ cursor: 'pointer' }}
                                                 >
                                                     <Radio
@@ -60,21 +66,25 @@ const FoundItemsList = ({ items }) => {
                                                 </Chip>
                                             );
 
-                                            return (
+                                            return itemCount > 0 ? (
                                                 <Badge
                                                     key={name}
-                                                    badgeContent={1}
+                                                    badgeContent={itemCount}
                                                     color="error"
                                                 >
                                                     {chipContent}
                                                 </Badge>
+                                            ) : (
+                                                <React.Fragment key={name}>
+                                                    {chipContent}
+                                                </React.Fragment>
                                             );
                                         })}
                                     </RadioGroup>
                                 </Box>
                             </FormControl>
                             <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Found Item</Button>
-                            <PublishFoundItem open={open} onClose={() => setOpen(false)} />
+                            <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
                         </Box>
                         <ItemsTable items={filteredItems} />
                     </Paper>

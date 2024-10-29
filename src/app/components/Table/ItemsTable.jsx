@@ -13,8 +13,11 @@ import {
 import React, { useState } from "react";
 import DoneIcon from '@mui/icons-material/Done';
 import CloseIcon from '@mui/icons-material/Close';
+import InfoIcon from '@mui/icons-material/Info';
+import ItemRequestApproveModal from "../Modal/ItemRequestApproveModal";
 
 const ItemsTable = ({ items }) => {
+    const [approveModal, setApproveModal] = useState(null);
     const [page, setPage] = useState(0); // Current page
     const [rowsPerPage, setRowsPerPage] = useState(5); // Items per page
 
@@ -64,7 +67,7 @@ const ItemsTable = ({ items }) => {
                                     width: { xs: "30%", lg: "20%" },
                                 }}
                             >
-                                Name
+                                User
                             </TableCell>
                             <TableCell
                                 sx={{
@@ -73,7 +76,7 @@ const ItemsTable = ({ items }) => {
                                     display: { xs: "none", lg: "table-cell" },
                                 }}
                             >
-                                Category
+                                Item
                             </TableCell>
                             <TableCell
                                 sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}
@@ -88,20 +91,42 @@ const ItemsTable = ({ items }) => {
                                 <TableCell
                                     sx={{ width: { xs: "30%", lg: "20%" } }}
                                 >
-                                    {row.name}
+                                    {row.finder && `${row.finder.firstname} ${row.finder.lastname}`}
+                                    {row.owner && `${row.owner.firstname} ${row.owner.lastname}`}
                                 </TableCell>
                                 <TableCell
                                     sx={{
                                         display: { xs: "none", lg: "table-cell" },
                                     }}
                                 >
-                                    {row.category}
+                                    {row.name}
                                 </TableCell>
                                 <TableCell sx={{ display: 'flex', gap: 1 }}>
-                                    <Button sx={{ display: { xs: 'none', lg: 'block' } }} color="success">Approve</Button>
-                                    <Button sx={{ display: { xs: 'none', lg: 'block' } }} color="danger">Decline</Button>
-                                    <Button sx={{ display: { xs: 'block', lg: 'none' } }} color="success"><DoneIcon fontSize="small" /></Button>
-                                    <Button sx={{ display: { xs: 'block', lg: 'none' } }} color="danger"><CloseIcon fontSize="small" /></Button>
+                                    {
+                                        row.status === 'Published' 
+                                        &&
+                                        <>
+                                            <Button size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
+                                        </>
+                                    }
+                                    {
+                                        row.status === 'Missing' 
+                                        &&
+                                        <>
+                                            <Button size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
+                                        </>
+                                    }
+                                    {
+                                        row.status === 'Request' 
+                                        &&
+                                        <>
+                                            <Button onClick={() => setApproveModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button onClick={() => setApproveModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
+                                            <ItemRequestApproveModal row={row} open={approveModal} onClose={() => setApproveModal(null)} />
+                                        </>
+                                    }
                                 </TableCell>
                             </TableRow>
                         ))}

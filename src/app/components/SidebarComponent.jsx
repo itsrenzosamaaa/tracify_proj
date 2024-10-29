@@ -152,10 +152,9 @@ export default function App() {
 
   // Handling authenticated session and adding routes
   if (status === "authenticated") {
-    if (session?.user?.userType === 'student') {
+    if (session?.user?.userType === 'user') {
       navigation.push({ icon: <AccountCircleIcon />, menu: 'Profile', url: '/profile' });
       navigation.push({ icon: <LuggageIcon />, menu: 'My Items', url: '/my-items' });
-      navigation.push({ icon: <LinkIcon />, menu: 'Match Items', url: '/match-items' });
       navigation.push({ icon: <StarRateIcon />, menu: 'Ratings', url: '/ratings' });
     } else {
       // Check role-based permissions for non-students
@@ -180,10 +179,10 @@ export default function App() {
         navigation.push({ icon: <SecurityIcon />, menu: 'Roles', url: '/roles' });
       }
       if (roleData?.viewAdminsList) {
-        navigation.push({ icon: <PeopleOutlineIcon />, menu: 'Admin Users', url: '/admin-users' });
+        navigation.push({ icon: <PeopleOutlineIcon />, menu: 'Admin', url: '/admin' });
       }
       if (roleData?.viewStudentsList) {
-        navigation.push({ icon: <PeopleOutlineIcon />, menu: 'Student Users', url: '/student-users' });
+        navigation.push({ icon: <PeopleOutlineIcon />, menu: 'Users', url: '/users' });
       }
     }
   }

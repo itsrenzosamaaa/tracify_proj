@@ -1,21 +1,26 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } from '@mui/joy'
-import { Paper, Badge } from '@mui/material'
+import React, { useState } from 'react';
+import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } from '@mui/joy';
+import { Paper, Badge } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import ItemsTable from './Table/ItemsTable'
+import ItemsTable from './Table/ItemsTable';
 import PublishLostItem from './Modal/PublishLostItems';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
-const LostItemsList = ({ items }) => {
+const LostItemsList = ({ items, fetchItems }) => {
     const [status, setStatus] = useState('Missing');
     const [open, setOpen] = useState(false);
 
-    // Calculate the number of pending requests
-    const pendingRequestCount = items.filter(item => item.status === status).length;
+    const statusOptions = ['Missing', 'Request', 'Tracked'];
+
+    // Calculate counts for each status
+    const statusCounts = statusOptions.reduce((acc, currentStatus) => {
+        acc[currentStatus] = items.filter(item => item.status === currentStatus).length;
+        return acc;
+    }, {});
+
     const filteredItems = items.filter(item => item.status === status);
-    const statusOptions = ['Missing', 'Request'];
 
     return (
         <>
@@ -36,7 +41,7 @@ const LostItemsList = ({ items }) => {
                                     >
                                         {statusOptions.map((name) => {
                                             const checked = status === name;
-                                            const showBadge = name === 'Request' && pendingRequestCount > 0;
+                                            const itemCount = statusCounts[name];
 
                                             const chipContent = (
                                                 <Chip
@@ -63,10 +68,10 @@ const LostItemsList = ({ items }) => {
                                                 </Chip>
                                             );
 
-                                            return showBadge ? (
+                                            return itemCount > 0 ? (
                                                 <Badge
                                                     key={name}
-                                                    badgeContent={pendingRequestCount}
+                                                    badgeContent={itemCount}
                                                     color="error"
                                                 >
                                                     {chipContent}
@@ -81,7 +86,7 @@ const LostItemsList = ({ items }) => {
                                 </Box>
                             </FormControl>
                             <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Lost Item</Button>
-                            <PublishLostItem open={open} onClose={() => setOpen(false)} />
+                            <PublishLostItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
                         </Box>
                         <ItemsTable items={filteredItems} />
                     </Paper>

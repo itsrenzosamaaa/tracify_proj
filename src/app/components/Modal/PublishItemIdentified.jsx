@@ -7,16 +7,29 @@ import Image from "next/image";
 import { useSession } from 'next-auth/react';
 import { isAfter, isBefore, subDays } from 'date-fns';
 
-const PublishFoundItem = ({ open, onClose, fetchItems }) => {
+const PublishItemIdentified = ({ open, onClose }) => {
     const [users, setUsers] = useState([]);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState(null);
-    const [foundDate, setFoundDate] = useState('');
     const [image, setImage] = useState(null);
     const [userFindItem, setUserFindItem] = useState(false);
     const [finder, setFinder] = useState(null);
+    const [owner, setOwner] = useState(null);
+    const [recentLostItems, setRecentLostItems] = useState([]);
+    const [selectedLostItem, setSelectedLostItem] = useState(null);
     const { data: session, status } = useSession();
+
+    const fetchLostItems = useCallback(async () => {
+        try {
+            const response = await fetch('/api/lost-items');
+            const data = await response.json();
+            const filteredLostItems = data.filter(item => item.owner._id === owner._id);
+            setRecentLostItems(filteredLostItems);
+        } catch (error) {
+            console.error(error)
+        }
+    }, [owner?._id]);
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -36,6 +49,12 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
     }, [status, session?.user?.schoolCategory, fetchUsers]);
 
     useEffect(() => {
+        if (owner?._id){
+            fetchLostItems()
+        }
+    }, [owner?._id, fetchLostItems])
+
+    useEffect(() => {
         if (!userFindItem) setFinder('');
     }, [userFindItem]);
 
@@ -44,31 +63,82 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
     
-        const now = new Date();
-        const thirtyDaysAgo = subDays(now, 30);
-        const selectedDate = new Date(foundDate);
-    
-        if (isBefore(selectedDate, thirtyDaysAgo)) {
-            alert('The found date should be within the last 30 days.');
+        if (finder && owner && finder === owner) {
+            alert('The finder and owner should not be the same user.');
             return;
         }
     
-        if (isAfter(selectedDate, now)) {
-            alert('The found date cannot be in the future.');
-            return;
+        let lostItemId = null;
+        let lostItemDescription = null;
+        let lostItemLocation = null;
+        const lostItemDate = new Date().toISOString().split("T")[0];
+        const lostItemTime = new Date().toTimeString().split(" ")[0].slice(0, 5);
+    
+        // Save lost item if owner exists
+        if (owner) {
+            const status = 'Tracked';
+            if (selectedLostItem.name === 'None') {
+                // If the user has no lost item based on the published found item
+                const lostItemData = {
+                    owner: owner?._id,
+                    name,
+                    description,
+                    location,
+                    date: lostItemDate,
+                    time: lostItemTime,
+                    image: null,
+                    status,
+                };
+    
+                try {
+                    const response = await fetch('/api/lost-items', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(lostItemData),
+                    });
+                    if (!response.ok) throw new Error("Failed to create lost item");
+    
+                    const savedLostItem = await response.json();
+                    lostItemId = savedLostItem?._id;
+                    lostItemDescription = savedLostItem?.description;
+                    lostItemLocation = savedLostItem?.location;
+                } catch (error) {
+                    console.error("Error creating lost item:", error);
+                    return; // Exit on error
+                }
+            } else {
+                // If the owner has a recent lost item based on the found item
+                try {
+                    const response = await fetch(`/api/lost-items/${selectedLostItem._id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status }),
+                    });
+    
+                    if (!response.ok) throw new Error('Failed to update status');
+    
+                    const updatedItem = await response.json();
+                    lostItemId = updatedItem?._id;
+                    lostItemDescription = updatedItem?.description;
+                    lostItemLocation = updatedItem?.location;
+                } catch (error) {
+                    console.error("Error updating lost item status:", error);
+                    return; // Exit on error
+                }
+            }
         }
     
         // Create found item data with lost item ID as the owner
         const foundItemData = {
             finder: finder?._id || null,
             name,
-            description,
-            location,
-            date: selectedDate.toISOString().split("T")[0],
-            time: selectedDate.toTimeString().split(" ")[0].slice(0, 5),
+            description: lostItemDescription,
+            location: lostItemLocation,
+            date: lostItemDate,
+            time: lostItemTime,
             image,
-            status: 'Published',
-            datePublished: new Date(),
+            status: 'Reserved',
+            owner: lostItemId || null,
         };
     
         try {
@@ -94,13 +164,11 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
     const resetForm = async () => {
         await onClose();
         setName('');
-        setDescription('');
-        setLocation(null);
-        setFoundDate('');
         setImage(null);
+        setOwner(null);
         setUserFindItem(false);
         setFinder(null);
-        await fetchItems();
+        setSelectedLostItem(null);
     };
     
     
@@ -132,7 +200,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
             <Modal open={open} onClose={onClose}>
                 <ModalDialog>
                     <ModalClose />
-                    <Typography level="h4" sx={{ mb: 2 }}>Publish a Found Item</Typography>
+                    <Typography level="h4" sx={{ mb: 2 }}>Publish an Identified Item</Typography>
                     <DialogContent sx={{ overflowX: 'hidden' }}>
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={2}>
@@ -157,16 +225,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
                                         getOptionLabel={(option) => option}
                                     />
                                 </FormControl>
-                                <FormControl required>
-                                    <FormLabel>Found Date and Time</FormLabel>
-                                    <Input
-                                        type="datetime-local"
-                                        name="foundDate"
-                                        value={foundDate}
-                                        onChange={(e) => setFoundDate(e.target.value)}
-                                    />
-                                </FormControl>
-                                <FormControl required>
+                                <FormControl>
                                     <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                                         <FormLabel>Upload Image</FormLabel>
                                         {image && <Button size="sm" color="danger" onClick={() => setImage(null)}>Discard</Button>}
@@ -217,6 +276,38 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
                                         />
                                     </FormControl>
                                 )}
+                                <FormControl required>
+                                    <FormLabel>Who is the owner?</FormLabel>
+                                    <Autocomplete
+                                        placeholder="Select an owner"
+                                        options={users || []}
+                                        value={owner}
+                                        onChange={(event, value) => {
+                                            setOwner(value);
+                                        }}
+                                        getOptionLabel={(user) => {
+                                            return user ? `${user.firstname} ${user.lastname}` : 'No Options';
+                                        }}
+                                        isOptionEqualToValue={(option, value) => option.id === value?.id}
+                                    />
+                                </FormControl>
+                                {owner && (
+                                    <FormControl>
+                                        <FormLabel>Their Recent Lost Items</FormLabel>
+                                        <Autocomplete
+                                            placeholder="Select a lost item"
+                                            options={[{ id: null, name: 'None' }, ...(recentLostItems)]} // Add "None" option
+                                            value={selectedLostItem}
+                                            onChange={(event, value) => {
+                                                setSelectedLostItem(value);
+                                            }}
+                                            getOptionLabel={(lostItem) => {
+                                                return lostItem ? lostItem.name : 'No Options';
+                                            }}
+                                            isOptionEqualToValue={(option, value) => option.id === value?.id}
+                                        />
+                                    </FormControl>
+                                )}
                                 <Button type="submit">Publish</Button>
                             </Stack>
                         </form>
@@ -227,4 +318,4 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
     )
 }
 
-export default PublishFoundItem
+export default PublishItemIdentified

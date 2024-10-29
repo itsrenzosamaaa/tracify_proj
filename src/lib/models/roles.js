@@ -8,10 +8,7 @@ const roleSchema = new mongoose.Schema({
     addAdmin: { type: Boolean, default: false },
     editAdmin: { type: Boolean, default: false },
     deleteAdmin: { type: Boolean, default: false },
-    viewStudentsList: { type: Boolean, default: false },
-    addStudent: { type: Boolean, default: false },
-    editStudent: { type: Boolean, default: false },
-    deleteStudent: { type: Boolean, default: false },
+    viewUsersList: { type: Boolean, default: false },
     // Role Management
     viewRoles: { type: Boolean, default: false },
     addRole: { type: Boolean, default: false },
@@ -32,8 +29,6 @@ const roleSchema = new mongoose.Schema({
     addBadge: { type: Boolean, default: false },
     editBadge: { type: Boolean, default: false },
     deleteBadge: { type: Boolean, default: false },
-    awardBadgesToStudent: { type: Boolean, default: false },
-    removeBadgesToStudent: { type: Boolean, default: false },
     // Ratings management
     viewRatings: { type: Boolean, default: false },
     addRatings: { type: Boolean, default: false },

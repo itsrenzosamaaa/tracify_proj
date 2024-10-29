@@ -3,9 +3,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "@/lib/mongodb";
 import Roles from "@/lib/models/roles";
-import Account from "@/lib/models/account";
 import Admin from "@/lib/models/admin";
-import Student from "@/lib/models/student";
+import User from "@/lib/models/user";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
@@ -19,15 +18,19 @@ export const authOptions = {
       async authorize(credentials) {
         try {
           await dbConnect();
-          const account = await Account.findOne({
-            username: credentials.username,
-          });
+          
+          // Attempt to find the user as an Admin
+          let account = await Admin.findOne({ username: credentials.username });
+          let userType = "admin";
+          
+          // If not found as Admin, check User model
+          if (!account) {
+            account = await User.findOne({ username: credentials.username });
+            userType = "user";
+          }
 
-          if (
-            account &&
-            bcrypt.compareSync(credentials.password, account.password)
-          ) {
-            return await getUserDetails(account);
+          if (account && bcrypt.compareSync(credentials.password, account.password)) {
+            return await getUserDetails(account, userType);
           } else {
             console.error("Invalid username or password");
             return null;
@@ -41,16 +44,10 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      authorization: {
-        params: {
-          prompt: "select_account",
-        },
-      },
+      authorization: { params: { prompt: "select_account" } },
     }),
   ],
-  pages: {
-    signIn: "/", // Custom sign-in page
-  },
+  pages: { signIn: "/" }, // Custom sign-in page
   session: {
     strategy: "jwt",
     maxAge: 60 * 60, // 1 hour
@@ -58,22 +55,19 @@ export const authOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
-        // If Google sign-in, find user by email
         if (account.provider === "google" && user.email) {
           await dbConnect();
-          const dbAccount = await Account.findOne({ emailAddress: user.email });
+          let dbAccount = await Admin.findOne({ emailAddress: user.email }) || 
+                          await User.findOne({ emailAddress: user.email });
+          const userType = dbAccount instanceof Admin ? "admin" : "user";
+
           if (!dbAccount) {
             console.error("User not found in the database.");
             return false;
           }
-          const userDetails = await getUserDetails(dbAccount);
 
-          if (!userDetails) {
-            return false;
-          }
-
-          // Return the user details so they are passed to jwt callback
-          return userDetails;
+          const userDetails = await getUserDetails(dbAccount, userType);
+          return userDetails || false;
         }
         return true;
       } catch (error) {
@@ -84,7 +78,6 @@ export const authOptions = {
 
     async jwt({ token, user }) {
       if (user) {
-        // When user is available (for initial sign-in), store details in token
         token.id = user.id;
         token.firstname = user.firstname;
         token.lastname = user.lastname;
@@ -92,7 +85,6 @@ export const authOptions = {
         token.email = user.email;
         token.schoolCategory = user.school_category;
         token.userType = user.userType;
-        token.office_name = user.office_name;
         token.office_location = user.office_location;
         token.roleName = user.roleName;
         token.permissions = user.permissions;
@@ -101,7 +93,6 @@ export const authOptions = {
     },
 
     async session({ session, token }) {
-      // Attach token data to session
       if (token) {
         session.user.id = token.id;
         session.user.firstname = token.firstname;
@@ -110,7 +101,6 @@ export const authOptions = {
         session.user.email = token.email;
         session.user.schoolCategory = token.schoolCategory;
         session.user.userType = token.userType;
-        session.user.office_name = token.office_name;
         session.user.office_location = token.office_location;
         session.user.roleName = token.roleName;
         session.user.permissions = token.permissions;
@@ -120,39 +110,24 @@ export const authOptions = {
   },
 };
 
-// Helper function to get user details based on account data
-async function getUserDetails(account) {
-  let details = null;
-  let userType = "";
+// Helper function to get user details based on account data and user type
+async function getUserDetails(account, userType) {
   let roleData = null;
 
-  if (account.type === "admin") {
-    details = await Admin.findOne({ account: account._id });
-    if (!details) {
-      console.error("Admin details not found.");
-      return null;
-    }
-    roleData = await Roles.findOne({ _id: details.role });
-    userType = "admin";
-  } else {
-    details = await Student.findOne({ account: account._id });
-    if (!details) {
-      console.error("Student details not found.");
-      return null;
-    }
-    userType = "student";
+  // Admin details
+  if (userType === "admin") {
+    roleData = await Roles.findOne({ _id: account.role });
   }
 
   return {
-    id: details._id.toString(),
-    firstname: details.firstname,
-    lastname: details.lastname,
+    id: account._id.toString(),
+    firstname: account.firstname,
+    lastname: account.lastname,
     email: account.emailAddress,
-    contact_number: details.contactNumber,
-    school_category: details.school_category,
+    contact_number: account.contactNumber,
+    school_category: account.school_category,
     userType: userType,
-    office_name: details.office_name || null,
-    office_location: details.office_location || null,
+    office_location: userType === "admin" ? account.office_location || null : null,
     roleName: roleData ? roleData.name : null,
     permissions: roleData ? roleData.permissions : null,
   };

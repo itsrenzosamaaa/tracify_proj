@@ -6,7 +6,7 @@ export async function GET() {
   try {
     await dbConnect();
 
-    const findAdmin = await admin.find().populate("role").populate("account");
+    const findAdmin = await admin.find().populate("role");
 
     console.log(findAdmin)
 

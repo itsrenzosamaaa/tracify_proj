@@ -8,7 +8,7 @@ export async function GET({ params }) {
     await dbConnect(); // Connect to your MongoDB database
 
     try {
-        const findUser = await admin.findOne({ _id : id }).populate("role").populate("account").lean(); // Fetch officer by ID
+        const findUser = await admin.findOne({ _id : id }).populate("role").lean(); // Fetch officer by ID
 
         if (!findUser) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });

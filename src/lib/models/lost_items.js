@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const LostItemSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Types.ObjectId,
-    ref: "Student",
+    ref: "User",
   },
   name: {
     type: String,
@@ -31,6 +31,7 @@ const LostItemSchema = new mongoose.Schema({
     enum: [
       "Request",
       "Missing",
+      "Tracked",
       "Claimed",
       "Invalid",
     ],
@@ -42,6 +43,9 @@ const LostItemSchema = new mongoose.Schema({
     type: Date,
   },
   dateClaimed: {
+    type: Date,
+  },
+  dateTracked: {
     type: Date,
   },
   dateInvalid: {
