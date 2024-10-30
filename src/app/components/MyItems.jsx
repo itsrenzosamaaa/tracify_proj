@@ -19,52 +19,43 @@ const MyItemsComponent = ({ session, status }) => {
   const [confirmationRetrievalModal, setConfirmationRetrievalModal] = useState(null);
   const router = useRouter();
 
+  console.log(suggestedMatches)
+
   const fetchItems = useCallback(async () => {
     try {
       const response = await fetch(`/api/items/${session?.user?.id}`);
       const data = await response.json();
-      
+
       if (response.ok) {
-        // Filter lost, found, and requested items
         const lostItems = data.filter(item => item.owner && item.status !== 'Request');
         const foundItems = data.filter(item => item.finder && item.status !== 'Request');
         const requestedItems = data.filter(item => item.status === 'Request');
-        
-        // Fetch additional found items
+
         const foundItemsResponse = await fetch('/api/found-items');
         const foundItemsData = await foundItemsResponse.json();
         const filteredFoundItems = foundItemsData.filter(fItem => fItem?.finder?._id !== session?.user?.id && fItem?.status === 'Published');
-  
-        // Match lost items with found items based on item names
+
         const matches = lostItems.map(lostItem => {
           const matchesForLostItem = filteredFoundItems.map(foundItem => {
-            const distance = Levenshtein.get(lostItem.name, foundItem.name); // Assuming 'name' is the field for item names
+            const distance = Levenshtein.get(lostItem.name, foundItem.name);
             const maxLength = Math.max(lostItem.name.length, foundItem.name.length);
             const similarityScore = 100 * (1 - (distance / maxLength));
 
-            console.log(similarityScore)
-            
             return {
               foundItem,
               similarityScore,
             };
           });
-  
-          // Filter matches above a certain threshold (e.g., 70%)
-          const filteredMatches = matchesForLostItem.filter(match => match.similarityScore >= 70); // Adjust threshold as needed
-          
+
+          const filteredMatches = matchesForLostItem.filter(match => match.similarityScore >= 70);
+
           return {
             lostItem,
-            matches: filteredMatches,
+            matches: filteredMatches.map(match => match.foundItem),
           };
         });
-  
-        // Now you can do something with the matches, e.g., set state or log
-        const suggested = matches.flatMap(match => match.matches.map(m => m.foundItem));
-        console.log(suggested)
-        setSuggestedMatches(suggested);
-        // You can use setState to store the matches if needed
-        
+
+        setSuggestedMatches(matches);
         setLostItems(lostItems);
         setFoundItems(foundItems);
         setRequestedItems(requestedItems);
@@ -72,7 +63,7 @@ const MyItemsComponent = ({ session, status }) => {
     } catch (error) {
       console.error('Error fetching items:', error);
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -159,7 +150,7 @@ const MyItemsComponent = ({ session, status }) => {
                   border: '1px dashed #ccc',
                   borderRadius: '8px',
                   backgroundColor: '#f9f9f9',
-                  padding: 2,  
+                  padding: 2,
                 }}
               >
                 <Typography>No lost items found.</Typography>
@@ -293,74 +284,88 @@ const MyItemsComponent = ({ session, status }) => {
           Suggested Matches
         </Typography>
         <Typography level="body-sm" color="neutral" sx={{ marginTop: 1 }}>
-          These are the found item/s matched based on your lost item/s
+          These are the found items matched based on your lost items
         </Typography>
         <Box
           ref={scrollRefFound}
-          onMouseDown={(e) => handleDragStart(e, scrollRefFound)} // Handle mouse down event
+          onMouseDown={(e) => handleDragStart(e, scrollRefFound)}
           sx={{
             display: 'flex',
+            flexDirection: 'column',
             overflowX: 'scroll',
             paddingY: 2,
             gap: 2,
-            cursor: 'grab', // Change cursor to indicate dragging
-            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
+            cursor: 'grab',
+            '&::-webkit-scrollbar': { display: 'none' },
           }}
         >
-          {suggestedMatches.length > 0 ?
-            suggestedMatches.map((item, index) => (
-              <Card
-                key={index}
-                sx={{
-                    maxWidth: 250,
-                    flexShrink: 0,
-                    boxShadow: 3,
-                    borderRadius: 2,
-                    transition: 'transform 0.2s, box-shadow 0.2s', // Add a transition for hover effects
-                    '&:hover': {
-                        transform: 'scale(1.05)', // Scale up on hover
-                        boxShadow: 6, // Increase shadow on hover
-                    },
-                }}
-              >
-                <CldImage
-                    src={item.image}
-                    width={500}
-                    height={150}
-                    alt={item.name || "Item Image"}
-                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    style={{ objectFit: 'cover', borderRadius: '8px 8px 0 0' }} // Rounded top corners
-                />
-                <CardContent>
-                    <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
-                        {item.name}
-                    </Typography>
-                    <Typography level="body2" sx={{ color: 'text.secondary', marginBottom: '0.5rem' }}>
-                        {item.description}
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
-                        <Button
-                            onClick={() => router.push(`/my-items/${item._id}`)}
-                            sx={{ minWidth: '0', padding: '6px 8px' }} // Minimize button size
-                            aria-label={`View details for ${item.name}`} // Accessibility label
-                        >
-                            <InfoIcon />
-                        </Button>
-                        <Button
-                            onClick={() => setConfirmationRetrievalModal(item._id)}
-                            color="success"
-                            variant="contained" // Make it a contained button for better visibility
-                            fullWidth
-                            sx={{ padding: '6px 0' }} // Consistent button padding
-                            aria-label={`Claim request for ${item.name}`} // Accessibility label
-                        >
-                            Claim Request
-                        </Button>
-                    </Box>
-                </CardContent>
-                <ConfirmationRetrievalRequest open={confirmationRetrievalModal === item._id} onClose={() => setConfirmationRetrievalModal(null)} item={item} />
-            </Card>
-            )) :
+          {suggestedMatches.length > 0 ? (
+            suggestedMatches.map(({ lostItem, matches }) => (
+              <Box key={lostItem._id} sx={{ marginBottom: 4 }}>
+                <Typography level="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
+                  Lost Item: {lostItem.name}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  {matches.length > 0 ? (
+                    matches.map((foundItem, index) => (
+                      <Card
+                        key={index}
+                        sx={{
+                          maxWidth: 250,
+                          flexShrink: 0,
+                          boxShadow: 3,
+                          borderRadius: 2,
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          '&:hover': {
+                            transform: 'scale(1.05)',
+                            boxShadow: 6,
+                          },
+                        }}
+                      >
+                        <CldImage
+                          src={foundItem.image}
+                          width={500}
+                          height={150}
+                          alt={foundItem.name || "Item Image"}
+                          sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          style={{ objectFit: 'cover', borderRadius: '8px 8px 0 0' }}
+                        />
+                        <CardContent>
+                          <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
+                            {foundItem.name}
+                          </Typography>
+                          <Typography level="body2" sx={{ color: 'text.secondary', marginBottom: '0.5rem' }}>
+                            {foundItem.description}
+                          </Typography>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
+                            <Button
+                              onClick={() => router.push(`/my-items/${lostItem._id}/${foundItem._id}`)}
+                              variant="contained"
+                              sx={{ minWidth: '0', padding: '6px 8px' }}
+                              aria-label={`View details for ${foundItem.name}`}
+                            >
+                              <InfoIcon color="action" />
+                            </Button>
+                            <Button
+                              onClick={() => setConfirmationRetrievalModal(foundItem._id)}
+                              fullWidth
+                              sx={{ padding: '6px 0' }}
+                              aria-label={`Claim request for ${foundItem.name}`}
+                            >
+                              Claim Request
+                            </Button>
+                          </Box>
+                        </CardContent>
+                        <ConfirmationRetrievalRequest open={confirmationRetrievalModal === foundItem._id} onClose={() => setConfirmationRetrievalModal(null)} item={foundItem} />
+                      </Card>
+                    ))
+                  ) : (
+                    <Typography>No matches found for this lost item.</Typography>
+                  )}
+                </Box>
+              </Box>
+            ))
+          ) : (
             <Box
               sx={{
                 display: 'flex',
@@ -380,7 +385,7 @@ const MyItemsComponent = ({ session, status }) => {
                 Please report any lost item to see this content.
               </Typography>
             </Box>
-          }
+          )}
         </Box>
       </Box>
     </>

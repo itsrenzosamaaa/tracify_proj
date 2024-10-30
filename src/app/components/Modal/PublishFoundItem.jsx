@@ -69,6 +69,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
             image,
             status: 'Published',
             datePublished: new Date(),
+            monitoredBy: session?.user?.id,
         };
     
         try {

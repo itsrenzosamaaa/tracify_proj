@@ -8,7 +8,7 @@ export async function GET(req, { params }) {
     await dbConnect(); // Connect to your MongoDB database
 
     try {
-        const findLostItem = await lost_items.findOne({ _id : id }).lean(); // Fetch officer by ID
+        const findLostItem = await lost_items.findOne({ _id : id }).populate('owner').lean(); // Fetch officer by ID
 
         if (!findLostItem) {
             return NextResponse.json({ message: 'Lost item not found' }, { status: 404 });

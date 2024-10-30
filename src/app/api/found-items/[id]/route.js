@@ -8,7 +8,7 @@ export async function GET(req, { params }) {
     await dbConnect(); // Connect to your MongoDB database
 
     try {
-        const findFoundItem = await found_items({ _id: id })
+        const findFoundItem = await found_items.findOne({ _id: id })
             .populate({
                 path: 'monitoredBy',
                 populate: {
@@ -19,13 +19,15 @@ export async function GET(req, { params }) {
             .populate('finder') // Populate finder if necessary
             .lean(); // Convert to plain JavaScript object
 
+        console.log(findFoundItem)
+
         if (!findFoundItem) {
-            return NextResponse.json({ message: 'Lost item not found' }, { status: 404 });
+            return NextResponse.json({ message: 'Found item not found' }, { status: 404 });
         }
 
         return NextResponse.json(findFoundItem); // Return the officer data
     } catch (error) {
-        return NextResponse.json({ message: 'Error fetching lost item' }, { status: 500 });
+        return NextResponse.json({ message: 'Error fetching found item' }, { status: 500 });
     }
 }
 

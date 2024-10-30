@@ -15,11 +15,13 @@ import InfoIcon from '@mui/icons-material/Info';
 import ItemRequestApproveModal from "../Modal/ItemRequestApproveModal";
 import ItemValidatingModal from "../Modal/ItemValidatingModal";
 import ItemPublishedModal from "../Modal/ItemPublishedModal";
+import ItemMissingModal from "../Modal/ItemMissingModal";
 
 const ItemsTable = ({ items, fetch }) => {
     const [approveModal, setApproveModal] = useState(null);
     const [openValidatingModal, setOpenValidatingModal] = useState(null);
     const [openPublishedModal, setOpenPublishedModal] = useState(null);
+    const [openMissingModal, setOpenMissingModal] = useState(null);
     const [page, setPage] = useState(0); // Current page
     const [rowsPerPage, setRowsPerPage] = useState(5); // Items per page
 
@@ -126,8 +128,10 @@ const ItemsTable = ({ items, fetch }) => {
                                         row.status === 'Missing' 
                                         &&
                                         <>
-                                            <Button size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
-                                            <Button size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
+                                            <Button onClick={() => setOpenMissingModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button onClick={() => setOpenMissingModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
+                                            <ItemMissingModal row={row} open={openMissingModal} onClose={() => setOpenMissingModal(null)} />
+
                                         </>
                                     }
                                     {
