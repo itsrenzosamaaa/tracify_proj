@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Grid, Breadcrumbs, Link, Typography } from '@mui/joy';
-import { Box } from '@mui/material';
 import AvatarWithName from './Profile/AvatarWithName';
 import Bio from './Profile/Bio';
 import ProgBadgeDisplay from './Profile/ProgBadgeDisplay';
@@ -10,7 +9,9 @@ import RecentRatingsFromUser from './Profile/RecentRatingsFromUser';
 import RecentItems from './Profile/RecentItems';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
-const ViewUserProfile = ({ profile, foundItems = [], lostItems = [] }) => {
+const ViewUserProfile = ({ profile, items, ratings }) => {
+    const foundItems = items.filter(item => item.isFoundItem);
+    const lostItems = items.filter(item => !item.isFoundItem);
     return (
         <>
             <TitleBreadcrumbs title="Profile" text="Profile" />
@@ -22,7 +23,7 @@ const ViewUserProfile = ({ profile, foundItems = [], lostItems = [] }) => {
                     <Bio user={profile} />
                 </Grid>
                 <Grid item xs={12} sm={12} md={4} lg={4}>
-                    <ProgBadgeDisplay user={profile} />
+                    <ProgBadgeDisplay user={profile} items={foundItems} />
                 </Grid>
             </Grid>
             <Grid container spacing={2} sx={{ marginBottom: '1rem' }}>
@@ -35,7 +36,7 @@ const ViewUserProfile = ({ profile, foundItems = [], lostItems = [] }) => {
             </Grid>
             <Grid container spacing={2} sx={{ marginBottom: '1rem' }}>
                 <Grid item lg={12}>
-                    <RecentRatingsFromUser />
+                    <RecentRatingsFromUser ratings={ratings} />
                 </Grid>
             </Grid>
         </>

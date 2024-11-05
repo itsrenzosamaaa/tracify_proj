@@ -36,6 +36,10 @@ export async function POST(req) {
       overwrite: true,
     });
 
+    if (lostItemData.status === 'Tracked'){
+      lostItemData.dateTracked = new Date();
+    }
+
     const newLostItem = new lostItem({
       ...lostItemData,
       image: uploadResponse.secure_url,
@@ -44,10 +48,7 @@ export async function POST(req) {
 
     console.log(newLostItem);
 
-    return NextResponse.json(
-      { success: true, message: "Lost Item published" },
-      { status: 201 }
-    );
+    return NextResponse.json(newLostItem);
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }

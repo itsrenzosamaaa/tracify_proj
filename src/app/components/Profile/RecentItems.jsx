@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import { Paper, TableContainer, TableHead, TableRow, TableBody, TableCell, TablePagination } from '@mui/material';
-import { Box, Table, Typography, Button, Divider } from '@mui/joy';
-import { formatDistanceToNow } from 'date-fns';
+import { Box, Table, Typography, Chip, Button } from '@mui/joy';
 
 const RecentItems = ({ items, name }) => {
     // State to manage pagination
@@ -27,7 +26,7 @@ const RecentItems = ({ items, name }) => {
     return (
         <>
             <Box sx={{ padding: '1rem 1rem 1rem 0' }}>
-                <Typography level="body-lg" fontWeight='500'>Recent {name} items</Typography>
+                <Typography level="body-lg" fontWeight='500'>Recent {name} Items</Typography>
             </Box>
             <Paper elevation={2} sx={{
                 padding: "1rem",
@@ -51,11 +50,12 @@ const RecentItems = ({ items, name }) => {
                         </TableHead>
                         <TableBody>
                             {paginatedItems.map((item) => (
-                                <TableRow key={item._id}>
+                                (item.status === 'Resolved' || item.status === 'Claimed' || item.status === 'Invalid') && 
+                                    <TableRow key={item._id}>
                                     <TableCell>{item.name}</TableCell>
-                                    <TableCell>{formatDistanceToNow(new Date(item.dateReported), { addSuffix: true })}</TableCell>
+                                    <TableCell><Chip variant="solid" color={item.status === 'Invalid' ? 'danger' : 'success'}>{item.status}</Chip></TableCell>
                                     <TableCell>
-                                        <Button color={item.isFoundItem ? "success" : "danger"}>Details</Button>
+                                        {/* <Button color={item.isFoundItem ? "success" : "danger"}>Details</Button> */}
                                     </TableCell>
                                 </TableRow>
                             ))}

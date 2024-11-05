@@ -86,7 +86,7 @@ const FoundItemsList = ({ items, fetchItems }) => {
                             <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Found Item</Button>
                             <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
                         </Box>
-                        <ItemsTable items={filteredItems} fetch={fetchItems} />
+                        <ItemsTable items={filteredItems} fetchItems={fetchItems} />
                     </Paper>
                 </Grid>
             </Grid>

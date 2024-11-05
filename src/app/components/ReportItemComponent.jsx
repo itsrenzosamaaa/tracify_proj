@@ -46,6 +46,8 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
     
         if (isFoundItem) {
             formData.finder = session?.user?.id;
+            formData.matched = null;
+            formData.monitoredBy = null;
     
             try {
                 const response = await fetch('/api/found-items', {

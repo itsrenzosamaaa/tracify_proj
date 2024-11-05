@@ -29,6 +29,10 @@ const FoundItemsPage = () => {
     }
   }, [status, fetchItems])
 
+  if (status === 'loading') {
+    return null;
+  }
+
   return (
     <>
       <LostItemsList items={items} fetchItems={fetchItems} />

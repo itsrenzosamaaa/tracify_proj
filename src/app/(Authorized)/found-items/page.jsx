@@ -12,6 +12,7 @@ const FoundItemsPage = () => {
     try {
       const response = await fetch('/api/found-items');
       const data = await response.json();
+      console.log(data)
       if (response.ok) {
         const filteredFoundItems = data.filter(item => item?.finder?.school_category === session?.user?.schoolCategory)
         setItems(filteredFoundItems);
@@ -28,6 +29,10 @@ const FoundItemsPage = () => {
       fetchItems();
     }
   }, [status, fetchItems])
+
+  if (status === 'loading') {
+    return null;
+  }
 
   return (
     <>

@@ -5,9 +5,8 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
 import { useSession } from 'next-auth/react';
-import { isAfter, isBefore, subDays } from 'date-fns';
 
-const PublishItemIdentified = ({ open, onClose }) => {
+const PublishItemIdentified = ({ open, onClose, refreshData }) => {
     const [users, setUsers] = useState([]);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -24,7 +23,7 @@ const PublishItemIdentified = ({ open, onClose }) => {
         try {
             const response = await fetch('/api/lost-items');
             const data = await response.json();
-            const filteredLostItems = data.filter(item => item.owner._id === owner._id);
+            const filteredLostItems = data.filter(item => item.owner._id === owner._id && item.status === 'Missing');
             setRecentLostItems(filteredLostItems);
         } catch (error) {
             console.error(error)
@@ -74,61 +73,59 @@ const PublishItemIdentified = ({ open, onClose }) => {
         const lostItemDate = new Date().toISOString().split("T")[0];
         const lostItemTime = new Date().toTimeString().split(" ")[0].slice(0, 5);
     
-        // Save lost item if owner exists
-        if (owner) {
-            const status = 'Tracked';
-            if (selectedLostItem.name === 'None') {
-                // If the user has no lost item based on the published found item
-                const lostItemData = {
-                    owner: owner?._id,
-                    name,
-                    description,
-                    location,
-                    date: lostItemDate,
-                    time: lostItemTime,
-                    image: null,
-                    status,
-                };
+        const status = 'Tracked';
+        if (selectedLostItem.name === 'None') {
+            const lostItemData = {
+                owner: owner?._id,
+                name,
+                description,
+                location,
+                date: lostItemDate,
+                time: lostItemTime,
+                image,
+                status,
+            };
     
-                try {
-                    const response = await fetch('/api/lost-items', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(lostItemData),
-                    });
-                    if (!response.ok) throw new Error("Failed to create lost item");
+            try {
+                const response = await fetch('/api/lost-items', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lostItemData),
+                });
+                if (!response.ok) throw new Error("Failed to create lost item");
     
-                    const savedLostItem = await response.json();
-                    lostItemId = savedLostItem?._id;
-                    lostItemDescription = savedLostItem?.description;
-                    lostItemLocation = savedLostItem?.location;
-                } catch (error) {
-                    console.error("Error creating lost item:", error);
-                    return; // Exit on error
-                }
-            } else {
-                // If the owner has a recent lost item based on the found item
-                try {
-                    const response = await fetch(`/api/lost-items/${selectedLostItem._id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status }),
-                    });
+                const savedLostItem = await response.json();
+                lostItemId = savedLostItem?._id;
+                lostItemDescription = savedLostItem?.description;
+                lostItemLocation = savedLostItem?.location;
     
-                    if (!response.ok) throw new Error('Failed to update status');
+                console.log("Created Lost Item ID:", lostItemId);
+            } catch (error) {
+                console.error("Error creating lost item:", error);
+                return;
+            }
+        } else {
+            try {
+                const response = await fetch(`/api/lost-items/${selectedLostItem._id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status }),
+                });
     
-                    const updatedItem = await response.json();
-                    lostItemId = updatedItem?._id;
-                    lostItemDescription = updatedItem?.description;
-                    lostItemLocation = updatedItem?.location;
-                } catch (error) {
-                    console.error("Error updating lost item status:", error);
-                    return; // Exit on error
-                }
+                if (!response.ok) throw new Error('Failed to update status');
+    
+                const updatedItem = await response.json();
+                lostItemId = updatedItem?._id;
+                lostItemDescription = updatedItem?.description;
+                lostItemLocation = updatedItem?.location;
+    
+                console.log("Updated Lost Item ID:", lostItemId);
+            } catch (error) {
+                console.error("Error updating lost item status:", error);
+                return;
             }
         }
     
-        // Create found item data with lost item ID as the owner
         const foundItemData = {
             finder: finder?._id || null,
             name,
@@ -138,8 +135,11 @@ const PublishItemIdentified = ({ open, onClose }) => {
             time: lostItemTime,
             image,
             status: 'Reserved',
-            owner: lostItemId || null,
+            matched: lostItemId || null,
+            monitoredBy: session?.user?.id,
         };
+    
+        console.log("Found Item Data:", foundItemData);
     
         try {
             const response = await fetch('/api/found-items', {
@@ -150,7 +150,7 @@ const PublishItemIdentified = ({ open, onClose }) => {
     
             if (response.ok) {
                 alert('Item successfully published');
-                await resetForm(); // Reset form after successful submission
+                await resetForm();
             } else {
                 const data = await response.json();
                 alert(`Failed to add found item: ${data.error}`);
@@ -158,12 +158,15 @@ const PublishItemIdentified = ({ open, onClose }) => {
         } catch (error) {
             console.error("Error creating found item:", error);
         }
-    };
+    };    
     
     // Helper function to reset form fields and close the modal
     const resetForm = async () => {
         await onClose();
+        refreshData();
         setName('');
+        setDescription('');
+        setLocation(null);
         setImage(null);
         setOwner(null);
         setUserFindItem(false);

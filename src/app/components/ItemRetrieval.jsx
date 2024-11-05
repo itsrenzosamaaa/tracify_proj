@@ -8,7 +8,7 @@ import ItemsTable from './Table/ItemsTable'
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import PublishItemIdentified from './Modal/PublishItemIdentified';
 
-const ItemRetrievalList = ({ items }) => {
+const ItemRetrievalList = ({ items, fetchItems }) => {
     const [status, setStatus] = useState('Reserved');
     const [open, setOpen] = useState(false);
 
@@ -84,9 +84,9 @@ const ItemRetrievalList = ({ items }) => {
                                 </Box>
                             </FormControl>
                             <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Item Identified</Button>
-                            <PublishItemIdentified open={open} onClose={() => setOpen(false)} />
+                            <PublishItemIdentified open={open} onClose={() => setOpen(false)} refreshData={fetchItems} />
                         </Box>
-                        <ItemsTable items={filteredItems} />
+                        <ItemsTable items={filteredItems} fetchItems={fetchItems} />
                     </Paper>
                 </Grid>
             </Grid>

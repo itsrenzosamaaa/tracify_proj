@@ -14,16 +14,14 @@ export async function GET() {
     await dbConnect();
 
     const fetchFoundItems = await foundItem.find()
-      .populate({
-          path: 'monitoredBy',
-          populate: {
-              path: 'role', // This populates the role of the monitoredBy
-              model: 'Role', // Ensure this matches your role model name
-          },
-      })
-      .populate('finder');
-
-    console.log(fetchFoundItems)
+        .populate({
+            path: 'monitoredBy',
+            populate: {
+                path: 'role', // This populates the role of the monitoredBy
+                model: 'Role', // Ensure this matches your role model name
+            },
+        })
+        .populate('finder');
 
     return NextResponse.json(fetchFoundItems, { status: 200 });
   } catch (error) {
@@ -40,12 +38,23 @@ export async function POST(req) {
     await dbConnect();
     const foundItemData = await req.json(); // This will only work for JSON data, not FormData
     
+    if (!foundItemData.image || !foundItemData.status) {
+      return NextResponse.json(
+        { success: false, message: "Missing required fields: image or status" },
+        { status: 400 }
+      );
+    }
+
     // Assuming you're sending the image as a URL or base64 from the frontend
     const uploadResponse = await cloudinary.uploader.upload(foundItemData.image, {
       folder: "found_items",
       public_id: `found_${Date.now()}`,
       overwrite: true,
     });
+
+    if (foundItemData.status === 'Reserved'){
+      foundItemData.dateReserved = new Date();
+    }
 
     const newFoundItem = new foundItem({
       ...foundItemData,

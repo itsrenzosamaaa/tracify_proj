@@ -88,7 +88,7 @@ const LostItemsList = ({ items, fetchItems }) => {
                             <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Lost Item</Button>
                             <PublishLostItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
                         </Box>
-                        <ItemsTable items={filteredItems} />
+                        <ItemsTable items={filteredItems} fetchItems={fetchItems} />
                     </Paper>
                 </Grid>
             </Grid>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Table, Button } from "@mui/joy";
+import { Table, Button, Tooltip } from "@mui/joy";
 import {
     Paper,
     TableContainer,
@@ -8,7 +8,9 @@ import {
     TableBody,
     TableRow,
     TableCell,
-    TablePagination
+    TablePagination,
+    Dialog,
+    DialogContent
 } from "@mui/material";
 import React, { useState } from "react";
 import InfoIcon from '@mui/icons-material/Info';
@@ -16,14 +18,26 @@ import ItemRequestApproveModal from "../Modal/ItemRequestApproveModal";
 import ItemValidatingModal from "../Modal/ItemValidatingModal";
 import ItemPublishedModal from "../Modal/ItemPublishedModal";
 import ItemMissingModal from "../Modal/ItemMissingModal";
+import ItemClaimRequestModal from "../Modal/ItemClaimRequestModal";
+import ItemReservedModal from "../Modal/ItemReservedModal";
+import { CldImage } from "next-cloudinary";
 
-const ItemsTable = ({ items, fetch }) => {
+const ItemsTable = ({ items, fetchItems }) => {
     const [approveModal, setApproveModal] = useState(null);
     const [openValidatingModal, setOpenValidatingModal] = useState(null);
     const [openPublishedModal, setOpenPublishedModal] = useState(null);
     const [openMissingModal, setOpenMissingModal] = useState(null);
+    const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
+    const [openReservedModal, setOpenReservedModal] = useState(null);
     const [page, setPage] = useState(0); // Current page
     const [rowsPerPage, setRowsPerPage] = useState(5); // Items per page
+    const [openImageModal, setOpenImageModal] = useState(false);
+    const [selectedImage, setSelectedImage] = useState('');
+
+    const handleImageClick = (image) => {
+        setSelectedImage(image);
+        setOpenImageModal(true);
+    };
 
     // Handle changing the page
     const handleChangePage = (event, newPage) => {
@@ -68,6 +82,15 @@ const ItemsTable = ({ items, fetch }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
+                                    width: { xs: "20%", lg: "20%" },
+                                }}
+                            >
+                                Image
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    fontWeight: "bold",
+                                    backgroundColor: "#f5f5f5",
                                     width: { xs: "30%", lg: "20%" },
                                 }}
                             >
@@ -92,11 +115,49 @@ const ItemsTable = ({ items, fetch }) => {
                     <TableBody>
                         {displayedItems.map((row) => (
                             <TableRow key={row._id}>
-                                <TableCell
-                                    sx={{ width: { xs: "30%", lg: "20%" } }}
-                                >
-                                    {row.finder && `${row.finder.firstname} ${row.finder.lastname}`}
-                                    {row.owner && `${row.owner.firstname} ${row.owner.lastname}`}
+                                <TableCell sx={{ width: { xs: "30%", lg: "20%" } }}>
+                                    <Tooltip title='View Image' arrow>
+                                        <CldImage
+                                            priority
+                                            src={row.image}
+                                            width={75}
+                                            height={75}
+                                            alt={row.name}
+                                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            style={{
+                                                objectFit: 'cover',
+                                                borderRadius: '8px',
+                                                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+                                                cursor: 'pointer'  // Indicate that the image is clickable
+                                            }}
+                                            onClick={() => handleImageClick(row.image)}
+                                        />
+                                    </Tooltip>
+                                    <Dialog open={openImageModal} onClose={() => setOpenImageModal(false)}>
+                                        <DialogContent>
+                                            <CldImage
+                                                src={selectedImage}
+                                                alt="Selected item image"
+                                                width={500}
+                                                height={500}
+                                                style={{
+                                                    width: '100%',
+                                                    height: 'auto',
+                                                    borderRadius: '8px',
+                                                }}
+                                            />
+                                        </DialogContent>
+                                    </Dialog>
+                                </TableCell>
+                                <TableCell sx={{ width: { xs: "30%", lg: "20%" } }}>
+                                    {row?.matched 
+                                        ? `${row.matched.owner.firstname} ${row.matched.owner.lastname}`
+                                        : row.finder 
+                                        ? `${row.finder.firstname} ${row.finder.lastname}`
+                                        : row.owner 
+                                        ? `${row.owner.firstname} ${row.owner.lastname}`
+                                        : ""
+                                    }
                                 </TableCell>
                                 <TableCell
                                     sx={{
@@ -105,8 +166,15 @@ const ItemsTable = ({ items, fetch }) => {
                                 >
                                     {row.name}
                                 </TableCell>
-                                <TableCell sx={{ display: 'flex', gap: 1 }}>
-                                {
+                                <TableCell 
+                                    sx={{ 
+                                        display: 'flex', 
+                                        gap: 1,
+                                        minHeight: '80px', // Adjust this value to your desired minimum height
+                                        alignItems: 'center', 
+                                    }}
+                                >
+                                    {
                                         row.status === 'Validating' 
                                         &&
                                         <>
@@ -140,7 +208,25 @@ const ItemsTable = ({ items, fetch }) => {
                                         <>
                                             <Button onClick={() => setApproveModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                             <Button onClick={() => setApproveModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
-                                            <ItemRequestApproveModal row={row} open={approveModal} onClose={() => setApproveModal(null)} fetch={fetch} />
+                                            <ItemRequestApproveModal row={row} open={approveModal} onClose={() => setApproveModal(null)} refreshData={fetchItems} />
+                                        </>
+                                    }
+                                    {
+                                        row.status === 'Claim Request' 
+                                        &&
+                                        <>
+                                            <Button onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
+                                            <ItemClaimRequestModal row={row} open={openClaimRequestModal} onClose={() => setOpenClaimRequestModal(null)} fetch={fetch} />
+                                        </>
+                                    }
+                                    {
+                                        row.status === 'Reserved' 
+                                        &&
+                                        <>
+                                            <Button onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
+                                            <ItemReservedModal row={row} open={openReservedModal} onClose={() => setOpenReservedModal(null)} refreshData={fetchItems} />
                                         </>
                                     }
                                 </TableCell>

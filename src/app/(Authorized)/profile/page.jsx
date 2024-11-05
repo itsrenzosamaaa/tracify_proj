@@ -8,12 +8,18 @@ import { Typography } from '@mui/joy';
 const ProfilePage = () => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [items, setItems] = useState([]);
+    const [ratings, setRatings] = useState([]);
     const { data: session, status } = useSession();
+
+    console.log(ratings)
 
     useEffect(() => {
         // Fetch student data if authenticated and session contains user id
         if (status === 'authenticated' && session?.user?.id) {
             fetchData(session.user.id);
+            fetchItems(session.user.id);
+            fetchRatings(session?.user?.id)
         }
     }, [session?.user?.id, status]);
 
@@ -35,23 +41,40 @@ const ProfilePage = () => {
         }
     };
 
-    // Fetch found and lost items
-    // const fetchItems = async () => {
-    //     try {
-    //         const response = await fetch('/api/items');
-    //         const data = await response.json();
-    //         if (response.ok) {
-    //             const filteredFoundItems = data.filter(item => item.isFoundItem);
-    //             const filteredLostItems = data.filter(item => !item.isFoundItem);
-    //             setFoundItems(filteredFoundItems);
-    //             setLostItems(filteredLostItems);
-    //         } else {
-    //             console.error('Failed to fetch item data:', data.message);
-    //         }
-    //     } catch (error) {
-    //         console.error('Failed to fetch item data:', error);
-    //     }
-    // };
+    const fetchItems = async (accountId) => {
+        try {
+            const response = await fetch(`/api/items/${accountId}`);
+            const data = await response.json();
+            if (response.ok) {
+                const filteredFoundItems = data
+                    .filter(item => item.finder)
+                    .map(item => ({ ...item, isFoundItem: true }));
+                const filteredLostItems = data
+                    .filter(item => item.owner)
+                    .map(item => ({ ...item, isFoundItem: false }));
+                setItems([ ...filteredFoundItems, ...filteredLostItems ]);
+            } else {
+                console.error('Failed to fetch item data:', data.message);
+            }
+        } catch (error) {
+            console.error('Failed to fetch item data:', error);
+        }
+    };
+
+    const fetchRatings = async (accountId) => {
+        try {
+            const response = await fetch(`/api/ratings/user/${accountId}`)
+            const data = await response.json();
+            if(response.ok){
+                const filteredRatings = data.filter(rating => rating?.done_review)
+                setRatings(filteredRatings);
+            } else {
+                console.error('Failed to fetch ratings:', data.message)
+            }
+        } catch (error) {
+            console.error('Failed to fetch ratings:', error);
+        }
+    }
 
     // Fetch role after profile is loaded
 
@@ -65,7 +88,7 @@ const ProfilePage = () => {
 
     return (
         <>
-            <ViewUserProfile profile={profile} />
+            <ViewUserProfile profile={profile} items={items} ratings={ratings} />
         </>
     );
 }

@@ -8,8 +8,10 @@ const BadgesPage = () => {
   const {data: session, status} = useSession();
   const [badges, setBadges] = useState([]);
 
-  console.log(status)
-  console.log(session)
+  if (status === 'loading') {
+    return null;
+  
+  }
   return (
     <>
       <ViewBadges session={session} badges={badges} />

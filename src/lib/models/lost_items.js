@@ -34,6 +34,7 @@ const LostItemSchema = new mongoose.Schema({
       "Tracked",
       "Claimed",
       "Invalid",
+      "Canceled",
     ],
   },
   dateRequest: {
@@ -49,6 +50,9 @@ const LostItemSchema = new mongoose.Schema({
     type: Date,
   },
   dateInvalid: {
+    type: Date,
+  },
+  dateCanceled: {
     type: Date,
   },
 });

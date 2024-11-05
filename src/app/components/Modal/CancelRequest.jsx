@@ -3,22 +3,21 @@
 import { Modal, ModalClose, ModalDialog, Typography, Box, Button } from '@mui/joy'
 import React, { useState } from 'react'
 
-const ConfirmationRetrievalRequest = ({ open, onClose, item, matched }) => {
+const CancelRequest = ({ open, onClose, item, api }) => {
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e, foundItemId, lostItemId) => {
+    const handleSubmit = async (e, id) => {
         if (e && e.preventDefault) {
             e.preventDefault();
         }
 
         try {
             setLoading(true)
-            const foundResponse = await fetch(`/api/found-items/${foundItemId}`, {
+            const foundResponse = await fetch(`/api/${api}/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    status: 'Claim Request',
-                    matched: lostItemId,
+                    status: 'Canceled',
                 }),
             });
     
@@ -32,18 +31,18 @@ const ConfirmationRetrievalRequest = ({ open, onClose, item, matched }) => {
         }
     }
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open === item._id} onClose={onClose}>
         <ModalDialog>
             <ModalClose />
-            <Typography level="h4" gutterBottom>Confirmation</Typography>
-            <Typography>Send a retrieval request to {item.monitoredBy.role.name}?</Typography>
+            <Typography level="h4" gutterBottom>Cancel Request</Typography>
+            <Typography>Are you sure you want to cancel your request?</Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button disabled={loading} loading={loading} onClick={(e) => handleSubmit(e, item._id, matched._id)} fullWidth>Send</Button>
-                <Button disabled={loading} loading={loading} onClick={onClose} fullWidth color="danger">Abort</Button>
+                <Button disabled={loading} loading={loading} onClick={onClose} variant="outlined" fullWidth>Close</Button>
+                <Button disabled={loading} loading={loading} onClick={(e) => handleSubmit(e, item._id)} fullWidth color="danger">Cancel</Button>
             </Box>
         </ModalDialog>
     </Modal>
   )
 }
 
-export default ConfirmationRetrievalRequest
+export default CancelRequest

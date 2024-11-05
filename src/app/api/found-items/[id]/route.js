@@ -17,9 +17,8 @@ export async function GET(req, { params }) {
                 },
             })
             .populate('finder') // Populate finder if necessary
+            .populate('matched')
             .lean(); // Convert to plain JavaScript object
-
-        console.log(findFoundItem)
 
         if (!findFoundItem) {
             return NextResponse.json({ message: 'Found item not found' }, { status: 404 });
@@ -45,10 +44,16 @@ export async function PUT(req, { params }) {
             updateData.dateValidating = new Date();
         }else if (status === 'Published'){
             updateData.datePublished = new Date();
-        }else if (status === 'Claimed'){
-            updateData.dateClaimed = new Date();
+        }else if (status === 'Claim Request'){
+            updateData.dateClaimRequest = new Date();
+        }else if (status === 'Reserved'){
+            updateData.dateReserved = new Date();
+        }else if (status === 'Resolved'){
+            updateData.dateResolved = new Date();
         }else if (status === 'Invalid'){
             updateData.dateInvalid = new Date();
+        }else if (status === 'Canceled'){
+            updateData.dateCanceled = new Date();
         }
 
         const updatedFoundItem = await found_items.findOneAndUpdate(
@@ -57,14 +62,12 @@ export async function PUT(req, { params }) {
             { new: true }
         );  
 
-        console.log('Updated Lost Item: ', updatedFoundItem)
-
         if (!updatedFoundItem) {
-            return NextResponse.json({ message: 'Lost item not found' }, { status: 404 });
+            return NextResponse.json({ message: 'Found item not found' }, { status: 404 });
         }
 
         return NextResponse.json(updatedFoundItem);
     } catch (error) {
-        return NextResponse.json({ message: 'Error updating lost item' }, { status: 500 });
+        return NextResponse.json({ message: 'Error updating found item' }, { status: 500 });
     }
 }

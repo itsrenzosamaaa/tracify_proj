@@ -36,6 +36,7 @@ const FoundItemSchema = new mongoose.Schema({
       "Reserved",
       "Resolved",
       "Invalid",
+      "Canceled",
     ],
   },
   dateRequest: {
@@ -57,6 +58,9 @@ const FoundItemSchema = new mongoose.Schema({
     type: Date,
   },
   dateInvalid: {
+    type: Date,
+  },
+  dateCanceled: {
     type: Date,
   },
   matched: {

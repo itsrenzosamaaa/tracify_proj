@@ -14,13 +14,17 @@ const trophyImages = {
     diamond: '/trophy/diamond_trophy.png',
 };
 
-const ProgBadgeDisplay = ({ user }) => {
+const ProgBadgeDisplay = ({ user, items }) => {
     const [open, setOpen] = useState(false);
-    let trophy = trophyImages.blank;
-    let multiplierSFI = 1 * 500;
-    let multiplierRateToUser = 2 * 250;
+
+    const filteredResolvedItems = items.filter(item => item.status === 'Resolved');
+    console.log(filteredResolvedItems)
+
+    const multiplierSFI = filteredResolvedItems.length * 500;
+    const multiplierRateToUser = 2 * 250;
     const multiplier = multiplierSFI + multiplierRateToUser;
 
+    let trophy = trophyImages.blank;
     let endPoints = ' / 500';
 
     if (multiplier >= 500 && multiplier <= 2499) {
@@ -82,8 +86,8 @@ const ProgBadgeDisplay = ({ user }) => {
                                 <Typography level="body-md" fontWeight="700">Successful Ratings:</Typography>
                             </Box>
                             <Box sx={{ textAlign: 'right' }}>
-                                <Typography level="body-md" color='primary-main'>{user.successfulFoundItems}</Typography>
-                                <Typography level="body-md" color='primary-main'>{user.ratedUsers}</Typography>
+                                <Typography level="body-md" color='primary-main'>{filteredResolvedItems.length}</Typography>
+                                <Typography level="body-md" color='primary-main'>2</Typography>
                             </Box>
                         </Box>
                     </Sheet>

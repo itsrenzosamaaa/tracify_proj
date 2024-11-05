@@ -38,6 +38,8 @@ export async function PUT(req, { params }) {
             updateData.dateClaimed = new Date();
         }else if (status === 'Invalid'){
             updateData.dateInvalid = new Date();
+        }else if (status === 'Canceled'){
+            updateData.dateCanceled = new Date();
         }
 
         const updatedLostItem = await lost_items.findOneAndUpdate(

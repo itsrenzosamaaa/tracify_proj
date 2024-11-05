@@ -70,6 +70,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
             status: 'Published',
             datePublished: new Date(),
             monitoredBy: session?.user?.id,
+            matched: null,
         };
     
         try {

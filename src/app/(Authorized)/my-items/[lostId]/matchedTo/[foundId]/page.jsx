@@ -77,7 +77,7 @@ const ViewItemPage = ({ params }) => {
                                     Claim Request
                                 </Button>
 
-                                <ConfirmationRetrievalRequest open={open} />
+                                <ConfirmationRetrievalRequest open={open} onClose={() => setOpen(false)} item={foundItem} matched={lostItem} />
 
                                 <Divider />
 

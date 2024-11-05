@@ -4,7 +4,7 @@ import { Button, Modal, ModalClose, ModalDialog, Typography, Box, } from '@mui/j
 import React, { useState } from 'react';
 import ItemDetails from './ItemDetails';
 
-const ItemValidatingModal = ({ row, open, onClose, fetch }) => {
+const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
     const [itemValidate, setItemValidate] = useState(null);
 
     const handleSubmit = async (e, id) => {
@@ -22,7 +22,7 @@ const ItemValidatingModal = ({ row, open, onClose, fetch }) => {
             if (!response.ok) throw new Error('Failed to update status');
             alert('success');
             onClose();
-            fetch();
+            refreshData();
         } catch (error) {
             console.error(error)
         }

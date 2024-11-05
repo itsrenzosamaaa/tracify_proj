@@ -1,17 +1,21 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Box, Typography, Grid, Button, Table } from "@mui/joy";
 import { Paper, TableBody, TableCell, TableHead, TableRow, TablePagination, Divider, Chip } from "@mui/material";
 import { useRouter } from "next/navigation";
+import Loading from "../Loading";
 
 const UserDashboard = ({ session, status }) => {
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const router = useRouter();
 
     const fetchItems = async (accountId) => {
+        setLoading(true);
         try {
             const response = await fetch(`/api/items/${accountId}`);
             const data = await response.json();
@@ -19,24 +23,28 @@ const UserDashboard = ({ session, status }) => {
                 setItems(data);
             } else {
                 console.error('Failed to fetch item data:', data.message);
+                setError(data.message);
             }
         } catch (error) {
             console.error('Failed to fetch item data:', error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
-        if(status === 'authenticated' && session?.user?.id){
-            fetchItems(session?.user?.id);
+        if (status === 'authenticated' && session?.user?.id) {
+            fetchItems(session.user.id);
         }
-    }, [status, session?.user?.id])
+    }, [status, session?.user?.id]);
 
-    const PaperOverview = [
+    const PaperOverview = useMemo(() => [
         { title: 'Total Found Items', quantity: items.filter(item => item.finder === session?.user?.id).length },
         { title: 'Total Lost Items', quantity: items.filter(item => item.owner === session?.user?.id).length },
         { title: 'Pending Requests', quantity: items.filter(item => item.status === 'Request').length },
         { title: 'Resolved Cases', quantity: items.filter(item => item.status === 'Resolved' || item.status === 'Claimed').length },
-    ];
+    ], [items, session?.user?.id]);
 
     const updates = [
         { type: 'Lost', item: 'Blue Wallet', time: '2 hours ago' },
@@ -54,7 +62,9 @@ const UserDashboard = ({ session, status }) => {
         setPage(0);
     };
 
-    const loadingText = "PAG TAGA HULAT MAN DAW"; // Loading message
+    if (loading) return <Loading />;
+
+    if (error) return <Typography color="error">Error: {error}</Typography>;
 
     return (
         <>

@@ -6,6 +6,9 @@ import React from 'react'
 
 const MyItemsPage = () => {
   const {data: session, status} = useSession();
+  if (status === 'loading') {
+    return null;
+  }
   return (
     <>
       <MyItemsComponent session={session} status={status} />

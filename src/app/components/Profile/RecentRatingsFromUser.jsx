@@ -1,125 +1,207 @@
 import React, { useState } from 'react';
-import { Paper, Stack, Grid, Card, CardContent, Avatar, LinearProgress } from '@mui/material';
-import { Box, Typography, Divider } from '@mui/joy';
+import { Rating, Paper, Stack, Grid, Card, CardContent, Avatar, LinearProgress, CircularProgress } from '@mui/material';
+import { Box, Typography, Divider, Chip } from '@mui/joy';
 import StarIcon from "@mui/icons-material/Star";
+import { formatDistanceToNow } from 'date-fns';
 
-const raters = [
-    { rateID: 'RT-0001', userID: 'C-2021-0002', stars: 5, feedback: 'Great service!', dateRating: '09/21/2024' },
-    { rateID: 'RT-0002', userID: 'C-2021-0003', stars: 4, feedback: 'Good experience.', dateRating: '09/20/2024' },
-    { rateID: 'RT-0003', userID: 'C-2021-0004', stars: 3, feedback: 'Satisfactory.', dateRating: '09/19/2024' },
-    { rateID: 'RT-0004', userID: 'C-2021-0005', stars: 5, feedback: 'Amazing!', dateRating: '09/18/2024' },
-    { rateID: 'RT-0005', userID: 'C-2021-0006', stars: 2, feedback: 'Could be better.', dateRating: '09/17/2024' },
-];
+const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
+    // State to track selected quantity rating
+    const [selectedQuantity, setSelectedQuantity] = useState(null);
 
-const RecentRatingsFromUser = () => {
-    const [selectedRating, setSelectedRating] = useState(null); // State to track selected star rating
+    if (isLoading) {
+        return <CircularProgress />;
+    }
 
-    const starCounts = raters.reduce((acc, curr) => {
-        acc[curr.stars] = (acc[curr.stars] || 0) + 1;
+    if (error) {
+        return (
+            <Typography variant="body1" color="error" sx={{ textAlign: 'center', mt: 2 }}>
+                Failed to load ratings. Please try again later.
+            </Typography>
+        );
+    }
+
+    // Count the occurrences of each quantity rating
+    const quantityCounts = ratings.reduce((acc, curr) => {
+        if (curr.quantity) {
+            acc[curr.quantity] = (acc[curr.quantity] || 0) + 1;
+        }
         return acc;
     }, {});
 
-    const ratings = [
-        { rating: 5, count: starCounts[5] || 0 },
-        { rating: 4, count: starCounts[4] || 0 },
-        { rating: 3, count: starCounts[3] || 0 },
-        { rating: 2, count: starCounts[2] || 0 },
-        { rating: 1, count: starCounts[1] || 0 },
+    const countQuantities = [
+        { quantity: 5, count: quantityCounts[5] || 0 },
+        { quantity: 4, count: quantityCounts[4] || 0 },
+        { quantity: 3, count: quantityCounts[3] || 0 },
+        { quantity: 2, count: quantityCounts[2] || 0 },
+        { quantity: 1, count: quantityCounts[1] || 0 },
     ];
 
-    const totalRatings = ratings.reduce((acc, curr) => acc + curr.count, 0);
+    const totalQuantities = countQuantities.reduce((acc, curr) => acc + curr.count, 0);
+    const totalQuantity = ratings.reduce((sum, rater) => sum + (rater.quantity || 0), 0); // Adjust to use 'quantity'
+    const averageQuantity = totalQuantities > 0 ? (totalQuantity / totalQuantities).toFixed(1) : 0; // Avoid NaN
 
-    const totalStars = raters.reduce((sum, rater) => sum + rater.stars, 0);
-    const averageRating = totalStars / raters.length;
+    // Compliments count logic
+    const complimentCounts = ratings.reduce((acc, curr) => {
+        curr.compliments?.forEach(compliment => {
+            acc[compliment] = (acc[compliment] || 0) + 1;
+        });
+        return acc;
+    }, {});
 
-    // Filter raters based on selected rating, or show all if none is selected
-    const filteredRaters = selectedRating
-        ? raters.filter(rater => rater.stars === selectedRating)
-        : raters;
+    // Filter ratings based on selected quantity
+    const filteredRatings = selectedQuantity
+        ? ratings.filter(rater => rater.quantity === selectedQuantity)
+        : ratings;
 
-    const renderRatingRow = (rating, count) => (
+    const renderQuantityRow = (quantity, count) => (
         <Box
-            sx={{ display: 'flex', alignItems: 'center', width: '100%', mt: 1, cursor: 'pointer' }}
-            onClick={() => setSelectedRating(selectedRating === rating ? null : rating)} // Toggle selection
+            sx={{ display: 'flex', alignItems: 'center', width: '100%', mt: 1, cursor: 'pointer', transition: 'background 0.3s', '&:hover': { backgroundColor: '#f0f0f0' } }}
+            onClick={() => setSelectedQuantity(selectedQuantity === quantity ? null : quantity)} // Toggle selection
         >
-            <Typography sx={{ minWidth: 35, display: 'inline-flex' }}>{rating} <StarIcon sx={{ color: '#FFD700' }} /></Typography>
+            <Typography sx={{ minWidth: 35, display: 'inline-flex', fontWeight: 'medium' }}>
+                {quantity} <StarIcon sx={{ color: '#FFD700' }} />
+            </Typography>
             <Box sx={{ flexGrow: 1, mx: 2 }}>
-                <LinearProgress variant="determinate" value={totalRatings > 0 ? (count / totalRatings) * 100 : 0} />
+                <LinearProgress variant="determinate" value={totalQuantities > 0 ? (count / totalQuantities) * 100 : 0} />
             </Box>
-            <Typography>{count}</Typography>
+            <Typography fontWeight="medium">{count}</Typography>
         </Box>
     );
 
     return (
-        <>
-            <Box sx={{ padding: '1rem 1rem 1rem 0' }}>
-                <Typography level="body-lg" fontWeight='500'>Recent Ratings From Users</Typography>
-            </Box>
-            <Paper elevation={2} sx={{ padding: "1rem" }}>
-                <Grid container spacing={2} sx={{ my: 2 }}>
-                    <Grid item xs={12} lg={6}>
-                        <Stack sx={{ width: '100%' }} spacing={1}>
-                            <Box
-                                sx={{
-                                    position: 'relative',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: 'auto',
-                                    mt: 3,
-                                }}
-                            >
-                                <StarIcon
-                                    sx={{
-                                        color: '#FFD700',  // Gold color for star
-                                        fontSize: '9rem',  // Adjust the size of the star
-                                    }}
-                                />
-                                <Typography
-                                    level="h5"
-                                    component="span"
-                                    sx={{
-                                        position: 'absolute',
-                                        color: '#fff',  // White text color
-                                        fontWeight: 'bold',
-                                    }}
-                                >
-                                    {averageRating.toFixed(1)}
-                                </Typography>
+        <Box>
+            <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+                Ratings from Other Users
+            </Typography>
+            <Paper elevation={3} sx={{ padding: "1.5rem", borderRadius: 2 }}>
+                <Grid container spacing={3}>
+                    {/* Average Quantity and Compliments Section */}
+                    <Grid item xs={12} md={5}>
+                        <Stack spacing={2} sx={{ alignItems: 'center' }}>
+                            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', width: '100%' }}>
+                                <Box sx={{ textAlign: 'center' }}>
+                                    <Typography level="h2" sx={{ fontWeight: 'bold', color: '#333' }}>{averageQuantity}</Typography>
+                                    <Rating
+                                        size="small"
+                                        name="rating"
+                                        precision={0.5}
+                                        value={averageQuantity}
+                                        readOnly
+                                        icon={<StarIcon fontSize="inherit" sx={{ color: '#FFD700' }} />}
+                                        emptyIcon={<StarIcon fontSize="inherit" sx={{ color: '#ddd' }} />}
+                                    />
+                                    <Typography variant="body2" sx={{ color: '#666' }}>{totalQuantities} rating(s)</Typography>
+                                </Box>
+
+                                <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
+
+                                <Box sx={{ flexGrow: 1, mt: 2 }}>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                        {Object.entries(complimentCounts).map(([compliment, count]) => (
+                                            <Chip
+                                                key={compliment}
+                                                variant="outlined"
+                                                sx={{
+                                                    bgcolor: '#f5f5f5',
+                                                    color: '#333',
+                                                    border: '1px solid #ddd',
+                                                    '&:hover': {
+                                                        bgcolor: '#e0e0e0',
+                                                    },
+                                                }}
+                                            >
+                                                {`${compliment} (${count})`}
+                                            </Chip>
+                                        ))}
+                                    </Box>
+                                </Box>
                             </Box>
-                            <Box sx={{ textAlign: 'center', marginTop: '-5rem' }}>
-                                <Typography>
-                                    Average Rating
-                                </Typography>
-                                <Typography>
-                                    Based on {raters.length} ratings.
-                                </Typography>
-                            </Box>
-                            {ratings.map((item) => renderRatingRow(item.rating, item.count))}
+
+                            <Divider sx={{ width: '100%', mt: 2, mb: 1 }} />
+
+                            {/* Quantities Summary */}
+                            {countQuantities.map(({ quantity, count }) => renderQuantityRow(quantity, count))}
                         </Stack>
                     </Grid>
-                    <Grid item xs={12} lg={6}>
+
+                    {/* Individual Ratings Section */}
+                    <Grid item xs={12} md={7}>
                         <Stack spacing={2}>
-                            <Box sx={{ height: "24rem", overflowY: 'auto' }}>
-                                {filteredRaters === null || filteredRaters.length === 0 ? (
-                                    <Typography level="h2" sx={{ height: '22rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        No results.
+                            <Box sx={{ height: "22rem", overflowY: 'auto', pr: 1 }}>
+                                {filteredRatings.length === 0 ? (
+                                    <Typography level="body1" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                                        No ratings available.
                                     </Typography>
                                 ) : (
-                                    filteredRaters.map((rater) => (
-                                        <Card key={rater.rateID} elevation={3} sx={{ my: 1, display: 'flex', alignItems: 'center', padding: 2 }}>
-                                            <Avatar sx={{ bgcolor: '#FFD700', mr: 2 }}>
-                                                <StarIcon sx={{ color: '#fff' }} />
-                                            </Avatar>
+                                    filteredRatings.map((rater) => (
+                                        <Card
+                                            key={rater._id}
+                                            elevation={2}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'flex-start',
+                                                paddingX: 2,
+                                                mb: 1,
+                                                transition: 'transform 0.2s',
+                                                '&:hover': { transform: 'scale(1.02)' } // Subtle hover effect
+                                            }}
+                                        >
                                             <CardContent sx={{ flexGrow: 1 }}>
-                                                <Typography level="body1" fontWeight="bold">
-                                                    {rater.userID}
-                                                </Typography>
-                                                <Typography level="body2" color="textSecondary">
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                                                    <Avatar sx={{ bgcolor: '#FFD700' }}>
+                                                        <StarIcon sx={{ color: '#fff' }} />
+                                                    </Avatar>
+                                                    <Box>
+                                                        <Typography variant="subtitle1" fontWeight="bold">
+                                                            {rater.sender?.firstname} {rater.sender?.lastname}
+                                                        </Typography>
+
+                                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                            <Rating
+                                                                size="small"
+                                                                name="rating"
+                                                                precision={0.5}
+                                                                value={rater.quantity}
+                                                                readOnly
+                                                                icon={<StarIcon fontSize="inherit" sx={{ color: '#FFD700' }} />}
+                                                                emptyIcon={<StarIcon fontSize="inherit" sx={{ color: '#ddd' }} />}
+                                                            />
+                                                            <Typography component="span" variant="body2" sx={{ ml: 1 }}>
+                                                                Review as{' '}
+                                                                {rater.isFoundItem ? (
+                                                                    <strong style={{ color: '#4CAF50' }}>a Finder</strong>
+                                                                ) : (
+                                                                    <strong style={{ color: '#F44336' }}>an Owner</strong>
+                                                                )}
+                                                            </Typography>
+                                                            <Typography component="span" variant="body2" sx={{ ml: 1 }}>
+                                                                {formatDistanceToNow(new Date(rater.date_created), { addSuffix: true })}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Box>
+                                                </Box>
+
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                                                    {rater.compliments.map((compliment) => (
+                                                        <Chip
+                                                            key={compliment}
+                                                            variant="outlined"
+                                                            sx={{
+                                                                bgcolor: '#f5f5f5',
+                                                                color: '#333',
+                                                                border: '1px solid #ddd',
+                                                                '&:hover': {
+                                                                    bgcolor: '#e0e0e0',
+                                                                },
+                                                            }}
+                                                        >
+                                                            {compliment}
+                                                        </Chip>
+                                                    ))}
+                                                </Box>
+
+                                                <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
                                                     {rater.feedback}
-                                                </Typography>
-                                                <Typography level="body2" color="textSecondary">
-                                                    Rated {rater.stars} stars on {rater.dateRating}
                                                 </Typography>
                                             </CardContent>
                                         </Card>
@@ -130,8 +212,9 @@ const RecentRatingsFromUser = () => {
                     </Grid>
                 </Grid>
             </Paper>
-        </>
+        </Box>
     );
 };
 
 export default RecentRatingsFromUser;
+

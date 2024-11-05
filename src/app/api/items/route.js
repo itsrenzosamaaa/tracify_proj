@@ -3,14 +3,12 @@ import dbConnect from '@/lib/mongodb';
 import found_items from '@/lib/models/found_items';
 import lost_items from '@/lib/models/lost_items';
 
-export async function GET(request, { params }) {
-    const { id } = params;
-
+export async function GET() {
     await dbConnect(); // Connect to your MongoDB database
 
     try {
-        const foundItems = await found_items.find({ finder : id }).populate('finder'); // Fetch officer by ID
-        const lostItems =  await lost_items.find({ owner : id }).populate('owner');
+        const foundItems = await found_items.find(); // Fetch officer by ID
+        const lostItems =  await lost_items.find();
 
         if (!foundItems.length && !lostItems.length) {
             return NextResponse.json({ message: 'No items found' }, { status: 404 });
