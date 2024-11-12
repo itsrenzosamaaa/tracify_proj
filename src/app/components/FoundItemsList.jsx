@@ -8,17 +8,17 @@ import AddIcon from '@mui/icons-material/Add';
 import PublishFoundItem from './Modal/PublishFoundItem';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
-const FoundItemsList = ({ items, fetchItems }) => {
+const FoundItemsList = ({ finders, fetchItems, session }) => {
     const [status, setStatus] = useState('Published');
     const [open, setOpen] = useState(false);
 
     const statusOptions = ['Published', 'Request', 'Validating'];
     const statusCounts = statusOptions.reduce((acc, currentStatus) => {
-        acc[currentStatus] = items.filter(item => item.status === currentStatus).length;
+        acc[currentStatus] = finders.filter(finder => finder.item.status === currentStatus).length;
         return acc;
     }, {});
 
-    const filteredItems = items.filter(item => item.status === status);
+    const filteredItems = finders.filter(finder => finder.item.status === status);
 
     return (
         <>
@@ -86,7 +86,7 @@ const FoundItemsList = ({ items, fetchItems }) => {
                             <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Found Item</Button>
                             <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
                         </Box>
-                        <ItemsTable items={filteredItems} fetchItems={fetchItems} />
+                        <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} />
                     </Paper>
                 </Grid>
             </Grid>

@@ -20,6 +20,10 @@ const RecentItems = ({ items, name }) => {
         setPage(0); // Reset page to the first one when changing rows per page
     };
 
+    const filteredItems = items.filter(
+        (row) => ['Resolved', 'Claimed', 'Invalid'].includes(row.item.status)
+    );
+
     // Paginate the found items
     const paginatedItems = items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -49,11 +53,11 @@ const RecentItems = ({ items, name }) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {paginatedItems.map((item) => (
-                                (item.status === 'Resolved' || item.status === 'Claimed' || item.status === 'Invalid') && 
-                                    <TableRow key={item._id}>
-                                    <TableCell>{item.name}</TableCell>
-                                    <TableCell><Chip variant="solid" color={item.status === 'Invalid' ? 'danger' : 'success'}>{item.status}</Chip></TableCell>
+                            {paginatedItems.map((row) => (
+                                (row.item.status === 'Resolved' || row.item.status === 'Claimed' || row.item.status === 'Invalid') &&
+                                <TableRow key={row.item._id}>
+                                    <TableCell>{row.item.name}</TableCell>
+                                    <TableCell><Chip variant="solid" color={row.item.status === 'Invalid' ? 'danger' : 'success'}>{row.item.status}</Chip></TableCell>
                                     <TableCell>
                                         {/* <Button color={item.isFoundItem ? "success" : "danger"}>Details</Button> */}
                                     </TableCell>
@@ -65,7 +69,7 @@ const RecentItems = ({ items, name }) => {
                 {/* Pagination controls */}
                 <TablePagination
                     component="div"
-                    count={items.length} // Total number of items
+                    count={filteredItems.length} // Total number of items
                     page={page}
                     onPageChange={handleChangePage}
                     rowsPerPage={rowsPerPage}

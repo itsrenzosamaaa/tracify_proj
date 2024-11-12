@@ -16,6 +16,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
     const [image, setImage] = useState(null);
     const [userFindItem, setUserFindItem] = useState(false);
     const [finder, setFinder] = useState(null);
+    const [loading, setLoading] = useState(false);
     const { data: session, status } = useSession();
 
     const fetchUsers = useCallback(async () => {
@@ -43,6 +44,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
     
         const now = new Date();
         const thirtyDaysAgo = subDays(now, 30);
@@ -50,17 +52,19 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
     
         if (isBefore(selectedDate, thirtyDaysAgo)) {
             alert('The found date should be within the last 30 days.');
+            setLoading(false);
             return;
         }
     
         if (isAfter(selectedDate, now)) {
             alert('The found date cannot be in the future.');
+            setLoading(false);
             return;
         }
     
         // Create found item data with lost item ID as the owner
         const foundItemData = {
-            finder: finder?._id || null,
+            isFoundItem: true,
             name,
             description,
             location,
@@ -70,7 +74,6 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
             status: 'Published',
             datePublished: new Date(),
             monitoredBy: session?.user?.id,
-            matched: null,
         };
     
         try {
@@ -81,16 +84,37 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
             });
     
             if (response.ok) {
-                alert('Item successfully published');
-                await resetForm(); // Reset form after successful submission
+                const foundItemResponse = await response.json();
+    
+                const finderData = {
+                    user: finder?._id,
+                    item: foundItemResponse._id,
+                };
+    
+                const foundResponse = await fetch('/api/finder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(finderData),
+                });
+    
+                if (foundResponse.ok) {
+                    alert('Item successfully published');
+                    await resetForm(); // Ensure resetForm is defined to clear form inputs
+                } else {
+                    const data = await foundResponse.json().catch(() => ({ error: "Unexpected response format" }));
+                    alert(`Failed to add finder: ${data.error}`);
+                }
             } else {
-                const data = await response.json();
+                const data = await response.json().catch(() => ({ error: "Unexpected response format" }));
                 alert(`Failed to add found item: ${data.error}`);
             }
         } catch (error) {
             console.error("Error creating found item:", error);
+            alert('An unexpected error occurred.');
+        } finally {
+            setLoading(false);
         }
-    };
+    };    
     
     // Helper function to reset form fields and close the modal
     const resetForm = async () => {
@@ -219,7 +243,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
                                         />
                                     </FormControl>
                                 )}
-                                <Button type="submit">Publish</Button>
+                                <Button loading={loading} disabled={loading} type="submit">Publish</Button>
                             </Stack>
                         </form>
                     </DialogContent>

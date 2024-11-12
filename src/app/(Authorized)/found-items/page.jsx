@@ -5,17 +5,17 @@ import { useSession } from 'next-auth/react';
 import React, { useState, useEffect, useCallback } from 'react'
 
 const FoundItemsPage = () => {
-  const [items, setItems] = useState([]);
+  const [finders, setFinders] = useState([]);
   const {data: session, status} = useSession();
 
   const fetchItems = useCallback(async () => {
     try {
-      const response = await fetch('/api/found-items');
+      const response = await fetch('/api/finder');
       const data = await response.json();
       console.log(data)
       if (response.ok) {
-        const filteredFoundItems = data.filter(item => item?.finder?.school_category === session?.user?.schoolCategory)
-        setItems(filteredFoundItems);
+        const filteredFinders = data.filter(item => item?.user?.school_category === session?.user?.schoolCategory)
+        setFinders(filteredFinders);
       } else {
         console.error(data);
       }
@@ -36,7 +36,7 @@ const FoundItemsPage = () => {
 
   return (
     <>
-      <FoundItemsList items={items} fetchItems={fetchItems} />
+      <FoundItemsList finders={finders} fetchItems={fetchItems} session={session} />
     </>
   )
 }

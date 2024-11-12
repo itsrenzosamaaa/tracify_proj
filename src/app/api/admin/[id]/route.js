@@ -19,28 +19,3 @@ export async function GET({ params }) {
         return NextResponse.json({ message: 'Error fetching user' }, { status: 500 });
     }
 }
-
-// export async function PUT(req, { params }) {
-//     const { id } = params; // Get the office ID from the URL
-
-//     await dbConnect(); // Connect to MongoDB
-
-//     try {
-//         const formData = await req.json();
-//         const updatedUser = await users.findOneAndUpdate(
-//             { accountId : id },
-//             { $set: formData },
-//             { new: true }
-//         );  
-
-//         console.log('Updated User: ', updatedUser)
-
-//         if (!updatedUser) {
-//             return NextResponse.json({ message: 'User not found' }, { status: 404 });
-//         }
-
-//         return NextResponse.json(updatedUser);
-//     } catch (error) {
-//         return NextResponse.json({ message: 'Error updating user' }, { status: 500 });
-//     }
-// }

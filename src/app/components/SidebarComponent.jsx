@@ -155,7 +155,6 @@ export default function App() {
     if (session?.user?.userType === 'user') {
       navigation.push({ icon: <AccountCircleIcon />, menu: 'Profile', url: '/profile' });
       navigation.push({ icon: <LuggageIcon />, menu: 'My Items', url: '/my-items' });
-      navigation.push({ icon: <StarRateIcon />, menu: 'Ratings', url: '/ratings' });
     } else {
       // Check role-based permissions for non-students
       const roleData = session?.user?.permissions;

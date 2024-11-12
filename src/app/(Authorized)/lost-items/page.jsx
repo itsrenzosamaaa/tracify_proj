@@ -5,16 +5,16 @@ import { useSession } from 'next-auth/react';
 import React, { useState, useEffect, useCallback } from 'react'
 
 const FoundItemsPage = () => {
-  const [items, setItems] = useState([]);
+  const [owners, setOwners] = useState([]);
   const {data: session, status} = useSession();
 
   const fetchItems = useCallback(async () => {
     try {
-      const response = await fetch('/api/lost-items');
+      const response = await fetch('/api/owner');
       const data = await response.json();
       if (response.ok) {
-        const filteredLostItems = data.filter(item => item?.owner?.school_category === session?.user?.schoolCategory)
-        setItems(filteredLostItems);
+        const filteredOwners = data.filter(owner => owner?.user?.school_category === session?.user?.schoolCategory)
+        setOwners(filteredOwners);
       } else {
         console.error(data);
       }
@@ -35,7 +35,7 @@ const FoundItemsPage = () => {
 
   return (
     <>
-      <LostItemsList items={items} fetchItems={fetchItems} />
+      <LostItemsList owners={owners} fetchItems={fetchItems} />
     </>
   )
 }

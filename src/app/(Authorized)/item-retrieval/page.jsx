@@ -13,11 +13,12 @@ const ItemRetrievalPage = () => {
   const fetchItems = useCallback(async () => {
     if (!session?.user?.id) return;
     try {
-      const response = await fetch('/api/found-items/matched');
+      const response = await fetch('/api/match-items');
       const data = await response.json();
+      console.log(data)
       if (response.ok) {
-        const foundItems = data.filter(item => item.monitoredBy._id === session?.user?.id)
-        setItems(foundItems);
+        const matchedItems = data.filter(matchedItem => matchedItem?.finder?.item?.monitoredBy?._id === session?.user?.id)
+        setItems(matchedItems);
       } else {
         console.error(data);
       }

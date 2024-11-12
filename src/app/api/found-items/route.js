@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
-import foundItem from "@/lib/models/found_items";
+import item from "@/lib/models/item";
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
@@ -10,64 +10,60 @@ cloudinary.config({
 });
 
 export async function GET() {
-  try {
-    await dbConnect();
-
-    const fetchFoundItems = await foundItem.find()
+    try {
+      await dbConnect();
+  
+      const findFoundItems = await item.find({ isFoundItem: true })
         .populate({
-            path: 'monitoredBy',
-            populate: {
-                path: 'role', // This populates the role of the monitoredBy
-                model: 'Role', // Ensure this matches your role model name
-            },
-        })
-        .populate('finder');
+          path: 'monitoredBy',
+          populate: {
+            path: 'role',
+            model: 'Role',
+          }
+        });
 
-    return NextResponse.json(fetchFoundItems, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching found items:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch found items" },
-      { status: 500 }
-    );
-  }
+      return NextResponse.json(findFoundItems, { status: 200 });
+    } catch (error) {
+      console.error("Error fetching items:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch items" },
+        { status: 500 }
+      );
+    }
 }
 
 export async function POST(req) {
-  try {
-    await dbConnect();
-    const foundItemData = await req.json(); // This will only work for JSON data, not FormData
-    
-    if (!foundItemData.image || !foundItemData.status) {
-      return NextResponse.json(
-        { success: false, message: "Missing required fields: image or status" },
-        { status: 400 }
-      );
+    try {
+      await dbConnect();
+      const foundItemData = await req.json(); // This will only work for JSON data, not FormData
+      
+      if (!foundItemData.image || !foundItemData.status) {
+        return NextResponse.json(
+          { success: false, message: "Missing required fields: image or status" },
+          { status: 400 }
+        );
+      }
+  
+      // Assuming you're sending the image as a URL or base64 from the frontend
+      const uploadResponse = await cloudinary.uploader.upload(foundItemData.image, {
+        folder: "found_items",
+        public_id: `found_${Date.now()}`,
+        overwrite: true,
+      });
+  
+      if (foundItemData.status === 'Reserved'){
+        foundItemData.dateReserved = new Date();
+      }
+  
+      const newFoundItem = new item({
+        ...foundItemData,
+        image: uploadResponse.secure_url,
+      });
+      await newFoundItem.save();
+  
+      return NextResponse.json(newFoundItem);
+    } catch (error) {
+      console.error("Error in POST method:", error);
+      return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
-
-    // Assuming you're sending the image as a URL or base64 from the frontend
-    const uploadResponse = await cloudinary.uploader.upload(foundItemData.image, {
-      folder: "found_items",
-      public_id: `found_${Date.now()}`,
-      overwrite: true,
-    });
-
-    if (foundItemData.status === 'Reserved'){
-      foundItemData.dateReserved = new Date();
-    }
-
-    const newFoundItem = new foundItem({
-      ...foundItemData,
-      image: uploadResponse.secure_url,
-    });
-    await newFoundItem.save();
-
-    return NextResponse.json(
-      { success: true, message: "Found Item published" },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Error in POST method:", error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
-}

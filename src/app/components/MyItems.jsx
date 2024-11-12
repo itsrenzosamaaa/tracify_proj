@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
-import { Typography, Button, Modal, ModalDialog, ModalClose, DialogContent, DialogTitle } from '@mui/joy';
+import { Grid, Typography, Button, Modal, ModalDialog, ModalClose, DialogContent, DialogTitle } from '@mui/joy';
 import { Box, Card, CardContent } from '@mui/material';
 import { CldImage } from 'next-cloudinary';
 import AddIcon from '@mui/icons-material/Add';
@@ -16,59 +16,69 @@ import RatingsModal from './Modal/Ratings';
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import BadgeIcon from '@mui/icons-material/Badge';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 const MyItemsComponent = ({ session, status }) => {
   const [completedItemDetailsModal, setCompletedItemDetailsModal] = useState(null);
+  const [invalidItemDetailsModal, setInvalidItemDetailsModal] = useState(null);
   const [cancelRequestModal, setCancelRequestModal] = useState(null);
-  const [ratingModal, setRatingModal] = useState(null);
   const [completedItems, setCompletedItems] = useState([]);
+  const [declinedItems, setDeclinedItems] = useState([]);
+  const [canceledItems, setCanceledItems] = useState([]);
   const [lostItems, setLostItems] = useState([]);
   const [foundItems, setFoundItems] = useState([]);
   const [requestedItems, setRequestedItems] = useState([]);
   const [suggestedMatches, setSuggestedMatches] = useState([]);
+  const [openDetails, setOpenDetails] = useState(null);
   const [confirmationRetrievalModal, setConfirmationRetrievalModal] = useState(null);
+
   const router = useRouter();
 
   const fetchItems = useCallback(async () => {
     try {
+      // Fetch user-specific items (lost and found)
       const response = await fetch(`/api/items/${session?.user?.id}`);
       const data = await response.json();
 
       if (response.ok) {
-        const lostItems = data.filter(item => item.owner && item.status === 'Missing');
-        const foundItems = data.filter(item => item.finder && (item.status !== 'Request' && item.status !== 'Resolved' && item.status !== 'Invalid'));
-        const requestedItems = data.filter(item => item.status === 'Request');
-        const completedItems = data.filter(item => item.status === 'Claimed' || item.status === 'Resolved')
+        // Filter items based on various statuses and types
+        const lostItems = data.filter(lostItem => !lostItem.item.isFoundItem && lostItem.item.status === 'Missing');
+        const foundItems = data.filter(foundItem => foundItem.item.isFoundItem && !['Request', 'Resolved', 'Invalid', 'Canceled'].includes(foundItem.item.status));
+        const requestedItems = data.filter(requestedItem => requestedItem.item.status === 'Request');
+        const completedItems = data.filter(completedItem => ['Claimed', 'Resolved'].includes(completedItem.item.status));
+        const declinedItems = data.filter(declinedItem => declinedItem.item.status === 'Invalid');
+        const canceledItems = data.filter(canceledItem => canceledItem.item.status === 'Canceled');
 
-        const foundItemsResponse = await fetch('/api/found-items');
+        // Fetch all found items for potential matches
+        const foundItemsResponse = await fetch('/api/finder');
         const foundItemsData = await foundItemsResponse.json();
-        const filteredFoundItems = foundItemsData.filter(fItem => fItem?.finder?._id !== session?.user?.id && fItem?.status === 'Published');
 
+        // Filter found items that are published and do not belong to the current user
+        const filteredFoundItems = foundItemsData.filter(fItem =>
+          fItem?.user?._id !== session?.user?.id && fItem?.item?.status === 'Published'
+        );
+
+        // Match found items with lost items based on similarity score
         const matches = lostItems.map(lostItem => {
           const matchesForLostItem = filteredFoundItems.map(foundItem => {
-            const distance = Levenshtein.get(lostItem.name, foundItem.name);
-            const maxLength = Math.max(lostItem.name.length, foundItem.name.length);
+            const distance = Levenshtein.get(lostItem.item.name, foundItem.item.name);
+            const maxLength = Math.max(lostItem.item.name.length, foundItem.item.name.length);
             const similarityScore = 100 * (1 - (distance / maxLength));
 
-            return {
-              foundItem,
-              similarityScore,
-            };
-          });
+            return similarityScore >= 70 ? { foundItem, similarityScore } : null;
+          }).filter(match => match !== null); // Filter out null matches
 
-          const filteredMatches = matchesForLostItem.filter(match => match.similarityScore >= 70);
-
-          return {
-            lostItem,
-            matches: filteredMatches.map(match => match.foundItem),
-          };
+          return { lostItem, matches: matchesForLostItem.map(match => match.foundItem) };
         });
 
         setSuggestedMatches(matches);
         setLostItems(lostItems);
         setFoundItems(foundItems);
         setRequestedItems(requestedItems);
-        setCompletedItems(completedItems)
+        setCompletedItems(completedItems);
+        setDeclinedItems(declinedItems);
+        setCanceledItems(canceledItems);
       }
     } catch (error) {
       console.error('Error fetching items:', error);
@@ -84,6 +94,8 @@ const MyItemsComponent = ({ session, status }) => {
   const scrollRefLost = useRef(null);
   const scrollRefFound = useRef(null);
   const scrollRefCompleted = useRef(null);
+  const scrollRefDeclined = useRef(null);
+  const scrollRefCanceled= useRef(null);
   const scrollRefRequested = useRef(null);
   const scrollRefSuggested = useRef(null);
 
@@ -147,22 +159,22 @@ const MyItemsComponent = ({ session, status }) => {
         >
           {
             lostItems.length > 0 ?
-              lostItems.map((item, index) => (
+              lostItems.map((lostItem, index) => (
                 <Card
                   key={index}
                   sx={{ maxWidth: 250, flexShrink: 0, boxShadow: 3, borderRadius: 2 }} // Adjusted maxWidth
                 >
                   <CldImage
                     priority
-                    src={item.image}
+                    src={lostItem.item.image}
                     width={500} // Adjusted width to match smaller card size
                     height={150} // Adjusted height to match smaller card size
-                    alt={item.name || "Item Image"}
+                    alt={lostItem.item.name || "Item Image"}
                     sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     style={{ objectFit: 'cover' }}
                   />
                   <CardContent>
-                    <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{item.name}</Typography>
+                    <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{lostItem.item.name}</Typography>
                     <Typography
                       level="body2"
                       sx={{
@@ -173,9 +185,9 @@ const MyItemsComponent = ({ session, status }) => {
                         whiteSpace: 'nowrap',
                         maxWidth: '250px', // Adjust the width as needed
                       }}>
-                      {item.description}
+                      {lostItem.item.description}
                     </Typography>
-                    <Button fullWidth onClick={() => router.push(`my-items/${item._id}`)}>View Details</Button>
+                    <Button fullWidth onClick={() => router.push(`my-items/lost-item/${lostItem.item._id}`)}>View Details</Button>
                   </CardContent>
                 </Card>
               )) :
@@ -223,23 +235,35 @@ const MyItemsComponent = ({ session, status }) => {
           }}
         >
           {foundItems.length > 0 ?
-            foundItems.map((item, index) => (
+            foundItems.map((foundItem, index) => (
               <Card
                 key={index}
                 sx={{ maxWidth: 250, flexShrink: 0, boxShadow: 3, borderRadius: 2 }} // Adjusted maxWidth
               >
                 <CldImage
                   priority
-                  src={item.image}
+                  src={foundItem.item.image}
                   width={500} // Adjusted width to match smaller card size
                   height={150} // Adjusted height to match smaller card size
-                  alt={item.name || "Item Image"}
+                  alt={foundItem.item.name || "Item Image"}
                   sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   style={{ objectFit: 'cover' }}
                 />
                 <CardContent>
-                  <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{item.name}</Typography>
-                  <Typography level="body2" sx={{ color: 'text.secondary' }}>{item.description}</Typography>
+                  <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{foundItem.item.name}</Typography>
+                  <Typography
+                    level="body2"
+                    sx={{
+                      color: 'text.secondary',
+                      marginBottom: '0.5rem',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: '250px', // Adjust the width as needed
+                    }}>
+                    {foundItem.item.description}
+                  </Typography>
+                  <Button fullWidth onClick={() => router.push(`my-items/found-item/${foundItem.item._id}`)}>View Details</Button>
                 </CardContent>
               </Card>
             )) :
@@ -282,7 +306,7 @@ const MyItemsComponent = ({ session, status }) => {
           }}
         >
           {completedItems.length > 0 ?
-            completedItems.map((item, index) => (
+            completedItems.map((completedItem, index) => (
               <Card
                 key={index}
                 sx={{
@@ -300,7 +324,7 @@ const MyItemsComponent = ({ session, status }) => {
                     position: 'absolute',
                     top: 8,
                     left: 8,
-                    backgroundColor: item?.finder ? '#81c784' : '#e57373',
+                    backgroundColor: completedItem.item?.isFoundItem ? '#81c784' : '#e57373',
                     color: '#fff',
                     padding: '4px 8px',
                     borderRadius: 1,
@@ -309,21 +333,21 @@ const MyItemsComponent = ({ session, status }) => {
                     textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
                   }}
                 >
-                  {item?.finder ? 'Found Item' : 'Lost Item'}
+                  {completedItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
                 </Box>
 
                 <CldImage
                   priority
-                  src={item.image}
+                  src={completedItem.item.image}
                   width={500}
                   height={150}
-                  alt={item.name || "Item Image"}
+                  alt={completedItem.item.name || "Item Image"}
                   sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   style={{ objectFit: 'cover' }}
                 />
                 <CardContent>
                   <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
-                    {item.name}
+                    {completedItem.item.name}
                   </Typography>
                   <Typography
                     level="body2"
@@ -336,18 +360,18 @@ const MyItemsComponent = ({ session, status }) => {
                       maxWidth: '250px', // Adjust the width as needed
                     }}
                   >
-                    {item.description}
+                    {completedItem.item.description}
                   </Typography>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
                     <Button
                       variant="contained"
                       sx={{ minWidth: '0', padding: '6px 8px' }}
-                      onClick={() => setCompletedItemDetailsModal(item._id)}
+                      onClick={() => setCompletedItemDetailsModal(completedItem.item._id)}
                     >
                       <InfoIcon color="action" />
                     </Button>
 
-                    <Modal open={completedItemDetailsModal} onClose={() => setCompletedItemDetailsModal(null)}>
+                    <Modal open={completedItemDetailsModal === completedItem.item._id} onClose={() => setCompletedItemDetailsModal(null)}>
                       <ModalDialog sx={{ maxWidth: 500, borderRadius: 4, boxShadow: 6, padding: 3 }}>
                         <ModalClose />
                         <DialogTitle>
@@ -359,46 +383,38 @@ const MyItemsComponent = ({ session, status }) => {
                         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
                           <Box display="flex" alignItems="center" gap={1}>
                             <Typography level="body1" fontWeight="bold">Name:</Typography>
-                            <Typography level="body1" color="text.secondary">{item.name}</Typography>
+                            <Typography level="body1" color="text.secondary">{completedItem.item.name}</Typography>
                           </Box>
 
                           <Box display="flex" alignItems="center" gap={1}>
                             <Typography level="body1" fontWeight="bold">Description:</Typography>
-                            <Typography level="body1" color="text.secondary">{item.description}</Typography>
+                            <Typography level="body1" color="text.secondary">{completedItem.item.description}</Typography>
                           </Box>
 
                           <Box display="flex" alignItems="center" gap={1}>
                             <LocationOnIcon color="action" />
-                            <Typography level="body1" color="text.secondary">{item.location}</Typography>
+                            <Typography level="body1" color="text.secondary">{completedItem.item.location}</Typography>
                           </Box>
 
                           <Box display="flex" alignItems="center" gap={1}>
                             <CalendarTodayIcon color="action" />
                             <Typography level="body1" color="text.secondary">
-                              {format(parseISO(item.date), 'MMMM dd, yyyy')}
+                              {format(parseISO(completedItem.item.date), 'MMMM dd, yyyy')}
                             </Typography>
                           </Box>
 
                           <Box display="flex" alignItems="center" gap={1}>
                             <AccessTimeIcon color="action" />
                             <Typography level="body1" color="text.secondary">
-                              {format(new Date().setHours(...item.time.split(':')), 'hh:mm a')}
+                              {format(new Date().setHours(...completedItem.item.time.split(':')), 'hh:mm a')}
                             </Typography>
                           </Box>
                         </DialogContent>
                       </ModalDialog>
                     </Modal>
-                    <Button
-                      color="success"
-                      fullWidth
-                      sx={{ padding: '6px 0' }}
-                      onClick={() => setRatingModal(item._id)}
-                    >
-                      Leave Review
-                    </Button>
+                    <RatingsModal item={completedItem.item} session={session} status={status} />
                   </Box>
                 </CardContent>
-                <RatingsModal open={ratingModal} onClose={() => setRatingModal(null)} item={item} session={session} status={status} />
               </Card>
             )) :
             <Box
@@ -423,6 +439,287 @@ const MyItemsComponent = ({ session, status }) => {
           }
         </Box>
 
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography level="h4" gutterBottom>
+            Declined Items
+          </Typography>
+        </Box>
+        <Box
+          ref={scrollRefDeclined}
+          onMouseDown={(e) => handleDragStart(e, scrollRefDeclined)} // Handle mouse down event
+          sx={{
+            display: 'flex',
+            whiteSpace: 'nowrap',
+            overflowX: 'auto',
+            paddingY: 2,
+            gap: 2,
+            cursor: 'grab', // Change cursor to indicate dragging
+            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
+          }}
+        >
+          {declinedItems.length > 0 ?
+            declinedItems.map((declinedItem, index) => (
+              <Card
+                key={index}
+                sx={{
+                  maxWidth: 250,
+                  flexShrink: 0,
+                  boxShadow: 3,
+                  borderRadius: 2,
+                  overflow: 'hidden', // Ensures that content doesn't overflow the card
+                  position: 'relative', // Allows absolutely positioning elements inside
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    left: 8,
+                    backgroundColor: declinedItem.item?.isFoundItem ? '#81c784' : '#e57373',
+                    color: '#fff',
+                    padding: '4px 8px',
+                    borderRadius: 1,
+                    fontSize: '0.8rem',
+                    fontWeight: 'bold',
+                    textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
+                  }}
+                >
+                  {declinedItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
+                </Box>
+
+                <CldImage
+                  priority
+                  src={declinedItem.item.image}
+                  width={500}
+                  height={150}
+                  alt={declinedItem.item.name || "Item Image"}
+                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  style={{ objectFit: 'cover' }}
+                />
+                <CardContent>
+                  <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{declinedItem.item.name}</Typography>
+                  <Typography
+                    level="body2"
+                    sx={{
+                      color: 'text.secondary',
+                      marginBottom: '0.5rem',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: '250px', // Adjust the width as needed
+                    }}>
+                    {declinedItem.item.description}
+                  </Typography>
+                  <Button fullWidth onClick={() => setInvalidItemDetailsModal(declinedItem.item._id)}>View Details</Button>
+                  <Modal open={invalidItemDetailsModal === declinedItem.item._id} onClose={() => setInvalidItemDetailsModal(null)}>
+                    <ModalDialog sx={{ maxWidth: 500, borderRadius: 4, boxShadow: 6, padding: 3 }}>
+                      <ModalClose />
+                      <DialogTitle>
+                        <Typography variant="h5" component="span" fontWeight="bold" color="primary">
+                          Item Details
+                        </Typography>
+                      </DialogTitle>
+
+                      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Typography level="body1" fontWeight="bold">Name:</Typography>
+                          <Typography level="body1" color="text.secondary">{declinedItem.item.name}</Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Typography level="body1" fontWeight="bold">Description:</Typography>
+                          <Typography level="body1" color="text.secondary">{declinedItem.item.description}</Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <LocationOnIcon color="action" />
+                          <Typography level="body1" color="text.secondary">{declinedItem.item.location}</Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <CalendarTodayIcon color="action" />
+                          <Typography level="body1" color="text.secondary">
+                            {format(parseISO(declinedItem.item.date), 'MMMM dd, yyyy')}
+                          </Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <AccessTimeIcon color="action" />
+                          <Typography level="body1" color="text.secondary">
+                            {format(new Date().setHours(...declinedItem.item.time.split(':')), 'hh:mm a')}
+                          </Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Typography level="body1" fontWeight="bold">Reason for Decline:</Typography>
+                          <Typography level="body1" color="text.secondary">{declinedItem.item.reason}</Typography>
+                        </Box>
+                      </DialogContent>
+                    </ModalDialog>
+                  </Modal>
+                </CardContent>
+              </Card>
+            )) :
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                height: '200px',
+                border: '1px dashed #ccc',
+                borderRadius: '8px',
+                backgroundColor: '#f9f9f9',
+                padding: 2,
+              }}
+            >
+              <Typography>No declined items available.</Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                If you have found something, please report it.
+              </Typography>
+            </Box>
+          }
+        </Box>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography level="h4" gutterBottom>
+            Canceled Items
+          </Typography>
+        </Box>
+        <Box
+          ref={scrollRefCanceled}
+          onMouseDown={(e) => handleDragStart(e, scrollRefCanceled)} // Handle mouse down event
+          sx={{
+            display: 'flex',
+            whiteSpace: 'nowrap',
+            overflowX: 'auto',
+            paddingY: 2,
+            gap: 2,
+            cursor: 'grab', // Change cursor to indicate dragging
+            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
+          }}
+        >
+          {canceledItems.length > 0 ?
+            canceledItems.map((canceledItem, index) => (
+              <Card
+                key={index}
+                sx={{
+                  maxWidth: 250,
+                  flexShrink: 0,
+                  boxShadow: 3,
+                  borderRadius: 2,
+                  overflow: 'hidden', // Ensures that content doesn't overflow the card
+                  position: 'relative', // Allows absolutely positioning elements inside
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    left: 8,
+                    backgroundColor: canceledItem.item?.isFoundItem ? '#81c784' : '#e57373',
+                    color: '#fff',
+                    padding: '4px 8px',
+                    borderRadius: 1,
+                    fontSize: '0.8rem',
+                    fontWeight: 'bold',
+                    textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
+                  }}
+                >
+                  {canceledItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
+                </Box>
+
+                <CldImage
+                  priority
+                  src={canceledItem.item.image}
+                  width={500}
+                  height={150}
+                  alt={canceledItem.item.name || "Item Image"}
+                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  style={{ objectFit: 'cover' }}
+                />
+                <CardContent>
+                  <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{canceledItem.item.name}</Typography>
+                  <Typography
+                    level="body2"
+                    sx={{
+                      color: 'text.secondary',
+                      marginBottom: '0.5rem',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: '250px', // Adjust the width as needed
+                    }}>
+                    {canceledItem.item.description}
+                  </Typography>
+                  <Button fullWidth onClick={() => setInvalidItemDetailsModal(canceledItem.item._id)}>View Details</Button>
+                  <Modal open={invalidItemDetailsModal === canceledItem.item._id} onClose={() => setInvalidItemDetailsModal(null)}>
+                    <ModalDialog sx={{ maxWidth: 500, borderRadius: 4, boxShadow: 6, padding: 3 }}>
+                      <ModalClose />
+                      <DialogTitle>
+                        <Typography variant="h5" component="span" fontWeight="bold" color="primary">
+                          Item Details
+                        </Typography>
+                      </DialogTitle>
+
+                      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Typography level="body1" fontWeight="bold">Name:</Typography>
+                          <Typography level="body1" color="text.secondary">{canceledItem.item.name}</Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Typography level="body1" fontWeight="bold">Description:</Typography>
+                          <Typography level="body1" color="text.secondary">{canceledItem.item.description}</Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <LocationOnIcon color="action" />
+                          <Typography level="body1" color="text.secondary">{canceledItem.item.location}</Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <CalendarTodayIcon color="action" />
+                          <Typography level="body1" color="text.secondary">
+                            {format(parseISO(canceledItem.item.date), 'MMMM dd, yyyy')}
+                          </Typography>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <AccessTimeIcon color="action" />
+                          <Typography level="body1" color="text.secondary">
+                            {format(new Date().setHours(...canceledItem.item.time.split(':')), 'hh:mm a')}
+                          </Typography>
+                        </Box>
+                      </DialogContent>
+                    </ModalDialog>
+                  </Modal>
+                </CardContent>
+              </Card>
+            )) :
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                height: '200px',
+                border: '1px dashed #ccc',
+                borderRadius: '8px',
+                backgroundColor: '#f9f9f9',
+                padding: 2,
+              }}
+            >
+              <Typography>No canceled items available.</Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                If you have found something, please report it.
+              </Typography>
+            </Box>
+          }
+        </Box>
+
         <Typography level="h4" gutterBottom>
           Requested Items
         </Typography>
@@ -440,7 +737,7 @@ const MyItemsComponent = ({ session, status }) => {
           }}
         >
           {requestedItems.length > 0 ?
-            requestedItems.map((item, index) => (
+            requestedItems.map((requestedItem, index) => (
               <Card
                 key={index}
                 sx={{
@@ -458,7 +755,7 @@ const MyItemsComponent = ({ session, status }) => {
                     position: 'absolute',
                     top: 8,
                     left: 8,
-                    backgroundColor: item?.finder ? '#81c784' : '#e57373',
+                    backgroundColor: requestedItem.item?.isFoundItem ? '#81c784' : '#e57373',
                     color: '#fff',
                     padding: '4px 8px',
                     borderRadius: 1,
@@ -467,21 +764,21 @@ const MyItemsComponent = ({ session, status }) => {
                     textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
                   }}
                 >
-                  {item?.finder ? 'Found' : 'Lost'}
+                  {requestedItem.item?.isFoundItem ? 'Found' : 'Lost'}
                 </Box>
 
                 <CldImage
                   priority
-                  src={item.image}
+                  src={requestedItem.item.image}
                   width={500}
                   height={150}
-                  alt={item.name || "Item Image"}
+                  alt={requestedItem.item.name || "Item Image"}
                   sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   style={{ objectFit: 'cover' }}
                 />
                 <CardContent>
                   <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
-                    {item.name}
+                    {requestedItem.item.name}
                   </Typography>
                   <Typography
                     level="body2"
@@ -494,36 +791,82 @@ const MyItemsComponent = ({ session, status }) => {
                       maxWidth: '250px', // Adjust the width as needed
                     }}
                   >
-                    {item.description}
+                    {requestedItem.item.description}
                   </Typography>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
                     <Button
                       variant="contained"
-                      sx={{ minWidth: '0', padding: '6px 8px' }}
+                      sx={{ minWidth: 0, padding: '6px 8px', borderRadius: '8px' }}
+                      onClick={() => setOpenDetails(requestedItem?.item?._id)}
                     >
                       <InfoIcon color="action" />
                     </Button>
-                    <Modal>
+
+                    <Modal open={openDetails} onClose={() => setOpenDetails(null)}>
                       <ModalDialog>
                         <ModalClose />
-                        <DialogContent>
-                          <Typography>{item.name}</Typography>
-                          <Typography>{item.description}</Typography>
-                          <Typography>{item.location}</Typography>
-                          <Typography>{format(parseISO(item.date), 'MMMM dd, yyyy')}</Typography>
-                          <Typography>{format(new Date().setHours(...item.time.split(':')), 'hh:mm a')}</Typography>
-                        </DialogContent>
+
+                        <Typography level="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+                          Item Details
+                        </Typography>
+
+                        <Grid container spacing={2}>
+                          <Grid item xs={2}>
+                            <BadgeIcon fontSize="small" color="primary" />
+                          </Grid>
+                          <Grid item xs={10}>
+                            <Typography level="body1" sx={{ fontWeight: 500 }}>
+                              {requestedItem.item.name}
+                            </Typography>
+                          </Grid>
+
+                          <Grid item xs={2}>
+                            <DescriptionIcon fontSize="small" color="primary" />
+                          </Grid>
+                          <Grid item xs={10}>
+                            <Typography level="body2" color="text.secondary">
+                              {requestedItem.item.description}
+                            </Typography>
+                          </Grid>
+
+                          <Grid item xs={2}>
+                            <LocationOnIcon fontSize="small" color="primary" />
+                          </Grid>
+                          <Grid item xs={10}>
+                            <Typography level="body2" color="text.secondary">
+                              {requestedItem.item.location}
+                            </Typography>
+                          </Grid>
+
+                          <Grid item xs={2}>
+                            <CalendarTodayIcon fontSize="small" color="primary" />
+                          </Grid>
+                          <Grid item xs={10}>
+                            <Typography level="body2" color="text.secondary">
+                              {format(parseISO(requestedItem.item.date), 'MMMM dd, yyyy')}
+                            </Typography>
+                          </Grid>
+
+                          <Grid item xs={2}>
+                            <AccessTimeIcon fontSize="small" color="primary" />
+                          </Grid>
+                          <Grid item xs={10}>
+                            <Typography level="body2" color="text.secondary">
+                              {format(new Date().setHours(...requestedItem.item.time.split(':')), 'hh:mm a')}
+                            </Typography>
+                          </Grid>
+                        </Grid>
                       </ModalDialog>
                     </Modal>
                     <Button
                       fullWidth
                       color="danger"
                       sx={{ padding: '6px 0' }}
-                      onClick={() => setCancelRequestModal(item._id)}
+                      onClick={() => setCancelRequestModal(requestedItem.item._id)}
                     >
                       Cancel Request
                     </Button>
-                    <CancelRequest open={cancelRequestModal} onClose={() => setCancelRequestModal(null)} item={item} api={item?.finder ? 'found-items' : 'lost-items'} />
+                    <CancelRequest open={cancelRequestModal} onClose={() => setCancelRequestModal(null)} item={requestedItem.item} api={requestedItem.item?.isFoundItem ? 'found-items' : 'lost-items'} refreshData={fetchItems} />
                   </Box>
                 </CardContent>
               </Card>
@@ -570,71 +913,76 @@ const MyItemsComponent = ({ session, status }) => {
             '&::-webkit-scrollbar': { display: 'none' },
           }}
         >
-          {suggestedMatches.length > 0 ? (
+          {suggestedMatches.length > 0 && suggestedMatches.some(({ matches }) => matches.length > 0) ? (
             suggestedMatches.flatMap(({ lostItem, matches }) =>
               matches.map((foundItem, index) => (
-                lostItem.status === 'Missing' &&
-                <Card
-                  key={`${lostItem._id}-${index}`}
-                  sx={{
-                    maxWidth: 250,
-                    flexShrink: 0,
-                    boxShadow: 3,
-                    borderRadius: 2,
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'scale(1.05)',
-                      boxShadow: 6,
-                    },
-                  }}
-                >
-                  <CldImage
-                    priority
-                    src={foundItem.image}
-                    width={500}
-                    height={150}
-                    alt={foundItem.name || "Item Image"}
-                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    style={{ objectFit: 'cover', borderRadius: '8px 8px 0 0' }}
-                  />
-                  <CardContent>
-                    <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
-                      {foundItem.name}
-                    </Typography>
-                    <Typography
-                      level="body2"
-                      sx={{
-                        color: 'text.secondary',
-                        marginBottom: '0.5rem',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        maxWidth: '250px', // Adjust the width as needed
-                      }}
-                    >
-                      {foundItem.description}
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
-                      <Button
-                        onClick={() => router.push(`/my-items/${lostItem._id}/matchedTo/${foundItem._id}`)}
-                        variant="contained"
-                        sx={{ minWidth: '0', padding: '6px 8px' }}
-                        aria-label={`View details for ${foundItem.name}`}
+                lostItem.item.status === 'Missing' && (
+                  <Card
+                    key={`${lostItem._id}-${index}`}
+                    sx={{
+                      maxWidth: 250,
+                      flexShrink: 0,
+                      boxShadow: 3,
+                      borderRadius: 2,
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      '&:hover': {
+                        transform: 'scale(1.05)',
+                        boxShadow: 6,
+                      },
+                    }}
+                  >
+                    <CldImage
+                      priority
+                      src={foundItem.item.image}
+                      width={500}
+                      height={150}
+                      alt={foundItem.item.name || "Item Image"}
+                      sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      style={{ objectFit: 'cover', borderRadius: '8px 8px 0 0' }}
+                    />
+                    <CardContent>
+                      <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
+                        {foundItem.item.name}
+                      </Typography>
+                      <Typography
+                        level="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          marginBottom: '0.5rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: '250px',
+                        }}
                       >
-                        <InfoIcon color="action" />
-                      </Button>
-                      <Button
-                        onClick={() => setConfirmationRetrievalModal(foundItem._id)}
-                        fullWidth
-                        sx={{ padding: '6px 0' }}
-                        aria-label={`Claim request for ${foundItem.name}`}
-                      >
-                        Claim Request
-                      </Button>
-                    </Box>
-                  </CardContent>
-                  <ConfirmationRetrievalRequest open={confirmationRetrievalModal === foundItem._id} onClose={() => setConfirmationRetrievalModal(null)} item={foundItem} matched={lostItem} />
-                </Card>
+                        {foundItem.item.description}
+                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
+                        <Button
+                          onClick={() =>
+                            router.push(
+                              `/my-items/${lostItem.item._id}/matchedTo/${foundItem.item._id}?owner=${lostItem.user._id}&finder=${foundItem.user._id}`
+                            )
+                          }
+                          variant="contained"
+                          sx={{ minWidth: '0', padding: '6px 8px' }}
+                          aria-label={`View details for ${foundItem.item.name}`}
+                        >
+                          <InfoIcon color="action" />
+                        </Button>
+                        <Button
+                          onClick={() => setConfirmationRetrievalModal(foundItem.item._id)}
+                          fullWidth
+                          sx={{ padding: '6px 0' }}
+                          aria-label={`Claim request for ${foundItem.item.name}`}
+                        >
+                          Claim Request
+                        </Button>
+                      </Box>
+                    </CardContent>
+                    <ConfirmationRetrievalRequest open={confirmationRetrievalModal === foundItem.item._id} onClose={() => setConfirmationRetrievalModal(null)} foundItem={foundItem} lostItem={lostItem} />
+                  </Card>
+                )
               ))
             )
           ) : (

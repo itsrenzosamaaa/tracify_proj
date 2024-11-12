@@ -22,7 +22,7 @@ import ItemClaimRequestModal from "../Modal/ItemClaimRequestModal";
 import ItemReservedModal from "../Modal/ItemReservedModal";
 import { CldImage } from "next-cloudinary";
 
-const ItemsTable = ({ items, fetchItems }) => {
+const ItemsTable = ({ items, fetchItems, session }) => {
     const [approveModal, setApproveModal] = useState(null);
     const [openValidatingModal, setOpenValidatingModal] = useState(null);
     const [openPublishedModal, setOpenPublishedModal] = useState(null);
@@ -119,10 +119,10 @@ const ItemsTable = ({ items, fetchItems }) => {
                                     <Tooltip title='View Image' arrow>
                                         <CldImage
                                             priority
-                                            src={row.image}
+                                            src={row.item.image}
                                             width={75}
                                             height={75}
-                                            alt={row.name}
+                                            alt={row.item.name}
                                             sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                             style={{
                                                 objectFit: 'cover',
@@ -130,7 +130,7 @@ const ItemsTable = ({ items, fetchItems }) => {
                                                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                                                 cursor: 'pointer'  // Indicate that the image is clickable
                                             }}
-                                            onClick={() => handleImageClick(row.image)}
+                                            onClick={() => handleImageClick(row.item.image)}
                                         />
                                     </Tooltip>
                                     <Dialog open={openImageModal} onClose={() => setOpenImageModal(false)}>
@@ -152,11 +152,7 @@ const ItemsTable = ({ items, fetchItems }) => {
                                 <TableCell sx={{ width: { xs: "30%", lg: "20%" } }}>
                                     {row?.matched 
                                         ? `${row.matched.owner.firstname} ${row.matched.owner.lastname}`
-                                        : row.finder 
-                                        ? `${row.finder.firstname} ${row.finder.lastname}`
-                                        : row.owner 
-                                        ? `${row.owner.firstname} ${row.owner.lastname}`
-                                        : ""
+                                        : `${row.user.firstname} ${row.user.lastname}`
                                     }
                                 </TableCell>
                                 <TableCell
@@ -164,7 +160,7 @@ const ItemsTable = ({ items, fetchItems }) => {
                                         display: { xs: "none", lg: "table-cell" },
                                     }}
                                 >
-                                    {row.name}
+                                    {row.item.name}
                                 </TableCell>
                                 <TableCell 
                                     sx={{ 
@@ -175,25 +171,25 @@ const ItemsTable = ({ items, fetchItems }) => {
                                     }}
                                 >
                                     {
-                                        row.status === 'Validating' 
+                                        row.item.status === 'Validating' 
                                         &&
                                         <>
                                             <Button onClick={() => setOpenValidatingModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                             <Button onClick={() => setOpenValidatingModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
-                                            <ItemValidatingModal row={row} open={openValidatingModal} onClose={() => setOpenValidatingModal(null)} fetch={fetch} />
+                                            <ItemValidatingModal row={row} open={openValidatingModal} onClose={() => setOpenValidatingModal(null)} refreshData={fetchItems} />
                                         </>
                                     }
                                     {
-                                        row.status === 'Published' 
+                                        row.item.status === 'Published' 
                                         &&
                                         <>
                                             <Button onClick={() => setOpenPublishedModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                             <Button onClick={() => setOpenPublishedModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
-                                            <ItemPublishedModal row={row} open={openPublishedModal} onClose={() => setOpenPublishedModal(null)} />
+                                            <ItemPublishedModal row={row} open={openPublishedModal} onClose={() => setOpenPublishedModal(null)}  />
                                         </>
                                     }
                                     {
-                                        row.status === 'Missing' 
+                                        row.item.status === 'Missing' 
                                         &&
                                         <>
                                             <Button onClick={() => setOpenMissingModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
@@ -203,16 +199,16 @@ const ItemsTable = ({ items, fetchItems }) => {
                                         </>
                                     }
                                     {
-                                        row.status === 'Request' 
+                                        row.item.status === 'Request' 
                                         &&
                                         <>
                                             <Button onClick={() => setApproveModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                             <Button onClick={() => setApproveModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
-                                            <ItemRequestApproveModal row={row} open={approveModal} onClose={() => setApproveModal(null)} refreshData={fetchItems} />
+                                            <ItemRequestApproveModal session={session} row={row} open={approveModal} onClose={() => setApproveModal(null)} refreshData={fetchItems} />
                                         </>
                                     }
                                     {
-                                        row.status === 'Claim Request' 
+                                        row.item.status === 'Claim Request' 
                                         &&
                                         <>
                                             <Button onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
@@ -221,7 +217,7 @@ const ItemsTable = ({ items, fetchItems }) => {
                                         </>
                                     }
                                     {
-                                        row.status === 'Reserved' 
+                                        row.item.status === 'Reserved' 
                                         &&
                                         <>
                                             <Button onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>

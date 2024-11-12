@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Loading from "../Loading";
 
 const UserDashboard = ({ session, status }) => {
-    const [items, setItems] = useState([]);
+    const [userItems, setUserItems] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ const UserDashboard = ({ session, status }) => {
             const response = await fetch(`/api/items/${accountId}`);
             const data = await response.json();
             if (response.ok) {
-                setItems(data);
+                setUserItems(data);
             } else {
                 console.error('Failed to fetch item data:', data.message);
                 setError(data.message);
@@ -40,11 +40,11 @@ const UserDashboard = ({ session, status }) => {
     }, [status, session?.user?.id]);
 
     const PaperOverview = useMemo(() => [
-        { title: 'Total Found Items', quantity: items.filter(item => item.finder === session?.user?.id).length },
-        { title: 'Total Lost Items', quantity: items.filter(item => item.owner === session?.user?.id).length },
-        { title: 'Pending Requests', quantity: items.filter(item => item.status === 'Request').length },
-        { title: 'Resolved Cases', quantity: items.filter(item => item.status === 'Resolved' || item.status === 'Claimed').length },
-    ], [items, session?.user?.id]);
+        { title: 'Total Found Items', quantity: userItems.filter(userItem => userItem.item.isFoundItem).length },
+        { title: 'Total Lost Items', quantity: userItems.filter(userItem => !userItem.item.isFoundItem).length },
+        { title: 'Pending Requests', quantity: userItems.filter(userItem => userItem.item.status === 'Request').length },
+        { title: 'Resolved Cases', quantity: userItems.filter(userItem => userItem.item.status === 'Resolved' || userItem.item.status === 'Claimed').length },
+    ], [userItems]);
 
     const updates = [
         { type: 'Lost', item: 'Blue Wallet', time: '2 hours ago' },
@@ -110,13 +110,13 @@ const UserDashboard = ({ session, status }) => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((report, index) => (
+                                    {userItems.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((report, index) => (
                                         <TableRow key={index}>
                                             <TableCell>
-                                                <Chip label={report.finder ? "Found" : "Lost"} color={report.finder ? "success" : "error"} />
+                                                <Chip label={report.item.isFoundItem ? "Found" : "Lost"} color={report.item.isFoundItem ? "success" : "error"} />
                                             </TableCell>
-                                            <TableCell>{report.name}</TableCell>
-                                            <TableCell>{report.status}</TableCell>
+                                            <TableCell>{report.item.name}</TableCell>
+                                            <TableCell>{report.item.status}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -124,7 +124,7 @@ const UserDashboard = ({ session, status }) => {
                         </Box>
                         <TablePagination
                             component="div"
-                            count={items.length}
+                            count={userItems.length}
                             page={page}
                             onPageChange={handleChangePage}
                             rowsPerPage={rowsPerPage}

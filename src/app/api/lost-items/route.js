@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
-import lostItem from "@/lib/models/lost_items";
+import item from "@/lib/models/item";
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
@@ -10,46 +10,53 @@ cloudinary.config({
 });
 
 export async function GET() {
-  try {
-    await dbConnect();
+    try {
+      await dbConnect();
+  
+      const findLostItems = await item.find({ isFoundItem: false });
 
-    const fetchLostItems = await lostItem.find().populate('owner');
-
-    return NextResponse.json(fetchLostItems, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching lost items:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch lost items" },
-      { status: 500 }
-    );
-  }
+      return NextResponse.json(findLostItems, { status: 200 });
+    } catch (error) {
+      console.error("Error fetching items:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch items" },
+        { status: 500 }
+      );
+    }
 }
 
 export async function POST(req) {
-  try {
-    await dbConnect();
-    const lostItemData = await req.json();
-
-    const uploadResponse = await cloudinary.uploader.upload(lostItemData.image, {
-      folder: "lost_items", // Store images in a folder named "found_items" on Cloudinary
-      public_id: `lost_${Date.now()}`,
-      overwrite: true,
-    });
-
-    if (lostItemData.status === 'Tracked'){
-      lostItemData.dateTracked = new Date();
+    try {
+      await dbConnect();
+      const lostItemData = await req.json(); // This will only work for JSON data, not FormData
+      
+      if (!lostItemData.image || !lostItemData.status) {
+        return NextResponse.json(
+          { success: false, message: "Missing required fields: image or status" },
+          { status: 400 }
+        );
+      }
+  
+      // Assuming you're sending the image as a URL or base64 from the frontend
+      const uploadResponse = await cloudinary.uploader.upload(lostItemData.image, {
+        folder: "lost_items",
+        public_id: `lost_${Date.now()}`,
+        overwrite: true,
+      });
+  
+      if (lostItemData.status === 'Tracked'){
+        lostItemData.dateTracked = new Date();
+      }
+  
+      const newLostItem = new item({
+        ...lostItemData,
+        image: uploadResponse.secure_url,
+      });
+      await newLostItem.save();
+  
+      return NextResponse.json(newLostItem);
+    } catch (error) {
+      console.error("Error in POST method:", error);
+      return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
-
-    const newLostItem = new lostItem({
-      ...lostItemData,
-      image: uploadResponse.secure_url,
-    });
-    await newLostItem.save();
-
-    console.log(newLostItem);
-
-    return NextResponse.json(newLostItem);
-  } catch (error) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
-}

@@ -1,12 +1,27 @@
 import React, { useState } from 'react';
-import { Rating, Paper, Stack, Grid, Card, CardContent, Avatar, LinearProgress, CircularProgress } from '@mui/material';
+import { Rating, Paper, Stack, Grid, Card, CardContent, Avatar, IconButton, Menu, MenuItem, LinearProgress, CircularProgress } from '@mui/material';
 import { Box, Typography, Divider, Chip } from '@mui/joy';
 import StarIcon from "@mui/icons-material/Star";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { formatDistanceToNow } from 'date-fns';
 
 const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
     // State to track selected quantity rating
     const [selectedQuantity, setSelectedQuantity] = useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
+
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleReportUser = () => {
+        // Handle the reporting logic here
+        handleClose();
+    };
 
     if (isLoading) {
         return <CircularProgress />;
@@ -143,7 +158,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                 paddingX: 2,
                                                 mb: 1,
                                                 transition: 'transform 0.2s',
-                                                '&:hover': { transform: 'scale(1.02)' } // Subtle hover effect
+                                                '&:hover': { transform: 'scale(1.02)' }, // Subtle hover effect
                                             }}
                                         >
                                             <CardContent sx={{ flexGrow: 1 }}>
@@ -168,7 +183,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                             />
                                                             <Typography component="span" variant="body2" sx={{ ml: 1 }}>
                                                                 Review as{' '}
-                                                                {rater.isFoundItem ? (
+                                                                {rater.item.isFoundItem ? (
                                                                     <strong style={{ color: '#4CAF50' }}>a Finder</strong>
                                                                 ) : (
                                                                     <strong style={{ color: '#F44336' }}>an Owner</strong>
@@ -179,6 +194,15 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                             </Typography>
                                                         </Box>
                                                     </Box>
+                                                    {/* Menu Button */}
+                                                    <IconButton
+                                                        sx={{ ml: 'auto' }}
+                                                        aria-controls="report-menu"
+                                                        aria-haspopup="true"
+                                                        onClick={handleClick}
+                                                    >
+                                                        <MoreVertIcon />
+                                                    </IconButton>
                                                 </Box>
 
                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
@@ -204,6 +228,16 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                     {rater.feedback}
                                                 </Typography>
                                             </CardContent>
+
+                                            {/* Report User Menu */}
+                                            <Menu
+                                                id="report-menu"
+                                                anchorEl={anchorEl}
+                                                open={Boolean(anchorEl)}
+                                                onClose={handleClose}
+                                            >
+                                                <MenuItem onClick={handleReportUser}>Report User</MenuItem>
+                                            </Menu>
                                         </Card>
                                     ))
                                 )}

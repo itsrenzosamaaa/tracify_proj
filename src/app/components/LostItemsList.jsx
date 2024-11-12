@@ -8,7 +8,7 @@ import ItemsTable from './Table/ItemsTable';
 import PublishLostItem from './Modal/PublishLostItems';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
-const LostItemsList = ({ items, fetchItems }) => {
+const LostItemsList = ({ owners, fetchItems }) => {
     const [status, setStatus] = useState('Missing');
     const [open, setOpen] = useState(false);
 
@@ -16,11 +16,11 @@ const LostItemsList = ({ items, fetchItems }) => {
 
     // Calculate counts for each status
     const statusCounts = statusOptions.reduce((acc, currentStatus) => {
-        acc[currentStatus] = items.filter(item => item.status === currentStatus).length;
+        acc[currentStatus] = owners.filter(owner => owner.item.status === currentStatus).length;
         return acc;
     }, {});
 
-    const filteredItems = items.filter(item => item.status === status);
+    const filteredItems = owners.filter(owner => owner.item.status === status);
 
     return (
         <>

@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
 
-const FoundItemSchema = new mongoose.Schema({
-  finder: {
-    type: mongoose.Types.ObjectId,
-    ref: "User",
+const ItemSchema = new mongoose.Schema({
+  isFoundItem: {
+    type: Boolean,
   },
   name: {
     type: String,
@@ -32,9 +31,11 @@ const FoundItemSchema = new mongoose.Schema({
       "Request",
       "Validating",
       "Published",
-      "Claim Request",
-      "Reserved",
+      "Matched",
       "Resolved",
+      'Missing',
+      'Tracked',
+      'Claimed',
       "Invalid",
       "Canceled",
     ],
@@ -48,10 +49,16 @@ const FoundItemSchema = new mongoose.Schema({
   datePublished: {
     type: Date,
   },
-  dateClaimRequest: {
+  dateMatched: {
     type: Date,
   },
-  dateReserved: {
+  dateMissing: {
+    type: Date,
+  },
+  dateTracked: {
+    type: Date,
+  },
+  dateClaimed: {
     type: Date,
   },
   dateResolved: {
@@ -63,15 +70,11 @@ const FoundItemSchema = new mongoose.Schema({
   dateCanceled: {
     type: Date,
   },
-  matched: {
-    type: mongoose.Types.ObjectId,
-    ref: "LostItem",
-  },
   monitoredBy: {
     type: mongoose.Types.ObjectId,
     ref: "Admin",
   },
 });
 
-export default mongoose.models.FoundItem ||
-  mongoose.model("FoundItem", FoundItemSchema);
+export default mongoose.models.Item ||
+  mongoose.model("Item", ItemSchema);

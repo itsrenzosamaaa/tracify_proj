@@ -12,7 +12,7 @@ const ProfilePage = () => {
     const [ratings, setRatings] = useState([]);
     const { data: session, status } = useSession();
 
-    console.log(ratings)
+    console.log(items)
 
     useEffect(() => {
         // Fetch student data if authenticated and session contains user id
@@ -46,13 +46,7 @@ const ProfilePage = () => {
             const response = await fetch(`/api/items/${accountId}`);
             const data = await response.json();
             if (response.ok) {
-                const filteredFoundItems = data
-                    .filter(item => item.finder)
-                    .map(item => ({ ...item, isFoundItem: true }));
-                const filteredLostItems = data
-                    .filter(item => item.owner)
-                    .map(item => ({ ...item, isFoundItem: false }));
-                setItems([ ...filteredFoundItems, ...filteredLostItems ]);
+                setItems(data)
             } else {
                 console.error('Failed to fetch item data:', data.message);
             }
@@ -63,7 +57,7 @@ const ProfilePage = () => {
 
     const fetchRatings = async (accountId) => {
         try {
-            const response = await fetch(`/api/ratings/user/${accountId}`)
+            const response = await fetch(`/api/ratings/receiver/${accountId}`)
             const data = await response.json();
             if(response.ok){
                 const filteredRatings = data.filter(rating => rating?.done_review)

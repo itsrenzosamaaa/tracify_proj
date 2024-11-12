@@ -4,15 +4,15 @@ import React, { useState } from 'react'
 import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } from '@mui/joy'
 import { Paper, Badge } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
-import ItemsTable from './Table/ItemsTable'
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import PublishItemIdentified from './Modal/PublishItemIdentified';
+import ItemRetrievalTable from './Table/ItemRetrievalTable';
 
 const ItemRetrievalList = ({ items, fetchItems }) => {
-    const [status, setStatus] = useState('Reserved');
+    const [status, setStatus] = useState('To Be Claim');
     const [open, setOpen] = useState(false);
 
-    const statusOptions = ['Reserved', 'Claim Request'];
+    const statusOptions = ['To Be Claim', 'Claim Request'];
     const statusCounts = statusOptions.reduce((acc, currentStatus) => {
         acc[currentStatus] = items.filter(item => item.status === currentStatus).length;
         return acc;
@@ -86,7 +86,7 @@ const ItemRetrievalList = ({ items, fetchItems }) => {
                             <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Item Identified</Button>
                             <PublishItemIdentified open={open} onClose={() => setOpen(false)} refreshData={fetchItems} />
                         </Box>
-                        <ItemsTable items={filteredItems} fetchItems={fetchItems} />
+                        <ItemRetrievalTable items={filteredItems} fetchItems={fetchItems} />
                     </Paper>
                 </Grid>
             </Grid>

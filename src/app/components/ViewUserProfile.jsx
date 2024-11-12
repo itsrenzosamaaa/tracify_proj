@@ -10,8 +10,8 @@ import RecentItems from './Profile/RecentItems';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
 const ViewUserProfile = ({ profile, items, ratings }) => {
-    const foundItems = items.filter(item => item.isFoundItem);
-    const lostItems = items.filter(item => !item.isFoundItem);
+    const foundItems = items.filter(finder => finder.item.isFoundItem);
+    const lostItems = items.filter(owner => !owner.item.isFoundItem);
     return (
         <>
             <TitleBreadcrumbs title="Profile" text="Profile" />
@@ -35,7 +35,7 @@ const ViewUserProfile = ({ profile, items, ratings }) => {
                 </Grid>
             </Grid>
             <Grid container spacing={2} sx={{ marginBottom: '1rem' }}>
-                <Grid item lg={12}>
+                <Grid item xs={12} lg={12}>
                     <RecentRatingsFromUser ratings={ratings} />
                 </Grid>
             </Grid>

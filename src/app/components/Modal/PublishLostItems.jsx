@@ -15,7 +15,8 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
     const [lostDate, setLostDate] = useState('');
     const [image, setImage] = useState(null);
     const [owner, setOwner] = useState(null);
-    const {data: session, status} = useSession();
+    const [loading, setLoading] = useState(false);
+    const { data: session, status } = useSession();
 
     const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court'];
 
@@ -38,23 +39,26 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
 
         const now = new Date();
         const thirtyDaysAgo = subDays(now, 30);
         const selectedDate = new Date(lostDate);
-    
+
         if (isBefore(selectedDate, thirtyDaysAgo)) {
             alert('The found date should be within the last 30 days.');
+            setLoading(false);
             return;
         }
-    
+
         if (isAfter(selectedDate, now)) {
             alert('The found date cannot be in the future.');
+            setLoading(false);
             return;
         }
 
         const lostItemData = {
-            owner: owner?._id,
+            isFoundItem: false,
             name,
             description,
             location,
@@ -65,9 +69,7 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
             dateMissing: new Date(),
         };
 
-        console.log(lostItemData)
-
-        try{
+        try {
             const response = await fetch('/api/lost-items', {
                 method: 'POST',
                 headers: {
@@ -76,15 +78,26 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
                 body: JSON.stringify(lostItemData),
             });
             if (response.ok) {
-                alert('success')
-                onClose();
-                setName('');
-                setDescription('');
-                setLocation(null);
-                setLostDate('');
-                setImage(null);
-                setOwner(null);
-                fetchItems();
+                const lostItemResponse = await response.json();
+    
+                const ownerData = {
+                    user: owner?._id,
+                    item: lostItemResponse._id,
+                };
+    
+                const lostResponse = await fetch('/api/owner', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ownerData),
+                });
+
+                if (lostResponse.ok) {
+                    alert('Item successfully published');
+                    await resetForm(); // Ensure resetForm is defined to clear form inputs
+                } else {
+                    const data = await lostResponse.json().catch(() => ({ error: "Unexpected response format" }));
+                    alert(`Failed to add owner: ${data.error}`);
+                }
             } else {
                 const data = await response.json();
                 alert(`Failed to add lost item: ${data.error}`);
@@ -94,6 +107,18 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
             alert('An error occurred while adding the lost item.');
         }
     };
+
+    const resetForm = async () => {
+        await onClose();
+        setName('');
+        setDescription('');
+        setLocation(null);
+        setLostDate('');
+        setImage(null);
+        setOwner(null);
+        await fetchItems();
+    };
+
     const onDrop = (acceptedFiles) => {
         const file = acceptedFiles[0]; // Get the first selected file
         if (file) {
@@ -204,7 +229,7 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
                                         isOptionEqualToValue={(option, value) => option.id === value?.id} // Ensure comparison by unique identifier
                                     />
                                 </FormControl>
-                                <Button type="submit">Publish</Button>
+                                <Button disabled={loading} loading={loading} type="submit">Publish</Button>
                             </Stack>
                         </form>
                     </DialogContent>

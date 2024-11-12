@@ -1,16 +1,19 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Box, Typography, FormLabel, Input, FormControl, Button, Card, CardContent, Stack, Select, Option, Textarea, FormHelperText } from '@mui/joy';
+import { Box, Typography, Button, Card, CardContent } from '@mui/joy';
 import { Grid, Table, TableHead, TableBody, TableRow, TableCell, TablePagination } from '@mui/material';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
+import AddIcon from '@mui/icons-material/Add';
+import AddBadgeModal from './Modal/AddBadge';
 
 const ViewBadges = ({ session, badges }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState(null);
+    const [modal, setModal] = useState(false);
 
     // Pagination state
     const [page, setPage] = useState(0);
@@ -56,10 +59,12 @@ const ViewBadges = ({ session, badges }) => {
         <>
             <TitleBreadcrumbs title="Manage Badges" text="Badges" />
             <Grid container spacing={2}>
-                <Grid item lg={7} xs={12}>
+                <Grid item lg={12} xs={12}>
                     <Box sx={{ mt: 4 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                             <Typography level='h4' gutterBottom>View Badges</Typography>
+                            <Button startDecorator={<AddIcon />} onClick={() => setModal(true)}>Add Badge</Button>
+                            <AddBadgeModal open={modal} onClose={() => setModal(false)} />
                         </Box>
                         <Card sx={{ height: '426px' }}>
                             <CardContent sx={{ padding: 0 }}>
@@ -110,78 +115,6 @@ const ViewBadges = ({ session, badges }) => {
                                     rowsPerPage={rowsPerPage}
                                     onRowsPerPageChange={handleChangeRowsPerPage}
                                 />
-                            </CardContent>
-                        </Card>
-                    </Box>
-                </Grid>
-                <Grid item lg={5} xs={12}>
-                    <Box sx={{ mt: 4 }}>
-                        <Typography level="h4" gutterBottom>Add New Badge</Typography>
-                        <Card>
-                            <CardContent>
-                                <form onSubmit={handleSubmit}>
-                                    <Stack spacing={2}>
-                                        <FormControl>
-                                            <FormLabel>Badge Name</FormLabel>
-                                            <Input
-                                                disabled={!isAddBadgesAllowed}
-                                                name="name"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                required
-                                            />
-                                        </FormControl>
-                                        <FormControl>
-                                            <FormLabel>Badge Description</FormLabel>
-                                            <Textarea
-                                                disabled={!isAddBadgesAllowed}
-                                                name="description"
-                                                type="text"
-                                                value={description}
-                                                onChange={(e) => setDescription(e.target.value)}
-                                                required
-                                            />
-                                            <FormHelperText>Provide a description on how students can obtain this badge.</FormHelperText>
-                                        </FormControl>
-                                        <FormControl>
-                                            <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                                                <FormLabel>Upload Image</FormLabel>
-                                                {image && <Button size="sm" color="danger" onClick={() => setImage(null)}>Discard</Button>}
-                                            </Box>
-                                            {!image ? (
-                                                <Box
-                                                    {...getRootProps({
-                                                        className: 'dropzone',
-                                                        disabled: !isAddBadgesAllowed,
-                                                        onClick: isAddBadgesAllowed ? undefined : (e) => e.preventDefault(),
-                                                    })}
-                                                    sx={{
-                                                        border: '2px dashed #888',
-                                                        borderRadius: '4px',
-                                                        padding: '20px',
-                                                        textAlign: 'center',
-                                                        cursor: isAddBadgesAllowed ? 'pointer' : 'default',
-                                                        backgroundColor: image ? 'transparent' : '#f9f9f9',
-                                                    }}
-                                                >
-                                                    <input {...getInputProps()} disabled={!isAddBadgesAllowed} />
-                                                    <p>{!isAddBadgesAllowed ? "You cannot upload an image due to user permissions" : "Drag and drop some files here, or click to select files"}</p>
-                                                </Box>
-                                            ) : (
-                                                <Image
-                                                    src={image}
-                                                    width={0}
-                                                    height={0}
-                                                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                    style={{ width: '100%', height: 'auto', objectFit: 'cover', marginBottom: '1rem' }}
-                                                    alt="Preview"
-                                                />
-                                            )}
-                                        </FormControl>
-
-                                        <Button disabled={!isAddBadgesAllowed} type="submit" fullWidth>Add Badge</Button>
-                                    </Stack>
-                                </form>
                             </CardContent>
                         </Card>
                     </Box>

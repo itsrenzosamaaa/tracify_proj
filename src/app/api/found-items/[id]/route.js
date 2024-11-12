@@ -1,32 +1,21 @@
-import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import found_items from '@/lib/models/found_items';
+import { NextResponse } from "next/server";
+import dbConnect from "@/lib/mongodb";
+import item from "@/lib/models/item";
 
 export async function GET(req, { params }) {
     const { id } = params;
-
-    await dbConnect(); // Connect to your MongoDB database
-
     try {
-        const findFoundItem = await found_items.findOne({ _id: id })
-            .populate({
-                path: 'monitoredBy',
-                populate: {
-                    path: 'role', // This populates the role of the monitoredBy
-                    model: 'Role', // Ensure this matches your role model name
-                },
-            })
-            .populate('finder') // Populate finder if necessary
-            .populate('matched')
-            .lean(); // Convert to plain JavaScript object
+        await dbConnect();
 
-        if (!findFoundItem) {
-            return NextResponse.json({ message: 'Found item not found' }, { status: 404 });
-        }
+        const findFoundItem = await item.findById({ _id: id });
 
-        return NextResponse.json(findFoundItem); // Return the officer data
+        return NextResponse.json(findFoundItem, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Error fetching found item' }, { status: 500 });
+        console.error("Error fetching items:", error);
+        return NextResponse.json(
+            { error: "Failed to fetch items" },
+            { status: 500 }
+        );
     }
 }
 
@@ -38,29 +27,30 @@ export async function PUT(req, { params }) {
 
     try {
         const updateData = { status, ...fields };
-        if(status === 'Request'){
+        if (status === 'Request') {
             updateData.dateRequest = new Date();
-        }else if (status === 'Validating'){
+        } else if (status === 'Validating') {
             updateData.dateValidating = new Date();
-        }else if (status === 'Published'){
+        } else if (status === 'Published') {
             updateData.datePublished = new Date();
-        }else if (status === 'Claim Request'){
-            updateData.dateClaimRequest = new Date();
-        }else if (status === 'Reserved'){
-            updateData.dateReserved = new Date();
-        }else if (status === 'Resolved'){
+        } else if (status === 'Matched') {
+            updateData.dateMatched = new Date();
+        } else if (status === 'Decline Retrieval') {
+            updateData.dateMatched = null;
+            updateData.status = 'Published';
+        } else if (status === 'Resolved') {
             updateData.dateResolved = new Date();
-        }else if (status === 'Invalid'){
+        } else if (status === 'Invalid') {
             updateData.dateInvalid = new Date();
-        }else if (status === 'Canceled'){
+        } else if (status === 'Canceled') {
             updateData.dateCanceled = new Date();
         }
 
-        const updatedFoundItem = await found_items.findOneAndUpdate(
-            { _id : id },
+        const updatedFoundItem = await item.findOneAndUpdate(
+            { _id: id },
             { $set: updateData },
             { new: true }
-        );  
+        );
 
         if (!updatedFoundItem) {
             return NextResponse.json({ message: 'Found item not found' }, { status: 404 });

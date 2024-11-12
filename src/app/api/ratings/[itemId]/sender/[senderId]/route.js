@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import ratings from '@/lib/models/ratings';
-import found_items from '@/lib/models/found_items';
-import lost_items from '@/lib/models/lost_items';
 
 export async function GET(req, { params }) {
     const { itemId, senderId } = params;
@@ -22,18 +20,6 @@ export async function GET(req, { params }) {
             return NextResponse.json({ message: 'Sender not found' }, { status: 404 });
         }
 
-        let item;
-        if (findSender.isFoundItem) {
-            item = await found_items.findById(findSender.item).lean();
-        } else {
-            item = await lost_items.findById(findSender.item).lean();
-        }
-
-        if (!item) {
-            return NextResponse.json({ message: 'Item not found' }, { status: 404 });
-        }
-
-        findSender.item = item;
         return NextResponse.json(findSender);
     } catch (error) {
         console.error('Error fetching sender:', error);

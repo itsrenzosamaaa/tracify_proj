@@ -1,25 +1,32 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import found_items from '@/lib/models/found_items';
-import lost_items from '@/lib/models/lost_items';
+import finder from '@/lib/models/finder';
+import owner from '@/lib/models/owner';
+import item from '@/lib/models/item';
 
 export async function GET(request, { params }) {
     const { id } = params;
 
-    await dbConnect(); // Connect to your MongoDB database
+    // Connect to the database
+    await dbConnect();
 
     try {
-        const foundItems = await found_items.find({ finder : id }).populate('finder'); // Fetch officer by ID
-        const lostItems =  await lost_items.find({ owner : id }).populate('owner');
+        // Fetch found items and lost items with user and item populated
+        const foundItems = await finder.find({ user: id })
+            .populate('user')
+            .populate('item');
 
-        if (!foundItems.length && !lostItems.length) {
-            return NextResponse.json({ message: 'No items found' }, { status: 404 });
-        }
+        const lostItems = await owner.find({ user: id })
+            .populate('user')
+            .populate('item');
 
+        // Combine found and lost items
         const combinedItems = [...foundItems, ...lostItems];
 
-        return NextResponse.json(combinedItems); // Return the officer data
+        // Return combined items in JSON format
+        return NextResponse.json(combinedItems);
     } catch (error) {
+        console.error("Error fetching items:", error);
         return NextResponse.json({ message: 'Error fetching items' }, { status: 500 });
     }
 }

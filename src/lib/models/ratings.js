@@ -11,6 +11,7 @@ const ratingSchema = new mongoose.Schema({
   },
   item: {
     type: mongoose.Types.ObjectId,
+    ref: "Item",
   },
   isFoundItem: {
     type: Boolean,

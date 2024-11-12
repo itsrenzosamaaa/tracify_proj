@@ -6,21 +6,19 @@ import ItemDetails from './ItemDetails';
 
 const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
     const [confirmationItemClaimed, setConfirmationItemClaimed] = useState(false);
+    const [confirmationItemDecline, setConfirmationItemDecline] = useState(false);
     const [loading, setLoading] = useState(false);
 
     console.log(row)
 
-    const handleSubmit = async (e, foundItemId, lostItemId) => {
+    const handleSubmit = async (e, foundItemId, lostItemId, matchedId) => {
         if (e && e.preventDefault) {
             e.preventDefault();
         }
 
-        console.log(foundItemId)
-        console.log(lostItemId)
-
         try {
             setLoading(true);
-            
+
             // First API call
             const foundResponse = await fetch(`/api/found-items/${foundItemId}`, {
                 method: 'PUT',
@@ -28,7 +26,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                     'Content-Type': 'application/json',
                     // Add any auth headers if needed
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     status: 'Resolved',
                 }),
             });
@@ -40,9 +38,6 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                 const errorData = await foundResponse.json();
                 throw new Error(errorData.message || 'Failed to update found item status');
             }
-            
-            const foundData = await foundResponse.json();
-            console.log('Found item update response:', foundData);
 
             // Second API call
             const lostResponse = await fetch(`/api/lost-items/${lostItemId}`, {
@@ -51,7 +46,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                     'Content-Type': 'application/json',
                     // Add any auth headers if needed
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     status: 'Claimed',
                 }),
             });
@@ -61,15 +56,28 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                 throw new Error(errorData.message || 'Failed to update lost item status');
             }
 
-            const lostData = await lostResponse.json();
-            console.log('Lost item update response:', lostData);
+            const matchResponse = await fetch(`/api/match-items/${matchedId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add any auth headers if needed
+                },
+                body: JSON.stringify({
+                    status: 'Claimed',
+                }),
+            });
 
-            if (foundResponse.ok && lostResponse.ok){
+            if (!matchResponse.ok) {
+                const errorData = await matchResponse.json();
+                throw new Error(errorData.message || 'Failed to update lost item status');
+            }
+
+            if (foundResponse.ok && lostResponse.ok && matchResponse.ok) {
                 const canRate = [
                     {
-                        sender: row.finder._id,
-                        receiver: row.matched.owner._id,
-                        item: row._id,
+                        sender: row.finder.user._id,
+                        receiver: row.owner.user._id,
+                        item: row.finder.item._id,
                         quantity: null,
                         feedback: null,
                         compliments: null,
@@ -78,9 +86,9 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                         date_edited: null,
                     },
                     {
-                        sender: row.matched.owner._id,
-                        receiver: row.finder._id,
-                        item: row._id,
+                        sender: row.owner.user._id,
+                        receiver: row.finder.user._id,
+                        item: row.owner.item._id,
                         quantity: null,
                         feedback: null,
                         compliments: null,
@@ -97,7 +105,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(addRate),
                         });
-    
+
                         if (!response.ok) {
                             const errorData = await response.json();
                             throw new Error(errorData.message || 'Failed to create rating');
@@ -108,10 +116,80 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                         refreshData(); // Renamed from fetch to be more descriptive
                     } catch (error) {
                         console.error('Error creating rating:', error);
-                        // Handle rating creation error if needed
                     }
                 }
             }
+        } catch (error) {
+            console.error('Error updating items:', error);
+            // You might want to show an error message to the user here
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDecline = async (e, foundItemId, lostItemId, matchedItemId) => {
+        if (e && e.preventDefault) {
+            e.preventDefault();
+        }
+
+        try {
+            setLoading(true);
+
+            const foundResponse = await fetch(`/api/found-items/${foundItemId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add any auth headers if needed
+                },
+                body: JSON.stringify({
+                    status: 'Decline Retrieval',
+                }),
+            });
+
+            // Check response status and parse JSON
+            if (!foundResponse.ok) {
+                const errorData = await foundResponse.json();
+                throw new Error(errorData.message || 'Failed to update found item status');
+            }
+
+            const lostResponse = await fetch(`/api/lost-items/${lostItemId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add any auth headers if needed
+                },
+                body: JSON.stringify({
+                    status: 'Decline Retrieval',
+                }),
+            });
+
+            // Check response status and parse JSON
+            if (!lostResponse.ok) {
+                const errorData = await lostResponse.json();
+                throw new Error(errorData.message || 'Failed to update found item status');
+            }
+
+            const matchResponse = await fetch(`/api/match-items/${matchedItemId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add any auth headers if needed
+                },
+                body: JSON.stringify({
+                    status: 'Decline',
+                }),
+            });
+
+            if (!matchResponse.ok) {
+                const errorData = await matchResponse.json();
+                throw new Error(errorData.message || 'Failed to update lost item status');
+            }
+
+            // Close modals and refresh data
+            setConfirmationApproveModal(null);
+            onClose();
+            refreshData(); // Renamed from fetch to be more descriptive
+
         } catch (error) {
             console.error('Error updating items:', error);
             // You might want to show an error message to the user here
@@ -131,6 +209,38 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                     <ItemDetails row={row} />
                 </DialogContent>
                 <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                    <Button color="danger" onClick={() => setConfirmationItemDecline(true)} fullWidth>
+                        Decline
+                    </Button>
+                    <Modal open={confirmationItemDecline} onClose={() => setConfirmationItemDecline(false)}>
+                        <ModalDialog>
+                            <ModalClose />
+                            <Typography level="h4" gutterBottom>
+                                Decline
+                            </Typography>
+                            <Typography>
+                                Are you sure you want to decline the retrieval?
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                <Button
+                                    disabled={loading}
+                                    color="danger"
+                                    onClick={() => setConfirmationItemDecline(false)}
+                                    fullWidth
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    disabled={loading}
+                                    loading={loading}
+                                    onClick={(e) => handleDecline(e, row.finder.item._id, row.owner.item._id, row._id)}
+                                    fullWidth
+                                >
+                                    Confirm
+                                </Button>
+                            </Box>
+                        </ModalDialog>
+                    </Modal>
                     <Button color="success" onClick={() => setConfirmationItemClaimed(true)} fullWidth>
                         Item Resolved
                     </Button>
@@ -155,7 +265,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                                 <Button
                                     disabled={loading}
                                     loading={loading}
-                                    onClick={(e) => handleSubmit(e, row._id, row.matched._id)}
+                                    onClick={(e) => handleSubmit(e, row.finder.item._id, row.owner.item._id, row._id)}
                                     fullWidth
                                 >
                                     Confirm

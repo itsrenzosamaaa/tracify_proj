@@ -23,7 +23,7 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
     const steps = [
         { label: 'Item Information', description: 'Provide essential details about the item.' },
         { label: 'Location Details', description: 'Specify the last known location of the item.' },
-        { label: 'Upload Images', description: 'Attach images to help identify the item.' },
+        { label: 'Upload Image', description: 'Attach an image to help identify the item.' },
         { label: 'Review & Confirm', description: 'Verify all details before submission.' },
     ];
 
@@ -34,6 +34,7 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
         setLoading(true);
     
         const formData = {
+            isFoundItem,
             name: itemName,
             description: itemDescription,
             location: itemLocation,
@@ -44,52 +45,58 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
             dateRequest: new Date(),
         };
     
-        if (isFoundItem) {
-            formData.finder = session?.user?.id;
-            formData.matched = null;
-            formData.monitoredBy = null;
+        try {
+            const apiEndpoint = isFoundItem ? '/api/found-items' : '/api/lost-items';
+
+            const response = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
     
-            try {
-                const response = await fetch('/api/found-items', {
+            const data = await response.json();
+    
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to add item');
+            }
+    
+            const unknownData = {
+                user: session?.user?.id,
+                item: data._id,
+            };
+    
+            // Set up variable to hold the response for later validation
+            let secondResponse;
+    
+            if (data.isFoundItem) {
+                secondResponse = await fetch('/api/finder', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData),
+                    body: JSON.stringify(unknownData),
                 });
-    
-                if (response.ok) {
-                    setShowSuccessModal(true);
-                } else {
-                    const data = await response.json();
-                    alert(`Failed to add found item: ${data.error}`);
-                }
-            } catch (error) {
-                console.error('Error adding found item:', error);
-                alert('An error occurred while adding the found item.');
-            }
-        } else {
-            formData.owner = session?.user?.id;
-    
-            try {
-                const response = await fetch('/api/lost-items', {
+            } else {
+                secondResponse = await fetch('/api/owner', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData),
+                    body: JSON.stringify(unknownData),
                 });
-    
-                if (response.ok) {
-                    setShowSuccessModal(true);
-                } else {
-                    const data = await response.json();
-                    alert(`Failed to add lost item: ${data.error}`);
-                }
-            } catch (error) {
-                console.error('Error adding lost item:', error);
-                alert('An error occurred while adding the lost item.');
             }
+    
+            const secondData = await secondResponse.json();
+    
+            if (!secondResponse.ok) {
+                throw new Error(secondData.error || 'Failed to add owner/finder');
+            }
+    
+            // Success
+            setShowSuccessModal(true);
+    
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert(`An error occurred: ${error.message}`);
+        } finally {
+            setLoading(false);
         }
-    
-        // Reset loading after operation
-        setLoading(false);
     };    
 
     // Handler to go to the next step
