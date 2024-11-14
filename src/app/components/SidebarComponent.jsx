@@ -194,19 +194,6 @@ export default function App() {
     return router.push('/');
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const getData = navigation.find(
-      (list) => search.toLowerCase() === list.menu.toLowerCase()
-    );
-    if (getData) {
-      router.push(getData.url);
-    } else {
-      alert("No match found");
-    }
-    setSearch("");
-  };
-
   const DrawerContent = ({ navigation, toggleMobileDrawer, collapsed }) => {
     const pathname = usePathname();
 
@@ -254,20 +241,6 @@ export default function App() {
           <MenuIcon />
         </IconButton>
         <Box sx={{ width: { xs: '85%', lg: '80%' }, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <form onSubmit={handleSubmit}>
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              sx={{ width: { xs: "12rem", lg: "18rem" }, marginLeft: { lg: "1.5rem" } }}
-              startDecorator={<SearchIcon />}
-              endDecorator={
-                <Button type="submit" variant="solid">
-                  <Typography color="inherit" sx={{ display: { xs: "none", lg: "block" } }}>Enter</Typography>
-                  <KeyboardTabIcon sx={{ display: { xs: "block", lg: "none" } }} />
-                </Button>
-              }
-            />
-          </form>
           <AvatarComponent role={session.user.firstname} />
         </Box>
       </Header>

@@ -1,22 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Snackbar, Checkbox, Modal, ModalDialog, ModalClose, DialogContent, Typography, Stack, FormControl, FormLabel, Input, Textarea, Button, Box, Select, Option, Grid } from '@mui/joy';
 import PreviewBadge from '../PreviewBadge';
 
-const AddBadgeModal = ({ open, onClose, refreshData }) => {
-    const [title, setTitle] = useState('Example Title');
-    const [titleColor, setTitleColor] = useState('#000000');
-    const [titleShimmer, setTitleShimmer] = useState(false);
-    const [titleOutlineColor, setTitleOutlineColor] = useState('#FFFFFF');
-    const [description, setDescription] = useState('Touch the badge and you will know the details about this badge!');
-    const [shape, setShape] = useState('circle');
-    const [shapeColor, setShapeColor] = useState('#FFD700');
-    const [bgShape, setBgShape] = useState('circle');
-    const [bgColor, setBgColor] = useState('#FFEB3B');
-    const [bgOutline, setBgOutline] = useState('#000000');
-    const [condition, setCondition] = useState();
-    const [meetConditions, setMeetConditions] = useState();
+const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
+    const [title, setTitle] = useState(badge.title);
+    const [titleColor, setTitleColor] = useState(badge.titleColor);
+    const [titleShimmer, setTitleShimmer] = useState(badge.titleShimmer);
+    const [titleOutlineColor, setTitleOutlineColor] = useState(badge.titleOutlineColor);
+    const [description, setDescription] = useState(badge.description);
+    const [shape, setShape] = useState(badge.shape);
+    const [shapeColor, setShapeColor] = useState(badge.shapeColor);
+    const [bgShape, setBgShape] = useState(badge.bgShape);
+    const [bgColor, setBgColor] = useState(badge.bgColor);
+    const [bgOutline, setBgOutline] = useState(badge.bgOutline);
+    const [condition, setCondition] = useState(badge.condition);
+    const [meetConditions, setMeetConditions] = useState(badge.meetConditions);
     const [loading, setLoading] = useState(false);
     const [openSnackbar, setOpenSnackbar] = useState(false);
+
+    useEffect(() => {
+        if (badge) {
+            setTitle(badge.title);
+            setTitleColor(badge.titleColor);
+            setTitleShimmer(badge.titleShimmer);
+            setTitleOutlineColor(badge.titleOutlineColor);
+            setDescription(badge.description);
+            setShape(badge.shape);
+            setShapeColor(badge.shapeColor);
+            setBgShape(badge.bgShape);
+            setBgColor(badge.bgColor);
+            setBgOutline(badge.bgOutline);
+            setCondition(badge.condition);
+            setMeetConditions(badge.meetConditions);
+        }
+    }, [badge, open]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -44,8 +61,8 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
         }
 
         try {
-            const response = await fetch('/api/badge', {
-                method: 'POST',
+            const response = await fetch(`/api/badge/${badge._id}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -53,40 +70,24 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
             });
 
             if (response.ok) {
-                handleClose();
-                setOpenSnackbar(true);
                 await refreshData();
+                onClose();
+                setOpenSnackbar(true);
             } else {
                 const data = await response.json();
-                alert(`Failed to add badge: ${data.error}`);
+                alert(`Failed to update badge: ${data.error}`);
             }
         } catch (error) {
-            console.error('Error adding badge:', error);
-            alert('An error occurred while adding the badge.');
+            console.error('Error updating badge:', error);
+            alert('An error occurred while updating the badge.');
         } finally {
             setLoading(false)
         }
     };
 
-    const handleClose = () => {
-        onClose();
-        setTitle('Example Title');
-        setTitleColor('#000000');
-        setTitleShimmer(false);
-        setTitleOutlineColor('#FFFFFF');
-        setDescription('Touch the badge and you will know the details about this badge!');
-        setShape('circle');
-        setShapeColor('#FFD700');
-        setBgShape('circle');
-        setBgColor('#FFEB3B');
-        setBgOutline('#000000');
-        setCondition();
-        setMeetConditions();
-    }
-
     return (
         <>
-            <Modal open={open} onClose={handleClose}>
+            <Modal open={open === badge._id} onClose={onClose}>
                 <ModalDialog sx={{ display: 'flex', flexDirection: 'row' }}>
                     <ModalClose />
                     <DialogContent sx={{ width: '800px' }}>
@@ -230,7 +231,7 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
                                                 <Checkbox label="Add a shimmering effect?" checked={titleShimmer} onChange={(e) => setTitleShimmer(e.target.checked)} />
                                             </FormControl>
 
-                                            <Button loading={loading} disabled={loading} type="submit" fullWidth>Add Badge</Button>
+                                            <Button loading={loading} disabled={loading} type="submit" fullWidth>Update Badge</Button>
                                         </Stack>
                                     </form>
                                 </Grid>
@@ -270,10 +271,10 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
                     setOpenSnackbar(false);
                 }}
             >
-                Badge has been successfully created!
+                Badge has been successfully updated!
             </Snackbar>
         </>
     );
 };
 
-export default AddBadgeModal;
+export default EditBadgeModal;

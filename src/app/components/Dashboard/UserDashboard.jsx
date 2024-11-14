@@ -76,7 +76,7 @@ const UserDashboard = ({ session, status }) => {
                     Welcome back, {session.user.firstname}!
                 </Typography>
                 <Typography level="h2" gutterBottom sx={{ display: { xs: "none", sm: 'none', md: 'none', lg: 'block' } }}>
-                    Welcome back, {session.user.firstname}!     
+                    Welcome back, {session.user.firstname}!
                 </Typography>
                 <Typography>
                     Dashboard Overview
@@ -137,6 +137,17 @@ const UserDashboard = ({ session, status }) => {
                 {/* Recent Activity and Quick Actions */}
                 <Grid item xs={12} lg={6}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <Paper elevation={2} sx={{ padding: '1rem', maxWidth: '100%' }}>
+                            <Typography level="h3" gutterBottom>
+                                Quick Actions
+                            </Typography>
+                            <Button sx={{ marginRight: '10px' }} onClick={() => router.push('/my-items/report-found-item')}>
+                                Report Found Item
+                            </Button>
+                            <Button color="danger" onClick={() => router.push('/my-items/report-lost-item')}>
+                                Report Lost Item
+                            </Button>
+                        </Paper>
                         {/* Updates Section */}
                         <Paper elevation={2} sx={{ padding: '1rem', maxWidth: '100%', height: '18.5rem', overflowY: 'auto' }}>
                             <Typography level="h3" gutterBottom sx={{ marginBottom: '1rem' }}>
@@ -169,19 +180,6 @@ const UserDashboard = ({ session, status }) => {
                                     <Divider sx={{ margin: '8px 0' }} />
                                 </Box>
                             ))}
-                        </Paper>
-
-                        {/* Quick Actions Section */}
-                        <Paper elevation={2} sx={{ padding: '1rem', maxWidth: '100%' }}>
-                            <Typography level="h3" gutterBottom>
-                                Quick Actions
-                            </Typography>
-                            <Button sx={{ marginRight: '10px' }} onClick={() => router.push('/my-items/report-found-item')}>
-                                Report Found Item
-                            </Button>
-                            <Button color="danger" onClick={() => router.push('/my-items/report-lost-item')}>
-                                Report Lost Item
-                            </Button>
                         </Paper>
                     </Box>
                 </Grid>

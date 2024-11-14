@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import match_items from "@/lib/models/match_items";
+import finder from "@/lib/models/finder";
+import owner from "@/lib/models/owner";
+import user from "@/lib/models/user";
+import item from "@/lib/models/item";
 
 export async function GET() {
   try {

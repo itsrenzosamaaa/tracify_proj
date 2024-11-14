@@ -21,6 +21,14 @@ const userSchema = new mongoose.Schema({
   contactNumber: {
     type: String,
   },
+  badges: [{
+    type: mongoose.Types.ObjectId,
+    ref: 'Badge',
+  }],
+  selectedBadge: { 
+    type: mongoose.Types.ObjectId,
+    ref: 'Badge',
+  },
   school_category: {
     type: String,
     enum: ["Higher Education", "Basic Education"]

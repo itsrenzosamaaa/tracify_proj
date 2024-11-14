@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Modal, ModalClose, ModalDialog, Typography, Box, DialogContent } from '@mui/joy';
+import { Snackbar, Button, Modal, ModalClose, ModalDialog, Typography, Box, DialogContent } from '@mui/joy';
 import React, { useState } from 'react';
 import ItemDetails from './ItemDetails';
 
@@ -8,6 +8,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
     const [confirmationItemClaimed, setConfirmationItemClaimed] = useState(false);
     const [confirmationItemDecline, setConfirmationItemDecline] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [openSnackbar, setOpenSnackbar] = useState(false);
 
     console.log(row)
 
@@ -54,6 +55,35 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
             if (!lostResponse.ok) {
                 const errorData = await lostResponse.json();
                 throw new Error(errorData.message || 'Failed to update lost item status');
+            }
+
+            if (foundResponse.ok && lostResponse.ok) {
+                const badgeResponse = await fetch('/api/badge/found-item');
+                const badgeData = await badgeResponse.json();
+                console.log(badgeData)
+                const finderResponse = await fetch(`/api/finder/${row.finder.user._id}`);
+                const finderData = await finderResponse.json();
+                console.log(finderData)
+                const filteredFinder = finderData.filter(finder => finder.item.status === 'Resolved').length;
+                console.log(filteredFinder)
+
+                for (const badge of badgeData) {
+                    if (filteredFinder >= badge.meetConditions) {
+                        const awardResponse = await fetch(`/api/award-badge/user/${row.finder.user._id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ badgeId: badge._id }),
+                        });
+
+                        if (!awardResponse.ok) {
+                            const errorData = await awardResponse.json();
+                            throw new Error(errorData.message || 'Failed to award badge');
+                        }
+                    }
+                }
+
             }
 
             const matchResponse = await fetch(`/api/match-items/${matchedId}`, {
@@ -113,7 +143,8 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                         // Close modals and refresh data
                         setConfirmationItemClaimed(null);
                         onClose();
-                        refreshData(); // Renamed from fetch to be more descriptive
+                        await refreshData(); // Renamed from fetch to be more descriptive
+                        setOpenSnackbar(true);
                     } catch (error) {
                         console.error('Error creating rating:', error);
                     }
@@ -188,8 +219,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
             // Close modals and refresh data
             setConfirmationApproveModal(null);
             onClose();
-            refreshData(); // Renamed from fetch to be more descriptive
-
+            await refreshData(); // Renamed from fetch to be more descriptive
         } catch (error) {
             console.error('Error updating items:', error);
             // You might want to show an error message to the user here
@@ -199,83 +229,99 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
     };
 
     return (
-        <Modal open={open === row._id} onClose={onClose}>
-            <ModalDialog>
-                <ModalClose />
-                <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-                    Reserved Item Details
-                </Typography>
-                <DialogContent>
-                    <ItemDetails row={row} />
-                </DialogContent>
-                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                    <Button color="danger" onClick={() => setConfirmationItemDecline(true)} fullWidth>
-                        Decline
-                    </Button>
-                    <Modal open={confirmationItemDecline} onClose={() => setConfirmationItemDecline(false)}>
-                        <ModalDialog>
-                            <ModalClose />
-                            <Typography level="h4" gutterBottom>
-                                Decline
-                            </Typography>
-                            <Typography>
-                                Are you sure you want to decline the retrieval?
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                                <Button
-                                    disabled={loading}
-                                    color="danger"
-                                    onClick={() => setConfirmationItemDecline(false)}
-                                    fullWidth
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    disabled={loading}
-                                    loading={loading}
-                                    onClick={(e) => handleDecline(e, row.finder.item._id, row.owner.item._id, row._id)}
-                                    fullWidth
-                                >
-                                    Confirm
-                                </Button>
-                            </Box>
-                        </ModalDialog>
-                    </Modal>
-                    <Button color="success" onClick={() => setConfirmationItemClaimed(true)} fullWidth>
-                        Item Resolved
-                    </Button>
-                    <Modal open={confirmationItemClaimed} onClose={() => setConfirmationItemClaimed(false)}>
-                        <ModalDialog>
-                            <ModalClose />
-                            <Typography level="h4" gutterBottom>
-                                Confirmation
-                            </Typography>
-                            <Typography>
-                                Did the owner retrieve the item?
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                                <Button
-                                    disabled={loading}
-                                    color="danger"
-                                    onClick={() => setConfirmationItemClaimed(false)}
-                                    fullWidth
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    disabled={loading}
-                                    loading={loading}
-                                    onClick={(e) => handleSubmit(e, row.finder.item._id, row.owner.item._id, row._id)}
-                                    fullWidth
-                                >
-                                    Confirm
-                                </Button>
-                            </Box>
-                        </ModalDialog>
-                    </Modal>
-                </Box>
-            </ModalDialog>
-        </Modal>
+        <>
+            <Modal open={open === row._id} onClose={onClose}>
+                <ModalDialog>
+                    <ModalClose />
+                    <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                        Reserved Item Details
+                    </Typography>
+                    <DialogContent>
+                        <ItemDetails row={row} />
+                    </DialogContent>
+                    <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                        <Button color="danger" onClick={() => setConfirmationItemDecline(true)} fullWidth>
+                            Decline
+                        </Button>
+                        <Modal open={confirmationItemDecline} onClose={() => setConfirmationItemDecline(false)}>
+                            <ModalDialog>
+                                <ModalClose />
+                                <Typography level="h4" gutterBottom>
+                                    Decline
+                                </Typography>
+                                <Typography>
+                                    Are you sure you want to decline the retrieval?
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                    <Button
+                                        disabled={loading}
+                                        color="danger"
+                                        onClick={() => setConfirmationItemDecline(false)}
+                                        fullWidth
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        disabled={loading}
+                                        loading={loading}
+                                        onClick={(e) => handleDecline(e, row.finder.item._id, row.owner.item._id, row._id)}
+                                        fullWidth
+                                    >
+                                        Confirm
+                                    </Button>
+                                </Box>
+                            </ModalDialog>
+                        </Modal>
+                        <Button color="success" onClick={() => setConfirmationItemClaimed(true)} fullWidth>
+                            Item Resolved
+                        </Button>
+                        <Modal open={confirmationItemClaimed} onClose={() => setConfirmationItemClaimed(false)}>
+                            <ModalDialog>
+                                <ModalClose />
+                                <Typography level="h4" gutterBottom>
+                                    Confirmation
+                                </Typography>
+                                <Typography>
+                                    Did the owner retrieve the item?
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                    <Button
+                                        disabled={loading}
+                                        color="danger"
+                                        onClick={() => setConfirmationItemClaimed(false)}
+                                        fullWidth
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        disabled={loading}
+                                        loading={loading}
+                                        onClick={(e) => handleSubmit(e, row.finder.item._id, row.owner.item._id, row._id)}
+                                        fullWidth
+                                    >
+                                        Confirm
+                                    </Button>
+                                </Box>
+                            </ModalDialog>
+                        </Modal>
+                    </Box>
+                </ModalDialog>
+            </Modal>
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color="success"
+                onClose={(event, reason) => {
+                    if (reason === 'clickaway') {
+                        return;
+                    }
+                    setOpenSnackbar(false);
+                }}
+            >
+                The item has successfully resolved!
+            </Snackbar>
+        </>
     );
 };
 

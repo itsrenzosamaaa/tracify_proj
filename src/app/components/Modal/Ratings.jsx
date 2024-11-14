@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Rating, Box } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
-import { Avatar, Modal, ModalDialog, ModalClose, Button, Typography, FormLabel, Chip, FormControl, Textarea, Stack, FormHelperText } from '@mui/joy';
+import { Snackbar, Avatar, Modal, ModalDialog, ModalClose, Button, Typography, FormLabel, Chip, FormControl, Textarea, Stack, FormHelperText } from '@mui/joy';
 
 const finderComplimentsList = [
     'Trustworthy', 'Helpful', 'Friendly', 'Responsive', 'Efficient',
@@ -20,9 +20,7 @@ const RatingsModal = ({ item, session, status }) => {
     const [selectedCompliments, setSelectedCompliments] = useState([]);
     const [loading, setLoading] = useState(false);
     const [ratingModal, setRatingModal] = useState(null);
-
-    console.log(item);
-    console.log(rating)
+    const [openSnackbar, setOpenSnackbar] = useState(false);
 
     const fetchRating = useCallback(async () => {
         if (!session?.user?.id) return;
@@ -76,19 +74,42 @@ const RatingsModal = ({ item, session, status }) => {
         }
 
         try {
-            const response = await fetch(`/api/ratings/${item._id}/sender/${session.user.id}`, {
+            const savedRatingResponse = await fetch(`/api/ratings/${item._id}/sender/${session.user.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ rating: ratingData }),
             });
 
-            if (response.ok) {
-                console.log('Rating submitted successfully');
+            if (savedRatingResponse.ok) {
+                const badgeResponse = await fetch('/api/badge/ratings');
+                const badgeData = await badgeResponse.json();
+                const senderResponse = await fetch(`/api/ratings/sender/${session?.user?.id}`);
+                const senderData = await senderResponse.json();
+                const filteredSender = senderData.filter(sender => sender.done_review).length;
+
+                for (const badge of badgeData) {
+                    if (filteredSender >= badge.meetConditions) {
+                        const awardResponse = await fetch(`/api/award-badge/user/${session?.user?.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ badgeId: badge._id }),
+                        });
+
+                        if (!awardResponse.ok) {
+                            const errorData = await awardResponse.json();
+                            throw new Error(errorData.message || 'Failed to award badge');
+                        }
+                    }
+                }
+
+                setOpenSnackbar(true);
                 resetForm();
-                onClose();
-                fetchRating();
+                setRatingModal(null);
+                await fetchRating();
             } else {
-                const errorData = await response.json();
+                const errorData = await savedRatingResponse.json();
                 console.error('Failed to submit rating:', errorData.message);
             }
         } catch (error) {
@@ -216,21 +237,17 @@ const RatingsModal = ({ item, session, status }) => {
                                     <FormControl>
                                         <FormLabel>Compliments</FormLabel>
                                         <FormHelperText>{item?.isFoundItem ? "Is your owner reliable? Don't forget to leave a compliment/s" : 'Satisfied with your item? Compliment a finder'}!</FormHelperText>
-                                        <Box sx={{ gap: 1, display: 'flex', flexWrap: 'wrap', my: 1 }}>
-                                            {complimentsList.map((compliment) => {
-                                                const checked = selectedCompliments.includes(compliment);
-                                                return (
-                                                    <Chip
-                                                        key={compliment}
-                                                        variant="outlined"
-                                                        color={checked ? 'primary' : 'neutral'}
-                                                        onClick={() => handleComplimentChange(compliment)}
-                                                        sx={{ cursor: 'pointer' }}
-                                                    >
-                                                        {compliment}
-                                                    </Chip>
-                                                );
-                                            })}
+                                        <Box sx={{ gap: 1, display: 'flex', flexWrap: 'wrap', mt: 1 }}>
+                                            {complimentsList.map((compliment) => (
+                                                <Chip
+                                                    key={compliment}
+                                                    color={selectedCompliments.includes(compliment) ? 'primary' : 'default'}
+                                                    onClick={() => handleComplimentChange(compliment)}
+                                                    sx={{ cursor: 'pointer' }}
+                                                >
+                                                    {compliment}
+                                                </Chip>
+                                            ))}
                                         </Box>
                                     </FormControl>
                                 )}
@@ -238,23 +255,35 @@ const RatingsModal = ({ item, session, status }) => {
                                 <FormControl required>
                                     <FormLabel>Feedback</FormLabel>
                                     <Textarea
-                                        type="text"
-                                        name="feedback"
                                         value={feedback}
+                                        minRows="4"
                                         onChange={(e) => setFeedback(e.target.value)}
-                                        placeholder="Write your feedback here..."
-                                        minRows={4}
+                                        placeholder="Share your experience"
                                     />
                                 </FormControl>
 
-                                <Button fullWidth sx={{ mt: 3 }} type="submit" disabled={loading}>
-                                    {loading ? 'Submitting...' : 'Submit Rating'}
+                                <Button type="submit" loading={loading} fullWidth color="success">
+                                    Submit Review
                                 </Button>
                             </Stack>
                         </form>
                     )}
                 </ModalDialog>
             </Modal>
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color="success"
+                onClose={(event, reason) => {
+                    if (reason === 'clickaway') {
+                        return;
+                    }
+                    setOpenSnackbar(false);
+                }}
+            >
+                Rated successfully!
+            </Snackbar>
         </>
     );
 };
