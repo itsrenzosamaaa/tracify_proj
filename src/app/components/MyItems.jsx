@@ -7,7 +7,6 @@ import { Box, Card, CardContent } from '@mui/material';
 import { CldImage } from 'next-cloudinary';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
-import Levenshtein from 'fast-levenshtein';
 import InfoIcon from '@mui/icons-material/Info';
 import ConfirmationRetrievalRequest from './Modal/ConfirmationRetrievalRequest';
 import CancelRequest from './Modal/CancelRequest';
@@ -35,55 +34,114 @@ const MyItemsComponent = ({ session, status }) => {
 
   const router = useRouter();
 
+  console.log(suggestedMatches)
+
   const fetchItems = useCallback(async () => {
+    if (!session?.user?.id) {
+      console.error('User is not logged in or session is not available');
+      return;
+    }
+
     try {
       // Fetch user-specific items (lost and found)
-      const response = await fetch(`/api/items/${session?.user?.id}`);
+      const response = await fetch(`/api/items/${session.user.id}`);
       const data = await response.json();
 
-      if (response.ok) {
-        // Filter items based on various statuses and types
-        const lostItems = data.filter(lostItem => !lostItem.item.isFoundItem && lostItem.item.status === 'Missing');
-        const foundItems = data.filter(foundItem => foundItem.item.isFoundItem && !['Request', 'Resolved', 'Invalid', 'Canceled'].includes(foundItem.item.status));
-        const requestedItems = data.filter(requestedItem => requestedItem.item.status === 'Request');
-        const completedItems = data.filter(completedItem => ['Claimed', 'Resolved'].includes(completedItem.item.status));
-        const declinedItems = data.filter(declinedItem => declinedItem.item.status === 'Invalid');
-        const canceledItems = data.filter(canceledItem => canceledItem.item.status === 'Canceled');
+      if (!response.ok) {
+        throw new Error('Failed to fetch user items');
+      }
 
-        // Fetch all found items for potential matches
-        const foundItemsResponse = await fetch('/api/finder');
-        const foundItemsData = await foundItemsResponse.json();
+      // Filter items based on various statuses and types
+      const lostItems = data.filter(
+        (item) => !item.item.isFoundItem && item.item.status === 'Missing'
+      );
+      const foundItems = data.filter(
+        (item) =>
+          item.item.isFoundItem && !['Request', 'Resolved', 'Invalid', 'Canceled'].includes(item.item.status)
+      );
+      const requestedItems = data.filter((item) => item.item.status === 'Request');
+      const completedItems = data.filter((item) => ['Claimed', 'Resolved'].includes(item.item.status));
+      const declinedItems = data.filter((item) => item.item.status === 'Invalid');
+      const canceledItems = data.filter((item) => item.item.status === 'Canceled');
 
-        // Filter found items that are published and do not belong to the current user
-        const filteredFoundItems = foundItemsData.filter(fItem =>
-          fItem?.user?._id !== session?.user?.id && fItem?.item?.status === 'Published'
-        );
+      // Set state for categorized items
+      setLostItems(lostItems);
+      setFoundItems(foundItems);
+      setRequestedItems(requestedItems);
+      setCompletedItems(completedItems);
+      setDeclinedItems(declinedItems);
+      setCanceledItems(canceledItems);
 
-        // Match found items with lost items based on similarity score
-        const matches = lostItems.map(lostItem => {
-          const matchesForLostItem = filteredFoundItems.map(foundItem => {
-            const distance = Levenshtein.get(lostItem.item.name, foundItem.item.name);
-            const maxLength = Math.max(lostItem.item.name.length, foundItem.item.name.length);
-            const similarityScore = 100 * (1 - (distance / maxLength));
+      // Fetch all found items for potential matches
+      const foundItemsResponse = await fetch('/api/finder');
+      const foundItemsData = await foundItemsResponse.json();
 
-            return similarityScore >= 70 ? { foundItem, similarityScore } : null;
-          }).filter(match => match !== null); // Filter out null matches
+      if (!foundItemsResponse.ok) {
+        throw new Error('Failed to fetch found items');
+      }
 
-          return { lostItem, matches: matchesForLostItem.map(match => match.foundItem) };
+      // Filter found items that are published and do not belong to the current user
+      const filteredFoundItems = foundItemsData.filter(
+        (fItem) => fItem?.user?._id !== session.user.id && fItem?.item?.status === 'Published'
+      );
+
+      // Function to fetch cosine similarity
+      const getCosineSimilarity = async (lostItem, foundItem) => {
+        const response = await fetch('/api/similarity', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            lostItem,
+            foundItem,
+          }),
         });
 
-        setSuggestedMatches(matches);
-        setLostItems(lostItems);
-        setFoundItems(foundItems);
-        setRequestedItems(requestedItems);
-        setCompletedItems(completedItems);
-        setDeclinedItems(declinedItems);
-        setCanceledItems(canceledItems);
-      }
+        const data = await response.json();
+        return data;
+      };
+
+      // Match found items with lost items based on similarity score
+      const matches = await Promise.all(
+        lostItems.map(async (lostItem) => {
+          // Prepare the matching logic for each lost item
+          const matchedFoundItems = await Promise.all(
+            filteredFoundItems.map(async (foundItem) => {
+              const similarity = await getCosineSimilarity(
+                lostItem,
+                foundItem,
+              );
+
+              return {
+                foundItem,
+                similarity,
+              };
+            })
+          );
+
+          // Sort matches by similarity in descending order
+          const sortedMatches = matchedFoundItems
+            .filter((match) => match.similarity >= 50) // You can adjust the similarity threshold as needed
+            .sort((a, b) => b.similarity - a.similarity);
+
+          // Return the lost item with its matches
+          return {
+            lostItem,
+            matches: sortedMatches,
+          };
+        })
+      );
+
+      // Set suggested matches
+      setSuggestedMatches(matches); // This now contains an array of objects with lostItem and matches
+
     } catch (error) {
       console.error('Error fetching items:', error);
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id]);  // Re-run the effect when the session id changes
+
+
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -95,7 +153,7 @@ const MyItemsComponent = ({ session, status }) => {
   const scrollRefFound = useRef(null);
   const scrollRefCompleted = useRef(null);
   const scrollRefDeclined = useRef(null);
-  const scrollRefCanceled= useRef(null);
+  const scrollRefCanceled = useRef(null);
   const scrollRefRequested = useRef(null);
   const scrollRefSuggested = useRef(null);
 
@@ -915,8 +973,9 @@ const MyItemsComponent = ({ session, status }) => {
         >
           {suggestedMatches.length > 0 && suggestedMatches.some(({ matches }) => matches.length > 0) ? (
             suggestedMatches.flatMap(({ lostItem, matches }) =>
-              matches.map((foundItem, index) => (
-                lostItem.item.status === 'Missing' && (
+              matches.map((match, index) => {
+                const { foundItem } = match;
+                return lostItem.item.status === 'Missing' && (
                   <Card
                     key={`${lostItem._id}-${index}`}
                     sx={{
@@ -983,7 +1042,7 @@ const MyItemsComponent = ({ session, status }) => {
                     <ConfirmationRetrievalRequest open={confirmationRetrievalModal === foundItem.item._id} onClose={() => setConfirmationRetrievalModal(null)} foundItem={foundItem} lostItem={lostItem} />
                   </Card>
                 )
-              ))
+              })
             )
           ) : (
             <Box

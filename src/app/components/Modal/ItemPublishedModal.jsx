@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Modal, ModalClose, ModalDialog, Typography, Box, } from '@mui/joy';
+import { Button, Modal, ModalClose, ModalDialog, Typography, Box, DialogContent, } from '@mui/joy';
 import React from 'react';
 import ItemDetails from './ItemDetails';
 
@@ -12,7 +12,9 @@ const ItemPublishedModal = ({ row, open, onClose }) => {
                 <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                     Published Item Details
                 </Typography>
-                <ItemDetails row={row} />
+                <DialogContent sx={{ overflowX: 'hidden' }}>
+                    <ItemDetails row={row} />
+                </DialogContent>
                 <Button variant="outlined" onClick={onClose}>Close</Button>
             </ModalDialog>
         </Modal>

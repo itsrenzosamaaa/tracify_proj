@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import owner from "@/lib/models/owner";
+import user from "@/lib/models/user";
+import item from "@/lib/models/item";
 
 export async function GET() {
     try {
       await dbConnect();
   
       const findOwners = await owner.find().populate('user').populate('item');
-
-      console.log(findOwners)
 
       return NextResponse.json(findOwners, { status: 200 });
     } catch (error) {

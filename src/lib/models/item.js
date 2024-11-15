@@ -1,3 +1,4 @@
+import { ColorLens } from "@mui/icons-material";
 import mongoose from "mongoose";
 
 const ItemSchema = new mongoose.Schema({
@@ -5,6 +6,24 @@ const ItemSchema = new mongoose.Schema({
     type: Boolean,
   },
   name: {
+    type: String,
+  },
+  color: {
+    type: String,
+  },
+  size: {
+    type: String,
+  },
+  category: {
+    type: String,
+  },
+  material: {
+    type: String,
+  },
+  condition: {
+    type: String,
+  },
+  distinctiveMarks: {
     type: String,
   },
   description: {

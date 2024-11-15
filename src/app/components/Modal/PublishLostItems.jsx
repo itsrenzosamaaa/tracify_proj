@@ -1,6 +1,6 @@
 'use client'
 
-import { DialogContent, Modal, ModalDialog, Stack, Typography, ModalClose, FormControl, FormLabel, Input, Autocomplete, Button, Box, Checkbox, Textarea } from '@mui/joy'
+import { Snackbar, DialogContent, Modal, ModalDialog, Stack, Typography, ModalClose, FormControl, FormLabel, Input, Autocomplete, Button, Box, Checkbox, Textarea, Select, Option } from '@mui/joy'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
@@ -10,12 +10,19 @@ import { subDays, isBefore, isAfter } from 'date-fns';
 const PublishLostItem = ({ open, onClose, fetchItems }) => {
     const [users, setUsers] = useState([]);
     const [name, setName] = useState('');
+    const [color, setColor] = useState();
+    const [size, setSize] = useState();
+    const [category, setCategory] = useState();
+    const [material, setMaterial] = useState();
+    const [condition, setCondition] = useState();
+    const [distinctiveMarks, setDistinctiveMarks] = useState();
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState(null);
     const [lostDate, setLostDate] = useState('');
     const [image, setImage] = useState(null);
     const [owner, setOwner] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [openSnackbar, setOpenSnackbar] = useState(false);
     const { data: session, status } = useSession();
 
     const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court'];
@@ -60,6 +67,12 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
         const lostItemData = {
             isFoundItem: false,
             name,
+            color,
+            size,
+            category,
+            material,
+            condition,
+            distinctiveMarks,
             description,
             location,
             date: selectedDate.toISOString().split("T")[0],
@@ -79,12 +92,12 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
             });
             if (response.ok) {
                 const lostItemResponse = await response.json();
-    
+
                 const ownerData = {
                     user: owner?._id,
                     item: lostItemResponse._id,
                 };
-    
+
                 const lostResponse = await fetch('/api/owner', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -92,8 +105,8 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
                 });
 
                 if (lostResponse.ok) {
-                    alert('Item successfully published');
                     await resetForm(); // Ensure resetForm is defined to clear form inputs
+                    setOpenSnackbar(true);
                 } else {
                     const data = await lostResponse.json().catch(() => ({ error: "Unexpected response format" }));
                     alert(`Failed to add owner: ${data.error}`);
@@ -111,6 +124,12 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
     const resetForm = async () => {
         await onClose();
         setName('');
+        setColor();
+        setSize();
+        setCategory();
+        setMaterial();
+        setCondition();
+        setDistinctiveMarks();
         setDescription('');
         setLocation(null);
         setLostDate('');
@@ -142,18 +161,171 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
     return (
         <>
             <Modal open={open} onClose={onClose}>
-                <ModalDialog>
+                <ModalDialog
+                    sx={{
+                        maxWidth: '600px', // Adjust to your desired width
+                        width: '90%', // Ensures responsiveness on smaller screens
+                    }}
+                >
                     <ModalClose />
                     <Typography level="h4" sx={{ mb: 2 }}>Publish a Lost Item</Typography>
                     <DialogContent sx={{ overflowX: 'hidden' }}>
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={2}>
                                 <FormControl>
-                                    <FormLabel>Name</FormLabel>
-                                    <Input required type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
+                                    <FormLabel>Owner</FormLabel>
+                                    <Autocomplete
+                                        required
+                                        placeholder='Select owner'
+                                        options={users || []}  // Ensure users is an array
+                                        value={owner}  // Ensure value corresponds to an option in users
+                                        onChange={(event, value) => {
+                                            setOwner(value); // Update state with selected user
+                                        }}
+                                        getOptionLabel={(user) => {
+                                            if (!user || !user.firstname || !user.lastname) {
+                                                return 'No Options'; // Safeguard in case user data is undefined
+                                            }
+                                            return `${user.firstname} ${user.lastname}`; // Correctly format user names
+                                        }}
+                                        isOptionEqualToValue={(option, value) => option.id === value?.id} // Ensure comparison by unique identifier
+                                    />
                                 </FormControl>
                                 <FormControl>
-                                    <FormLabel>Description</FormLabel>
+                                    <FormLabel>Item Name</FormLabel>
+                                    <Input required type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
+                                </FormControl>
+
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Color</FormLabel>
+                                            <Select
+                                                fullWidth
+                                                required
+                                                value={color}
+                                                onChange={(e, value) => setColor(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Color
+                                                </Option>
+                                                {['Black', 'White', 'Blue', 'Red'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Size</FormLabel>
+                                            <Select
+                                                required
+                                                value={size}
+                                                onChange={(e, value) => setSize(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Size
+                                                </Option>
+                                                {['Small', 'Medium', 'Large'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Category</FormLabel>
+                                            <Select
+                                                required
+                                                value={category}
+                                                onChange={(e, value) => setCategory(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Category
+                                                </Option>
+                                                {['Electronics', 'Clothing', 'Accessories'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+                                </Box>
+
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Material</FormLabel>
+                                            <Select
+                                                required
+                                                value={material}
+                                                onChange={(e, value) => setMaterial(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Material
+                                                </Option>
+                                                {['Leather', 'Metal', 'Plastic', 'Fabric'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Condition</FormLabel>
+                                            <Select
+                                                required
+                                                value={condition}
+                                                onChange={(e, value) => setCondition(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Condition
+                                                </Option>
+                                                {['New', 'Damaged', 'Old'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Distinctive Marks</FormLabel>
+                                            <Select
+                                                required
+                                                value={distinctiveMarks}
+                                                onChange={(e, value) => setDistinctiveMarks(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Distinctive Marks
+                                                </Option>
+                                                {['None', 'Scratches', 'Stickers', 'Initials', 'Keychain'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+                                </Box>
+                                <FormControl>
+                                    <FormLabel>Item Description</FormLabel>
                                     <Textarea required type="text" name="description" minRows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
                                 </FormControl>
                                 <FormControl>
@@ -210,31 +382,26 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
                                         />
                                     )}
                                 </FormControl>
-                                <FormControl>
-                                    <FormLabel>Owner</FormLabel>
-                                    <Autocomplete
-                                        required
-                                        placeholder='Select owner'
-                                        options={users || []}  // Ensure users is an array
-                                        value={owner}  // Ensure value corresponds to an option in users
-                                        onChange={(event, value) => {
-                                            setOwner(value); // Update state with selected user
-                                        }}
-                                        getOptionLabel={(user) => {
-                                            if (!user || !user.firstname || !user.lastname) {
-                                                return 'No Options'; // Safeguard in case user data is undefined
-                                            }
-                                            return `${user.firstname} ${user.lastname}`; // Correctly format user names
-                                        }}
-                                        isOptionEqualToValue={(option, value) => option.id === value?.id} // Ensure comparison by unique identifier
-                                    />
-                                </FormControl>
                                 <Button disabled={loading} loading={loading} type="submit">Publish</Button>
                             </Stack>
                         </form>
                     </DialogContent>
                 </ModalDialog>
             </Modal>
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color="success"
+                onClose={(event, reason) => {
+                    if (reason === 'clickaway') {
+                        return;
+                    }
+                    setOpenSnackbar(false);
+                }}
+            >
+                Item published successfully!
+            </Snackbar>
         </>
     )
 }

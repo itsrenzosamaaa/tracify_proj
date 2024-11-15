@@ -1,6 +1,6 @@
 'use client'
 
-import { Textarea, DialogContent, Modal, ModalDialog, Stack, Typography, ModalClose, FormControl, FormLabel, Input, Autocomplete, Button, Box, Checkbox } from '@mui/joy'
+import { Snackbar, Textarea, DialogContent, Modal, ModalDialog, Stack, Typography, ModalClose, FormControl, FormLabel, Input, Autocomplete, Button, Box, Checkbox, Select, Option } from '@mui/joy'
 import React, { useEffect, useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
@@ -10,6 +10,12 @@ import { isAfter, isBefore, subDays } from 'date-fns';
 const PublishFoundItem = ({ open, onClose, fetchItems }) => {
     const [users, setUsers] = useState([]);
     const [name, setName] = useState('');
+    const [color, setColor] = useState();
+    const [size, setSize] = useState();
+    const [category, setCategory] = useState();
+    const [material, setMaterial] = useState();
+    const [condition, setCondition] = useState();
+    const [distinctiveMarks, setDistinctiveMarks] = useState();
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState(null);
     const [foundDate, setFoundDate] = useState('');
@@ -17,6 +23,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
     const [userFindItem, setUserFindItem] = useState(false);
     const [finder, setFinder] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [openSnackbar, setOpenSnackbar] = useState(false);
     const { data: session, status } = useSession();
 
     const fetchUsers = useCallback(async () => {
@@ -45,27 +52,33 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-    
+
         const now = new Date();
         const thirtyDaysAgo = subDays(now, 30);
         const selectedDate = new Date(foundDate);
-    
+
         if (isBefore(selectedDate, thirtyDaysAgo)) {
             alert('The found date should be within the last 30 days.');
             setLoading(false);
             return;
         }
-    
+
         if (isAfter(selectedDate, now)) {
             alert('The found date cannot be in the future.');
             setLoading(false);
             return;
         }
-    
+
         // Create found item data with lost item ID as the owner
         const foundItemData = {
             isFoundItem: true,
             name,
+            color,
+            size,
+            category,
+            material,
+            condition,
+            distinctiveMarks,
             description,
             location,
             date: selectedDate.toISOString().split("T")[0],
@@ -75,31 +88,31 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
             datePublished: new Date(),
             monitoredBy: session?.user?.id,
         };
-    
+
         try {
             const response = await fetch('/api/found-items', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(foundItemData),
             });
-    
+
             if (response.ok) {
                 const foundItemResponse = await response.json();
-    
+
                 const finderData = {
-                    user: finder?._id,
+                    user: userFindItem ? finder?._id : session?.user?.id,
                     item: foundItemResponse._id,
                 };
-    
+
                 const foundResponse = await fetch('/api/finder', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(finderData),
                 });
-    
+
                 if (foundResponse.ok) {
-                    alert('Item successfully published');
                     await resetForm(); // Ensure resetForm is defined to clear form inputs
+                    setOpenSnackbar(true);
                 } else {
                     const data = await foundResponse.json().catch(() => ({ error: "Unexpected response format" }));
                     alert(`Failed to add finder: ${data.error}`);
@@ -114,12 +127,18 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
         } finally {
             setLoading(false);
         }
-    };    
-    
+    };
+
     // Helper function to reset form fields and close the modal
     const resetForm = async () => {
         await onClose();
         setName('');
+        setColor();
+        setSize();
+        setCategory();
+        setMaterial();
+        setCondition();
+        setDistinctiveMarks();
         setDescription('');
         setLocation(null);
         setFoundDate('');
@@ -128,8 +147,8 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
         setFinder(null);
         await fetchItems();
     };
-    
-    
+
+
     const onDrop = (acceptedFiles) => {
         const file = acceptedFiles[0]; // Get the first selected file
         if (file) {
@@ -151,23 +170,176 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-    if(status === 'loading') return null;
+    if (status === 'loading') return null;
 
     return (
         <>
             <Modal open={open} onClose={onClose}>
-                <ModalDialog>
+                <ModalDialog
+                    sx={{
+                        maxWidth: '600px', // Adjust to your desired width
+                        width: '90%', // Ensures responsiveness on smaller screens
+                    }}
+                >
                     <ModalClose />
                     <Typography level="h4" sx={{ mb: 2 }}>Publish a Found Item</Typography>
                     <DialogContent sx={{ overflowX: 'hidden' }}>
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={2}>
+                                <FormControl>
+                                    <Checkbox label="Did the student find this item?" checked={userFindItem} onChange={(e) => setUserFindItem(e.target.checked)} />
+                                </FormControl>
+                                {userFindItem && (
+                                    <FormControl required>
+                                        <FormLabel>Finder</FormLabel>
+                                        <Autocomplete
+                                            placeholder="Select a finder"
+                                            options={users || []}
+                                            value={finder}
+                                            onChange={(event, value) => {
+                                                setFinder(value);
+                                            }}
+                                            getOptionLabel={(user) => {
+                                                return user ? `${user.firstname} ${user.lastname}` : 'No Options';
+                                            }}
+                                            isOptionEqualToValue={(option, value) => option.id === value?.id}
+                                        />
+                                    </FormControl>
+                                )}
                                 <FormControl required>
-                                    <FormLabel>Name</FormLabel>
+                                    <FormLabel>Item Name</FormLabel>
                                     <Input type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
                                 </FormControl>
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Color</FormLabel>
+                                            <Select
+                                                fullWidth
+                                                required
+                                                value={color}
+                                                onChange={(e, value) => setColor(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Color
+                                                </Option>
+                                                {['Black', 'White', 'Blue', 'Red'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Size</FormLabel>
+                                            <Select
+                                                required
+                                                value={size}
+                                                onChange={(e, value) => setSize(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Size
+                                                </Option>
+                                                {['Small', 'Medium', 'Large'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Category</FormLabel>
+                                            <Select
+                                                required
+                                                value={category}
+                                                onChange={(e, value) => setCategory(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Category
+                                                </Option>
+                                                {['Electronics', 'Clothing', 'Accessories'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+                                </Box>
+
+                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Material</FormLabel>
+                                            <Select
+                                                required
+                                                value={material}
+                                                onChange={(e, value) => setMaterial(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Material
+                                                </Option>
+                                                {['Leather', 'Metal', 'Plastic', 'Fabric'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Condition</FormLabel>
+                                            <Select
+                                                required
+                                                value={condition}
+                                                onChange={(e, value) => setCondition(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Condition
+                                                </Option>
+                                                {['New', 'Damaged', 'Old'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+                                    <Box sx={{ width: '100%' }}>
+                                        <FormControl>
+                                            <FormLabel>Distinctive Marks</FormLabel>
+                                            <Select
+                                                required
+                                                value={distinctiveMarks}
+                                                onChange={(e, value) => setDistinctiveMarks(value)}
+                                                displayEmpty
+                                            >
+                                                <Option value="" disabled>
+                                                    Select Distinctive Marks
+                                                </Option>
+                                                {['None', 'Scratches', 'Stickers', 'Initials', 'Keychain'].map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Box>
+                                </Box>
                                 <FormControl required>
-                                    <FormLabel>Description</FormLabel>
+                                    <FormLabel>Item Description</FormLabel>
                                     <Textarea type="text" name="description" minRows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
                                 </FormControl>
                                 <FormControl required>
@@ -223,32 +395,26 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
                                         />
                                     )}
                                 </FormControl>
-                                <FormControl>
-                                    <Checkbox label="Did the student find this item?" checked={userFindItem} onChange={(e) => setUserFindItem(e.target.checked)} />
-                                </FormControl>
-                                {userFindItem && (
-                                    <FormControl required>
-                                        <FormLabel>Who is the finder?</FormLabel>
-                                        <Autocomplete
-                                            placeholder="Select a finder"
-                                            options={users || []}
-                                            value={finder}
-                                            onChange={(event, value) => {
-                                                setFinder(value);
-                                            }}
-                                            getOptionLabel={(user) => {
-                                                return user ? `${user.firstname} ${user.lastname}` : 'No Options';
-                                            }}
-                                            isOptionEqualToValue={(option, value) => option.id === value?.id}
-                                        />
-                                    </FormControl>
-                                )}
                                 <Button loading={loading} disabled={loading} type="submit">Publish</Button>
                             </Stack>
                         </form>
                     </DialogContent>
                 </ModalDialog>
             </Modal>
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color="success"
+                onClose={(event, reason) => {
+                    if (reason === 'clickaway') {
+                        return;
+                    }
+                    setOpenSnackbar(false);
+                }}
+            >
+                Item published successfully!
+            </Snackbar>
         </>
     )
 }

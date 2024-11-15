@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import finder from "@/lib/models/finder";
+import item from "@/lib/models/item";
+import badge from "@/lib/models/badge";
 
 export async function GET() {
   try {
     await dbConnect();
 
-    const findFinders = await finder.find().populate('user')
+    const findFinders = await finder.find()
+      .populate({
+        path: 'user',
+        populate: {
+          path: 'selectedBadge'
+        }
+      })
       .populate({
         path: 'item',
         populate: {
