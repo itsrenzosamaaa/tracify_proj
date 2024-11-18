@@ -1,13 +1,22 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import item from "@/lib/models/item";
+import admin from "@/lib/models/admin";
+import Role from "@/lib/models/roles";
 
 export async function GET(req, { params }) {
     const { id } = params;
     try {
         await dbConnect();
 
-        const findFoundItem = await item.findById({ _id: id });
+        const findFoundItem = await item.findOne({ _id: id, isFoundItem: true })
+            .populate({
+                path: 'monitoredBy',
+                populate: {
+                    path: 'role',
+                    model: 'Role',
+                }
+            });
 
         return NextResponse.json(findFoundItem, { status: 200 });
     } catch (error) {
@@ -29,7 +38,7 @@ export async function PUT(req, { params }) {
         const updateData = { status, ...fields };
         if (status === 'Request') {
             updateData.dateRequest = new Date();
-        } else if (status === 'Validating') {
+        } else if (status === 'Surrender Pending') {
             updateData.dateValidating = new Date();
         } else if (status === 'Published') {
             updateData.datePublished = new Date();

@@ -5,9 +5,10 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
 import { useSession } from 'next-auth/react';
-import { isAfter, isBefore, subDays } from 'date-fns';
+import { format, subDays, isBefore, isAfter } from 'date-fns';
+import Link from 'next/link';
 
-const PublishFoundItem = ({ open, onClose, fetchItems }) => {
+const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null }) => {
     const [users, setUsers] = useState([]);
     const [name, setName] = useState('');
     const [color, setColor] = useState();
@@ -81,8 +82,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
             distinctiveMarks,
             description,
             location,
-            date: selectedDate.toISOString().split("T")[0],
-            time: selectedDate.toTimeString().split(" ")[0].slice(0, 5),
+            date_time: format(selectedDate, 'MMMM dd,yyyy hh:mm a'),
             image,
             status: 'Published',
             datePublished: new Date(),
@@ -145,7 +145,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
         setImage(null);
         setUserFindItem(false);
         setFinder(null);
-        await fetchItems();
+        if(fetchItems) await fetchItems();
     };
 
 
@@ -187,7 +187,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={2}>
                                 <FormControl>
-                                    <Checkbox label="Did the student find this item?" checked={userFindItem} onChange={(e) => setUserFindItem(e.target.checked)} />
+                                    <Checkbox label="Did the user find this item?" checked={userFindItem} onChange={(e) => setUserFindItem(e.target.checked)} />
                                 </FormControl>
                                 {userFindItem && (
                                     <FormControl required>
@@ -224,7 +224,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
                                                 <Option value="" disabled>
                                                     Select Color
                                                 </Option>
-                                                {['Black', 'White', 'Blue', 'Red'].map((name) => (
+                                                {['Black', 'White', 'Blue', 'Red', 'Brown'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -413,8 +413,17 @@ const PublishFoundItem = ({ open, onClose, fetchItems }) => {
                     setOpenSnackbar(false);
                 }}
             >
-                Item published successfully!
+                <div>
+                    Item published successfully!{' '}
+                    {inDashboard && (
+                        <Link href="/found-items" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                            Click here
+                        </Link>
+                    )}{' '}
+                    to redirect to the found items list.
+                </div>
             </Snackbar>
+
         </>
     )
 }

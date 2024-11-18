@@ -17,6 +17,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import BadgeIcon from '@mui/icons-material/Badge';
 import DescriptionIcon from '@mui/icons-material/Description';
+import ItemDetails from './Modal/ItemDetails';
 
 const MyItemsComponent = ({ session, status }) => {
   const [completedItemDetailsModal, setCompletedItemDetailsModal] = useState(null);
@@ -46,6 +47,7 @@ const MyItemsComponent = ({ session, status }) => {
       // Fetch user-specific items (lost and found)
       const response = await fetch(`/api/items/${session.user.id}`);
       const data = await response.json();
+      console.log(data)
 
       if (!response.ok) {
         throw new Error('Failed to fetch user items');
@@ -86,20 +88,14 @@ const MyItemsComponent = ({ session, status }) => {
       );
 
       // Function to fetch cosine similarity
-      const getCosineSimilarity = async (lostItem, foundItem) => {
+      const similarityCheck = async (lostItem, foundItem) => {
         const response = await fetch('/api/similarity', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            lostItem,
-            foundItem,
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lostItem, foundItem }),
         });
 
-        const data = await response.json();
-        return data;
+        return response.json();
       };
 
       // Match found items with lost items based on similarity score
@@ -108,7 +104,7 @@ const MyItemsComponent = ({ session, status }) => {
           // Prepare the matching logic for each lost item
           const matchedFoundItems = await Promise.all(
             filteredFoundItems.map(async (foundItem) => {
-              const similarity = await getCosineSimilarity(
+              const similarity = await similarityCheck(
                 lostItem,
                 foundItem,
               );
@@ -430,43 +426,14 @@ const MyItemsComponent = ({ session, status }) => {
                     </Button>
 
                     <Modal open={completedItemDetailsModal === completedItem.item._id} onClose={() => setCompletedItemDetailsModal(null)}>
-                      <ModalDialog sx={{ maxWidth: 500, borderRadius: 4, boxShadow: 6, padding: 3 }}>
+                      <ModalDialog sx={{ borderRadius: 4, boxShadow: 6, padding: 3 }}>
                         <ModalClose />
-                        <DialogTitle>
-                          <Typography variant="h5" component="span" fontWeight="bold" color="primary">
-                            Item Details
-                          </Typography>
-                        </DialogTitle>
+                        <Typography level="h4" fontWeight="bold">
+                          Completed Item
+                        </Typography>
 
-                        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Typography level="body1" fontWeight="bold">Name:</Typography>
-                            <Typography level="body1" color="text.secondary">{completedItem.item.name}</Typography>
-                          </Box>
-
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Typography level="body1" fontWeight="bold">Description:</Typography>
-                            <Typography level="body1" color="text.secondary">{completedItem.item.description}</Typography>
-                          </Box>
-
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <LocationOnIcon color="action" />
-                            <Typography level="body1" color="text.secondary">{completedItem.item.location}</Typography>
-                          </Box>
-
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <CalendarTodayIcon color="action" />
-                            <Typography level="body1" color="text.secondary">
-                              {format(parseISO(completedItem.item.date), 'MMMM dd, yyyy')}
-                            </Typography>
-                          </Box>
-
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <AccessTimeIcon color="action" />
-                            <Typography level="body1" color="text.secondary">
-                              {format(new Date().setHours(...completedItem.item.time.split(':')), 'hh:mm a')}
-                            </Typography>
-                          </Box>
+                        <DialogContent>
+                          <ItemDetails row={completedItem} />
                         </DialogContent>
                       </ModalDialog>
                     </Modal>
@@ -578,40 +545,8 @@ const MyItemsComponent = ({ session, status }) => {
                         </Typography>
                       </DialogTitle>
 
-                      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Typography level="body1" fontWeight="bold">Name:</Typography>
-                          <Typography level="body1" color="text.secondary">{declinedItem.item.name}</Typography>
-                        </Box>
-
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Typography level="body1" fontWeight="bold">Description:</Typography>
-                          <Typography level="body1" color="text.secondary">{declinedItem.item.description}</Typography>
-                        </Box>
-
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <LocationOnIcon color="action" />
-                          <Typography level="body1" color="text.secondary">{declinedItem.item.location}</Typography>
-                        </Box>
-
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <CalendarTodayIcon color="action" />
-                          <Typography level="body1" color="text.secondary">
-                            {format(parseISO(declinedItem.item.date), 'MMMM dd, yyyy')}
-                          </Typography>
-                        </Box>
-
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <AccessTimeIcon color="action" />
-                          <Typography level="body1" color="text.secondary">
-                            {format(new Date().setHours(...declinedItem.item.time.split(':')), 'hh:mm a')}
-                          </Typography>
-                        </Box>
-
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Typography level="body1" fontWeight="bold">Reason for Decline:</Typography>
-                          <Typography level="body1" color="text.secondary">{declinedItem.item.reason}</Typography>
-                        </Box>
+                      <DialogContent>
+                        <ItemDetails row={declinedItem} />
                       </DialogContent>
                     </ModalDialog>
                   </Modal>
@@ -716,40 +651,12 @@ const MyItemsComponent = ({ session, status }) => {
                     <ModalDialog sx={{ maxWidth: 500, borderRadius: 4, boxShadow: 6, padding: 3 }}>
                       <ModalClose />
                       <DialogTitle>
-                        <Typography variant="h5" component="span" fontWeight="bold" color="primary">
+                        <Typography variant="h4" fontWeight="bold">
                           Item Details
                         </Typography>
                       </DialogTitle>
-
-                      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Typography level="body1" fontWeight="bold">Name:</Typography>
-                          <Typography level="body1" color="text.secondary">{canceledItem.item.name}</Typography>
-                        </Box>
-
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Typography level="body1" fontWeight="bold">Description:</Typography>
-                          <Typography level="body1" color="text.secondary">{canceledItem.item.description}</Typography>
-                        </Box>
-
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <LocationOnIcon color="action" />
-                          <Typography level="body1" color="text.secondary">{canceledItem.item.location}</Typography>
-                        </Box>
-
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <CalendarTodayIcon color="action" />
-                          <Typography level="body1" color="text.secondary">
-                            {format(parseISO(canceledItem.item.date), 'MMMM dd, yyyy')}
-                          </Typography>
-                        </Box>
-
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <AccessTimeIcon color="action" />
-                          <Typography level="body1" color="text.secondary">
-                            {format(new Date().setHours(...canceledItem.item.time.split(':')), 'hh:mm a')}
-                          </Typography>
-                        </Box>
+                      <DialogContent>
+                        <ItemDetails row={canceledItem} />
                       </DialogContent>
                     </ModalDialog>
                   </Modal>
@@ -863,57 +770,12 @@ const MyItemsComponent = ({ session, status }) => {
                     <Modal open={openDetails} onClose={() => setOpenDetails(null)}>
                       <ModalDialog>
                         <ModalClose />
-
                         <Typography level="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
                           Item Details
                         </Typography>
-
-                        <Grid container spacing={2}>
-                          <Grid item xs={2}>
-                            <BadgeIcon fontSize="small" color="primary" />
-                          </Grid>
-                          <Grid item xs={10}>
-                            <Typography level="body1" sx={{ fontWeight: 500 }}>
-                              {requestedItem.item.name}
-                            </Typography>
-                          </Grid>
-
-                          <Grid item xs={2}>
-                            <DescriptionIcon fontSize="small" color="primary" />
-                          </Grid>
-                          <Grid item xs={10}>
-                            <Typography level="body2" color="text.secondary">
-                              {requestedItem.item.description}
-                            </Typography>
-                          </Grid>
-
-                          <Grid item xs={2}>
-                            <LocationOnIcon fontSize="small" color="primary" />
-                          </Grid>
-                          <Grid item xs={10}>
-                            <Typography level="body2" color="text.secondary">
-                              {requestedItem.item.location}
-                            </Typography>
-                          </Grid>
-
-                          <Grid item xs={2}>
-                            <CalendarTodayIcon fontSize="small" color="primary" />
-                          </Grid>
-                          <Grid item xs={10}>
-                            <Typography level="body2" color="text.secondary">
-                              {format(parseISO(requestedItem.item.date), 'MMMM dd, yyyy')}
-                            </Typography>
-                          </Grid>
-
-                          <Grid item xs={2}>
-                            <AccessTimeIcon fontSize="small" color="primary" />
-                          </Grid>
-                          <Grid item xs={10}>
-                            <Typography level="body2" color="text.secondary">
-                              {format(new Date().setHours(...requestedItem.item.time.split(':')), 'hh:mm a')}
-                            </Typography>
-                          </Grid>
-                        </Grid>
+                        <DialogContent>
+                          <ItemDetails row={requestedItem} />
+                        </DialogContent>
                       </ModalDialog>
                     </Modal>
                     <Button
@@ -1039,7 +901,7 @@ const MyItemsComponent = ({ session, status }) => {
                         </Button>
                       </Box>
                     </CardContent>
-                    <ConfirmationRetrievalRequest open={confirmationRetrievalModal === foundItem.item._id} onClose={() => setConfirmationRetrievalModal(null)} foundItem={foundItem} lostItem={lostItem} />
+                    <ConfirmationRetrievalRequest refreshData={fetchItems} open={confirmationRetrievalModal === foundItem.item._id} onClose={() => setConfirmationRetrievalModal(null)} foundItem={foundItem} lostItem={lostItem} />
                   </Card>
                 )
               })

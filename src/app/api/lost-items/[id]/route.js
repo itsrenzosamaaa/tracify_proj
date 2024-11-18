@@ -21,20 +21,20 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   const { id } = params; // Get the office ID from the URL
-  const { status } = await req.json();
+  const { status, ...fields } = await req.json();
 
   await dbConnect(); // Connect to MongoDB
 
   try {
-    const updateData = { status };
+    const updateData = { status, ...fields };
     if (status === 'Request') {
       updateData.dateRequest = new Date();
     } else if (status === 'Missing') {
       updateData.dateMissing = new Date();
-    } else if (status === 'Tracked') {
-      updateData.dateTracked = new Date();
+    } else if (status === 'Unclaimed') {
+      updateData.dateUnclaimed = new Date();
     } else if (status === 'Decline Retrieval') {
-      updateData.dateTracked = null;
+      updateData.dateUnclaimed = null;
       updateData.status = 'Missing';
     } else if (status === 'Claimed') {
       updateData.dateClaimed = new Date();

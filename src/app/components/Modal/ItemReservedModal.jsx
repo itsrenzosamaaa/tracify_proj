@@ -3,12 +3,13 @@
 import { Snackbar, Button, Modal, ModalClose, ModalDialog, Typography, Box, DialogContent } from '@mui/joy';
 import React, { useState } from 'react';
 import ItemDetails from './ItemDetails';
+import MatchedItemsDetails from './MatchedItemsDetails';
 
 const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
     const [confirmationItemClaimed, setConfirmationItemClaimed] = useState(false);
     const [confirmationItemDecline, setConfirmationItemDecline] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [openSnackbar, setOpenSnackbar] = useState(null);
 
     console.log(row)
 
@@ -60,12 +61,9 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
             if (foundResponse.ok && lostResponse.ok) {
                 const badgeResponse = await fetch('/api/badge/found-item');
                 const badgeData = await badgeResponse.json();
-                console.log(badgeData)
                 const finderResponse = await fetch(`/api/finder/${row.finder.user._id}`);
                 const finderData = await finderResponse.json();
-                console.log(finderData)
                 const filteredFinder = finderData.filter(finder => finder.item.status === 'Resolved').length;
-                console.log(filteredFinder)
 
                 for (const badge of badgeData) {
                     if (filteredFinder >= badge.meetConditions) {
@@ -93,7 +91,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                     // Add any auth headers if needed
                 },
                 body: JSON.stringify({
-                    status: 'Claimed',
+                    request_status: 'Completed',
                 }),
             });
 
@@ -129,25 +127,21 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                 ];
 
                 for (const addRate of canRate) {
-                    try {
-                        const response = await fetch('/api/ratings', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(addRate),
-                        });
+                    const response = await fetch('/api/ratings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(addRate),
+                    });
 
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(errorData.message || 'Failed to create rating');
-                        }
-                        // Close modals and refresh data
-                        setConfirmationItemClaimed(null);
-                        onClose();
-                        await refreshData(); // Renamed from fetch to be more descriptive
-                        setOpenSnackbar(true);
-                    } catch (error) {
-                        console.error('Error creating rating:', error);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Failed to create rating');
                     }
+                    // Close modals and refresh data
+                    setConfirmationItemClaimed(null);
+                    onClose();
+                    await refreshData(); // Renamed from fetch to be more descriptive
+                    setOpenSnackbar('success');
                 }
             }
         } catch (error) {
@@ -220,6 +214,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
             setConfirmationApproveModal(null);
             onClose();
             await refreshData(); // Renamed from fetch to be more descriptive
+            setOpenSnackbar('failed');
         } catch (error) {
             console.error('Error updating items:', error);
             // You might want to show an error message to the user here
@@ -237,7 +232,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                         Reserved Item Details
                     </Typography>
                     <DialogContent>
-                        <ItemDetails row={row} />
+                        <MatchedItemsDetails row={row} />
                     </DialogContent>
                     <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                         <Button color="danger" onClick={() => setConfirmationItemDecline(true)} fullWidth>
@@ -316,10 +311,10 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                     if (reason === 'clickaway') {
                         return;
                     }
-                    setOpenSnackbar(false);
+                    setOpenSnackbar(null);
                 }}
             >
-                The item has successfully resolved!
+                The item has been {openSnackbar === 'success' ? 'resolved!' : 'declined.'}
             </Snackbar>
         </>
     );

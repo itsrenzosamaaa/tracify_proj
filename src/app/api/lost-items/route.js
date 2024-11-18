@@ -44,8 +44,8 @@ export async function POST(req) {
         overwrite: true,
       });
   
-      if (lostItemData.status === 'Tracked'){
-        lostItemData.dateTracked = new Date();
+      if (lostItemData.status === 'Unclaimed'){
+        lostItemData.dateUnclaimed = new Date();
       }
   
       const newLostItem = new item({

@@ -73,7 +73,7 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
         const lostItemDate = new Date().toISOString().split("T")[0];
         const lostItemTime = new Date().toTimeString().split(" ")[0].slice(0, 5);
     
-        const status = 'Tracked';
+        const status = 'Unclaimed';
         if (selectedLostItem.name === 'None') {
             const lostItemData = {
                 owner: owner?._id,

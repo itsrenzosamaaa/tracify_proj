@@ -32,10 +32,7 @@ const ItemSchema = new mongoose.Schema({
   location: {
     type: String,
   },
-  date: {
-    type: Date,
-  },
-  time: {
+  date_time: {
     type: String,
   },
   image: {
@@ -48,12 +45,12 @@ const ItemSchema = new mongoose.Schema({
     type: String,
     enum: [
       "Request",
-      "Validating",
+      "Surrender Pending",
       "Published",
       "Matched",
       "Resolved",
       'Missing',
-      'Tracked',
+      'Unclaimed',
       'Claimed',
       "Invalid",
       "Canceled",
@@ -74,7 +71,7 @@ const ItemSchema = new mongoose.Schema({
   dateMissing: {
     type: Date,
   },
-  dateTracked: {
+  dateUnclaimed: {
     type: Date,
   },
   dateClaimed: {

@@ -4,7 +4,7 @@ import { Button, Modal, ModalClose, ModalDialog, Typography, Box, DialogContent,
 import React from 'react';
 import ItemDetails from './ItemDetails';
 
-const ItemPublishedModal = ({ row, open, onClose }) => {
+const ItemPublishedModal = ({ row, open, onClose, refreshData, snackBar }) => {
     return (
         <Modal open={open === row._id} onClose={onClose}>
             <ModalDialog>
@@ -13,7 +13,7 @@ const ItemPublishedModal = ({ row, open, onClose }) => {
                     Published Item Details
                 </Typography>
                 <DialogContent sx={{ overflowX: 'hidden' }}>
-                    <ItemDetails row={row} />
+                    <ItemDetails row={row} refreshData={refreshData} snackBar={snackBar} />
                 </DialogContent>
                 <Button variant="outlined" onClick={onClose}>Close</Button>
             </ModalDialog>

@@ -27,15 +27,15 @@ export async function POST(request) {
     let score = 0;
 
     if (cosine >= 70) {
-      score += 20;
+      score += 25;
     }
 
     if (jaccard >= 50) {
-      score += 20;
+      score += 25;
     }
 
-    if (itemSimilarity >= 70) {
-      score += 40;  // Adjust the weight for item similarity as needed
+    if (itemSimilarity >= 50) {
+      score += 50;  // Adjust the weight for item similarity as needed
     }
 
     // Return both similarities in the response
@@ -123,8 +123,6 @@ const calculateItemSimilarity = (lostItem, foundItem) => {
       if (lostItem[feature] === foundItem[feature]) {
         totalScore += weight;
       }
-    } else {
-      totalScore -= weight * 0.5;  // Apply penalty for missing feature
     }
   };
 

@@ -1,18 +1,20 @@
 'use client';
 
-import { Button, Modal, ModalClose, ModalDialog, Typography, Box, Snackbar } from '@mui/joy';
+import { Button, Modal, ModalClose, ModalDialog, Typography, Box, Snackbar, DialogContent } from '@mui/joy';
 import React, { useState } from 'react';
 import ItemDetails from './ItemDetails';
 
 const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
     const [itemValidate, setItemValidate] = useState(null);
     const [itemInvalidate, setItemInvalidate] = useState(null);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [openSnackbar, setOpenSnackbar] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e, id) => {
         if (e && e.preventDefault) {
             e.preventDefault();
         }
+        setLoading(true)
 
         try {
             const response = await fetch(`/api/found-items/${id}`, {
@@ -22,11 +24,13 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
             });
 
             if (!response.ok) throw new Error('Failed to update status');
-            alert('success');
+            setOpenSnackbar('success');
             onClose();
-            refreshData();
+            await refreshData();
         } catch (error) {
             console.error(error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -34,6 +38,7 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
         if (e && e.preventDefault) {
             e.preventDefault();
         }
+        setLoading(true)
 
         try {
             const response = await fetch(`/api/found-items/${id}`, {
@@ -43,11 +48,13 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
             });
 
             if (!response.ok) throw new Error('Failed to update status');
-            alert('success');
+            setOpenSnackbar('failed')
             onClose();
-            refreshData();
+            await refreshData();
         } catch (error) {
             console.error(error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -57,9 +64,11 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
                 <ModalDialog>
                     <ModalClose />
                     <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-                        Validation Pending
+                        Surrender Pending
                     </Typography>
-                    <ItemDetails row={row} />
+                    <DialogContent>
+                        <ItemDetails row={row} />
+                    </DialogContent>
                     <Box sx={{ display: 'flex', gap: 2 }}>
                         <Button color="danger" onClick={() => setItemInvalidate(row.item._id)} fullWidth>Invalid</Button>
                         <Button onClick={() => setItemValidate(row.item._id)} fullWidth>Publish</Button>
@@ -69,8 +78,8 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
                                 <Typography level="h4" gutterbottom>Confirmation</Typography>
                                 <Typography>Are you you want to publish the item?</Typography>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <Button color="danger" onClick={() => setItemValidate(null)} fullWidth>Cancel</Button>
-                                    <Button onClick={(e) => handleSubmit(e, row.item._id)} fullWidth>Confirm</Button>
+                                    <Button loading={loading} disabled={loading} color="danger" onClick={() => setItemValidate(null)} fullWidth>Cancel</Button>
+                                    <Button loading={loading} disabled={loading} onClick={(e) => handleSubmit(e, row.item._id)} fullWidth>Confirm</Button>
                                 </Box>
                             </ModalDialog>
                         </Modal>
@@ -80,8 +89,8 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
                                 <Typography level="h4" gutterbottom>Invalidation</Typography>
                                 <Typography>Did the finder failed to surrender the item?</Typography>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <Button variant="outlined" onClick={() => setItemInvalidate(null)} fullWidth>Cancel</Button>
-                                    <Button color="danger" onClick={(e) => handleInvalid(e, row.item._id)} fullWidth>Confirm</Button>
+                                    <Button loading={loading} disabled={loading} variant="outlined" onClick={() => setItemInvalidate(null)} fullWidth>Cancel</Button>
+                                    <Button loading={loading} disabled={loading} color="danger" onClick={(e) => handleInvalid(e, row.item._id)} fullWidth>Confirm</Button>
                                 </Box>
                             </ModalDialog>
                         </Modal>
@@ -97,10 +106,10 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
                     if (reason === 'clickaway') {
                         return;
                     }
-                    setOpenSnackbar(false);
+                    setOpenSnackbar(null);
                 }}
             >
-                Item has been invalidated...
+                Item has been {openSnackbar === 'success' ? 'published' : 'invalidated'}!
             </Snackbar>
         </>
     );

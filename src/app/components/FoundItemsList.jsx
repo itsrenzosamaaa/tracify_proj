@@ -12,13 +12,54 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
     const [status, setStatus] = useState('Published');
     const [open, setOpen] = useState(false);
 
-    const statusOptions = ['Published', 'Request', 'Validating'];
+    // Define status options
+    const statusOptions = ['Published', 'Request']; // Note: We'll group 'Request' and 'Surrender Pending' as one category
+    const requestStatuses = ['Request', 'Surrender Pending']; // Treat both as 'Request'
+
+    // Count how many items have each status (group "Request" and "Surrender Pending" together)
     const statusCounts = statusOptions.reduce((acc, currentStatus) => {
-        acc[currentStatus] = finders.filter(finder => finder.item.status === currentStatus).length;
+        if (currentStatus === 'Request') {
+            acc['Request'] = finders.filter(finder => requestStatuses.includes(finder.item.status)).length;
+        } else {
+            acc[currentStatus] = finders.filter(finder => finder.item.status === currentStatus).length;
+        }
         return acc;
     }, {});
 
-    const filteredItems = finders.filter(finder => finder.item.status === status);
+    // Filter items based on selected status (treating 'Request' and 'Surrender Pending' as 'Request')
+    const filteredItems = finders.filter(finder => {
+        if (status === 'Request') {
+            return requestStatuses.includes(finder.item.status);
+        }
+        return finder.item.status === status;
+    });
+
+    // Render individual status options with badge count
+    const StatusChip = ({ name, count, isChecked }) => (
+        <Badge
+            badgeContent={count}
+            color="error"
+            key={name}
+        >
+            <Chip
+                variant="plain"
+                color={isChecked ? 'primary' : 'neutral'}
+                onClick={() => setStatus(name)}
+                sx={{ cursor: 'pointer' }}
+            >
+                <Radio
+                    variant="outlined"
+                    color={isChecked ? 'primary' : 'neutral'}
+                    disableIcon
+                    overlay
+                    label={name}
+                    value={name}
+                    checked={isChecked}
+                    onChange={() => setStatus(name)}
+                />
+            </Chip>
+        </Badge>
+    );
 
     return (
         <>
@@ -38,60 +79,28 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
                                         sx={{ flexWrap: 'wrap', gap: 1 }}
                                     >
                                         {statusOptions.map((name) => {
-                                            const checked = status === name;
+                                            const isChecked = status === name;
                                             const itemCount = statusCounts[name];
-
-                                            const chipContent = (
-                                                <Chip
-                                                    key={name}
-                                                    variant="plain"
-                                                    color={checked ? 'primary' : 'neutral'}
-                                                    onClick={() => setStatus(name)}
-                                                    sx={{ cursor: 'pointer' }}
-                                                >
-                                                    <Radio
-                                                        variant="outlined"
-                                                        color={checked ? 'primary' : 'neutral'}
-                                                        disableIcon
-                                                        overlay
-                                                        label={name}
-                                                        value={name}
-                                                        checked={checked}
-                                                        onChange={(event) => {
-                                                            if (event.target.checked) {
-                                                                setStatus(name);
-                                                            }
-                                                        }}
-                                                    />
-                                                </Chip>
-                                            );
-
                                             return itemCount > 0 ? (
-                                                <Badge
-                                                    key={name}
-                                                    badgeContent={itemCount}
-                                                    color="error"
-                                                >
-                                                    {chipContent}
-                                                </Badge>
+                                                <StatusChip key={name} name={name} count={itemCount} isChecked={isChecked} />
                                             ) : (
-                                                <React.Fragment key={name}>
-                                                    {chipContent}
-                                                </React.Fragment>
+                                                <StatusChip key={name} name={name} count={0} isChecked={isChecked} />
                                             );
                                         })}
                                     </RadioGroup>
                                 </Box>
                             </FormControl>
-                            <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Found Item</Button>
+                            <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>
+                                Publish a Found Item
+                            </Button>
                             <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
                         </Box>
-                        <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} />
+                        <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={true} status={status === 'Published' ? 'Published' : 'Request'} />
                     </Paper>
                 </Grid>
             </Grid>
         </>
-    )
+    );
 }
 
 export default FoundItemsList;

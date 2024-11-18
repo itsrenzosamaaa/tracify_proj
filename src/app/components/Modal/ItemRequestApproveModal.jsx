@@ -1,6 +1,6 @@
 'use client';
 
-import { Snackbar, Button, Modal, ModalClose, ModalDialog, Typography, Box, Radio, RadioGroup, Stack } from '@mui/joy';
+import { Snackbar, Button, Modal, ModalClose, ModalDialog, Typography, Box, Radio, RadioGroup, Stack, DialogContent } from '@mui/joy';
 import { FormControlLabel } from '@mui/material';
 import React, { useState } from 'react';
 import ItemDetails from './ItemDetails';
@@ -28,7 +28,7 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    status: row?.item?.isFoundItem ? "Validating" : "Missing",
+                    status: row?.item?.isFoundItem ? "Surrender Pending" : "Missing",
                     monitoredBy: row?.item?.isFoundItem ? session?.user?.id : null,
                 }),
             });
@@ -84,7 +84,9 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                     <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                         Approve Item Request
                     </Typography>
-                    <ItemDetails row={row} />
+                    <DialogContent>
+                        <ItemDetails row={row} />
+                    </DialogContent>
                     <Box sx={{ display: 'flex', gap: 2 }}>
                         <Button onClick={() => setReasonModal(row._id)} fullWidth color="danger">Decline</Button>
                         <Button onClick={() => setConfirmationApproveModal(row._id)} fullWidth>Approve</Button>
@@ -125,7 +127,8 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                             <ModalDialog>
                                 <ModalClose />
                                 <Typography level="h4" gutterbottom>Confirmation</Typography>
-                                <Typography>{row.item.isFoundItem ? 'Move to Validating?' : 'Move to Missing?'}</Typography>
+                                <Typography>{row.item?.isFoundItem ? 'Proceed with surrendering the item?' : 'Would you like to mark this item as missing?'}
+                                </Typography>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
                                     <Button loading={loading} disabled={loading} color="danger" onClick={() => setConfirmationApproveModal(null)} fullWidth>Cancel</Button>
                                     <Button loading={loading} disabled={loading} onClick={(e) => handleSubmit(e, row.item._id)} fullWidth>Confirm</Button>

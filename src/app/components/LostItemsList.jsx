@@ -8,11 +8,11 @@ import ItemsTable from './Table/ItemsTable';
 import PublishLostItem from './Modal/PublishLostItems';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
-const LostItemsList = ({ owners, fetchItems }) => {
+const LostItemsList = ({ owners, fetchItems, session }) => {
     const [status, setStatus] = useState('Missing');
     const [open, setOpen] = useState(false);
 
-    const statusOptions = ['Missing', 'Request', 'Tracked'];
+    const statusOptions = ['Missing', 'Request', 'Unclaimed'];
 
     // Calculate counts for each status
     const statusCounts = statusOptions.reduce((acc, currentStatus) => {
@@ -88,7 +88,7 @@ const LostItemsList = ({ owners, fetchItems }) => {
                             <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Lost Item</Button>
                             <PublishLostItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
                         </Box>
-                        <ItemsTable items={filteredItems} fetchItems={fetchItems} />
+                        <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={false} />
                     </Paper>
                 </Grid>
             </Grid>

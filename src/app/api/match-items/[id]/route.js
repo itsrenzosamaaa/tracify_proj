@@ -36,19 +36,19 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
     const { id } = params; // Get the office ID from the URL
-    const { status } = await req.json();
+    const { request_status, ...fields } = await req.json();
 
     await dbConnect(); // Connect to MongoDB
 
     try {
-        const updateData = { status };
-        if (status === 'To Be Claim') {
-            updateData.dateToBeClaim = new Date();
-        } else if (status === 'Claimed') {
-            updateData.dateClaimed = new Date();
-        } else if (status === 'Canceled') {
+        const updateData = { request_status, ...fields };
+        if (request_status === 'Approved') {
+            updateData.dateApproved = new Date();
+        } else if (request_status === 'Completed') {
+            updateData.dateCompleted = new Date();
+        } else if (request_status === 'Canceled') {
             updateData.dateCanceled = new Date();
-        } else if (status === 'Decline') {
+        } else if (request_status === 'Decline') {
             updateData.dateDecline = new Date();
         }
 

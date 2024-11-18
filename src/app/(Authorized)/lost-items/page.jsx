@@ -35,7 +35,7 @@ const FoundItemsPage = () => {
 
   return (
     <>
-      <LostItemsList owners={owners} fetchItems={fetchItems} />
+      <LostItemsList owners={owners} fetchItems={fetchItems} session={session} />
     </>
   )
 }

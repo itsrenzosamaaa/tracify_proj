@@ -12,23 +12,23 @@ const MatchItemsSchema = new mongoose.Schema({
   matched_date: {
     type: Date,
   },
-  status: {
+  request_status: {
     type: String,
     enum: [
-      "Claim Request",
-      "To be Claim",
-      "Claimed",
-      "Canceled",
+      "Pending",
+      "Approved",
+      "Completed",
       "Decline",
+      "Canceled",
     ],
   },
-  dateClaimRequest: {
+  datePending: {
     type: Date,
   },
-  dateToBeClaim: {
+  dateApproved: {
     type: Date,
   },
-  dateClaimed: {
+  dateCompleted: {
     type: Date,
   },
   dateCanceled: {

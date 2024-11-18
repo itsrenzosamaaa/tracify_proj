@@ -1,6 +1,6 @@
 'use client';
 
-import { Table, Button, Tooltip } from "@mui/joy";
+import { Table, Button, Tooltip, Chip } from "@mui/joy";
 import {
     Paper,
     TableContainer,
@@ -18,14 +18,14 @@ import ItemClaimRequestModal from "../Modal/ItemClaimRequestModal";
 import ItemReservedModal from "../Modal/ItemReservedModal";
 import { CldImage } from "next-cloudinary";
 import { format, parseISO } from 'date-fns';
+import CompletedModal from "../Modal/CompletedModal";
 
 const ItemRetrievalTable = ({ items, fetchItems, session }) => {
     const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
     const [openReservedModal, setOpenReservedModal] = useState(null);
     const [page, setPage] = useState(0); // Current page
     const [rowsPerPage, setRowsPerPage] = useState(5); // Items per page
-    const [openImageModal, setOpenImageModal] = useState(false);
-    const [selectedImage, setSelectedImage] = useState('');
+    const [openCompletedModal, setOpenCompletedModal] = useState(false);
 
     const handleImageClick = (image) => {
         setSelectedImage(image);
@@ -75,16 +75,7 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    width: { xs: "20%", lg: "20%" },
-                                }}
-                            >
-                                Image
-                            </TableCell>
-                            <TableCell
-                                sx={{
-                                    fontWeight: "bold",
-                                    backgroundColor: "#f5f5f5",
-                                    width: { xs: "30%", lg: "20%" },
+                                    width: { xs: "30%", lg: "15%" },
                                 }}
                             >
                                 Claimer
@@ -93,7 +84,7 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    display: { xs: "none", lg: "table-cell" },
+                                    width: { xs: "30%", lg: "13%" },
                                 }}
                             >
                                 Item
@@ -102,55 +93,39 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    display: { xs: "none", lg: "table-cell" },
+                                    width: { xs: "30%", lg: "22%" },
                                 }}
                             >
                                 Date
                             </TableCell>
                             <TableCell
+                                sx={{
+                                    fontWeight: "bold",
+                                    backgroundColor: "#f5f5f5",
+                                    width: { xs: "30%", lg: "15%" },
+                                }}
+                            >
+                                Request Status
+                            </TableCell>
+                            <TableCell
+                                sx={{
+                                    fontWeight: "bold",
+                                    backgroundColor: "#f5f5f5",
+                                    width: { xs: "30%", lg: "15%" },
+                                }}
+                            >
+                                Item Status
+                            </TableCell>
+                            <TableCell
                                 sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}
                             >
-                                Actions
+                                Action
                             </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {displayedItems.map((row) => (
                             <TableRow key={row._id}>
-                                <TableCell sx={{ width: { xs: "30%", lg: "20%" } }}>
-                                    <Tooltip title='View Image' arrow>
-                                        <CldImage
-                                            priority
-                                            src={row.finder.item.image}
-                                            width={75}
-                                            height={75}
-                                            alt={row.finder.item.name}
-                                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                            style={{
-                                                objectFit: 'cover',
-                                                borderRadius: '8px',
-                                                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-                                                cursor: 'pointer'  // Indicate that the image is clickable
-                                            }}
-                                            onClick={() => handleImageClick(row.finder.item.image)}
-                                        />
-                                    </Tooltip>
-                                    <Dialog open={openImageModal} onClose={() => setOpenImageModal(false)}>
-                                        <DialogContent>
-                                            <CldImage
-                                                src={selectedImage}
-                                                alt="Selected item image"
-                                                width={500}
-                                                height={500}
-                                                style={{
-                                                    width: '100%',
-                                                    height: 'auto',
-                                                    borderRadius: '8px',
-                                                }}
-                                            />
-                                        </DialogContent>
-                                    </Dialog>
-                                </TableCell>
                                 <TableCell sx={{ width: { xs: "30%", lg: "20%" } }}>
                                     {row?.owner?.user?.firstname} {row?.owner?.user?.lastname}
                                 </TableCell>
@@ -166,32 +141,72 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                         display: { xs: "none", lg: "table-cell" },
                                     }}
                                 >
-                                    {format(parseISO(row.dateClaimRequest), "MM-dd-yyyy hh:mm a")}
+                                    {format(parseISO(row.datePending), "MMMM dd, yyyy - hh:mm a")}
                                 </TableCell>
-                                <TableCell 
-                                    sx={{ 
-                                        display: 'flex', 
+                                <TableCell
+                                    sx={{
+                                        display: { xs: "none", lg: "table-cell" },
+                                    }}
+                                >
+                                    <Chip
+                                        variant='solid'
+                                        color={
+                                            row.request_status === 'Decline' || row.request_status === 'Canceled'
+                                                ? 'danger'
+                                                : row.request_status === 'Approved' || row.request_status === 'Completed'
+                                                    ? 'success'
+                                                    : 'warning'
+                                        }
+                                    >
+                                        {row.request_status}
+                                    </Chip>
+                                </TableCell>
+                                <TableCell
+                                    sx={{
+                                        display: { xs: "none", lg: "table-cell" },
+                                    }}
+                                >
+                                    <Chip
+                                        variant='solid'
+                                        color={
+                                            row.owner.item.status === 'Claimed' ? 'success' : 'danger'
+                                        }
+                                    >
+                                        {row.request_status === 'Approved' || row.request_status === 'Completed' ? row.owner.item.status : 'Not yet approved'}
+                                    </Chip>
+                                </TableCell>
+                                <TableCell
+                                    sx={{
+                                        display: 'flex',
                                         gap: 1,
-                                        minHeight: '80px', // Adjust this value to your desired minimum height
-                                        alignItems: 'center', 
+                                        alignItems: 'center',
                                     }}
                                 >
                                     {
-                                        row.status === 'Claim Request' 
+                                        row.request_status === 'Pending'
                                         &&
                                         <>
-                                            <Button onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
-                                            <Button onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
+                                            <Button size='small' onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button size='small' onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
                                             <ItemClaimRequestModal row={row} open={openClaimRequestModal} onClose={() => setOpenClaimRequestModal(null)} refreshData={fetchItems} />
                                         </>
                                     }
                                     {
-                                        row.status === 'To Be Claim' 
+                                        row.request_status === 'Approved'
                                         &&
                                         <>
-                                            <Button onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
-                                            <Button onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
+                                            <Button size="small" onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button size="small" onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
                                             <ItemReservedModal row={row} open={openReservedModal} onClose={() => setOpenReservedModal(null)} refreshData={fetchItems} />
+                                        </>
+                                    }
+                                    {
+                                        (row.request_status === 'Completed' || row.request_status === "Decline" || row.request_status === "Canceled")
+                                        &&
+                                        <>
+                                            <Button size="small" onClick={() => setOpenCompletedModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button size="small" onClick={() => setOpenCompletedModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
+                                            <CompletedModal row={row} open={openCompletedModal} onClose={() => setOpenCompletedModal(null)} />
                                         </>
                                     }
                                 </TableCell>

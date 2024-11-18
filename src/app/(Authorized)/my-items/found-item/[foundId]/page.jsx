@@ -1,9 +1,10 @@
 'use client';
 
 import Loading from '@/app/components/Loading';
-import { Box, Typography, Card, Divider, Stack, Button, Grid, Chip } from '@mui/joy';
+import { Box, Typography, Card, Divider, Stack, Button, Grid, Chip, Stepper, Step } from '@mui/joy';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
+import { format, isToday } from 'date-fns';
 
 const ViewItemPage = ({ params }) => {
     const { foundId } = params;
@@ -24,8 +25,7 @@ const ViewItemPage = ({ params }) => {
             }
 
             const data = await response.json();
-            console.log(data);
-            
+
             const findLostItem = data.find(lostItem => lostItem?.finder?.item?._id === foundItemId)
             setLostItem(findLostItem);
         } catch (error) {
@@ -82,65 +82,214 @@ const ViewItemPage = ({ params }) => {
                             <Stack spacing={2}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Typography level="h2">{foundItem.name}</Typography>
-                                    <Button onClick={() => router.push('/my-items')} color='danger' aria-label="Back to my items">
+                                    <Button onClick={() => router.push('/my-items')} color="danger" aria-label="Back to my items">
                                         Back
                                     </Button>
                                 </Box>
-
                                 <Typography level="body2" color="neutral">
-                                    <strong>Status:</strong> <Chip variant="solid" color={foundItem.status === 'Published' ? 'primary' : foundItem.status === 'Validating' ? 'warning' : 'success'}>{foundItem.status}</Chip>
+                                    <strong>Status:</strong>{' '}
+                                    <Chip
+                                        variant="solid"
+                                        color={foundItem.status === 'Published' ? 'primary' : foundItem.status === 'Validating' ? 'warning' : 'success'}
+                                    >
+                                        {foundItem.status}
+                                    </Chip>
                                 </Typography>
-
                                 <Box
                                     component="img"
                                     src={foundItem.image}
                                     alt={foundItem.name}
-                                    sx={{ 
-                                        width: '100%', 
-                                        height: 250, 
-                                        objectFit: 'cover', 
-                                        borderRadius: 'md', 
-                                        boxShadow: 1 
+                                    sx={{
+                                        width: '100%',
+                                        height: 250,
+                                        objectFit: 'cover',
+                                        borderRadius: 'md',
+                                        boxShadow: 1,
                                     }}
                                 />
-
                                 <Divider />
 
                                 <Typography level="body2" color="neutral">
                                     <strong>Description:</strong> {foundItem.description}
                                 </Typography>
-                                <Typography level="body2" color="neutral">
-                                    <strong>Location Found:</strong> {foundItem.location}
-                                </Typography>
-
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Box>
+                                        <Typography level="body2" color="neutral">
+                                            <strong>Color:</strong> {foundItem.color}
+                                        </Typography>
+                                        <Typography level="body2" color="neutral">
+                                            <strong>Size:</strong> {foundItem.size}
+                                        </Typography>
+                                        <Typography level="body2" color="neutral">
+                                            <strong>Category:</strong> {foundItem.category}
+                                        </Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography level="body2" color="neutral">
+                                            <strong>Material:</strong> {foundItem.material}
+                                        </Typography>
+                                        <Typography level="body2" color="neutral">
+                                            <strong>Condition:</strong> {foundItem.condition}
+                                        </Typography>
+                                        <Typography level="body2" color="neutral">
+                                            <strong>Distinctive Marks:</strong> {foundItem.distinctiveMarks}
+                                        </Typography>
+                                    </Box>
+                                </Box>
                                 <Divider />
-
-                                <Typography level="body2" color="neutral">
-                                    <strong>Date Found:</strong> {new Date(foundItem.date).toLocaleDateString()}
-                                </Typography>
+                                <Box>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Surrender Location:</strong> {foundItem.monitoredBy.role.name}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Found Location:</strong> {foundItem.location}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Found Date:</strong> {foundItem.date_time}
+                                    </Typography>
+                                </Box>
+                                <Divider />
+                                <Box sx={{ marginBottom: 4 }}>
+                                    <Stepper orientation="vertical">
+                                        {foundItem.dateRequest && (
+                                            <Step>
+                                                <Typography>
+                                                    <strong>Request has been sent!</strong>
+                                                </Typography>
+                                                <Typography>
+                                                    {isToday(new Date(foundItem.dateRequest))
+                                                        ? `Today, ${format(new Date(foundItem.dateRequest), 'hh:mm a')}`
+                                                        : format(new Date(foundItem.dateRequest), 'MMMM dd, yyyy, hh:mm a')}
+                                                </Typography>
+                                            </Step>
+                                        )}
+                                        {foundItem.datePublished && (
+                                            <Step>
+                                                <Typography>
+                                                    <strong>{foundItem.dateRequest ? 'The item was approved!' : 'The item has been published!'}</strong>
+                                                </Typography>
+                                                <Typography>
+                                                    {isToday(new Date(foundItem.datePublished))
+                                                        ? `Today, ${format(new Date(foundItem.datePublished), 'hh:mm a')}`
+                                                        : format(new Date(foundItem.datePublished), 'MMMM dd, yyyy, hh:mm a')}
+                                                </Typography>
+                                            </Step>
+                                        )}
+                                        {foundItem.dateMatched && (
+                                            <Step>
+                                                <Typography>
+                                                    <strong>The item has been successfully matched!</strong>
+                                                </Typography>
+                                                <Typography>
+                                                    {isToday(new Date(foundItem.dateMatched))
+                                                        ? `Today, ${format(new Date(foundItem.dateMatched), 'hh:mm a')}`
+                                                        : format(new Date(foundItem.dateMatched), 'MMMM dd, yyyy, hh:mm a')}
+                                                </Typography>
+                                            </Step>
+                                        )}
+                                        {(foundItem.dateResolved) && (
+                                            <Step>
+                                                <Typography>
+                                                    <strong>The item has successfully returned to owner!</strong>
+                                                </Typography>
+                                                <Typography>
+                                                    {isToday(new Date(foundItem.isFoundItem ? foundItem.dateResolved : foundItem.dateClaimed))
+                                                        ? `Today, ${format(new Date(foundItem.isFoundItem ? foundItem.dateResolved : foundItem.dateClaimed), 'hh:mm a')}`
+                                                        : format(new Date(foundItem.isFoundItem ? foundItem.dateResolved : foundItem.dateClaimed), 'MMMM dd, yyyy, hh:mm a')}
+                                                </Typography>
+                                            </Step>
+                                        )}
+                                    </Stepper>
+                                </Box>
                             </Stack>
                         </Card>
                     </Grid>
-
-                    {/* Lost Item (If available) */}
+                    {/* Matched Lost Item Details */}
                     <Grid item xs={12} md={6}>
                         <Card variant="outlined" sx={{ p: 3, boxShadow: 4, mb: 2, borderRadius: 2 }}>
-                            {lostItem ? (
-                                <Stack spacing={3}>
+                            {foundItem.status === 'Surrender Pending' ? (
+                                <Stack spacing={2}>
+                                    <Typography level="h2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Surrender Instructions</Typography>
+                                    <Divider sx={{ mb: 2, borderColor: 'primary.main' }} />
+                                    <Typography level="body2" color="text.secondary" textAlign="justify">
+                                        To surrender the item, please visit <strong>{foundItem?.monitoredBy?.role.name}</strong> at
+                                        <strong> {foundItem?.monitoredBy?.office_location}</strong> during office hours. For inquiries 
+                                        or further assistance, you may contact <strong>{foundItem?.monitoredBy?.role.name}</strong> at:
+                                    </Typography>
+                                    <ul>
+                                        <li>
+                                            <Typography level="body2" color="text.secondary">
+                                                Phone: <strong>{foundItem?.monitoredBy?.contactNumber}</strong>
+                                            </Typography>
+                                        </li>
+                                        <li>
+                                            <Typography level="body2" color="text.secondary">
+                                                Email: <strong>{foundItem?.monitoredBy?.emailAddress}</strong>
+                                            </Typography>
+                                        </li>
+                                    </ul>
+                                    <Typography level="body2" color="text.secondary" textAlign="justify">
+                                        Thank you for helping to ensure the item is returned to its rightful owner.
+                                    </Typography>
+                                </Stack>
+
+                            ) : lostItem ? (
+                                <Stack spacing={2}>
+                                    <Typography level="h2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                                        Matched Lost Item
+                                    </Typography>
+                                    <Box
+                                        component="img"
+                                        src={lostItem.owner.item.image}
+                                        alt={lostItem.owner.item.name}
+                                        sx={{
+                                            width: '100%',
+                                            height: 250,
+                                            objectFit: 'cover',
+                                            borderRadius: 'md',
+                                            boxShadow: 1,
+                                        }}
+                                    />
+
+                                    <Divider />
+
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Description:</strong> {lostItem.owner.item.description}
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Box>
+                                            <Typography level="body2" color="neutral">
+                                                <strong>Color:</strong> {lostItem.owner.item.color}
+                                            </Typography>
+                                            <Typography level="body2" color="neutral">
+                                                <strong>Size:</strong> {lostItem.owner.item.size}
+                                            </Typography>
+                                            <Typography level="body2" color="neutral">
+                                                <strong>Category:</strong> {lostItem.owner.item.category}
+                                            </Typography>
+                                        </Box>
+                                        <Box>
+                                            <Typography level="body2" color="neutral">
+                                                <strong>Material:</strong> {lostItem.owner.item.material}
+                                            </Typography>
+                                            <Typography level="body2" color="neutral">
+                                                <strong>Condition:</strong> {lostItem.owner.item.condition}
+                                            </Typography>
+                                            <Typography level="body2" color="neutral">
+                                                <strong>Distinctive Marks:</strong> {lostItem.owner.item.distinctiveMarks}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                    <Divider />
                                     <Box>
-                                        <Typography level="h2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Matched Lost Item</Typography>
-                                        <Divider sx={{ mb: 2, borderColor: 'primary.main' }} />
-                                        <Typography level="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                            <strong>Lost Item Name:</strong> {lostItem?.owner?.item?.name}
+                                        <Typography level="body2" color="neutral">
+                                            <strong>Lost Location:</strong> {lostItem.owner.item.location}
                                         </Typography>
-                                        <Typography level="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                            <strong>Description:</strong> {lostItem?.owner?.item?.description}
+                                        <Typography level="body2" color="neutral">
+                                            <strong>Start Lost Date:</strong> {lostItem.owner.item.date_time?.split(' to ')[0] || 'Unidentified'}
                                         </Typography>
-                                        <Typography level="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                            <strong>Location Lost:</strong> {lostItem?.owner?.item?.location}
-                                        </Typography>
-                                        <Typography level="body2" color="text.secondary">
-                                            <strong>Date Lost:</strong> {new Date(lostItem?.owner?.item?.date).toLocaleDateString()}
+                                        <Typography level="body2" color="neutral">
+                                            <strong>End Lost Date:</strong> {lostItem.owner.item.date_time?.split(' to ')[1] || 'Unidentified'}
                                         </Typography>
                                     </Box>
                                 </Stack>

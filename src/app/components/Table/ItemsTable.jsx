@@ -1,6 +1,6 @@
 'use client';
 
-import { Table, Button, Tooltip } from "@mui/joy";
+import { Table, Button, Snackbar, Chip } from "@mui/joy";
 import {
     Paper,
     TableContainer,
@@ -9,8 +9,6 @@ import {
     TableRow,
     TableCell,
     TablePagination,
-    Dialog,
-    DialogContent
 } from "@mui/material";
 import React, { useState } from "react";
 import InfoIcon from '@mui/icons-material/Info';
@@ -20,9 +18,9 @@ import ItemPublishedModal from "../Modal/ItemPublishedModal";
 import ItemMissingModal from "../Modal/ItemMissingModal";
 import ItemClaimRequestModal from "../Modal/ItemClaimRequestModal";
 import ItemReservedModal from "../Modal/ItemReservedModal";
-import { CldImage } from "next-cloudinary";
+import { format } from "date-fns";
 
-const ItemsTable = ({ items, fetchItems, session }) => {
+const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
     const [approveModal, setApproveModal] = useState(null);
     const [openValidatingModal, setOpenValidatingModal] = useState(null);
     const [openPublishedModal, setOpenPublishedModal] = useState(null);
@@ -31,13 +29,7 @@ const ItemsTable = ({ items, fetchItems, session }) => {
     const [openReservedModal, setOpenReservedModal] = useState(null);
     const [page, setPage] = useState(0); // Current page
     const [rowsPerPage, setRowsPerPage] = useState(5); // Items per page
-    const [openImageModal, setOpenImageModal] = useState(false);
-    const [selectedImage, setSelectedImage] = useState('');
-
-    const handleImageClick = (image) => {
-        setSelectedImage(image);
-        setOpenImageModal(true);
-    };
+    const [openSnackbar, setOpenSnackbar] = useState(false);
 
     // Handle changing the page
     const handleChangePage = (event, newPage) => {
@@ -82,33 +74,46 @@ const ItemsTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    width: { xs: "20%", lg: "20%" },
-                                }}
-                            >
-                                Image
-                            </TableCell>
-                            <TableCell
-                                sx={{
-                                    fontWeight: "bold",
-                                    backgroundColor: "#f5f5f5",
                                     width: { xs: "30%", lg: "20%" },
                                 }}
                             >
-                                User
+                                Item {isFoundItem ? 'Finder' : 'Owner'}
                             </TableCell>
                             <TableCell
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
                                     display: { xs: "none", lg: "table-cell" },
+                                    width: { xs: "30%", lg: "20%" }
                                 }}
                             >
-                                Item
+                                Item Name
                             </TableCell>
+                            <TableCell
+                                sx={{
+                                    fontWeight: "bold",
+                                    backgroundColor: "#f5f5f5",
+                                    width: { xs: "30%", lg: "25%" },
+                                }}
+                            >
+                                Date
+                            </TableCell>
+                            {isFoundItem && status === "Request" && (
+                                <TableCell
+                                    sx={{
+                                        fontWeight: "bold",
+                                        backgroundColor: "#f5f5f5",
+                                        display: { xs: "none", lg: "table-cell" },
+                                        width: { xs: "30%", lg: "15%" },
+                                    }}
+                                >
+                                    Status
+                                </TableCell>
+                            )}
                             <TableCell
                                 sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}
                             >
-                                Actions
+                                Action
                             </TableCell>
                         </TableRow>
                     </TableHead>
@@ -116,115 +121,129 @@ const ItemsTable = ({ items, fetchItems, session }) => {
                         {displayedItems.map((row) => (
                             <TableRow key={row._id}>
                                 <TableCell sx={{ width: { xs: "30%", lg: "20%" } }}>
-                                    <Tooltip title='View Image' arrow>
-                                        <CldImage
-                                            priority
-                                            src={row.item.image}
-                                            width={75}
-                                            height={75}
-                                            alt={row.item.name}
-                                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                            style={{
-                                                objectFit: 'cover',
-                                                borderRadius: '8px',
-                                                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-                                                cursor: 'pointer'  // Indicate that the image is clickable
-                                            }}
-                                            onClick={() => handleImageClick(row.item.image)}
-                                        />
-                                    </Tooltip>
-                                    <Dialog open={openImageModal} onClose={() => setOpenImageModal(false)}>
-                                        <DialogContent>
-                                            <CldImage
-                                                src={selectedImage}
-                                                alt="Selected item image"
-                                                width={500}
-                                                height={500}
-                                                style={{
-                                                    width: '100%',
-                                                    height: 'auto',
-                                                    borderRadius: '8px',
-                                                }}
-                                            />
-                                        </DialogContent>
-                                    </Dialog>
-                                </TableCell>
-                                <TableCell sx={{ width: { xs: "30%", lg: "20%" } }}>
-                                    {row?.matched 
-                                        ? `${row.matched.owner.firstname} ${row.matched.owner.lastname}`
-                                        : `${row.user.firstname} ${row.user.lastname}`
-                                    }
+                                    {row.user.firstname} {row.user.lastname}
                                 </TableCell>
                                 <TableCell
                                     sx={{
                                         display: { xs: "none", lg: "table-cell" },
+                                        width: { xs: "30%", lg: "20%" }
                                     }}
                                 >
                                     {row.item.name}
                                 </TableCell>
-                                <TableCell 
-                                    sx={{ 
-                                        display: 'flex', 
-                                        gap: 1,
-                                        minHeight: '80px', // Adjust this value to your desired minimum height
-                                        alignItems: 'center', 
+                                <TableCell
+                                    sx={{
+                                        display: { xs: "none", lg: "table-cell" },
+                                        width: { xs: "30%", lg: "25%" },
                                     }}
                                 >
-                                    {
-                                        row.item.status === 'Validating' 
-                                        &&
+                                    {row.item.isFoundItem ? (
+                                        {
+                                            Published: row.item.datePublished,
+                                            Request: row.item.dateRequest,
+                                            "Surrender Pending": row.item.dateValidating,
+                                        }[row.item.status] ? (
+                                            format(
+                                                new Date(
+                                                    {
+                                                        Published: row.item.datePublished,
+                                                        Request: row.item.dateRequest,
+                                                        "Surrender Pending": row.item.dateValidating,
+                                                    }[row.item.status]
+                                                ),
+                                                "MMMM dd, yyyy - hh:mm a"
+                                            )
+                                        ) : (
+                                            "N/A"
+                                        )
+                                    ) : (
+                                        {
+                                            Missing: row.item.dateMissing,
+                                            Request: row.item.dateRequest,
+                                            Unclaimed: row.item.dateUnclaimed,
+                                        }[row.item.status] ? (
+                                            format(
+                                                new Date(
+                                                    {
+                                                        Missing: row.item.dateMissing,
+                                                        Request: row.item.dateRequest,
+                                                        Unclaimed: row.item.dateUnclaimed,
+                                                    }[row.item.status]
+                                                ),
+                                                "MMMM dd, yyyy - hh:mm a"
+                                            )
+                                        ) : (
+                                            "N/A"
+                                        )
+                                    )}
+                                </TableCell>
+                                {row.item.isFoundItem && (row.item.status === "Request" || row.item.status === "Surrender Pending") && (
+                                    <TableCell
+                                        sx={{
+                                            display: { xs: "none", lg: "table-cell" },
+                                            width: { xs: "30%", lg: "15%" }
+                                        }}
+                                    >
+                                        <Chip variant="solid" color={row.item.status === "Request" ? 'neutral' : 'warning'}>
+                                            {row.item.status === "Request"
+                                                ? "Request"
+                                                : row.item.status === "Surrender Pending"
+                                                    ? "Surrender Pending"
+                                                    : "N/A"
+                                            }
+                                        </Chip>
+                                    </TableCell>
+                                )}
+                                <TableCell
+                                    sx={{
+                                        display: 'flex',
+                                        gap: 1,
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    {/* Action Buttons */}
+                                    {row.item.status === 'Request' && (
+                                        <>
+                                            <Button onClick={() => setApproveModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
+                                            <Button onClick={() => setApproveModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
+                                            <ItemRequestApproveModal session={session} row={row} open={approveModal} onClose={() => setApproveModal(null)} refreshData={fetchItems} />
+                                        </>
+                                    )}
+                                    {row.item.status === 'Surrender Pending' && (
                                         <>
                                             <Button onClick={() => setOpenValidatingModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                             <Button onClick={() => setOpenValidatingModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
                                             <ItemValidatingModal row={row} open={openValidatingModal} onClose={() => setOpenValidatingModal(null)} refreshData={fetchItems} />
                                         </>
-                                    }
-                                    {
-                                        row.item.status === 'Published' 
-                                        &&
+                                    )}
+                                    {row.item.status === 'Published' && (
                                         <>
                                             <Button onClick={() => setOpenPublishedModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                             <Button onClick={() => setOpenPublishedModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
-                                            <ItemPublishedModal row={row} open={openPublishedModal} onClose={() => setOpenPublishedModal(null)}  />
+                                            <ItemPublishedModal row={row} open={openPublishedModal} onClose={() => setOpenPublishedModal(null)} refreshData={fetchItems} snackBar={setOpenSnackbar} />
                                         </>
-                                    }
-                                    {
-                                        row.item.status === 'Missing' 
-                                        &&
+                                    )}
+                                    {row.item.status === 'Missing' && (
                                         <>
                                             <Button onClick={() => setOpenMissingModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                             <Button onClick={() => setOpenMissingModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
-                                            <ItemMissingModal row={row} open={openMissingModal} onClose={() => setOpenMissingModal(null)} />
-
+                                            <ItemMissingModal row={row} open={openMissingModal} onClose={() => setOpenMissingModal(null)} refreshData={fetchItems} snackBar={setOpenSnackbar} />
                                         </>
-                                    }
-                                    {
-                                        row.item.status === 'Request' 
-                                        &&
-                                        <>
-                                            <Button onClick={() => setApproveModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
-                                            <Button onClick={() => setApproveModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
-                                            <ItemRequestApproveModal session={session} row={row} open={approveModal} onClose={() => setApproveModal(null)} refreshData={fetchItems} />
-                                        </>
-                                    }
-                                    {
-                                        row.item.status === 'Claim Request' 
-                                        &&
+                                    )}
+                                    {row.item.status === 'Claim Request' && (
                                         <>
                                             <Button onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                             <Button onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
                                             <ItemClaimRequestModal row={row} open={openClaimRequestModal} onClose={() => setOpenClaimRequestModal(null)} fetch={fetch} />
                                         </>
-                                    }
-                                    {
-                                        row.item.status === 'Reserved' 
-                                        &&
+                                    )}
+                                    {row.item.status === 'Reserved' && (
                                         <>
                                             <Button onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                             <Button onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
                                             <ItemReservedModal row={row} open={openReservedModal} onClose={() => setOpenReservedModal(null)} refreshData={fetchItems} />
                                         </>
-                                    }
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -240,6 +259,22 @@ const ItemsTable = ({ items, fetchItems, session }) => {
                 onPageChange={handleChangePage} // Page change handler
                 onRowsPerPageChange={handleChangeRowsPerPage} // Rows per page change handler
             />
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color="success"
+                onClose={(event, reason) => {
+                    if (reason === 'clickaway') {
+                        return;
+                    }
+                    setOpenSnackbar(false);
+                }}
+            >
+                <div>
+                    Item details updated successfully!
+                </div>
+            </Snackbar>
         </>
     );
 };

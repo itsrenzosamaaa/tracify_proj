@@ -1,13 +1,15 @@
 'use client';
 
-import { Button, Modal, ModalClose, ModalDialog, Typography, Box, DialogContent } from '@mui/joy';
+import { Button, Modal, ModalClose, ModalDialog, Typography, Box, DialogContent, Snackbar } from '@mui/joy';
 import React, { useState } from 'react';
 import ItemDetails from './ItemDetails';
+import MatchedItemsDetails from './MatchedItemsDetails';
 
 const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
     const [confirmationApproveModal, setConfirmationApproveModal] = useState(null);
     const [confirmationDeclineModal, setConfirmationDeclineModal] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [openSnackbar, setOpenSnackbar] = useState(null);
 
     const handleSubmit = async (e, lostItemId, matchedItemId) => {
         if (e && e.preventDefault) {
@@ -25,7 +27,7 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
                     // Add any auth headers if needed
                 },
                 body: JSON.stringify({
-                    status: 'Tracked',
+                    status: 'Unclaimed',
                 }),
             });
 
@@ -43,7 +45,7 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
                     // Add any auth headers if needed
                 },
                 body: JSON.stringify({
-                    status: 'To Be Claim',
+                    request_status: 'Approved',
                 }),
             });
 
@@ -56,7 +58,7 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
             setConfirmationApproveModal(null);
             onClose();
             refreshData(); // Renamed from fetch to be more descriptive
-
+            setOpenSnackbar('success');
         } catch (error) {
             console.error('Error updating items:', error);
             // You might want to show an error message to the user here
@@ -99,7 +101,7 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
                     // Add any auth headers if needed
                 },
                 body: JSON.stringify({
-                    status: 'Canceled',
+                    request_status: 'Decline',
                 }),
             });
 
@@ -112,7 +114,7 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
             setConfirmationApproveModal(null);
             onClose();
             refreshData(); // Renamed from fetch to be more descriptive
-
+            setOpenSnackbar('failed');
         } catch (error) {
             console.error('Error updating items:', error);
             // You might want to show an error message to the user here
@@ -124,83 +126,99 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
     console.log(row)
 
     return (
-        <Modal open={open === row._id} onClose={onClose}>
-            <ModalDialog>
-                <ModalClose />
-                <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-                    Approve Claim Request
-                </Typography>
-                <DialogContent>
-                    <ItemDetails row={row} />
-                </DialogContent>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button onClick={() => setConfirmationDeclineModal(row._id)} fullWidth color="danger">
-                        Decline
-                    </Button>
-                    <Modal open={confirmationDeclineModal} onClose={() => setConfirmationDeclineModal(null)}>
-                        <ModalDialog>
-                            <ModalClose />
-                            <Typography level="h4" gutterBottom>
-                                Decline Retrieval Request
-                            </Typography>
-                            <Typography>
-                                Are you sure you want to decline the retrieval request?
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                                <Button
-                                    disabled={loading}
-                                    color="danger"
-                                    onClick={() => setConfirmationDeclineModal(null)}
-                                    fullWidth
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    disabled={loading}
-                                    loading={loading}
-                                    onClick={(e) => handleDecline(e, row?.finder?.item?._id, row._id)}
-                                    fullWidth
-                                >
-                                    Confirm
-                                </Button>
-                            </Box>
-                        </ModalDialog>
-                    </Modal>
-                    <Button onClick={() => setConfirmationApproveModal(row._id)} fullWidth>
-                        Approve
-                    </Button>
-                    <Modal open={confirmationApproveModal} onClose={() => setConfirmationApproveModal(null)}>
-                        <ModalDialog>
-                            <ModalClose />
-                            <Typography level="h4" gutterBottom>
-                                Confirmation
-                            </Typography>
-                            <Typography>
-                                Reserve this item to the potential owner?
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                                <Button
-                                    disabled={loading}
-                                    color="danger"
-                                    onClick={() => setConfirmationApproveModal(null)}
-                                    fullWidth
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    disabled={loading}
-                                    loading={loading}
-                                    onClick={(e) => handleSubmit(e, row?.owner?.item?._id, row._id)}
-                                    fullWidth
-                                >
-                                    Confirm
-                                </Button>
-                            </Box>
-                        </ModalDialog>
-                    </Modal>
-                </Box>
-            </ModalDialog>
-        </Modal>
+        <>
+            <Modal open={open === row._id} onClose={onClose}>
+                <ModalDialog>
+                    <ModalClose />
+                    <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                        Approve Claim Request
+                    </Typography>
+                    <DialogContent>
+                        <MatchedItemsDetails row={row} />
+                    </DialogContent>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button onClick={() => setConfirmationDeclineModal(row._id)} fullWidth color="danger">
+                            Decline
+                        </Button>
+                        <Modal open={confirmationDeclineModal} onClose={() => setConfirmationDeclineModal(null)}>
+                            <ModalDialog>
+                                <ModalClose />
+                                <Typography level="h4" gutterBottom>
+                                    Decline Retrieval Request
+                                </Typography>
+                                <Typography>
+                                    Are you sure you want to decline the retrieval request?
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                    <Button
+                                        disabled={loading}
+                                        color="danger"
+                                        onClick={() => setConfirmationDeclineModal(null)}
+                                        fullWidth
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        disabled={loading}
+                                        loading={loading}
+                                        onClick={(e) => handleDecline(e, row?.finder?.item?._id, row._id)}
+                                        fullWidth
+                                    >
+                                        Confirm
+                                    </Button>
+                                </Box>
+                            </ModalDialog>
+                        </Modal>
+                        <Button onClick={() => setConfirmationApproveModal(row._id)} fullWidth>
+                            Approve
+                        </Button>
+                        <Modal open={confirmationApproveModal} onClose={() => setConfirmationApproveModal(null)}>
+                            <ModalDialog>
+                                <ModalClose />
+                                <Typography level="h4" gutterBottom>
+                                    Confirmation
+                                </Typography>
+                                <Typography>
+                                    Reserve this item to the potential owner?
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                                    <Button
+                                        disabled={loading}
+                                        color="danger"
+                                        onClick={() => setConfirmationApproveModal(null)}
+                                        fullWidth
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        disabled={loading}
+                                        loading={loading}
+                                        onClick={(e) => handleSubmit(e, row?.owner?.item?._id, row._id)}
+                                        fullWidth
+                                    >
+                                        Confirm
+                                    </Button>
+                                </Box>
+                            </ModalDialog>
+                        </Modal>
+                    </Box>
+                </ModalDialog>
+            </Modal>
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color="success"
+                onClose={(event, reason) => {
+                    if (reason === 'clickaway') {
+                        return;
+                    }
+                    setOpenSnackbar(null);
+                }}
+            >
+                The retrieval request has been {openSnackbar === 'success' ? 'approved!' : 'declined.'}
+            </Snackbar>
+        </>
     );
 };
 

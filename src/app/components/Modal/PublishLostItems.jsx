@@ -5,9 +5,10 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
 import { useSession } from 'next-auth/react';
-import { subDays, isBefore, isAfter } from 'date-fns';
+import { format } from 'date-fns';
+import Link from 'next/link';
 
-const PublishLostItem = ({ open, onClose, fetchItems }) => {
+const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null }) => {
     const [users, setUsers] = useState([]);
     const [name, setName] = useState('');
     const [color, setColor] = useState();
@@ -18,11 +19,13 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
     const [distinctiveMarks, setDistinctiveMarks] = useState();
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState(null);
-    const [lostDate, setLostDate] = useState('');
+    const [lostDateStart, setLostDateStart] = useState('');
+    const [lostDateEnd, setLostDateEnd] = useState('');
     const [image, setImage] = useState(null);
     const [owner, setOwner] = useState(null);
     const [loading, setLoading] = useState(false);
     const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [itemWhereabouts, setItemWhereabouts] = useState(false);
     const { data: session, status } = useSession();
 
     const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court'];
@@ -48,21 +51,8 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
         e.preventDefault();
         setLoading(true);
 
-        const now = new Date();
-        const thirtyDaysAgo = subDays(now, 30);
-        const selectedDate = new Date(lostDate);
-
-        if (isBefore(selectedDate, thirtyDaysAgo)) {
-            alert('The found date should be within the last 30 days.');
-            setLoading(false);
-            return;
-        }
-
-        if (isAfter(selectedDate, now)) {
-            alert('The found date cannot be in the future.');
-            setLoading(false);
-            return;
-        }
+        const selectedLostStartDate = new Date(lostDateStart);
+        const selectedLostEndDate = new Date(lostDateEnd);
 
         const lostItemData = {
             isFoundItem: false,
@@ -74,9 +64,8 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
             condition,
             distinctiveMarks,
             description,
-            location,
-            date: selectedDate.toISOString().split("T")[0],
-            time: selectedDate.toTimeString().split(" ")[0].slice(0, 5),
+            location: itemWhereabouts ? location : 'Unidentified',
+            date_time: itemWhereabouts ? `${format(selectedLostStartDate, 'MMMM dd, yyyy hh:mm a')} to ${format(selectedLostEndDate, 'MMMM dd, yyyy hh:mm a')}` : 'Unidentified',
             image,
             status: 'Missing',
             dateMissing: new Date(),
@@ -132,10 +121,40 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
         setDistinctiveMarks();
         setDescription('');
         setLocation(null);
-        setLostDate('');
+        setLostDateStart('');
+        setLostDateEnd('');
         setImage(null);
         setOwner(null);
-        await fetchItems();
+        if (fetchItems) await fetchItems();
+    };
+
+    const handleStartDateChange = (e) => {
+        const newStartDate = e.target.value;
+        setLostDateStart(newStartDate);
+
+        // Automatically set end date to the same day as the start date
+        if (newStartDate) {
+            const sameDayEndDate = new Date(newStartDate);
+            sameDayEndDate.setHours(23, 59, 59); // Set to the end of the day
+            setLostDateEnd(sameDayEndDate.toISOString().slice(0, 16)); // Format the date to match input type="datetime-local"
+        }
+    };
+
+    // Ensure that end date stays on the same day as the start date if it's manually changed
+    const handleEndDateChange = (e) => {
+        const newEndDate = e.target.value;
+        setLostDateEnd(newEndDate);
+
+        if (newEndDate && lostDateStart) {
+            const startDate = new Date(lostDateStart);
+            const endDate = new Date(newEndDate);
+
+            if (startDate >= endDate) {
+                alert("The start time must be earlier than the end time.");
+                setLostDateStart('');
+                setLostDateEnd('');
+            }
+        }
     };
 
     const onDrop = (acceptedFiles) => {
@@ -210,7 +229,7 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
                                                 <Option value="" disabled>
                                                     Select Color
                                                 </Option>
-                                                {['Black', 'White', 'Blue', 'Red'].map((name) => (
+                                                {['Black', 'White', 'Blue', 'Red', 'Brown'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -329,28 +348,53 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
                                     <Textarea required type="text" name="description" minRows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
                                 </FormControl>
                                 <FormControl>
-                                    <FormLabel>Lost Location</FormLabel>
-                                    <Autocomplete
-                                        required
-                                        placeholder="Select a location"
-                                        options={locationOptions}
-                                        value={location}
-                                        onChange={(event, value) => {
-                                            setLocation(value); // Update state with selected user
-                                        }}
-                                        getOptionLabel={(option) => option}
-                                    />
+                                    <Checkbox label="The owner knows the item's location" checked={itemWhereabouts} onChange={(e) => setItemWhereabouts(e.target.checked)} />
                                 </FormControl>
-                                <FormControl>
-                                    <FormLabel>Lost Date and Time</FormLabel>
-                                    <Input
-                                        required
-                                        type="datetime-local" // Ensures the input is a date-time picker
-                                        name="lostDate"
-                                        value={lostDate} // This will be the state holding the date-time value
-                                        onChange={(e) => setLostDate(e.target.value)} // Update state with the selected date-time
-                                    />
-                                </FormControl>
+                                {
+                                    itemWhereabouts &&
+                                    <>
+                                        <FormControl required>
+                                            <FormLabel>Lost Location</FormLabel>
+                                            <Autocomplete
+                                                required
+                                                placeholder="Select a location"
+                                                options={locationOptions}
+                                                value={location}
+                                                onChange={(event, value) => {
+                                                    setLocation(value); // Update state with selected user
+                                                }}
+                                                getOptionLabel={(option) => option}
+                                            />
+                                        </FormControl>
+                                        <Box display="flex" gap={2}>
+                                            {/* Start Date and Time */}
+                                            <FormControl required>
+                                                <FormLabel>Start Date and Time</FormLabel>
+                                                <Input
+                                                    fullWidth
+                                                    required
+                                                    type="datetime-local" // Ensures the input is a date-time picker
+                                                    name="lostDateStart"
+                                                    value={lostDateStart} // State holding the start date-time value
+                                                    onChange={handleStartDateChange} // Update state with the selected date-time
+                                                />
+                                            </FormControl>
+
+                                            {/* End Date and Time */}
+                                            <FormControl required>
+                                                <FormLabel>End Date and Time</FormLabel>
+                                                <Input
+                                                    fullWidth
+                                                    required
+                                                    type="datetime-local" // Ensures the input is a date-time picker
+                                                    name="lostDateEnd"
+                                                    value={lostDateEnd} // State holding the end date-time value
+                                                    onChange={handleEndDateChange} // Update state with the selected date-time
+                                                />
+                                            </FormControl>
+                                        </Box>
+                                    </>
+                                }
                                 <FormControl>
                                     <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                                         <FormLabel>Upload Image</FormLabel>
@@ -400,7 +444,15 @@ const PublishLostItem = ({ open, onClose, fetchItems }) => {
                     setOpenSnackbar(false);
                 }}
             >
-                Item published successfully!
+                <div>
+                    Item published successfully!{' '}
+                    {inDashboard && (
+                        <Link href="/lost-items" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                            Click here
+                        </Link>
+                    )}{' '}
+                    to redirect to the lost items list.
+                </div>
             </Snackbar>
         </>
     )
