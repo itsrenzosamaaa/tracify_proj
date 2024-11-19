@@ -12,7 +12,7 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
     const [status, setStatus] = useState('Missing');
     const [open, setOpen] = useState(false);
 
-    const statusOptions = ['Missing', 'Request', 'Unclaimed'];
+    const statusOptions = ['Missing', 'Request'];
 
     // Calculate counts for each status
     const statusCounts = statusOptions.reduce((acc, currentStatus) => {

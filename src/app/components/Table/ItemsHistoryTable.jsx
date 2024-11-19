@@ -114,8 +114,8 @@ const ItemsHistoryTable = ({ items, fetch }) => {
                                         format(parseISO(row.dateResolved), 'MMMM dd, yyyy')
                                     ) : row.dateClaimed ? (
                                         format(parseISO(row.dateClaimed), 'MMMM dd, yyyy')
-                                    ) : row.dateInvalid ? (
-                                        format(parseISO(row.dateInvalid), 'MMMM dd, yyyy')
+                                    ) : row.dateDecline ? (
+                                        format(parseISO(row.dateDecline), 'MMMM dd, yyyy')
                                     ) : (
                                         format(parseISO(row.dateCanceled), 'MMMM dd, yyyy')
                                     )}
@@ -135,9 +135,9 @@ const ItemsHistoryTable = ({ items, fetch }) => {
                                             new Date(new Date(row.dateClaimed).setHours(...row.time.split(':'))),
                                             'hh:mm a'
                                         )
-                                    ) : row.dateInvalid ? (
+                                    ) : row.dateDecline ? (
                                         format(
-                                            new Date(new Date(row.dateInvalid).setHours(...row.time.split(':'))),
+                                            new Date(new Date(row.dateDecline).setHours(...row.time.split(':'))),
                                             'hh:mm a'
                                         )
                                     ) : row.dateCanceled ? (

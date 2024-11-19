@@ -27,6 +27,8 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const { data: session, status } = useSession();
 
+    console.log(finder)
+
     const fetchUsers = useCallback(async () => {
         try {
             const response = await fetch('/api/users');

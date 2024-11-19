@@ -52,7 +52,7 @@ const ItemSchema = new mongoose.Schema({
       'Missing',
       'Unclaimed',
       'Claimed',
-      "Invalid",
+      "Decline",
       "Canceled",
     ],
   },
@@ -80,7 +80,7 @@ const ItemSchema = new mongoose.Schema({
   dateResolved: {
     type: Date,
   },
-  dateInvalid: {
+  dateDecline: {
     type: Date,
   },
   dateCanceled: {

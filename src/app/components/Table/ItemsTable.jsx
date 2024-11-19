@@ -184,13 +184,8 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                             width: { xs: "30%", lg: "15%" }
                                         }}
                                     >
-                                        <Chip variant="solid" color={row.item.status === "Request" ? 'neutral' : 'warning'}>
-                                            {row.item.status === "Request"
-                                                ? "Request"
-                                                : row.item.status === "Surrender Pending"
-                                                    ? "Surrender Pending"
-                                                    : "N/A"
-                                            }
+                                        <Chip variant="solid" color={row.item.status === "Request" ? 'warning' : 'neutral'}>
+                                            {row.item.status}
                                         </Chip>
                                     </TableCell>
                                 )}

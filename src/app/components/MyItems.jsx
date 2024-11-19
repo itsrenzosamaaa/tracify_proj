@@ -12,11 +12,6 @@ import ConfirmationRetrievalRequest from './Modal/ConfirmationRetrievalRequest';
 import CancelRequest from './Modal/CancelRequest';
 import { format, parseISO } from 'date-fns';
 import RatingsModal from './Modal/Ratings';
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import BadgeIcon from '@mui/icons-material/Badge';
-import DescriptionIcon from '@mui/icons-material/Description';
 import ItemDetails from './Modal/ItemDetails';
 
 const MyItemsComponent = ({ session, status }) => {
@@ -35,7 +30,7 @@ const MyItemsComponent = ({ session, status }) => {
 
   const router = useRouter();
 
-  console.log(suggestedMatches)
+  console.log(lostItems)
 
   const fetchItems = useCallback(async () => {
     if (!session?.user?.id) {
@@ -47,7 +42,6 @@ const MyItemsComponent = ({ session, status }) => {
       // Fetch user-specific items (lost and found)
       const response = await fetch(`/api/items/${session.user.id}`);
       const data = await response.json();
-      console.log(data)
 
       if (!response.ok) {
         throw new Error('Failed to fetch user items');
@@ -55,15 +49,16 @@ const MyItemsComponent = ({ session, status }) => {
 
       // Filter items based on various statuses and types
       const lostItems = data.filter(
-        (item) => !item.item.isFoundItem && item.item.status === 'Missing'
+        (item) =>
+          !item.item.isFoundItem && ['Missing', 'Unclaimed'].includes(item.item.status)
       );
       const foundItems = data.filter(
         (item) =>
-          item.item.isFoundItem && !['Request', 'Resolved', 'Invalid', 'Canceled'].includes(item.item.status)
+          item.item.isFoundItem && !['Request', 'Resolved', 'Decline', 'Canceled'].includes(item.item.status)
       );
       const requestedItems = data.filter((item) => item.item.status === 'Request');
       const completedItems = data.filter((item) => ['Claimed', 'Resolved'].includes(item.item.status));
-      const declinedItems = data.filter((item) => item.item.status === 'Invalid');
+      const declinedItems = data.filter((item) => item.item.status === 'Decline');
       const canceledItems = data.filter((item) => item.item.status === 'Canceled');
 
       // Set state for categorized items
@@ -537,13 +532,11 @@ const MyItemsComponent = ({ session, status }) => {
                   </Typography>
                   <Button fullWidth onClick={() => setInvalidItemDetailsModal(declinedItem.item._id)}>View Details</Button>
                   <Modal open={invalidItemDetailsModal === declinedItem.item._id} onClose={() => setInvalidItemDetailsModal(null)}>
-                    <ModalDialog sx={{ maxWidth: 500, borderRadius: 4, boxShadow: 6, padding: 3 }}>
+                    <ModalDialog>
                       <ModalClose />
-                      <DialogTitle>
-                        <Typography variant="h5" component="span" fontWeight="bold" color="primary">
-                          Item Details
-                        </Typography>
-                      </DialogTitle>
+                      <Typography level="h5" fontWeight="bold" >
+                        Item Details
+                      </Typography>
 
                       <DialogContent>
                         <ItemDetails row={declinedItem} />
@@ -648,13 +641,11 @@ const MyItemsComponent = ({ session, status }) => {
                   </Typography>
                   <Button fullWidth onClick={() => setInvalidItemDetailsModal(canceledItem.item._id)}>View Details</Button>
                   <Modal open={invalidItemDetailsModal === canceledItem.item._id} onClose={() => setInvalidItemDetailsModal(null)}>
-                    <ModalDialog sx={{ maxWidth: 500, borderRadius: 4, boxShadow: 6, padding: 3 }}>
+                    <ModalDialog>
                       <ModalClose />
-                      <DialogTitle>
-                        <Typography variant="h4" fontWeight="bold">
-                          Item Details
-                        </Typography>
-                      </DialogTitle>
+                      <Typography level="h4" fontWeight="bold">
+                        Item Details
+                      </Typography>
                       <DialogContent>
                         <ItemDetails row={canceledItem} />
                       </DialogContent>
@@ -729,7 +720,7 @@ const MyItemsComponent = ({ session, status }) => {
                     textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
                   }}
                 >
-                  {requestedItem.item?.isFoundItem ? 'Found' : 'Lost'}
+                  {requestedItem.item?.isFoundItem ? 'Found' : 'Lost'} Item
                 </Box>
 
                 <CldImage

@@ -26,7 +26,7 @@ const ViewItemPage = ({ params }) => {
 
             const data = await response.json();
 
-            const findLostItem = data.find(lostItem => lostItem?.finder?.item?._id === foundItemId)
+            const findLostItem = data.find(lostItem => lostItem?.finder?.item?._id === foundItemId && (lostItem.request_status === 'Pending' || lostItem.owner.item.status === 'Unclaimed'))
             setLostItem(findLostItem);
         } catch (error) {
             console.error(error);
@@ -163,10 +163,22 @@ const ViewItemPage = ({ params }) => {
                                                 </Typography>
                                             </Step>
                                         )}
+                                        {foundItem.dateValidating && (
+                                            <Step>
+                                                <Typography>
+                                                    <strong>Your item has been approved! Please surrender the item to {foundItem.monitoredBy.role.name}</strong>
+                                                </Typography>
+                                                <Typography>
+                                                    {isToday(new Date(foundItem.dateValidating))
+                                                        ? `Today, ${format(new Date(foundItem.dateValidating), 'hh:mm a')}`
+                                                        : format(new Date(foundItem.dateValidating), 'MMMM dd, yyyy, hh:mm a')}
+                                                </Typography>
+                                            </Step>
+                                        )}
                                         {foundItem.datePublished && (
                                             <Step>
                                                 <Typography>
-                                                    <strong>{foundItem.dateRequest ? 'The item was approved!' : 'The item has been published!'}</strong>
+                                                    <strong>Your item has been published!</strong>
                                                 </Typography>
                                                 <Typography>
                                                     {isToday(new Date(foundItem.datePublished))

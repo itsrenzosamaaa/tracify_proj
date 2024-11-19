@@ -254,7 +254,15 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 <Typography>
                                     <Chip
                                         variant='solid'
-                                        color={row.item.status === 'Missing' ? 'danger' : row.item.status === "Surrender Pending" ? "warning" : row.item.status === "Published" ? 'primary' : 'success'}
+                                        color={
+                                            row.item.status === 'Missing' || row.item.status === "Surrender Pending" || row.item.status === "Request"
+                                                ? 'warning'
+                                                : row.item.status === "Decline" || row.item.status === "Canceled" || row.item.status === 'Unclaimed'
+                                                    ? "danger"
+                                                    : row.item.status === "Published" || row.item.status === "Matched"
+                                                        ? 'primary'
+                                                        : 'success'
+                                        }
                                     >
                                         {row.item.status}
                                     </Chip>
@@ -585,6 +593,18 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                         </Typography>
                                     </Step>
                                 )}
+                                {row.item.dateValidating && (
+                                    <Step>
+                                        <Typography>
+                                            <strong>The item request has approved!</strong>
+                                        </Typography>
+                                        <Typography>
+                                            {isToday(new Date(row.item.dateValidating))
+                                                ? `Today, ${format(new Date(row.item.dateValidating), 'hh:mm a')}`
+                                                : format(new Date(row.item.dateValidating), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
                                 {row.item.datePublished && (
                                     <Step>
                                         <Typography>
@@ -612,7 +632,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 {row.item.dateMissing && (
                                     <Step>
                                         <Typography>
-                                            <strong>{row.item.dateRequest ? 'The item was approved!' : 'The item has been published!'}</strong>
+                                            <strong>The item has been published!</strong>
                                         </Typography>
                                         <Typography>
                                             {isToday(new Date(row.item.dateMissing))
@@ -630,6 +650,33 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                             {isToday(new Date(row.item.dateUnclaimed))
                                                 ? `Today, ${format(new Date(row.item.dateUnclaimed), 'hh:mm a')}`
                                                 : format(new Date(row.item.dateUnclaimed), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
+                                {row.item.dateCanceled && (
+                                    <Step>
+                                        <Typography>
+                                            <strong>The item has been canceled.</strong>
+                                        </Typography>
+                                        <Typography>
+                                            {isToday(new Date(row.item.dateCanceled))
+                                                ? `Today, ${format(new Date(row.item.dateCanceled), 'hh:mm a')}`
+                                                : format(new Date(row.item.dateCanceled), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
+                                {row.item.dateDecline && (
+                                    <Step>
+                                        <Typography>
+                                            <strong>The item has been declined.</strong>
+                                        </Typography>
+                                        <Typography>
+                                            <strong>Reason: </strong> {row.item.reason}
+                                        </Typography>
+                                        <Typography>
+                                            {isToday(new Date(row.item.dateDecline))
+                                                ? `Today, ${format(new Date(row.item.dateDecline), 'hh:mm a')}`
+                                                : format(new Date(row.item.dateDecline), 'MMMM dd, yyyy, hh:mm a')}
                                         </Typography>
                                     </Step>
                                 )}
@@ -686,7 +733,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                         </Box>
                     </Box>
                 </CardContent>
-            </Card>
+            </Card >
         </>
     );
 };

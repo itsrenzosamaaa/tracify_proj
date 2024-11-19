@@ -4,7 +4,7 @@ import { Button, Modal, ModalClose, ModalDialog, Typography, Box, Snackbar, Dial
 import React, { useState } from 'react';
 import ItemDetails from './ItemDetails';
 
-const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
+const ItemValidatingModal = ({ row, open, onClose, refreshData, session }) => {
     const [itemValidate, setItemValidate] = useState(null);
     const [itemInvalidate, setItemInvalidate] = useState(null);
     const [openSnackbar, setOpenSnackbar] = useState(null);
@@ -44,7 +44,7 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData }) => {
             const response = await fetch(`/api/found-items/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'Invalid', reason: "The finder failed to surrender the item." }),
+                body: JSON.stringify({ status: 'Decline', reason: "The finder failed to surrender the item." }),
             });
 
             if (!response.ok) throw new Error('Failed to update status');

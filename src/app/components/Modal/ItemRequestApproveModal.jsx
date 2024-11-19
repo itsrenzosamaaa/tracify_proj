@@ -10,7 +10,7 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
     const [confirmationDeclineModal, setConfirmationDeclineModal] = useState(null);
     const [reasonModal, setReasonModal] = useState(null);
     const [declineReason, setDeclineReason] = useState('');
-    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [openSnackbar, setOpenSnackbar] = useState(null);
     const [loading, setLoading] = useState(false);
 
     console.log(row)
@@ -35,7 +35,7 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
 
             if (!response.ok) throw new Error(data.message || 'Failed to update status');
 
-            setOpenSnackbar(true);  // Ensure this is reached on success
+            setOpenSnackbar('success');  // Ensure this is reached on success
             onClose();
             setConfirmationApproveModal(null);
             refreshData();
@@ -51,12 +51,11 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
         setLoading(true)
         const apiEndpoint = row?.item?.isFoundItem ? `/api/found-items/${id}` : `/api/lost-items/${id}`;
         try {
-            console.log('Declining item with ID:', id, 'Reason:', declineReason);
             const response = await fetch(apiEndpoint, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    status: 'Invalid',
+                    status: 'Decline',
                     reason: declineReason,
                 }),
             });
@@ -67,7 +66,8 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
             setConfirmationDeclineModal(null);
             setReasonModal(null);
             setDeclineReason('');
-            refreshData();
+            await refreshData();
+            setOpenSnackbar('failed');
         } catch (error) {
             console.error(error);
         } finally {
@@ -162,7 +162,7 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                     setOpenSnackbar(false);
                 }}
             >
-                Item Request Approved!
+                Item Request {openSnackbar === 'success' ? 'Approved' : 'Declined'}!
             </Snackbar>
         </>
     );

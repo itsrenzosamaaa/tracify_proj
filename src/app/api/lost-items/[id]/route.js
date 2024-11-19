@@ -38,8 +38,8 @@ export async function PUT(req, { params }) {
       updateData.status = 'Missing';
     } else if (status === 'Claimed') {
       updateData.dateClaimed = new Date();
-    } else if (status === 'Invalid') {
-      updateData.dateInvalid = new Date();
+    } else if (status === 'Decline') {
+      updateData.dateDecline = new Date();
     } else if (status === 'Canceled') {
       updateData.dateCanceled = new Date();
     }

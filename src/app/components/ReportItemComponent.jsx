@@ -19,10 +19,10 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
     const [condition, setCondition] = useState();
     const [distinctiveMarks, setDistinctiveMarks] = useState();
     const [itemWhereabouts, setItemWhereabouts] = useState(false);
-    const [itemLocation, setItemLocation] = useState('');
+    const [itemLocation, setItemLocation] = useState(!isFoundItem ? 'Unidentified' : '');
     const [foundDate, setFoundDate] = useState('');
-    const [lostDateStart, setLostDateStart] = useState('');
-    const [lostDateEnd, setLostDateEnd] = useState('');
+    const [lostDateStart, setLostDateStart] = useState('Unidentified');
+    const [lostDateEnd, setLostDateEnd] = useState('Unidentified');
     const [loading, setLoading] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [countdown, setCountdown] = useState(5);

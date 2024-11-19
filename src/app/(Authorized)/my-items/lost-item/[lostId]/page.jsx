@@ -1,10 +1,11 @@
 'use client';
 
 import Loading from '@/app/components/Loading';
-import { Box, Typography, Card, Divider, Stack, Button, Grid, Chip, Stepper, Step } from '@mui/joy';
+import { Box, Typography, Card, Divider, Stack, Button, Grid, Chip, Stepper, Step, Avatar } from '@mui/joy';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 import { isToday, format } from 'date-fns';
+import CancelRetrievalRequest from '@/app/components/Modal/CancelRetrievalRequest';
 
 const formatDate = (date, fallback = 'Unidentified') => {
     if (!date) return fallback;
@@ -25,7 +26,10 @@ const ViewItemPage = ({ params }) => {
     const [foundItem, setFoundItem] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [cancelModal, setCancelModal] = useState(null);
     const router = useRouter();
+
+    console.log(foundItem)
 
     const fetchFoundItem = useCallback(async (lostItemId) => {
         setError(null);
@@ -37,7 +41,7 @@ const ViewItemPage = ({ params }) => {
             }
 
             const data = await response.json();
-            const findFoundItem = data.find(foundItem => foundItem?.owner?.item?._id === lostItemId);
+            const findFoundItem = data.find(foundItem => foundItem?.owner?.item?._id === lostItemId && (foundItem.request_status === 'Pending' || foundItem.owner.item.status === 'Unclaimed'));
             setFoundItem(findFoundItem);
         } catch (error) {
             console.error(error);
@@ -99,7 +103,7 @@ const ViewItemPage = ({ params }) => {
                                 </Box>
 
                                 <Typography level="body2" color="neutral">
-                                    <strong>Status:</strong> <Chip variant="solid" color={lostItem.status === 'Missing' ? 'danger' : 'success'}>{lostItem.status}</Chip>
+                                    <strong>Status:</strong> <Chip variant="solid" color="danger">{lostItem.status}</Chip>
                                 </Typography>
 
                                 <Box
@@ -220,49 +224,119 @@ const ViewItemPage = ({ params }) => {
                     {/* Found Item Details */}
                     <Grid item xs={12} md={6}>
                         <Card variant="outlined" sx={{ p: 3, boxShadow: 4, mb: 2, borderRadius: 2 }}>
-                            {foundItem && lostItem.status !== 'Missing' ? (
+                            {foundItem ? (
                                 <Stack spacing={3}>
                                     {/* Claim Instructions */}
-                                    <Box>
-                                        <Typography level="h2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Claim Instructions</Typography>
-                                        <Divider sx={{ mb: 2, borderColor: 'primary.main' }} />
-                                        <Typography level="body2" color="text.secondary" textAlign="justify">
-                                            To claim your item, please visit <strong>{foundItem.finder?.item?.monitoredBy?.role.name}</strong> office located at
-                                            <strong> {foundItem.finder?.item?.monitoredBy?.office_location}</strong> during office hours. Be sure to bring any relevant identification or documentation for verification.
-                                        </Typography>
-                                        <Typography level="body2" color="text.secondary" textAlign="justify">
-                                            For further assistance, you may contact <strong>{foundItem.finder?.item?.monitoredBy?.role.name}</strong> via:
-                                        </Typography>
-                                        <ul>
-                                            <li>
-                                                <Typography level="body2" color="text.secondary">
-                                                    Phone: <strong>{foundItem.finder?.item?.monitoredBy?.contactNumber}</strong>
-                                                </Typography>
-                                            </li>
-                                            <li>
-                                                <Typography level="body2" color="text.secondary">
-                                                    Email: <strong>{foundItem.finder?.item?.monitoredBy?.emailAddress}</strong>
-                                                </Typography>
-                                            </li>
-                                        </ul>
-                                    </Box>
+                                    {
+                                        lostItem.status === 'Unclaimed' &&
+                                        <Box>
+                                            <Typography level="h2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Claim Instructions</Typography>
+                                            <Divider sx={{ mb: 2, borderColor: 'primary.main' }} />
+                                            <Typography level="body2" color="text.secondary" textAlign="justify">
+                                                To claim your item, please visit <strong>{foundItem.finder?.item?.monitoredBy?.role.name}</strong> office located at
+                                                <strong> {foundItem.finder?.item?.monitoredBy?.office_location}</strong> during office hours. Be sure to bring any relevant identification or documentation for verification.
+                                                For further assistance, you may contact <strong>{foundItem.finder?.item?.monitoredBy?.role.name}</strong> via:
+                                            </Typography>
+                                            <ul>
+                                                <li>
+                                                    <Typography level="body2" color="text.secondary">
+                                                        Phone: <strong>{foundItem.finder?.item?.monitoredBy?.contactNumber}</strong>
+                                                    </Typography>
+                                                </li>
+                                                <li>
+                                                    <Typography level="body2" color="text.secondary">
+                                                        Email: <strong>{foundItem.finder?.item?.monitoredBy?.emailAddress}</strong>
+                                                    </Typography>
+                                                </li>
+                                            </ul>
+                                            <Typography level="body2" color="error" textAlign="justify" sx={{ my: 2, fontWeight: 'bold' }}>
+                                                <strong>Reminder:</strong> Falsely claiming an item that does not belong to you is a serious offense and may result in consequences such as suspension. If the item does not belong to you, you may cancel the retrieval process.
+                                            </Typography>
+                                            <Button color="danger" fullWidth>Cancel Retrieval</Button>
+                                        </Box>
+                                    }
 
                                     {/* Found Item Details */}
                                     <Box>
-                                        <Typography level="h2" sx={{ color: 'success.main', fontWeight: 'bold' }}>Your Item Has Been Found!</Typography>
-                                        <Divider sx={{ mb: 2, borderColor: 'success.main' }} />
-                                        <Typography level="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                            <strong>Item Name:</strong> {foundItem?.finder?.item?.name}
-                                        </Typography>
-                                        <Typography level="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                            <strong>Description:</strong> {foundItem?.finder?.item?.description}
-                                        </Typography>
-                                        <Typography level="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                            <strong>Date Found:</strong> {formatDate(foundItem?.finder?.item?.date)}
-                                        </Typography>
-                                        <Typography level="body2" color="text.secondary">
-                                            <strong>Location Found:</strong> {foundItem?.finder?.item?.location}
-                                        </Typography>
+                                        <Stack spacing={2}>
+                                            <Typography level="h2" sx={{ color: 'success.main', fontWeight: 'bold' }}>{lostItem.status === 'Missing' ? 'Potential Matched Item' : 'Your Item Has Been Found!'}</Typography>
+                                            <Box
+                                                component="img"
+                                                src={foundItem.finder.item.image}
+                                                alt={foundItem.finder.item.name}
+                                                sx={{
+                                                    width: '100%',
+                                                    height: 250,
+                                                    objectFit: 'cover',
+                                                    borderRadius: 'md',
+                                                    boxShadow: 1,
+                                                }}
+                                            />
+
+                                            {
+                                                foundItem.request_status === 'Pending' &&
+                                                <>
+                                                    <Button fullWidth color='danger' onClick={() => setCancelModal(foundItem._id)}>Cancel Retrieval Request</Button>
+                                                    <CancelRetrievalRequest open={cancelModal} onClose={() => setCancelModal(null)} matchItem={foundItem} />
+                                                </>
+                                            }
+
+                                            <Divider />
+
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                <Avatar sx={{ width: 50, height: 50 }} />
+                                                <Box>
+                                                    <Typography level="body2" color="neutral">
+                                                        <strong>Finder:</strong> {foundItem.finder.user.firstname} {foundItem.finder.user.lastname}
+                                                    </Typography>
+                                                    <Typography level="body2" color="neutral">
+                                                        <strong>Email Address:</strong> {foundItem.finder.user.emailAddress}
+                                                    </Typography>
+                                                    <Typography level="body2" color="neutral">
+                                                        <strong>Contact Number:</strong> {foundItem.finder.user.contactNumber}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+
+                                            <Divider />
+
+                                            <Typography level="body2" color="neutral">
+                                                <strong>Description:</strong> {foundItem.finder.item.description}
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <Box>
+                                                    <Typography level="body2" color="neutral">
+                                                        <strong>Color:</strong> {foundItem.finder.item.color}
+                                                    </Typography>
+                                                    <Typography level="body2" color="neutral">
+                                                        <strong>Size:</strong> {foundItem.finder.item.size}
+                                                    </Typography>
+                                                    <Typography level="body2" color="neutral">
+                                                        <strong>Category:</strong> {foundItem.finder.item.category}
+                                                    </Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography level="body2" color="neutral">
+                                                        <strong>Material:</strong> {foundItem.finder.item.material}
+                                                    </Typography>
+                                                    <Typography level="body2" color="neutral">
+                                                        <strong>Condition:</strong> {foundItem.finder.item.condition}
+                                                    </Typography>
+                                                    <Typography level="body2" color="neutral">
+                                                        <strong>Distinctive Marks:</strong> {foundItem.finder.item.distinctiveMarks}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                            <Divider />
+                                            <Box>
+                                                <Typography level="body2" color="neutral">
+                                                    <strong>Found Location:</strong> {foundItem.finder.item.location}
+                                                </Typography>
+                                                <Typography level="body2" color="neutral">
+                                                    <strong>Found Date:</strong> {foundItem.finder.item.date_time}
+                                                </Typography>
+                                            </Box>
+                                        </Stack>
                                     </Box>
                                 </Stack>
 

@@ -9,14 +9,12 @@ import {
     TableRow,
     TableCell,
     TablePagination,
-    Dialog,
-    DialogContent
+    Typography
 } from "@mui/material";
 import React, { useState } from "react";
 import InfoIcon from '@mui/icons-material/Info';
 import ItemClaimRequestModal from "../Modal/ItemClaimRequestModal";
 import ItemReservedModal from "../Modal/ItemReservedModal";
-import { CldImage } from "next-cloudinary";
 import { format, parseISO } from 'date-fns';
 import CompletedModal from "../Modal/CompletedModal";
 
@@ -26,11 +24,6 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
     const [page, setPage] = useState(0); // Current page
     const [rowsPerPage, setRowsPerPage] = useState(5); // Items per page
     const [openCompletedModal, setOpenCompletedModal] = useState(false);
-
-    const handleImageClick = (image) => {
-        setSelectedImage(image);
-        setOpenImageModal(true);
-    };
 
     // Handle changing the page
     const handleChangePage = (event, newPage) => {
@@ -166,14 +159,32 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                         display: { xs: "none", lg: "table-cell" },
                                     }}
                                 >
-                                    <Chip
-                                        variant='solid'
-                                        color={
-                                            row.owner.item.status === 'Claimed' ? 'success' : 'danger'
+                                    {(() => {
+                                        if (row.request_status === "Pending") {
+                                            return (
+                                                <Chip variant="solid" color="neutral">
+                                                    Not yet approved
+                                                </Chip>
+                                            );
                                         }
-                                    >
-                                        {row.request_status === 'Approved' || row.request_status === 'Completed' ? row.owner.item.status : 'Not yet approved'}
-                                    </Chip>
+
+                                        if (row.request_status === "Decline" || row.request_status === "Canceled") {
+                                            return (
+                                                <Chip variant="solid" color="neutral">
+                                                    Invalid
+                                                </Chip>
+                                            );
+                                        }
+
+                                        const status = row.owner?.item?.status || "Unknown";
+                                        const chipColor = status === "Claimed" ? "success" : "danger";
+
+                                        return (
+                                            <Chip variant="solid" color={chipColor}>
+                                                {status}
+                                            </Chip>
+                                        );
+                                    })()}
                                 </TableCell>
                                 <TableCell
                                     sx={{

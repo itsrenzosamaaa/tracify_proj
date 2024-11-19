@@ -342,7 +342,31 @@ const MatchedItemsDetails = ({ row }) => {
                                                 </Typography>
                                             </Step>
                                         )}
-                                        {row.dateCompleted && (
+                                        {row.dateCanceled &&
+                                            <Step>
+                                                <Typography>
+                                                    <strong>The request has been canceled.</strong>
+                                                </Typography>
+                                                <Typography>
+                                                    {isToday(new Date(row.dateCanceled))
+                                                        ? `Today, ${format(new Date(row.dateCanceled), 'hh:mm a')}`
+                                                        : format(new Date(row.dateCanceled), 'MMMM dd, yyyy, hh:mm a')}
+                                                </Typography>
+                                            </Step>
+                                        }
+                                        {row.dateDecline &&
+                                            <Step>
+                                                <Typography>
+                                                    <strong>The request has been declined.</strong>
+                                                </Typography>
+                                                <Typography>
+                                                    {isToday(new Date(row.dateDecline))
+                                                        ? `Today, ${format(new Date(row.dateDecline), 'hh:mm a')}`
+                                                        : format(new Date(row.dateDecline), 'MMMM dd, yyyy, hh:mm a')}
+                                                </Typography>
+                                            </Step>
+                                        }
+                                        {row.dateCompleted &&
                                             <Step>
                                                 <Typography>
                                                     <strong>The item has been resolved!</strong>
@@ -353,7 +377,7 @@ const MatchedItemsDetails = ({ row }) => {
                                                         : format(new Date(row.dateCompleted), 'MMMM dd, yyyy, hh:mm a')}
                                                 </Typography>
                                             </Step>
-                                        )}
+                                        }
                                     </Stepper>
                                 </Box>
                             </Box>
