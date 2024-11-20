@@ -18,11 +18,11 @@ export const authOptions = {
       async authorize(credentials) {
         try {
           await dbConnect();
-          
+
           // Attempt to find the user as an Admin
           let account = await Admin.findOne({ username: credentials.username });
           let userType = "admin";
-          
+
           // If not found as Admin, check User model
           if (!account) {
             account = await User.findOne({ username: credentials.username });
@@ -57,19 +57,29 @@ export const authOptions = {
       try {
         if (account.provider === "google" && user.email) {
           await dbConnect();
-          let dbAccount = await Admin.findOne({ emailAddress: user.email }) || 
-                          await User.findOne({ emailAddress: user.email });
-          const userType = dbAccount instanceof Admin ? "admin" : "user";
+
+          // Fetch user details from database
+          const dbAccount =
+            (await Admin.findOne({ emailAddress: user.email })) ||
+            (await User.findOne({ emailAddress: user.email }));
 
           if (!dbAccount) {
             console.error("User not found in the database.");
-            return false;
+            return false; // Reject sign-in if user doesn't exist in the database
           }
 
-          const userDetails = await getUserDetails(dbAccount, userType);
-          return userDetails || false;
+          const userType = dbAccount instanceof Admin ? "admin" : "user";
+          user.id = dbAccount._id.toString();
+          user.firstname = dbAccount.firstname;
+          user.lastname = dbAccount.lastname;
+          user.contact_number = dbAccount.contactNumber;
+          user.school_category = dbAccount.school_category;
+          user.userType = userType;
+          user.office_location = dbAccount.office_location;
+          user.roleName = dbAccount.roleName;
+          user.permissions = dbAccount.permissions;
         }
-        return true;
+        return true; // For credentials sign-in
       } catch (error) {
         console.error("Error during sign-in:", error);
         return false;
@@ -106,7 +116,7 @@ export const authOptions = {
         session.user.permissions = token.permissions;
       }
       return session;
-    },
+    }
   },
 };
 

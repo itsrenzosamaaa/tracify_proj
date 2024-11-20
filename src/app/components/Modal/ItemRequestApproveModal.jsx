@@ -55,7 +55,7 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    status: 'Decline',
+                    status: 'Declined',
                     reason: declineReason,
                 }),
             });

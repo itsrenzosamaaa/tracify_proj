@@ -110,6 +110,8 @@ const ViewBadges = ({ session, badges, fetchBadges }) => {
                                                                     bgShape={badge.bgShape}
                                                                     bgColor={badge.bgColor}
                                                                     bgOutline={badge.bgOutline}
+                                                                    condition={badge.condition}
+                                                                    meetConditions={badge.meetConditions}
                                                                 />
                                                             </Box>
                                                         </TableCell>

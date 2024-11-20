@@ -20,7 +20,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState(null);
     const [foundDate, setFoundDate] = useState('');
-    const [image, setImage] = useState(null);
+    const [images, setImages] = useState([]);
     const [userFindItem, setUserFindItem] = useState(false);
     const [finder, setFinder] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -85,7 +85,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
             description,
             location,
             date_time: format(selectedDate, 'MMMM dd,yyyy hh:mm a'),
-            image,
+            images,
             status: 'Published',
             datePublished: new Date(),
             monitoredBy: session?.user?.id,
@@ -144,33 +144,42 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
         setDescription('');
         setLocation(null);
         setFoundDate('');
-        setImage(null);
+        setImages(null);
         setUserFindItem(false);
         setFinder(null);
-        if(fetchItems) await fetchItems();
+        if (fetchItems) await fetchItems();
     };
 
 
     const onDrop = (acceptedFiles) => {
-        const file = acceptedFiles[0]; // Get the first selected file
-        if (file) {
-            const validImageTypes = ['image/jpeg', 'image/png', 'image/png'];
-            if (validImageTypes.includes(file.type)) {
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif']; // Valid image types
+
+        const newImages = acceptedFiles
+            .filter((file) => validImageTypes.includes(file.type)) // Filter valid image files
+            .map((file) => {
                 const reader = new FileReader();
-                reader.onloadend = () => {
-                    setImage(reader.result); // Set the image state to the base64 URL for preview
-                };
-                reader.readAsDataURL(file); // Convert the file to base64 URL
-            } else {
-                alert('Please upload a valid image file (JPEG, PNG, GIF)');
-                setImage(null);
-            }
-        } else {
-            setImage(null);
-        }
+                return new Promise((resolve) => {
+                    reader.onloadend = () => {
+                        resolve(reader.result); // Resolve the base64 URL
+                    };
+                    reader.readAsDataURL(file); // Convert file to base64 URL
+                });
+            });
+
+        Promise.all(newImages).then((base64Images) => {
+            setImages((prev) => [...prev, ...base64Images]); // Add new images to the state
+        });
     };
 
-    const { getRootProps, getInputProps } = useDropzone({ onDrop });
+    const { getRootProps, getInputProps } = useDropzone({
+        onDrop,
+        accept: 'image/jpeg, image/png, image/gif', // Restrict file types
+        multiple: true,
+    });
+
+    const removeImage = (index) => {
+        setImages((prev) => prev.filter((_, i) => i !== index)); // Remove image by index
+    };
 
     if (status === 'loading') return null;
 
@@ -367,35 +376,84 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                     />
                                 </FormControl>
                                 <FormControl required>
-                                    <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                                        <FormLabel>Upload Image</FormLabel>
-                                        {image && <Button size="sm" color="danger" onClick={() => setImage(null)}>Discard</Button>}
+                                    <Box
+                                        sx={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            mb: 1,
+                                        }}
+                                    >
+                                        <FormLabel>Upload Images</FormLabel>
+                                        {images.length > 0 && (
+                                            <Button
+                                                size="sm"
+                                                color="danger"
+                                                onClick={() => setImages([])} // Clear all images
+                                            >
+                                                Discard All
+                                            </Button>
+                                        )}
                                     </Box>
-                                    {!image ? (
+                                    <Box
+                                        {...getRootProps({ className: 'dropzone' })}
+                                        sx={{
+                                            border: '2px dashed #888',
+                                            borderRadius: '4px',
+                                            padding: '20px',
+                                            textAlign: 'center',
+                                            cursor: 'pointer',
+                                            backgroundColor: '#f9f9f9',
+                                            mb: 2,
+                                        }}
+                                    >
                                         <Box
-                                            {...getRootProps({ className: 'dropzone' })}
                                             sx={{
-                                                border: '2px dashed #888',
-                                                borderRadius: '4px',
-                                                padding: '20px',
-                                                textAlign: 'center',
-                                                cursor: 'pointer',
-                                                backgroundColor: image ? 'transparent' : '#f9f9f9',
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                                                gap: '10px',
                                             }}
                                         >
-                                            <input {...getInputProps()} />
-                                            <p>{image ? "Image Selected" : "Drag 'n' drop some files here, or click to select files"}</p>
+                                            {images.map((image, index) => (
+                                                <Box key={index} sx={{ position: 'relative' }}>
+                                                    <Image
+                                                        src={image}
+                                                        width={0}
+                                                        height={0}
+                                                        sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                        style={{
+                                                            width: '100%',
+                                                            height: 'auto',
+                                                            objectFit: 'cover',
+                                                            borderRadius: '4px',
+                                                        }}
+                                                        alt={`Preview ${index + 1}`}
+                                                    />
+                                                    <Button
+                                                        size="sm"
+                                                        color="danger"
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: '5px',
+                                                            right: '5px',
+                                                            minWidth: 'unset',
+                                                            padding: '2px',
+                                                        }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            removeImage(index);
+                                                        }}
+                                                    >
+                                                        ✕
+                                                    </Button>
+                                                </Box>
+                                            ))}
                                         </Box>
-                                    ) : (
-                                        <Image
-                                            src={image}
-                                            width={0}
-                                            height={0}
-                                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                            style={{ width: '100%', height: 'auto', objectFit: 'cover', marginBottom: '1rem' }}
-                                            alt="Preview"
-                                        />
-                                    )}
+                                        <input {...getInputProps()} multiple />
+                                        <p>
+                                            {images.length === 0 && "Drag 'n' drop some files here, or click to select files"}
+                                        </p>
+                                    </Box>
                                 </FormControl>
                                 <Button loading={loading} disabled={loading} type="submit">Publish</Button>
                             </Stack>

@@ -142,7 +142,6 @@ const Header = styled(Box)`
 
 // Main App Component
 export default function App() {
-  const [search, setSearch] = useState("");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
@@ -160,7 +159,7 @@ export default function App() {
       const roleData = session?.user?.permissions;
 
       if (roleData?.manageRequestReportedFoundItems) {
-        navigation.push({ icon: <FindInPageIcon />, menu: 'Reported Items', url: '/found-items' });
+        navigation.push({ icon: <FindInPageIcon />, menu: 'Found Items', url: '/found-items' });
       }
       if (roleData?.manageRequestItemRetrieval) {
         navigation.push({ icon: <MoveToInboxIcon />, menu: 'Item Retrieval', url: '/item-retrieval' });

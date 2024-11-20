@@ -7,7 +7,6 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
     const [titleColor, setTitleColor] = useState('#000000');
     const [titleShimmer, setTitleShimmer] = useState(false);
     const [titleOutlineColor, setTitleOutlineColor] = useState('#FFFFFF');
-    const [description, setDescription] = useState('Touch the badge and you will know the details about this badge!');
     const [shape, setShape] = useState('circle');
     const [shapeColor, setShapeColor] = useState('#FFD700');
     const [bgShape, setBgShape] = useState('circle');
@@ -33,7 +32,6 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
             titleColor,
             titleShimmer,
             titleOutlineColor,
-            description,
             shape,
             shapeColor,
             bgShape,
@@ -74,7 +72,6 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
         setTitleColor('#000000');
         setTitleShimmer(false);
         setTitleOutlineColor('#FFFFFF');
-        setDescription('Touch the badge and you will know the details about this badge!');
         setShape('circle');
         setShapeColor('#FFD700');
         setBgShape('circle');
@@ -129,16 +126,6 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
                                                     />
                                                 </Box>
                                             </Box>
-
-                                            <FormControl fullWidth>
-                                                <FormLabel>Badge Description</FormLabel>
-                                                <Textarea
-                                                    name="description"
-                                                    value={description}
-                                                    onChange={(e) => setDescription(e.target.value)}
-                                                    required
-                                                />
-                                            </FormControl>
 
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                                                 <Box sx={{ width: '100%' }}>
@@ -221,7 +208,20 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
                                                         fullWidth
                                                         type="number"
                                                         value={meetConditions}
-                                                        onChange={(e) => setMeetConditions(e.target.value)}
+                                                        onChange={(e) => {
+                                                            // Allow only numeric values
+                                                            const value = e.target.value.replace(/\D/g, ""); // Remove all non-numeric characters
+                                                            setMeetConditions(value);
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            // Prevent invalid key presses
+                                                            if (
+                                                                ["e", "E", ".", "-", "+"].includes(e.key) || // Disallow specific characters
+                                                                (!/^\d$/.test(e.key) && e.key !== "Backspace" && e.key !== "Delete" && e.key !== "ArrowLeft" && e.key !== "ArrowRight") // Allow only digits, Backspace, Delete, and arrow keys
+                                                            ) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
                                                     />
                                                 </FormControl>
                                             }
@@ -243,12 +243,13 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
                                                 titleColor={titleColor}
                                                 titleShimmer={titleShimmer}
                                                 titleOutlineColor={titleOutlineColor}
-                                                description={description}
                                                 shape={shape}
                                                 shapeColor={shapeColor}
                                                 bgShape={bgShape}
                                                 bgColor={bgColor}
                                                 bgOutline={bgOutline}
+                                                condition={condition}
+                                                meetConditions={meetConditions}
                                             />
                                         </Box>
                                     </Box>

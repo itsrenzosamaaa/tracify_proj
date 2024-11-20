@@ -144,11 +144,13 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                     <Chip
                                         variant='solid'
                                         color={
-                                            row.request_status === 'Decline' || row.request_status === 'Canceled'
+                                            row.request_status === 'Declined'
                                                 ? 'danger'
-                                                : row.request_status === 'Approved' || row.request_status === 'Completed'
-                                                    ? 'success'
-                                                    : 'warning'
+                                                : row.request_status === 'Canceled'
+                                                    ? 'warning'
+                                                    : row.request_status === 'Approved' || row.request_status === 'Completed'
+                                                        ? 'success'
+                                                        : 'primary'
                                         }
                                     >
                                         {row.request_status}
@@ -168,10 +170,10 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                             );
                                         }
 
-                                        if (row.request_status === "Decline" || row.request_status === "Canceled") {
+                                        if (row.request_status === "Declined" || row.request_status === "Canceled") {
                                             return (
                                                 <Chip variant="solid" color="neutral">
-                                                    Invalid
+                                                    N/A
                                                 </Chip>
                                             );
                                         }
@@ -212,7 +214,7 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                         </>
                                     }
                                     {
-                                        (row.request_status === 'Completed' || row.request_status === "Decline" || row.request_status === "Canceled")
+                                        (row.request_status === 'Completed' || row.request_status === "Declined" || row.request_status === "Canceled")
                                         &&
                                         <>
                                             <Button size="small" onClick={() => setOpenCompletedModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>

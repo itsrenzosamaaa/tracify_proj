@@ -49,8 +49,8 @@ export async function PUT(req, { params }) {
             updateData.status = 'Published';
         } else if (status === 'Resolved') {
             updateData.dateResolved = new Date();
-        } else if (status === 'Decline') {
-            updateData.dateDecline = new Date();
+        } else if (status === 'Declined') {
+            updateData.dateDeclined = new Date();
         } else if (status === 'Canceled') {
             updateData.dateCanceled = new Date();
         }

@@ -9,7 +9,7 @@ import { subDays, isBefore, isAfter, format } from 'date-fns';
 
 const ReportItemComponent = ({ isFoundItem, session }) => {
     const [activeStep, setActiveStep] = useState(0);
-    const [image, setImage] = useState(null);
+    const [images, setImages] = useState([]);
     const [itemName, setItemName] = useState('');
     const [itemDescription, setItemDescription] = useState('');
     const [color, setColor] = useState();
@@ -68,7 +68,7 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
             distinctiveMarks,
             location: itemLocation,
             date_time: isFoundItem ? format(new Date(foundDate), 'MMMM dd,yyyy hh:mm a') : itemWhereabouts ? `${format(new Date(lostDateStart), 'MMMM dd, yyyy hh:mm a')} to ${format(new Date(lostDateEnd), 'MMMM dd, yyyy hh:mm a')}` : 'Unidentified',
-            image,
+            images,
             status: "Request",
             dateRequest: new Date(),
         };
@@ -170,25 +170,34 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
     };
 
     const onDrop = (acceptedFiles) => {
-        const file = acceptedFiles[0]; // Get the first selected file
-        if (file) {
-            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
-            if (validImageTypes.includes(file.type)) {
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif']; // Valid image types
+
+        const newImages = acceptedFiles
+            .filter((file) => validImageTypes.includes(file.type)) // Filter valid image files
+            .map((file) => {
                 const reader = new FileReader();
-                reader.onloadend = () => {
-                    setImage(reader.result); // Set the image state to the base64 URL for preview
-                };
-                reader.readAsDataURL(file); // Convert the file to base64 URL
-            } else {
-                alert('Please upload a valid image file (JPEG, PNG, GIF)');
-                setImage(null);
-            }
-        } else {
-            setImage(null);
-        }
+                return new Promise((resolve) => {
+                    reader.onloadend = () => {
+                        resolve(reader.result); // Resolve the base64 URL
+                    };
+                    reader.readAsDataURL(file); // Convert file to base64 URL
+                });
+            });
+
+        Promise.all(newImages).then((base64Images) => {
+            setImages((prev) => [...prev, ...base64Images]); // Add new images to the state
+        });
     };
 
-    const { getRootProps, getInputProps } = useDropzone({ onDrop });
+    const { getRootProps, getInputProps } = useDropzone({
+        onDrop,
+        accept: 'image/jpeg, image/png, image/gif', // Restrict file types
+        multiple: true,
+    });
+
+    const removeImage = (index) => {
+        setImages((prev) => prev.filter((_, i) => i !== index)); // Remove image by index
+    };
 
     // Validate the inputs for the current step
     const isNextDisabled = () => {
@@ -241,7 +250,7 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
 
         if (activeStep === 1) {
             // Validation for the second step (image upload)
-            return !image;
+            return !images;
         }
 
         return false; // Allow progression if all validations pass
@@ -535,44 +544,85 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
                                         <Box>
                                             <Typography level="h4">Please upload an image of your item.</Typography>
                                             <Stack spacing={2} sx={{ my: 5 }}>
-                                                <FormControl fullWidth>
-                                                    <Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                                                        <FormLabel>Upload Image</FormLabel>
-                                                        {image && <Button size="sm" color="danger" onClick={() => setImage(null)}>Discard</Button>}
+                                                <FormControl required>
+                                                    <Box
+                                                        sx={{
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            mb: 1,
+                                                        }}
+                                                    >
+                                                        <FormLabel>Upload Images</FormLabel>
+                                                        {images.length > 0 && (
+                                                            <Button
+                                                                size="sm"
+                                                                color="danger"
+                                                                onClick={() => setImages([])} // Clear all images
+                                                            >
+                                                                Discard All
+                                                            </Button>
+                                                        )}
                                                     </Box>
-                                                    {!image ? (
+                                                    <Box
+                                                        {...getRootProps({ className: 'dropzone' })}
+                                                        sx={{
+                                                            border: '2px dashed #888',
+                                                            borderRadius: '4px',
+                                                            padding: '20px',
+                                                            textAlign: 'center',
+                                                            cursor: 'pointer',
+                                                            backgroundColor: '#f9f9f9',
+                                                            mb: 2,
+                                                        }}
+                                                    >
                                                         <Box
-                                                            {...getRootProps({ className: 'dropzone' })}
                                                             sx={{
-                                                                border: '2px dashed #888',
-                                                                borderRadius: '4px',
-                                                                padding: '20px',
-                                                                textAlign: 'center',
-                                                                cursor: 'pointer',
-                                                                backgroundColor: image ? 'transparent' : '#f9f9f9',
+                                                                display: 'grid',
+                                                                gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                                                                gap: '10px',
                                                             }}
                                                         >
-                                                            <input {...getInputProps()} />
-                                                            <p>{image ? "Image Selected" : "Drag 'n' drop some image here, or click to select image"}</p>
+                                                            {images.map((image, index) => (
+                                                                <Box key={index} sx={{ position: 'relative' }}>
+                                                                    <Image
+                                                                        src={image}
+                                                                        width={0}
+                                                                        height={0}
+                                                                        sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                                        style={{
+                                                                            width: '100%',
+                                                                            height: 'auto',
+                                                                            objectFit: 'cover',
+                                                                            borderRadius: '4px',
+                                                                        }}
+                                                                        alt={`Preview ${index + 1}`}
+                                                                    />
+                                                                    <Button
+                                                                        size="sm"
+                                                                        color="danger"
+                                                                        sx={{
+                                                                            position: 'absolute',
+                                                                            top: '5px',
+                                                                            right: '5px',
+                                                                            minWidth: 'unset',
+                                                                            padding: '2px',
+                                                                        }}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            removeImage(index);
+                                                                        }}
+                                                                    >
+                                                                        ✕
+                                                                    </Button>
+                                                                </Box>
+                                                            ))}
                                                         </Box>
-                                                    ) : (
-                                                        <Image
-                                                            src={image}
-                                                            width={0}
-                                                            height={0}
-                                                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                            style={{
-                                                                width: '100%',
-                                                                maxWidth: '300px', // Set maximum width
-                                                                height: 'auto',
-                                                                objectFit: 'cover',
-                                                                marginBottom: '1rem',
-                                                                borderRadius: '8px', // Optional: Add rounded corners
-                                                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', // Optional: Add shadow for aesthetics
-                                                            }}
-                                                            alt="Preview"
-                                                        />
-                                                    )}
+                                                        <input {...getInputProps()} multiple />
+                                                        <p>
+                                                            {images.length === 0 && "Drag 'n' drop some files here, or click to select files"}
+                                                        </p>
+                                                    </Box>
                                                 </FormControl>
                                             </Stack>
                                         </Box>
@@ -665,24 +715,35 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
                                                 </Grid>
                                                 <Grid item xs={12}>
                                                     <Box sx={{ textAlign: 'center' }}>
-                                                        <Typography sx={{ fontWeight: 'bold', color: '#555', marginBottom: 2 }}>Item Image</Typography>
-                                                        <Image
-                                                            src={image}
-                                                            alt="Item Preview"
-                                                            width={0}
-                                                            height={0}
-                                                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                            style={{
-                                                                width: '100%',
-                                                                maxWidth: '350px',
-                                                                height: 'auto',
-                                                                objectFit: 'cover',
-                                                                borderRadius: '10px',
-                                                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                                                            }}
-                                                        />
+                                                        <Typography sx={{ fontWeight: 'bold', color: '#555', marginBottom: 2 }}>
+                                                            Item Image
+                                                        </Typography>
+                                                        {images.length > 0 ? (
+                                                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 2 }}>
+                                                                {images.map((image, index) => (
+                                                                    <Box key={index} sx={{ position: 'relative' }}>
+                                                                        <Image
+                                                                            src={image}
+                                                                            alt={`Item Preview ${index + 1}`}
+                                                                            width={150}
+                                                                            height={150}
+                                                                            style={{
+                                                                                width: '100%',
+                                                                                height: 'auto',
+                                                                                objectFit: 'cover',
+                                                                                borderRadius: '10px',
+                                                                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+                                                                ))}
+                                                            </Box>
+                                                        ) : (
+                                                            <Typography sx={{ color: 'text.secondary' }}>No images uploaded.</Typography>
+                                                        )}
                                                     </Box>
                                                 </Grid>
+
                                             </Grid>
                                         </Box>
                                     </Fade>

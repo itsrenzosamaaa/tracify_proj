@@ -101,7 +101,7 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
                     // Add any auth headers if needed
                 },
                 body: JSON.stringify({
-                    request_status: 'Decline',
+                    request_status: 'Declined',
                 }),
             });
 

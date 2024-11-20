@@ -2,7 +2,7 @@ import React from 'react'
 import { Tooltip, Box, Typography, } from '@mui/joy';
 import './../styles/animation.css';
 
-const PreviewBadge = ({ title, titleColor, titleShimmer, titleOutlineColor, description, shape, shapeColor, bgShape, bgColor, bgOutline }) => {
+const PreviewBadge = ({ title, titleColor, titleShimmer, titleOutlineColor, shape, shapeColor, bgShape, bgColor, bgOutline, condition, meetConditions }) => {
     const createStarShape = (size, color) => ({
         width: `${size}px`,
         height: `${size}px`,
@@ -50,6 +50,14 @@ const PreviewBadge = ({ title, titleColor, titleShimmer, titleOutlineColor, desc
         }
     };
 
+    const description = (condition) => {
+        if (condition === 'Found Item/s') {
+            return `Accommodate ${meetConditions} ${meetConditions === 1 ? 'found item' : 'found items'} successfully.`;
+        } else if (condition === 'Rating/s') {
+            return `Provide ${meetConditions} ${meetConditions === 1 ? 'feedback' : 'feedbacks'} to students.`;
+        }
+    }
+
     const badgePreviewStyle = {
         display: 'flex',
         alignItems: 'center',
@@ -63,7 +71,7 @@ const PreviewBadge = ({ title, titleColor, titleShimmer, titleOutlineColor, desc
     };
     return (
         <>
-            <Tooltip title={description} arrow>
+            <Tooltip title={description(condition)} arrow placement='top'>
                 <Box sx={badgePreviewStyle}>
                     <Box sx={shapeStyle()}></Box>
                 </Box>

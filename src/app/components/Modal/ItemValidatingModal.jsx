@@ -44,7 +44,7 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData, session }) => {
             const response = await fetch(`/api/found-items/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'Decline', reason: "The finder failed to surrender the item." }),
+                body: JSON.stringify({ status: 'Declined', reason: "The finder failed to surrender the item." }),
             });
 
             if (!response.ok) throw new Error('Failed to update status');

@@ -2,7 +2,6 @@
 
 import { Snackbar, Button, Modal, ModalClose, ModalDialog, Typography, Box, DialogContent } from '@mui/joy';
 import React, { useState } from 'react';
-import ItemDetails from './ItemDetails';
 import MatchedItemsDetails from './MatchedItemsDetails';
 
 const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
@@ -201,7 +200,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                     // Add any auth headers if needed
                 },
                 body: JSON.stringify({
-                    status: 'Decline',
+                    status: 'Declined',
                 }),
             });
 

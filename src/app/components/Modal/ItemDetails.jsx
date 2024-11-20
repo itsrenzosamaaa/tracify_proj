@@ -257,7 +257,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                         color={
                                             row.item.status === 'Missing' || row.item.status === "Surrender Pending" || row.item.status === "Request"
                                                 ? 'warning'
-                                                : row.item.status === "Decline" || row.item.status === "Canceled" || row.item.status === 'Unclaimed'
+                                                : row.item.status === "Declined" || row.item.status === "Canceled" || row.item.status === 'Unclaimed'
                                                     ? "danger"
                                                     : row.item.status === "Published" || row.item.status === "Matched"
                                                         ? 'primary'
@@ -665,7 +665,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                         </Typography>
                                     </Step>
                                 )}
-                                {row.item.dateDecline && (
+                                {row.item.dateDeclined && (
                                     <Step>
                                         <Typography>
                                             <strong>The item has been declined.</strong>
@@ -674,9 +674,9 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                             <strong>Reason: </strong> {row.item.reason}
                                         </Typography>
                                         <Typography>
-                                            {isToday(new Date(row.item.dateDecline))
-                                                ? `Today, ${format(new Date(row.item.dateDecline), 'hh:mm a')}`
-                                                : format(new Date(row.item.dateDecline), 'MMMM dd, yyyy, hh:mm a')}
+                                            {isToday(new Date(row.item.dateDeclined))
+                                                ? `Today, ${format(new Date(row.item.dateDeclined), 'hh:mm a')}`
+                                                : format(new Date(row.item.dateDeclined), 'MMMM dd, yyyy, hh:mm a')}
                                         </Typography>
                                     </Step>
                                 )}

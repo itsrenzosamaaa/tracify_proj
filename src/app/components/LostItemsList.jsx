@@ -24,7 +24,7 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
 
     return (
         <>
-            <TitleBreadcrumbs title="List of Reported Lost Items" text="Lost Items" />
+            <TitleBreadcrumbs title="List of Lost Items" text="Lost Items" />
 
             <Grid container spacing={2}>
                 <Grid item xs={12} lg={12}>

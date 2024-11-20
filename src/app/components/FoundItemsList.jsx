@@ -63,7 +63,7 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
 
     return (
         <>
-            <TitleBreadcrumbs title="List of Reported Found Items" text="Found Items" />
+            <TitleBreadcrumbs title="List of Found Items" text="Found Items" />
 
             <Grid container spacing={2}>
                 <Grid item xs={12} lg={12}>

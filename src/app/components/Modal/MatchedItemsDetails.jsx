@@ -354,15 +354,15 @@ const MatchedItemsDetails = ({ row }) => {
                                                 </Typography>
                                             </Step>
                                         }
-                                        {row.dateDecline &&
+                                        {row.dateDeclined &&
                                             <Step>
                                                 <Typography>
                                                     <strong>The request has been declined.</strong>
                                                 </Typography>
                                                 <Typography>
-                                                    {isToday(new Date(row.dateDecline))
-                                                        ? `Today, ${format(new Date(row.dateDecline), 'hh:mm a')}`
-                                                        : format(new Date(row.dateDecline), 'MMMM dd, yyyy, hh:mm a')}
+                                                    {isToday(new Date(row.dateDeclined))
+                                                        ? `Today, ${format(new Date(row.dateDeclined), 'hh:mm a')}`
+                                                        : format(new Date(row.dateDeclined), 'MMMM dd, yyyy, hh:mm a')}
                                                 </Typography>
                                             </Step>
                                         }

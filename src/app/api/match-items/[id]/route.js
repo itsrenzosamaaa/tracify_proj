@@ -48,8 +48,8 @@ export async function PUT(req, { params }) {
             updateData.dateCompleted = new Date();
         } else if (request_status === 'Canceled') {
             updateData.dateCanceled = new Date();
-        } else if (request_status === 'Decline') {
-            updateData.dateDecline = new Date();
+        } else if (request_status === 'Declined') {
+            updateData.dateDeclined = new Date();
         }
 
         const updateMatchedData = await match_items.findOneAndUpdate(

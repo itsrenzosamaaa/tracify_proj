@@ -35,9 +35,9 @@ const ItemSchema = new mongoose.Schema({
   date_time: {
     type: String,
   },
-  image: {
+  images: [{
     type: String,
-  },
+  }],
   reason: {
     type: String,
   },
@@ -52,7 +52,7 @@ const ItemSchema = new mongoose.Schema({
       'Missing',
       'Unclaimed',
       'Claimed',
-      "Decline",
+      "Declined",
       "Canceled",
     ],
   },
@@ -80,7 +80,7 @@ const ItemSchema = new mongoose.Schema({
   dateResolved: {
     type: Date,
   },
-  dateDecline: {
+  dateDeclined: {
     type: Date,
   },
   dateCanceled: {

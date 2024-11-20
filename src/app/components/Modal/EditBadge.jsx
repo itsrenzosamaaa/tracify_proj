@@ -7,7 +7,6 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
     const [titleColor, setTitleColor] = useState(badge.titleColor);
     const [titleShimmer, setTitleShimmer] = useState(badge.titleShimmer);
     const [titleOutlineColor, setTitleOutlineColor] = useState(badge.titleOutlineColor);
-    const [description, setDescription] = useState(badge.description);
     const [shape, setShape] = useState(badge.shape);
     const [shapeColor, setShapeColor] = useState(badge.shapeColor);
     const [bgShape, setBgShape] = useState(badge.bgShape);
@@ -24,7 +23,6 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
             setTitleColor(badge.titleColor);
             setTitleShimmer(badge.titleShimmer);
             setTitleOutlineColor(badge.titleOutlineColor);
-            setDescription(badge.description);
             setShape(badge.shape);
             setShapeColor(badge.shapeColor);
             setBgShape(badge.bgShape);
@@ -50,7 +48,6 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
             titleColor,
             titleShimmer,
             titleOutlineColor,
-            description,
             shape,
             shapeColor,
             bgShape,
@@ -130,16 +127,6 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
                                                     />
                                                 </Box>
                                             </Box>
-
-                                            <FormControl fullWidth>
-                                                <FormLabel>Badge Description</FormLabel>
-                                                <Textarea
-                                                    name="description"
-                                                    value={description}
-                                                    onChange={(e) => setDescription(e.target.value)}
-                                                    required
-                                                />
-                                            </FormControl>
 
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                                                 <Box sx={{ width: '100%' }}>
@@ -244,12 +231,13 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
                                                 titleColor={titleColor}
                                                 titleShimmer={titleShimmer}
                                                 titleOutlineColor={titleOutlineColor}
-                                                description={description}
                                                 shape={shape}
                                                 shapeColor={shapeColor}
                                                 bgShape={bgShape}
                                                 bgColor={bgColor}
                                                 bgOutline={bgOutline}
+                                                condition={condition}
+                                                meetConditions={meetConditions}
                                             />
                                         </Box>
                                     </Box>

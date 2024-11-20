@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
-import { Grid, Typography, Button, Modal, ModalDialog, ModalClose, DialogContent, DialogTitle } from '@mui/joy';
+import { Grid, Typography, Button, Modal, ModalDialog, ModalClose, DialogContent, Tabs, TabList, Tab, ListItemDecorator, Tooltip } from '@mui/joy';
 import { Box, Card, CardContent } from '@mui/material';
 import { CldImage } from 'next-cloudinary';
 import AddIcon from '@mui/icons-material/Add';
@@ -13,6 +13,13 @@ import CancelRequest from './Modal/CancelRequest';
 import { format, parseISO } from 'date-fns';
 import RatingsModal from './Modal/Ratings';
 import ItemDetails from './Modal/ItemDetails';
+import SearchIcon from '@mui/icons-material/Search';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
+import RequestPageIcon from '@mui/icons-material/RequestPage';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 
 const MyItemsComponent = ({ session, status }) => {
   const [completedItemDetailsModal, setCompletedItemDetailsModal] = useState(null);
@@ -27,8 +34,12 @@ const MyItemsComponent = ({ session, status }) => {
   const [suggestedMatches, setSuggestedMatches] = useState([]);
   const [openDetails, setOpenDetails] = useState(null);
   const [confirmationRetrievalModal, setConfirmationRetrievalModal] = useState(null);
-
+  const [activeTab, setActiveTab] = useState(0); // State to track the active tab
   const router = useRouter();
+
+  const handleChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
 
   console.log(lostItems)
 
@@ -54,11 +65,11 @@ const MyItemsComponent = ({ session, status }) => {
       );
       const foundItems = data.filter(
         (item) =>
-          item.item.isFoundItem && !['Request', 'Resolved', 'Decline', 'Canceled'].includes(item.item.status)
+          item.item.isFoundItem && !['Request', 'Resolved', 'Declined', 'Canceled'].includes(item.item.status)
       );
       const requestedItems = data.filter((item) => item.item.status === 'Request');
       const completedItems = data.filter((item) => ['Claimed', 'Resolved'].includes(item.item.status));
-      const declinedItems = data.filter((item) => item.item.status === 'Decline');
+      const declinedItems = data.filter((item) => item.item.status === 'Declined');
       const canceledItems = data.filter((item) => item.item.status === 'Canceled');
 
       // Set state for categorized items
@@ -185,676 +196,288 @@ const MyItemsComponent = ({ session, status }) => {
       <TitleBreadcrumbs title="List of My Items" text="My Items" />
 
       <Box sx={{ padding: '1rem' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography level="h4" gutterBottom>
-            Lost Items
-          </Typography>
-          <Button startDecorator={<AddIcon />} onClick={() => router.push('/my-items/report-lost-item')}>
-            Report Lost Item
-          </Button>
-        </Box>
-        <Box
-          ref={scrollRefLost}
-          onMouseDown={(e) => handleDragStart(e, scrollRefLost)} // Handle mouse down event
-          sx={{
-            display: 'flex',
-            whiteSpace: 'nowrap',
-            overflowX: 'auto',
-            paddingY: 2,
-            gap: 2,
-            cursor: 'grab', // Change cursor to indicate dragging
-            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
-          }}
-        >
-          {
-            lostItems.length > 0 ?
-              lostItems.map((lostItem, index) => (
-                <Card
-                  key={index}
-                  sx={{ maxWidth: 250, flexShrink: 0, boxShadow: 3, borderRadius: 2 }} // Adjusted maxWidth
-                >
-                  <CldImage
-                    priority
-                    src={lostItem.item.image}
-                    width={500} // Adjusted width to match smaller card size
-                    height={150} // Adjusted height to match smaller card size
-                    alt={lostItem.item.name || "Item Image"}
-                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    style={{ objectFit: 'cover' }}
-                  />
-                  <CardContent>
-                    <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{lostItem.item.name}</Typography>
-                    <Typography
-                      level="body2"
-                      sx={{
-                        color: 'text.secondary',
-                        marginBottom: '0.5rem',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        maxWidth: '250px', // Adjust the width as needed
-                      }}>
-                      {lostItem.item.description}
-                    </Typography>
-                    <Button fullWidth onClick={() => router.push(`my-items/lost-item/${lostItem.item._id}`)}>View Details</Button>
-                  </CardContent>
-                </Card>
-              )) :
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '100%',
-                  height: '200px',
-                  border: '1px dashed #ccc',
-                  borderRadius: '8px',
-                  backgroundColor: '#f9f9f9',
-                  padding: 2,
-                }}
-              >
-                <Typography>No lost items found.</Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  If you have lost something, please report it.
-                </Typography>
-              </Box>
-          }
+        <Box sx={{ width: '100%', mb: 5 }}>
+          <Tabs value={activeTab} onChange={handleChange} aria-label="Icon tabs" defaultValue={0}>
+            <TabList>
+              <Tooltip title="Lost Items" arrow>
+                <Tab>
+                  <ListItemDecorator>
+                    <SearchIcon />
+                  </ListItemDecorator>
+                  <Typography sx={{ display: { xs: 'none', lg: 'block' } }}>Lost Items</Typography>
+                </Tab>
+              </Tooltip>
+              <Tooltip title="Found Items" arrow>
+                <Tab>
+                  <ListItemDecorator>
+                    <CheckCircleIcon />
+                  </ListItemDecorator>
+                  <Typography sx={{ display: { xs: 'none', lg: 'block' } }}>Found Items</Typography>
+                </Tab>
+              </Tooltip>
+              <Tooltip title="Completed Items" arrow>
+                <Tab>
+                  <ListItemDecorator>
+                    <DoneAllIcon />
+                  </ListItemDecorator>
+                  <Typography sx={{ display: { xs: 'none', lg: 'block' } }}>Completed Items</Typography>
+                </Tab>
+              </Tooltip>
+              <Tooltip title="Declined Items" arrow>
+                <Tab>
+                  <ListItemDecorator>
+                    <CancelIcon />
+                  </ListItemDecorator>
+                  <Typography sx={{ display: { xs: 'none', lg: 'block' } }}>Declined Items</Typography>
+                </Tab>
+              </Tooltip>
+              <Tooltip title="Canceled Items" arrow>
+                <Tab>
+                  <ListItemDecorator>
+                    <CancelPresentationIcon />
+                  </ListItemDecorator>
+                  <Typography sx={{ display: { xs: 'none', lg: 'block' } }}>Canceled Items</Typography>
+                </Tab>
+              </Tooltip>
+              <Tooltip title="Requested Items" arrow>
+                <Tab>
+                  <ListItemDecorator>
+                    <RequestPageIcon />
+                  </ListItemDecorator>
+                  <Typography sx={{ display: { xs: 'none', lg: 'block' } }}>Requested Items</Typography>
+                </Tab>
+              </Tooltip>
+              <Tooltip title="Suggested Items" arrow>
+                <Tab>
+                  <ListItemDecorator>
+                    <LightbulbIcon />
+                  </ListItemDecorator>
+                  <Typography sx={{ display: { xs: 'none', lg: 'block' } }}>Suggested Items</Typography>
+                </Tab>
+              </Tooltip>
+            </TabList>
+          </Tabs>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography level="h4" gutterBottom>
-            Found Items
-          </Typography>
-          <Button startDecorator={<AddIcon />} onClick={() => router.push('my-items/report-found-item')}>
-            Report Found Item
-          </Button>
-        </Box>
-        <Box
-          ref={scrollRefFound}
-          onMouseDown={(e) => handleDragStart(e, scrollRefFound)} // Handle mouse down event
-          sx={{
-            display: 'flex',
-            whiteSpace: 'nowrap',
-            overflowX: 'auto',
-            paddingY: 2,
-            gap: 2,
-            cursor: 'grab', // Change cursor to indicate dragging
-            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
-          }}
-        >
-          {foundItems.length > 0 ?
-            foundItems.map((foundItem, index) => (
-              <Card
-                key={index}
-                sx={{ maxWidth: 250, flexShrink: 0, boxShadow: 3, borderRadius: 2 }} // Adjusted maxWidth
-              >
-                <CldImage
-                  priority
-                  src={foundItem.item.image}
-                  width={500} // Adjusted width to match smaller card size
-                  height={150} // Adjusted height to match smaller card size
-                  alt={foundItem.item.name || "Item Image"}
-                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  style={{ objectFit: 'cover' }}
-                />
-                <CardContent>
-                  <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{foundItem.item.name}</Typography>
-                  <Typography
-                    level="body2"
-                    sx={{
-                      color: 'text.secondary',
-                      marginBottom: '0.5rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      maxWidth: '250px', // Adjust the width as needed
-                    }}>
-                    {foundItem.item.description}
-                  </Typography>
-                  <Button fullWidth onClick={() => router.push(`my-items/found-item/${foundItem.item._id}`)}>View Details</Button>
-                </CardContent>
-              </Card>
-            )) :
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-                height: '200px',
-                border: '1px dashed #ccc',
-                borderRadius: '8px',
-                backgroundColor: '#f9f9f9',
-                padding: 2,
-              }}
-            >
-              <Typography>No found items available.</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                If you have found something, please report it.
+        {
+          activeTab === 0 &&
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography level="h4" gutterBottom>
+                Lost Items
               </Typography>
+              <Button startDecorator={<AddIcon />} onClick={() => router.push('/my-items/report-lost-item')}>
+                Report Lost Item
+              </Button>
             </Box>
-          }
-        </Box>
 
-        <Typography level="h4" gutterBottom>
-          Completed Items
-        </Typography>
-        <Box
-          ref={scrollRefCompleted}
-          onMouseDown={(e) => handleDragStart(e, scrollRefCompleted)} // Handle mouse down event
-          sx={{
-            display: 'flex',
-            whiteSpace: 'nowrap',
-            overflowX: 'auto',
-            paddingY: 2,
-            gap: 2,
-            cursor: 'grab', // Change cursor to indicate dragging
-            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
-          }}
-        >
-          {completedItems.length > 0 ?
-            completedItems.map((completedItem, index) => (
-              <Card
-                key={index}
-                sx={{
-                  maxWidth: 250,
-                  flexShrink: 0,
-                  boxShadow: 3,
-                  borderRadius: 2,
-                  overflow: 'hidden', // Ensures that content doesn't overflow the card
-                  position: 'relative', // Allows absolutely positioning elements inside
-                }}
-              >
-                {/* Identifier at the top-left of the image */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    left: 8,
-                    backgroundColor: completedItem.item?.isFoundItem ? '#81c784' : '#e57373',
-                    color: '#fff',
-                    padding: '4px 8px',
-                    borderRadius: 1,
-                    fontSize: '0.8rem',
-                    fontWeight: 'bold',
-                    textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
-                  }}
-                >
-                  {completedItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
-                </Box>
-
-                <CldImage
-                  priority
-                  src={completedItem.item.image}
-                  width={500}
-                  height={150}
-                  alt={completedItem.item.name || "Item Image"}
-                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  style={{ objectFit: 'cover' }}
-                />
-                <CardContent>
-                  <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
-                    {completedItem.item.name}
-                  </Typography>
-                  <Typography
-                    level="body2"
-                    sx={{
-                      color: 'text.secondary',
-                      marginBottom: '0.5rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      maxWidth: '250px', // Adjust the width as needed
-                    }}
-                  >
-                    {completedItem.item.description}
-                  </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
-                    <Button
-                      variant="contained"
-                      sx={{ minWidth: '0', padding: '6px 8px' }}
-                      onClick={() => setCompletedItemDetailsModal(completedItem.item._id)}
-                    >
-                      <InfoIcon color="action" />
-                    </Button>
-
-                    <Modal open={completedItemDetailsModal === completedItem.item._id} onClose={() => setCompletedItemDetailsModal(null)}>
-                      <ModalDialog sx={{ borderRadius: 4, boxShadow: 6, padding: 3 }}>
-                        <ModalClose />
-                        <Typography level="h4" fontWeight="bold">
-                          Completed Item
+            {/* Grid layout for the Lost Items */}
+            <Grid container spacing={2}>
+              {lostItems.length > 0 ?
+                lostItems.map((lostItem, index) => (
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={index}> {/* Adjust grid item sizes for different screen widths */}
+                    <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
+                      <CldImage
+                        priority
+                        src={lostItem.item.image}
+                        width={500} // Adjusted width to match smaller card size
+                        height={150} // Adjusted height to match smaller card size
+                        alt={lostItem.item.name || "Item Image"}
+                        sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        style={{ objectFit: 'cover' }}
+                      />
+                      <CardContent>
+                        <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                          {lostItem.item.name}
                         </Typography>
-
-                        <DialogContent>
-                          <ItemDetails row={completedItem} />
-                        </DialogContent>
-                      </ModalDialog>
-                    </Modal>
-                    <RatingsModal item={completedItem.item} session={session} status={status} />
-                  </Box>
-                </CardContent>
-              </Card>
-            )) :
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-                height: '200px',
-                border: '1px dashed #ccc',
-                borderRadius: '8px',
-                backgroundColor: '#f9f9f9',
-                padding: 2,
-              }}
-            >
-              <Typography>No found items available.</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                If you have found something, please report it.
-              </Typography>
-            </Box>
-          }
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography level="h4" gutterBottom>
-            Declined Items
-          </Typography>
-        </Box>
-        <Box
-          ref={scrollRefDeclined}
-          onMouseDown={(e) => handleDragStart(e, scrollRefDeclined)} // Handle mouse down event
-          sx={{
-            display: 'flex',
-            whiteSpace: 'nowrap',
-            overflowX: 'auto',
-            paddingY: 2,
-            gap: 2,
-            cursor: 'grab', // Change cursor to indicate dragging
-            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
-          }}
-        >
-          {declinedItems.length > 0 ?
-            declinedItems.map((declinedItem, index) => (
-              <Card
-                key={index}
-                sx={{
-                  maxWidth: 250,
-                  flexShrink: 0,
-                  boxShadow: 3,
-                  borderRadius: 2,
-                  overflow: 'hidden', // Ensures that content doesn't overflow the card
-                  position: 'relative', // Allows absolutely positioning elements inside
-                }}
-              >
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    left: 8,
-                    backgroundColor: declinedItem.item?.isFoundItem ? '#81c784' : '#e57373',
-                    color: '#fff',
-                    padding: '4px 8px',
-                    borderRadius: 1,
-                    fontSize: '0.8rem',
-                    fontWeight: 'bold',
-                    textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
-                  }}
-                >
-                  {declinedItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
-                </Box>
-
-                <CldImage
-                  priority
-                  src={declinedItem.item.image}
-                  width={500}
-                  height={150}
-                  alt={declinedItem.item.name || "Item Image"}
-                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  style={{ objectFit: 'cover' }}
-                />
-                <CardContent>
-                  <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{declinedItem.item.name}</Typography>
-                  <Typography
-                    level="body2"
-                    sx={{
-                      color: 'text.secondary',
-                      marginBottom: '0.5rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      maxWidth: '250px', // Adjust the width as needed
-                    }}>
-                    {declinedItem.item.description}
-                  </Typography>
-                  <Button fullWidth onClick={() => setInvalidItemDetailsModal(declinedItem.item._id)}>View Details</Button>
-                  <Modal open={invalidItemDetailsModal === declinedItem.item._id} onClose={() => setInvalidItemDetailsModal(null)}>
-                    <ModalDialog>
-                      <ModalClose />
-                      <Typography level="h5" fontWeight="bold" >
-                        Item Details
-                      </Typography>
-
-                      <DialogContent>
-                        <ItemDetails row={declinedItem} />
-                      </DialogContent>
-                    </ModalDialog>
-                  </Modal>
-                </CardContent>
-              </Card>
-            )) :
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-                height: '200px',
-                border: '1px dashed #ccc',
-                borderRadius: '8px',
-                backgroundColor: '#f9f9f9',
-                padding: 2,
-              }}
-            >
-              <Typography>No declined items available.</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                If you have found something, please report it.
-              </Typography>
-            </Box>
-          }
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography level="h4" gutterBottom>
-            Canceled Items
-          </Typography>
-        </Box>
-        <Box
-          ref={scrollRefCanceled}
-          onMouseDown={(e) => handleDragStart(e, scrollRefCanceled)} // Handle mouse down event
-          sx={{
-            display: 'flex',
-            whiteSpace: 'nowrap',
-            overflowX: 'auto',
-            paddingY: 2,
-            gap: 2,
-            cursor: 'grab', // Change cursor to indicate dragging
-            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
-          }}
-        >
-          {canceledItems.length > 0 ?
-            canceledItems.map((canceledItem, index) => (
-              <Card
-                key={index}
-                sx={{
-                  maxWidth: 250,
-                  flexShrink: 0,
-                  boxShadow: 3,
-                  borderRadius: 2,
-                  overflow: 'hidden', // Ensures that content doesn't overflow the card
-                  position: 'relative', // Allows absolutely positioning elements inside
-                }}
-              >
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    left: 8,
-                    backgroundColor: canceledItem.item?.isFoundItem ? '#81c784' : '#e57373',
-                    color: '#fff',
-                    padding: '4px 8px',
-                    borderRadius: 1,
-                    fontSize: '0.8rem',
-                    fontWeight: 'bold',
-                    textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
-                  }}
-                >
-                  {canceledItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
-                </Box>
-
-                <CldImage
-                  priority
-                  src={canceledItem.item.image}
-                  width={500}
-                  height={150}
-                  alt={canceledItem.item.name || "Item Image"}
-                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  style={{ objectFit: 'cover' }}
-                />
-                <CardContent>
-                  <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{canceledItem.item.name}</Typography>
-                  <Typography
-                    level="body2"
-                    sx={{
-                      color: 'text.secondary',
-                      marginBottom: '0.5rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      maxWidth: '250px', // Adjust the width as needed
-                    }}>
-                    {canceledItem.item.description}
-                  </Typography>
-                  <Button fullWidth onClick={() => setInvalidItemDetailsModal(canceledItem.item._id)}>View Details</Button>
-                  <Modal open={invalidItemDetailsModal === canceledItem.item._id} onClose={() => setInvalidItemDetailsModal(null)}>
-                    <ModalDialog>
-                      <ModalClose />
-                      <Typography level="h4" fontWeight="bold">
-                        Item Details
-                      </Typography>
-                      <DialogContent>
-                        <ItemDetails row={canceledItem} />
-                      </DialogContent>
-                    </ModalDialog>
-                  </Modal>
-                </CardContent>
-              </Card>
-            )) :
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-                height: '200px',
-                border: '1px dashed #ccc',
-                borderRadius: '8px',
-                backgroundColor: '#f9f9f9',
-                padding: 2,
-              }}
-            >
-              <Typography>No canceled items available.</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                If you have found something, please report it.
-              </Typography>
-            </Box>
-          }
-        </Box>
-
-        <Typography level="h4" gutterBottom>
-          Requested Items
-        </Typography>
-        <Box
-          ref={scrollRefRequested}
-          onMouseDown={(e) => handleDragStart(e, scrollRefRequested)} // Handle mouse down event
-          sx={{
-            display: 'flex',
-            whiteSpace: 'nowrap',
-            overflowX: 'auto',
-            paddingY: 2,
-            gap: 2,
-            cursor: 'grab', // Change cursor to indicate dragging
-            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
-          }}
-        >
-          {requestedItems.length > 0 ?
-            requestedItems.map((requestedItem, index) => (
-              <Card
-                key={index}
-                sx={{
-                  maxWidth: 250,
-                  flexShrink: 0,
-                  boxShadow: 3,
-                  borderRadius: 2,
-                  overflow: 'hidden', // Ensures that content doesn't overflow the card
-                  position: 'relative', // Allows absolutely positioning elements inside
-                }}
-              >
-                {/* Identifier at the top-left of the image */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    left: 8,
-                    backgroundColor: requestedItem.item?.isFoundItem ? '#81c784' : '#e57373',
-                    color: '#fff',
-                    padding: '4px 8px',
-                    borderRadius: 1,
-                    fontSize: '0.8rem',
-                    fontWeight: 'bold',
-                    textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
-                  }}
-                >
-                  {requestedItem.item?.isFoundItem ? 'Found' : 'Lost'} Item
-                </Box>
-
-                <CldImage
-                  priority
-                  src={requestedItem.item.image}
-                  width={500}
-                  height={150}
-                  alt={requestedItem.item.name || "Item Image"}
-                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  style={{ objectFit: 'cover' }}
-                />
-                <CardContent>
-                  <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
-                    {requestedItem.item.name}
-                  </Typography>
-                  <Typography
-                    level="body2"
-                    sx={{
-                      color: 'text.secondary',
-                      marginBottom: '0.5rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      maxWidth: '250px', // Adjust the width as needed
-                    }}
-                  >
-                    {requestedItem.item.description}
-                  </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
-                    <Button
-                      variant="contained"
-                      sx={{ minWidth: 0, padding: '6px 8px', borderRadius: '8px' }}
-                      onClick={() => setOpenDetails(requestedItem?.item?._id)}
-                    >
-                      <InfoIcon color="action" />
-                    </Button>
-
-                    <Modal open={openDetails} onClose={() => setOpenDetails(null)}>
-                      <ModalDialog>
-                        <ModalClose />
-                        <Typography level="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
-                          Item Details
+                        <Typography
+                          level="body2"
+                          sx={{
+                            color: 'text.secondary',
+                            marginBottom: '0.5rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            maxWidth: '250px', // Adjust the width as needed
+                          }}>
+                          {lostItem.item.description}
                         </Typography>
-                        <DialogContent>
-                          <ItemDetails row={requestedItem} />
-                        </DialogContent>
-                      </ModalDialog>
-                    </Modal>
-                    <Button
-                      fullWidth
-                      color="danger"
-                      sx={{ padding: '6px 0' }}
-                      onClick={() => setCancelRequestModal(requestedItem.item._id)}
-                    >
-                      Cancel Request
-                    </Button>
-                    <CancelRequest open={cancelRequestModal} onClose={() => setCancelRequestModal(null)} item={requestedItem.item} api={requestedItem.item?.isFoundItem ? 'found-items' : 'lost-items'} refreshData={fetchItems} />
-                  </Box>
-                </CardContent>
-              </Card>
-            )) :
+                        <Button fullWidth onClick={() => router.push(`my-items/lost-item/${lostItem.item._id}`)}>
+                          View Details
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                )) :
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '200px',
+                    border: '1px dashed #ccc',
+                    borderRadius: '8px',
+                    backgroundColor: '#f9f9f9',
+                    padding: 2,
+                    gridColumn: 'span 4', // Make the "No lost items" message span across the grid
+                  }}
+                >
+                  <Typography>No lost items found.</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    If you have lost something, please report it.
+                  </Typography>
+                </Box>
+              }
+            </Grid>
+          </>
+        }
+
+
+        {
+          activeTab === 1 &&
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography level="h4" gutterBottom>
+                Found Items
+              </Typography>
+              <Button startDecorator={<AddIcon />} onClick={() => router.push('my-items/report-found-item')}>
+                Report Found Item
+              </Button>
+            </Box>
             <Box
+              ref={scrollRefFound}
+              onMouseDown={(e) => handleDragStart(e, scrollRefFound)} // Handle mouse down event
               sx={{
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-                height: '200px',
-                border: '1px dashed #ccc',
-                borderRadius: '8px',
-                backgroundColor: '#f9f9f9',
-                padding: 2,
+                whiteSpace: 'nowrap',
+                overflowX: 'auto',
+                paddingY: 2,
+                gap: 2,
+                cursor: 'grab', // Change cursor to indicate dragging
+                '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
               }}
             >
-              <Typography>No requested items available.</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                If you found or lost an item, kindly report it.
-              </Typography>
-            </Box>
-          }
-        </Box>
-
-        <Typography level="h4" gutterBottom>
-          Suggested Matches
-        </Typography>
-        <Typography level="body-sm" color="neutral" sx={{ marginTop: 1 }}>
-          These are the found items matched based on your lost items
-        </Typography>
-        <Box
-          ref={scrollRefSuggested}
-          onMouseDown={(e) => handleDragStart(e, scrollRefSuggested)}
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            whiteSpace: 'nowrap',
-            overflowX: 'auto',
-            paddingY: 2,
-            gap: 2,
-            cursor: 'grab',
-            '&::-webkit-scrollbar': { display: 'none' },
-          }}
-        >
-          {suggestedMatches.length > 0 && suggestedMatches.some(({ matches }) => matches.length > 0) ? (
-            suggestedMatches.flatMap(({ lostItem, matches }) =>
-              matches.map((match, index) => {
-                const { foundItem } = match;
-                return lostItem.item.status === 'Missing' && (
+              {foundItems.length > 0 ?
+                foundItems.map((foundItem, index) => (
                   <Card
-                    key={`${lostItem._id}-${index}`}
+                    key={index}
+                    sx={{ maxWidth: 250, flexShrink: 0, boxShadow: 3, borderRadius: 2 }} // Adjusted maxWidth
+                  >
+                    <CldImage
+                      priority
+                      src={foundItem.item.image}
+                      width={500} // Adjusted width to match smaller card size
+                      height={150} // Adjusted height to match smaller card size
+                      alt={foundItem.item.name || "Item Image"}
+                      sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                    <CardContent>
+                      <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{foundItem.item.name}</Typography>
+                      <Typography
+                        level="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          marginBottom: '0.5rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: '250px', // Adjust the width as needed
+                        }}>
+                        {foundItem.item.description}
+                      </Typography>
+                      <Button fullWidth onClick={() => router.push(`my-items/found-item/${foundItem.item._id}`)}>View Details</Button>
+                    </CardContent>
+                  </Card>
+                )) :
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '200px',
+                    border: '1px dashed #ccc',
+                    borderRadius: '8px',
+                    backgroundColor: '#f9f9f9',
+                    padding: 2,
+                  }}
+                >
+                  <Typography>No found items available.</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    If you have found something, please report it.
+                  </Typography>
+                </Box>
+              }
+            </Box>
+          </>
+        }
+
+        {
+          activeTab === 2 &&
+          <>
+            <Typography level="h4" gutterBottom>
+              Completed Items
+            </Typography>
+            <Box
+              ref={scrollRefCompleted}
+              onMouseDown={(e) => handleDragStart(e, scrollRefCompleted)} // Handle mouse down event
+              sx={{
+                display: 'flex',
+                whiteSpace: 'nowrap',
+                overflowX: 'auto',
+                paddingY: 2,
+                gap: 2,
+                cursor: 'grab', // Change cursor to indicate dragging
+                '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
+              }}
+            >
+              {completedItems.length > 0 ?
+                completedItems.map((completedItem, index) => (
+                  <Card
+                    key={index}
                     sx={{
                       maxWidth: 250,
                       flexShrink: 0,
                       boxShadow: 3,
                       borderRadius: 2,
-                      transition: 'transform 0.2s, box-shadow 0.2s',
-                      '&:hover': {
-                        transform: 'scale(1.05)',
-                        boxShadow: 6,
-                      },
+                      overflow: 'hidden', // Ensures that content doesn't overflow the card
+                      position: 'relative', // Allows absolutely positioning elements inside
                     }}
                   >
+                    {/* Identifier at the top-left of the image */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        backgroundColor: completedItem.item?.isFoundItem ? '#81c784' : '#e57373',
+                        color: '#fff',
+                        padding: '4px 8px',
+                        borderRadius: 1,
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
+                      }}
+                    >
+                      {completedItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
+                    </Box>
+
                     <CldImage
                       priority
-                      src={foundItem.item.image}
+                      src={completedItem.item.image}
                       width={500}
                       height={150}
-                      alt={foundItem.item.name || "Item Image"}
+                      alt={completedItem.item.name || "Item Image"}
                       sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      style={{ objectFit: 'cover', borderRadius: '8px 8px 0 0' }}
+                      style={{ objectFit: 'cover' }}
                     />
                     <CardContent>
                       <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
-                        {foundItem.item.name}
+                        {completedItem.item.name}
                       </Typography>
                       <Typography
                         level="body2"
@@ -864,61 +487,541 @@ const MyItemsComponent = ({ session, status }) => {
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
-                          maxWidth: '250px',
+                          maxWidth: '250px', // Adjust the width as needed
                         }}
                       >
-                        {foundItem.item.description}
+                        {completedItem.item.description}
                       </Typography>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
                         <Button
-                          onClick={() =>
-                            router.push(
-                              `/my-items/${lostItem.item._id}/matchedTo/${foundItem.item._id}?owner=${lostItem.user._id}&finder=${foundItem.user._id}`
-                            )
-                          }
                           variant="contained"
                           sx={{ minWidth: '0', padding: '6px 8px' }}
-                          aria-label={`View details for ${foundItem.item.name}`}
+                          onClick={() => setCompletedItemDetailsModal(completedItem.item._id)}
                         >
                           <InfoIcon color="action" />
                         </Button>
-                        <Button
-                          onClick={() => setConfirmationRetrievalModal(foundItem.item._id)}
-                          fullWidth
-                          sx={{ padding: '6px 0' }}
-                          aria-label={`Claim request for ${foundItem.item.name}`}
-                        >
-                          Claim Request
-                        </Button>
+
+                        <Modal open={completedItemDetailsModal === completedItem.item._id} onClose={() => setCompletedItemDetailsModal(null)}>
+                          <ModalDialog sx={{ borderRadius: 4, boxShadow: 6, padding: 3 }}>
+                            <ModalClose />
+                            <Typography level="h4" fontWeight="bold">
+                              Completed Item
+                            </Typography>
+
+                            <DialogContent>
+                              <ItemDetails row={completedItem} />
+                            </DialogContent>
+                          </ModalDialog>
+                        </Modal>
+                        <RatingsModal item={completedItem.item} session={session} status={status} />
                       </Box>
                     </CardContent>
-                    <ConfirmationRetrievalRequest refreshData={fetchItems} open={confirmationRetrievalModal === foundItem.item._id} onClose={() => setConfirmationRetrievalModal(null)} foundItem={foundItem} lostItem={lostItem} />
                   </Card>
-                )
-              })
-            )
-          ) : (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-                height: '200px',
-                border: '1px dashed #ccc',
-                borderRadius: '8px',
-                backgroundColor: '#f9f9f9',
-                padding: 2,
-              }}
-            >
-              <Typography>No suggested items available.</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Please report any lost item to see this content.
+                )) :
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '200px',
+                    border: '1px dashed #ccc',
+                    borderRadius: '8px',
+                    backgroundColor: '#f9f9f9',
+                    padding: 2,
+                  }}
+                >
+                  <Typography>No found items available.</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    If you have found something, please report it.
+                  </Typography>
+                </Box>
+              }
+            </Box>
+          </>
+        }
+
+        {
+          activeTab === 3 &&
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography level="h4" gutterBottom>
+                Declined Items
               </Typography>
             </Box>
-          )}
-        </Box>
+            <Box
+              ref={scrollRefDeclined}
+              onMouseDown={(e) => handleDragStart(e, scrollRefDeclined)} // Handle mouse down event
+              sx={{
+                display: 'flex',
+                whiteSpace: 'nowrap',
+                overflowX: 'auto',
+                paddingY: 2,
+                gap: 2,
+                cursor: 'grab', // Change cursor to indicate dragging
+                '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
+              }}
+            >
+              {declinedItems.length > 0 ?
+                declinedItems.map((declinedItem, index) => (
+                  <Card
+                    key={index}
+                    sx={{
+                      maxWidth: 250,
+                      flexShrink: 0,
+                      boxShadow: 3,
+                      borderRadius: 2,
+                      overflow: 'hidden', // Ensures that content doesn't overflow the card
+                      position: 'relative', // Allows absolutely positioning elements inside
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        backgroundColor: declinedItem.item?.isFoundItem ? '#81c784' : '#e57373',
+                        color: '#fff',
+                        padding: '4px 8px',
+                        borderRadius: 1,
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
+                      }}
+                    >
+                      {declinedItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
+                    </Box>
+
+                    <CldImage
+                      priority
+                      src={declinedItem.item.image}
+                      width={500}
+                      height={150}
+                      alt={declinedItem.item.name || "Item Image"}
+                      sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                    <CardContent>
+                      <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{declinedItem.item.name}</Typography>
+                      <Typography
+                        level="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          marginBottom: '0.5rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: '250px', // Adjust the width as needed
+                        }}>
+                        {declinedItem.item.description}
+                      </Typography>
+                      <Button fullWidth onClick={() => setInvalidItemDetailsModal(declinedItem.item._id)}>View Details</Button>
+                      <Modal open={invalidItemDetailsModal === declinedItem.item._id} onClose={() => setInvalidItemDetailsModal(null)}>
+                        <ModalDialog>
+                          <ModalClose />
+                          <Typography level="h5" fontWeight="bold" >
+                            Item Details
+                          </Typography>
+
+                          <DialogContent>
+                            <ItemDetails row={declinedItem} />
+                          </DialogContent>
+                        </ModalDialog>
+                      </Modal>
+                    </CardContent>
+                  </Card>
+                )) :
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '200px',
+                    border: '1px dashed #ccc',
+                    borderRadius: '8px',
+                    backgroundColor: '#f9f9f9',
+                    padding: 2,
+                  }}
+                >
+                  <Typography>No declined items available.</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    If you have found something, please report it.
+                  </Typography>
+                </Box>
+              }
+            </Box>
+          </>
+        }
+
+        {
+          activeTab === 4 &&
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography level="h4" gutterBottom>
+                Canceled Items
+              </Typography>
+            </Box>
+            <Box
+              ref={scrollRefCanceled}
+              onMouseDown={(e) => handleDragStart(e, scrollRefCanceled)} // Handle mouse down event
+              sx={{
+                display: 'flex',
+                whiteSpace: 'nowrap',
+                overflowX: 'auto',
+                paddingY: 2,
+                gap: 2,
+                cursor: 'grab', // Change cursor to indicate dragging
+                '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
+              }}
+            >
+              {canceledItems.length > 0 ?
+                canceledItems.map((canceledItem, index) => (
+                  <Card
+                    key={index}
+                    sx={{
+                      maxWidth: 250,
+                      flexShrink: 0,
+                      boxShadow: 3,
+                      borderRadius: 2,
+                      overflow: 'hidden', // Ensures that content doesn't overflow the card
+                      position: 'relative', // Allows absolutely positioning elements inside
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        backgroundColor: canceledItem.item?.isFoundItem ? '#81c784' : '#e57373',
+                        color: '#fff',
+                        padding: '4px 8px',
+                        borderRadius: 1,
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
+                      }}
+                    >
+                      {canceledItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
+                    </Box>
+
+                    <CldImage
+                      priority
+                      src={canceledItem.item.image}
+                      width={500}
+                      height={150}
+                      alt={canceledItem.item.name || "Item Image"}
+                      sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                    <CardContent>
+                      <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{canceledItem.item.name}</Typography>
+                      <Typography
+                        level="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          marginBottom: '0.5rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: '250px', // Adjust the width as needed
+                        }}>
+                        {canceledItem.item.description}
+                      </Typography>
+                      <Button fullWidth onClick={() => setInvalidItemDetailsModal(canceledItem.item._id)}>View Details</Button>
+                      <Modal open={invalidItemDetailsModal === canceledItem.item._id} onClose={() => setInvalidItemDetailsModal(null)}>
+                        <ModalDialog>
+                          <ModalClose />
+                          <Typography level="h4" fontWeight="bold">
+                            Item Details
+                          </Typography>
+                          <DialogContent>
+                            <ItemDetails row={canceledItem} />
+                          </DialogContent>
+                        </ModalDialog>
+                      </Modal>
+                    </CardContent>
+                  </Card>
+                )) :
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '200px',
+                    border: '1px dashed #ccc',
+                    borderRadius: '8px',
+                    backgroundColor: '#f9f9f9',
+                    padding: 2,
+                  }}
+                >
+                  <Typography>No canceled items available.</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    If you have found something, please report it.
+                  </Typography>
+                </Box>
+              }
+            </Box>
+          </>
+        }
+
+        {
+          activeTab === 5 &&
+          <>
+            <Typography level="h4" gutterBottom>
+              Requested Items
+            </Typography>
+            <Box
+              ref={scrollRefRequested}
+              onMouseDown={(e) => handleDragStart(e, scrollRefRequested)} // Handle mouse down event
+              sx={{
+                display: 'flex',
+                whiteSpace: 'nowrap',
+                overflowX: 'auto',
+                paddingY: 2,
+                gap: 2,
+                cursor: 'grab', // Change cursor to indicate dragging
+                '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar
+              }}
+            >
+              {requestedItems.length > 0 ?
+                requestedItems.map((requestedItem, index) => (
+                  <Card
+                    key={index}
+                    sx={{
+                      maxWidth: 250,
+                      flexShrink: 0,
+                      boxShadow: 3,
+                      borderRadius: 2,
+                      overflow: 'hidden', // Ensures that content doesn't overflow the card
+                      position: 'relative', // Allows absolutely positioning elements inside
+                    }}
+                  >
+                    {/* Identifier at the top-left of the image */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        backgroundColor: requestedItem.item?.isFoundItem ? '#81c784' : '#e57373',
+                        color: '#fff',
+                        padding: '4px 8px',
+                        borderRadius: 1,
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
+                      }}
+                    >
+                      {requestedItem.item?.isFoundItem ? 'Found' : 'Lost'} Item
+                    </Box>
+
+                    <CldImage
+                      priority
+                      src={requestedItem.item.image}
+                      width={500}
+                      height={150}
+                      alt={requestedItem.item.name || "Item Image"}
+                      sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                    <CardContent>
+                      <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
+                        {requestedItem.item.name}
+                      </Typography>
+                      <Typography
+                        level="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          marginBottom: '0.5rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: '250px', // Adjust the width as needed
+                        }}
+                      >
+                        {requestedItem.item.description}
+                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
+                        <Button
+                          variant="contained"
+                          sx={{ minWidth: 0, padding: '6px 8px', borderRadius: '8px' }}
+                          onClick={() => setOpenDetails(requestedItem?.item?._id)}
+                        >
+                          <InfoIcon color="action" />
+                        </Button>
+
+                        <Modal open={openDetails} onClose={() => setOpenDetails(null)}>
+                          <ModalDialog>
+                            <ModalClose />
+                            <Typography level="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+                              Item Details
+                            </Typography>
+                            <DialogContent>
+                              <ItemDetails row={requestedItem} />
+                            </DialogContent>
+                          </ModalDialog>
+                        </Modal>
+                        <Button
+                          fullWidth
+                          color="danger"
+                          sx={{ padding: '6px 0' }}
+                          onClick={() => setCancelRequestModal(requestedItem.item._id)}
+                        >
+                          Cancel Request
+                        </Button>
+                        <CancelRequest open={cancelRequestModal} onClose={() => setCancelRequestModal(null)} item={requestedItem.item} api={requestedItem.item?.isFoundItem ? 'found-items' : 'lost-items'} refreshData={fetchItems} />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                )) :
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '200px',
+                    border: '1px dashed #ccc',
+                    borderRadius: '8px',
+                    backgroundColor: '#f9f9f9',
+                    padding: 2,
+                  }}
+                >
+                  <Typography>No requested items available.</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    If you found or lost an item, kindly report it.
+                  </Typography>
+                </Box>
+              }
+            </Box>
+          </>
+        }
+
+        {
+          activeTab === 6 &&
+          <>
+            <Typography level="h4" gutterBottom>
+              Suggested Matches
+            </Typography>
+            <Typography level="body-sm" color="neutral" sx={{ marginTop: 1 }}>
+              These are the found items matched based on your lost items
+            </Typography>
+            <Box
+              ref={scrollRefSuggested}
+              onMouseDown={(e) => handleDragStart(e, scrollRefSuggested)}
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                whiteSpace: 'nowrap',
+                overflowX: 'auto',
+                paddingY: 2,
+                gap: 2,
+                cursor: 'grab',
+                '&::-webkit-scrollbar': { display: 'none' },
+              }}
+            >
+              {suggestedMatches.length > 0 && suggestedMatches.some(({ matches }) => matches.length > 0) ? (
+                suggestedMatches.flatMap(({ lostItem, matches }) =>
+                  matches.map((match, index) => {
+                    const { foundItem } = match;
+                    return lostItem.item.status === 'Missing' && (
+                      <Card
+                        key={`${lostItem._id}-${index}`}
+                        sx={{
+                          maxWidth: 250,
+                          flexShrink: 0,
+                          boxShadow: 3,
+                          borderRadius: 2,
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          '&:hover': {
+                            transform: 'scale(1.05)',
+                            boxShadow: 6,
+                          },
+                        }}
+                      >
+                        <CldImage
+                          priority
+                          src={foundItem.item.image}
+                          width={500}
+                          height={150}
+                          alt={foundItem.item.name || "Item Image"}
+                          sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          style={{ objectFit: 'cover', borderRadius: '8px 8px 0 0' }}
+                        />
+                        <CardContent>
+                          <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
+                            {foundItem.item.name}
+                          </Typography>
+                          <Typography
+                            level="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              marginBottom: '0.5rem',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              maxWidth: '250px',
+                            }}
+                          >
+                            {foundItem.item.description}
+                          </Typography>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
+                            <Button
+                              onClick={() =>
+                                router.push(
+                                  `/my-items/${lostItem.item._id}/matchedTo/${foundItem.item._id}?owner=${lostItem.user._id}&finder=${foundItem.user._id}`
+                                )
+                              }
+                              variant="contained"
+                              sx={{ minWidth: '0', padding: '6px 8px' }}
+                              aria-label={`View details for ${foundItem.item.name}`}
+                            >
+                              <InfoIcon color="action" />
+                            </Button>
+                            <Button
+                              onClick={() => setConfirmationRetrievalModal(foundItem.item._id)}
+                              fullWidth
+                              sx={{ padding: '6px 0' }}
+                              aria-label={`Claim request for ${foundItem.item.name}`}
+                            >
+                              Claim Request
+                            </Button>
+                          </Box>
+                        </CardContent>
+                        <ConfirmationRetrievalRequest refreshData={fetchItems} open={confirmationRetrievalModal === foundItem.item._id} onClose={() => setConfirmationRetrievalModal(null)} foundItem={foundItem} lostItem={lostItem} />
+                      </Card>
+                    )
+                  })
+                )
+              ) : (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '200px',
+                    border: '1px dashed #ccc',
+                    borderRadius: '8px',
+                    backgroundColor: '#f9f9f9',
+                    padding: 2,
+                  }}
+                >
+                  <Typography>No suggested items available.</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    Please report any lost item to see this content.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </>
+        }
       </Box>
     </>
   );

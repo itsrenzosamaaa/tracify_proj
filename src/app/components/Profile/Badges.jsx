@@ -99,6 +99,8 @@ const Badges = ({ user }) => {
                             bgShape={selectedBadge.bgShape}
                             bgColor={selectedBadge.bgColor}
                             bgOutline={selectedBadge.bgOutline}
+                            condition={selectedBadge.condition}
+                            meetConditions={selectedBadge.meetConditions}
                         />
                     </Box>
                 ) : (
@@ -137,6 +139,8 @@ const Badges = ({ user }) => {
                                     bgShape={badge.bgShape}
                                     bgColor={badge.bgColor}
                                     bgOutline={badge.bgOutline}
+                                    condition={badge.condition}
+                                    meetConditions={badge.meetConditions}
                                 />
                             </Box>
                         ))}

@@ -18,7 +18,7 @@ const MatchItemsSchema = new mongoose.Schema({
       "Pending",
       "Approved",
       "Completed",
-      "Decline",
+      "Declined",
       "Canceled",
     ],
   },
@@ -34,8 +34,11 @@ const MatchItemsSchema = new mongoose.Schema({
   dateCanceled: {
     type: Date,
   },
-  dateDecline: {
+  dateDeclined: {
     type: Date,
+  },
+  remarks: {
+    type: String,
   },
 });
 
