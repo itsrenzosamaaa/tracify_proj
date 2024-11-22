@@ -12,7 +12,7 @@ const ItemMissingModal = ({ row, open, onClose, refreshData, snackBar }) => {
                 <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                     Missing Item Details
                 </Typography>
-                <DialogContent>
+                <DialogContent sx={{ overflowX: 'hidden' }}>
                     <ItemDetails row={row} refreshData={refreshData} snackBar={snackBar} />
                 </DialogContent>
                 <Button variant="outlined" onClick={onClose}>Close</Button>

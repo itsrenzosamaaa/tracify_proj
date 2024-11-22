@@ -1,11 +1,17 @@
 'use client';
 
 import Loading from '@/app/components/Loading';
-import { Box, Typography, Card, Divider, Stack, Button, Grid, Chip, Stepper, Step, Avatar } from '@mui/joy';
+import { Box, Typography, Card, Divider, Stack, Button, Grid, Chip, Stepper, Step, Avatar, StepIndicator } from '@mui/joy';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 import { isToday, format } from 'date-fns';
 import CancelRetrievalRequest from '@/app/components/Modal/CancelRetrievalRequest';
+import { Carousel } from 'react-responsive-carousel';
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
+import { CldImage } from 'next-cloudinary';
+import ViewRetrievalHistory from '@/app/components/Modal/ViewRetrievalHistory';
+import { FindInPage } from '@mui/icons-material';
+import { useMediaQuery, useTheme } from '@mui/material';
 
 const formatDate = (date, fallback = 'Unidentified') => {
     if (!date) return fallback;
@@ -24,9 +30,13 @@ const ViewItemPage = ({ params }) => {
     const { lostId } = params;
     const [lostItem, setLostItem] = useState(null);
     const [foundItem, setFoundItem] = useState(null);
+    const [itemRetrievalHistory, setItemRetrievalHistory] = useState([]);
+    const [openHistoryModal, setOpenHistoryModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [cancelModal, setCancelModal] = useState(null);
+    const [cancelModal, setCancelModal] = useState(false);
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
     const router = useRouter();
 
     console.log(foundItem)
@@ -42,7 +52,9 @@ const ViewItemPage = ({ params }) => {
 
             const data = await response.json();
             const findFoundItem = data.find(foundItem => foundItem?.owner?.item?._id === lostItemId && (foundItem.request_status === 'Pending' || foundItem.owner.item.status === 'Unclaimed'));
+            const findUncompletedItems = data.filter(uncompletedItem => uncompletedItem.owner.item._id === lostItemId && (uncompletedItem.request_status === "Canceled" || uncompletedItem.request_status === "Declined"))
             setFoundItem(findFoundItem);
+            setItemRetrievalHistory(findUncompletedItems);
         } catch (error) {
             console.error(error);
             setError('Unable to load matched item details. Please try again later.');
@@ -71,10 +83,10 @@ const ViewItemPage = ({ params }) => {
             if (lostId) {
                 setLoading(true);
                 try {
-                    await fetchLostItem();
-                    await fetchFoundItem(lostId);
+                    await Promise.all([fetchLostItem(), fetchFoundItem(lostId)]);
                 } catch (error) {
                     console.error(error);
+                    setError('Failed to load data. Please try again later.');
                 } finally {
                     setLoading(false);
                 }
@@ -91,35 +103,177 @@ const ViewItemPage = ({ params }) => {
         <>
             {lostItem ? (
                 <Grid container spacing={2} sx={{ maxWidth: 1200, mx: 'auto' }}>
+                    <Grid item xs={12}>
+                        {
+                            lostItem.status === 'Unclaimed' &&
+                            <Grid container spacing={2}>
+                                {/* Full-width Card containing details and the stepper */}
+                                <Grid item xs={12}>
+                                    <Card variant="outlined" sx={{ p: 3, boxShadow: 2, maxWidth: '100%', mx: 'auto', overflow: 'hidden' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <Typography
+                                                level="h2"
+                                                sx={{ color: 'primary.main', fontWeight: 'bold', mb: 2 }}
+                                            >
+                                                Surrender Instructions
+                                            </Typography>
+                                            <Button onClick={() => router.push('/my-items')} color="danger" aria-label="Back to my items">
+                                                Back
+                                            </Button>
+                                        </Box>
+                                        <Divider sx={{ mb: 3, borderColor: 'primary.main' }} />
+
+                                        <Grid container spacing={2} alignItems="flex-start">
+                                            {/* Left Side: Surrender Details */}
+                                            <Grid item xs={12} md={4}>
+                                                <Box>
+                                                    {/* Introduction */}
+                                                    <Typography level="body2" color="danger" textAlign="justify" sx={{ my: 2, fontWeight: 'bold' }}>
+                                                        <strong>Reminder:</strong> Falsely claiming an item that does not belong to you is a serious offense and may result in consequences such as suspension. If the item does not belong to you, you may cancel the retrieval process.
+                                                    </Typography>
+                                                    <Button color="danger" fullWidth>Cancel Retrieval Process</Button>
+                                                </Box>
+                                            </Grid>
+
+                                            {/* Vertical Divider */}
+                                            <Divider
+                                                orientation="vertical"
+                                                flexItem
+                                                sx={{ display: { xs: 'none', md: 'block' }, mx: 2 }}
+                                            />
+
+                                            {/* Right Side: Stepper */}
+                                            <Grid item xs={12} md={7}>
+                                                <Stepper
+                                                    size="md"
+                                                    orientation={isSmallScreen ? 'vertical' : 'horizontal'}
+                                                    sx={{
+                                                        display: 'flex',
+                                                        flexDirection: isSmallScreen ? 'column' : 'row',
+                                                        justifyContent: 'center',
+                                                    }}
+                                                >
+                                                    {/* Step 1 */}
+                                                    <Step
+                                                        orientation="vertical"
+                                                        indicator={
+                                                            <StepIndicator variant="solid" color="neutral">
+                                                                1
+                                                            </StepIndicator>
+                                                        }
+                                                    >
+                                                        <Box
+                                                            sx={{
+                                                                textAlign: isSmallScreen ? 'left' : 'center',
+                                                                maxWidth: { xs: '100%', md: 200 },
+                                                                marginLeft: { xs: '1rem', md: '' },
+                                                            }}
+                                                        >
+                                                            <Typography level="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                                                Visit the Office
+                                                            </Typography>
+                                                            <Typography level="body-md" sx={{ color: 'text.secondary' }}>
+                                                                Go to the <strong>{foundItem.finder.item.monitoredBy.role.name}</strong> office at <strong>{foundItem.finder.item.monitoredBy.office_location}</strong>. Make sure to bring any required documents or proof of ownership.
+                                                            </Typography>
+                                                        </Box>
+                                                    </Step>
+
+                                                    {/* Step 2 */}
+                                                    <Step
+                                                        orientation="vertical"
+                                                        indicator={
+                                                            <StepIndicator variant="solid" color="neutral">
+                                                                2
+                                                            </StepIndicator>
+                                                        }
+                                                    >
+                                                        <Box
+                                                            sx={{
+                                                                textAlign: isSmallScreen ? 'left' : 'center',
+                                                                maxWidth: { xs: '100%', md: 200 },
+                                                                marginLeft: { xs: '1rem', md: '' },
+                                                            }}
+                                                        >
+                                                            <Typography level="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                                                Verify Ownership
+                                                            </Typography>
+                                                            <Typography level="body-md" sx={{ color: 'text.secondary' }}>
+                                                                Present your proof of ownership or identification to the person-in-charge. Answer any questions to confirm you are the rightful owner.
+                                                            </Typography>
+                                                        </Box>
+                                                    </Step>
+
+                                                    {/* Step 3 */}
+                                                    <Step
+                                                        orientation="vertical"
+                                                        indicator={
+                                                            <StepIndicator variant="solid" color="neutral">
+                                                                3
+                                                            </StepIndicator>
+                                                        }
+                                                    >
+                                                        <Box
+                                                            sx={{
+                                                                textAlign: isSmallScreen ? 'left' : 'center',
+                                                                maxWidth: { xs: '100%', md: 200 },
+                                                                marginLeft: { xs: '1rem', md: '' },
+                                                            }}
+                                                        >
+                                                            <Typography level="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                                                Claim the Item
+                                                            </Typography>
+                                                            <Typography level="body-md" sx={{ color: 'text.secondary' }}>
+                                                                Once your claim is verified, the item will be handed to you. Sign any required documents to finalize the process.
+                                                            </Typography>
+                                                        </Box>
+                                                    </Step>
+                                                </Stepper>
+                                            </Grid>
+                                        </Grid>
+                                    </Card>
+                                </Grid>
+                            </Grid>
+                        }
+                    </Grid>
                     {/* Lost Item Details */}
                     <Grid item xs={12} md={6}>
                         <Card variant="outlined" sx={{ p: 3, boxShadow: 2 }}>
                             <Stack spacing={2}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Typography level="h2">{lostItem.name}</Typography>
-                                    <Button onClick={() => router.push('/my-items')} color="danger" aria-label="Back to my items">
-                                        Back
-                                    </Button>
                                 </Box>
 
                                 <Typography level="body2" color="neutral">
                                     <strong>Status:</strong> <Chip variant="solid" color="danger">{lostItem.status}</Chip>
                                 </Typography>
 
-                                <Box
-                                    component="img"
-                                    src={lostItem.image}
-                                    alt={lostItem.name}
-                                    sx={{
-                                        width: '100%',
-                                        height: 250,
-                                        objectFit: 'cover',
-                                        borderRadius: 'md',
-                                        boxShadow: 1,
-                                    }}
-                                />
+                                <Carousel showThumbs={false} useKeyboardArrows>
+                                    {
+                                        lostItem?.images?.map((image, index) => (
+                                            <Box
+                                                key={index}
+                                                sx={{
+                                                    overflow: 'hidden',
+                                                    display: 'inline-block',
+                                                    margin: 1, // Adds some spacing between images
+                                                }}
+                                            >
+                                                <CldImage
+                                                    src={image}
+                                                    width={250}
+                                                    height={250}
+                                                    alt={lostItem?.name || 'Item Image'}
+                                                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+                                                />
+                                            </Box>
+                                        ))
+                                    }
+                                </Carousel>
 
                                 <Divider />
+
+                                <Button onClick={() => setOpenHistoryModal(true)}>View Retrieval History</Button>
+                                <ViewRetrievalHistory open={openHistoryModal} onClose={() => setOpenHistoryModal(false)} retrievalItems={itemRetrievalHistory} />
 
                                 <Typography level="body2" color="neutral">
                                     <strong>Description:</strong> {lostItem.description}
@@ -226,58 +380,38 @@ const ViewItemPage = ({ params }) => {
                         <Card variant="outlined" sx={{ p: 3, boxShadow: 4, mb: 2, borderRadius: 2 }}>
                             {foundItem ? (
                                 <Stack spacing={3}>
-                                    {/* Claim Instructions */}
-                                    {
-                                        lostItem.status === 'Unclaimed' &&
-                                        <Box>
-                                            <Typography level="h2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Claim Instructions</Typography>
-                                            <Divider sx={{ mb: 2, borderColor: 'primary.main' }} />
-                                            <Typography level="body2" color="text.secondary" textAlign="justify">
-                                                To claim your item, please visit <strong>{foundItem.finder?.item?.monitoredBy?.role.name}</strong> office located at
-                                                <strong> {foundItem.finder?.item?.monitoredBy?.office_location}</strong> during office hours. Be sure to bring any relevant identification or documentation for verification.
-                                                For further assistance, you may contact <strong>{foundItem.finder?.item?.monitoredBy?.role.name}</strong> via:
-                                            </Typography>
-                                            <ul>
-                                                <li>
-                                                    <Typography level="body2" color="text.secondary">
-                                                        Phone: <strong>{foundItem.finder?.item?.monitoredBy?.contactNumber}</strong>
-                                                    </Typography>
-                                                </li>
-                                                <li>
-                                                    <Typography level="body2" color="text.secondary">
-                                                        Email: <strong>{foundItem.finder?.item?.monitoredBy?.emailAddress}</strong>
-                                                    </Typography>
-                                                </li>
-                                            </ul>
-                                            <Typography level="body2" color="error" textAlign="justify" sx={{ my: 2, fontWeight: 'bold' }}>
-                                                <strong>Reminder:</strong> Falsely claiming an item that does not belong to you is a serious offense and may result in consequences such as suspension. If the item does not belong to you, you may cancel the retrieval process.
-                                            </Typography>
-                                            <Button color="danger" fullWidth>Cancel Retrieval</Button>
-                                        </Box>
-                                    }
-
                                     {/* Found Item Details */}
                                     <Box>
                                         <Stack spacing={2}>
                                             <Typography level="h2" sx={{ color: 'success.main', fontWeight: 'bold' }}>{lostItem.status === 'Missing' ? 'Potential Matched Item' : 'Your Item Has Been Found!'}</Typography>
-                                            <Box
-                                                component="img"
-                                                src={foundItem.finder.item.image}
-                                                alt={foundItem.finder.item.name}
-                                                sx={{
-                                                    width: '100%',
-                                                    height: 250,
-                                                    objectFit: 'cover',
-                                                    borderRadius: 'md',
-                                                    boxShadow: 1,
-                                                }}
-                                            />
+                                            <Carousel showThumbs={false} useKeyboardArrows>
+                                                {
+                                                    foundItem?.finder.item.images?.map((image, index) => (
+                                                        <Box
+                                                            key={index}
+                                                            sx={{
+                                                                overflow: 'hidden',
+                                                                display: 'inline-block',
+                                                                margin: 1, // Adds some spacing between images
+                                                            }}
+                                                        >
+                                                            <CldImage
+                                                                src={image}
+                                                                width={250}
+                                                                height={250}
+                                                                alt={foundItem?.finder?.item?.name || 'Item Image'}
+                                                                sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+                                                            />
+                                                        </Box>
+                                                    ))
+                                                }
+                                            </Carousel>
 
                                             {
                                                 foundItem.request_status === 'Pending' &&
                                                 <>
-                                                    <Button fullWidth color='danger' onClick={() => setCancelModal(foundItem._id)}>Cancel Retrieval Request</Button>
-                                                    <CancelRetrievalRequest open={cancelModal} onClose={() => setCancelModal(null)} matchItem={foundItem} />
+                                                    <Button fullWidth color='danger' onClick={() => setCancelModal(true)}>Cancel Retrieval Request</Button>
+                                                    <CancelRetrievalRequest open={cancelModal} onClose={() => setCancelModal(false)} matchItem={foundItem} />
                                                 </>
                                             }
 
@@ -341,7 +475,32 @@ const ViewItemPage = ({ params }) => {
                                 </Stack>
 
                             ) : (
-                                <Typography color="text.secondary">The item has not been found yet.</Typography>
+                                <Box
+                                    sx={{
+                                        textAlign: 'center',
+                                        p: 3,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        borderRadius: 2,
+                                        boxShadow: 3, // Adds some depth
+                                    }}
+                                >
+                                    <FindInPage sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+                                    <Typography
+                                        color="text.primary"
+                                        sx={{ fontSize: '1.4rem', fontWeight: 'bold', mb: 1 }}
+                                    >
+                                        No Match Found
+                                    </Typography>
+                                    <Typography
+                                        color="text.secondary"
+                                        sx={{ fontSize: '1rem' }}
+                                    >
+                                        We&apos;re still looking for a match. Please check back later!
+                                    </Typography>
+                                </Box>
                             )}
                         </Card>
                     </Grid>

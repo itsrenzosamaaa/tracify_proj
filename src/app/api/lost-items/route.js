@@ -39,11 +39,15 @@ export async function POST(req) {
 
     // Assuming you're sending the image as a URL or base64 from the frontend
     const uploadedImages = [];
-    for (const image in lostItemData.images) {
+    for (const image of lostItemData.images) {
       const uploadResponse = await cloudinary.uploader.upload(image, {
         folder: "lost_items",
         public_id: `lost_${Date.now()}`,
         overwrite: true,
+        transformation: [
+          { width: 800, height: 800, crop: "limit" },
+          { quality: "auto" },
+        ],
       });
       uploadedImages.push(uploadResponse.secure_url);
     }
@@ -54,7 +58,7 @@ export async function POST(req) {
 
     const newLostItem = new item({
       ...lostItemData,
-      image: uploadedImages,
+      images: uploadedImages,
     });
     await newLostItem.save();
 

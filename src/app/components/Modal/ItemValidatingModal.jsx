@@ -66,7 +66,7 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData, session }) => {
                     <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                         Surrender Pending
                     </Typography>
-                    <DialogContent>
+                    <DialogContent sx={{ overflowX: 'hidden' }}>
                         <ItemDetails row={row} />
                     </DialogContent>
                     <Box sx={{ display: 'flex', gap: 2 }}>

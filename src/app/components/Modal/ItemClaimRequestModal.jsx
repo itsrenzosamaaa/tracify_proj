@@ -1,8 +1,8 @@
 'use client';
 
-import { Button, Modal, ModalClose, ModalDialog, Typography, Box, DialogContent, Snackbar } from '@mui/joy';
+import { Button, Modal, ModalClose, ModalDialog, Typography, Box, DialogContent, Snackbar, RadioGroup, Radio, Stack } from '@mui/joy';
 import React, { useState } from 'react';
-import ItemDetails from './ItemDetails';
+import { FormControlLabel } from '@mui/material';
 import MatchedItemsDetails from './MatchedItemsDetails';
 
 const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
@@ -102,6 +102,7 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
                 },
                 body: JSON.stringify({
                     request_status: 'Declined',
+                    remarks: 'Items are not matched.',
                 }),
             });
 
@@ -133,7 +134,7 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
                     <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                         Approve Claim Request
                     </Typography>
-                    <DialogContent>
+                    <DialogContent sx={{ overflowX: 'hidden' }}>
                         <MatchedItemsDetails row={row} />
                     </DialogContent>
                     <Box sx={{ display: 'flex', gap: 2 }}>

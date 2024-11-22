@@ -46,13 +46,13 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                 elevation={2}
                 sx={{
                     borderRadius: 2,
-                    overflow: "hidden",
                     maxWidth: "100%",
                     width: "100%",
-                    height: '320px',
+                    height: '340px',
                 }}
             >
                 <Table
+                    stickyHeader
                     variant="outlined"
                     sx={{
                         minWidth: 650,
@@ -68,7 +68,6 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    width: { xs: "30%", lg: "15%" },
                                 }}
                             >
                                 Claimer
@@ -77,7 +76,6 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    width: { xs: "30%", lg: "13%" },
                                 }}
                             >
                                 Item
@@ -86,7 +84,6 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    width: { xs: "30%", lg: "22%" },
                                 }}
                             >
                                 Date
@@ -95,7 +92,6 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    width: { xs: "30%", lg: "15%" },
                                 }}
                             >
                                 Request Status
@@ -104,7 +100,6 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    width: { xs: "30%", lg: "15%" },
                                 }}
                             >
                                 Item Status
@@ -119,28 +114,16 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                     <TableBody>
                         {displayedItems.map((row) => (
                             <TableRow key={row._id}>
-                                <TableCell sx={{ width: { xs: "30%", lg: "20%" } }}>
+                                <TableCell>
                                     {row?.owner?.user?.firstname} {row?.owner?.user?.lastname}
                                 </TableCell>
-                                <TableCell
-                                    sx={{
-                                        display: { xs: "none", lg: "table-cell" },
-                                    }}
-                                >
+                                <TableCell>
                                     {row.finder.item.name}
                                 </TableCell>
-                                <TableCell
-                                    sx={{
-                                        display: { xs: "none", lg: "table-cell" },
-                                    }}
-                                >
+                                <TableCell>
                                     {format(parseISO(row.datePending), "MMMM dd, yyyy - hh:mm a")}
                                 </TableCell>
-                                <TableCell
-                                    sx={{
-                                        display: { xs: "none", lg: "table-cell" },
-                                    }}
-                                >
+                                <TableCell>
                                     <Chip
                                         variant='solid'
                                         color={
@@ -156,11 +139,7 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                         {row.request_status}
                                     </Chip>
                                 </TableCell>
-                                <TableCell
-                                    sx={{
-                                        display: { xs: "none", lg: "table-cell" },
-                                    }}
-                                >
+                                <TableCell>
                                     {(() => {
                                         if (row.request_status === "Pending") {
                                             return (
@@ -188,13 +167,7 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                         );
                                     })()}
                                 </TableCell>
-                                <TableCell
-                                    sx={{
-                                        display: 'flex',
-                                        gap: 1,
-                                        alignItems: 'center',
-                                    }}
-                                >
+                                <TableCell>
                                     {
                                         row.request_status === 'Pending'
                                         &&

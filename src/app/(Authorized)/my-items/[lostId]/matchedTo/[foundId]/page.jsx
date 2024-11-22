@@ -2,9 +2,12 @@
 
 import Loading from '@/app/components/Loading';
 import ConfirmationRetrievalRequest from '@/app/components/Modal/ConfirmationRetrievalRequest';
-import { Box, Typography, Card, Divider, Stack, Button, Grid } from '@mui/joy';
+import { Box, Typography, Card, Divider, Stack, Button, Grid, Chip, Avatar } from '@mui/joy';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
+import { Carousel } from 'react-responsive-carousel';
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
+import { CldImage } from 'next-cloudinary';
 
 const ViewItemPage = ({ params }) => {
     const router = useRouter();
@@ -71,11 +74,8 @@ const ViewItemPage = ({ params }) => {
         }
     }, [owner, finder, lostId, foundId, fetchItems]);
 
-    if (loadingParams || loading) return <Loading />;
+    if (loadingParams || loading) return null;
     if (error) return <Typography color="error">{error}</Typography>;
-
-    console.log(foundItem)
-    console.log(lostItem)
 
     // If either lostItem or foundItem are null, display a message
     if (!lostItem || !foundItem) {
@@ -84,7 +84,7 @@ const ViewItemPage = ({ params }) => {
 
     return (
         <>
-            <Grid container spacing={3} sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+            <Grid container spacing={3} sx={{ maxWidth: 1200, mx: 'auto' }}>
                 {/* Found Item Details */}
                 <Grid item xs={12} md={6}>
                     <Card variant="outlined" sx={{ p: 3, boxShadow: 2 }}>
@@ -96,15 +96,34 @@ const ViewItemPage = ({ params }) => {
                                 </Button>
                             </Box>
                             <Typography level="body2" color="neutral">
-                                <strong>Status:</strong> {foundItem?.item?.status}
+                                <strong>Status:</strong>{' '}
+                                <Chip variant="solid" color="primary">
+                                    {foundItem?.item?.status}
+                                </Chip>
                             </Typography>
 
-                            <Box
-                                component="img"
-                                src={foundItem?.item?.image}
-                                alt={foundItem?.item?.name}
-                                sx={{ width: '100%', height: 250, objectFit: 'cover', borderRadius: 'md', boxShadow: 1 }}
-                            />
+                            <Carousel showThumbs={false} useKeyboardArrows>
+                                {
+                                    foundItem?.item.images?.map((image, index) => (
+                                        <Box
+                                            key={index}
+                                            sx={{
+                                                overflow: 'hidden',
+                                                display: 'inline-block',
+                                                margin: 1, // Adds some spacing between images
+                                            }}
+                                        >
+                                            <CldImage
+                                                src={image}
+                                                width={250}
+                                                height={250}
+                                                alt={foundItem.item?.name || 'Item Image'}
+                                                sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+                                            />
+                                        </Box>
+                                    ))
+                                }
+                            </Carousel>
 
                             <Button onClick={() => setOpen(true)} fullWidth color="success" aria-label="Submit claim request">
                                 Claim Request
@@ -114,65 +133,131 @@ const ViewItemPage = ({ params }) => {
 
                             <Divider />
 
-                            <Typography level="body2" color="neutral">
-                                <strong>Found by:</strong> {foundItem?.user?.firstname} {foundItem?.user?.lastname}
-                            </Typography>
-                            <Typography level="body2" color="neutral">
-                                <strong>Contact:</strong> {foundItem?.user?.contactNumber}
-                            </Typography>
-                            <Typography level="body2" color="neutral">
-                                <strong>Email:</strong> {foundItem?.user?.emailAddress}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Avatar sx={{ width: 50, height: 50 }} />
+                                <Box>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Finder:</strong> {foundItem.user.firstname} {foundItem.user.lastname}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Email Address:</strong> {foundItem.user.emailAddress}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Contact Number:</strong> {foundItem.user.contactNumber}
+                                    </Typography>
+                                </Box>
+                            </Box>
 
+                            <Typography level="body2" color="neutral">
+                                <strong>Description:</strong> {foundItem.item.description}
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Box>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Color:</strong> {foundItem.item.color}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Size:</strong> {foundItem.item.size}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Category:</strong> {foundItem.item.category}
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Material:</strong> {foundItem.item.material}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Condition:</strong> {foundItem.item.condition}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Distinctive Marks:</strong> {foundItem.item.distinctiveMarks}
+                                    </Typography>
+                                </Box>
+                            </Box>
                             <Divider />
-
-                            <Typography level="body2" color="neutral">
-                                <strong>Description:</strong> {foundItem?.item?.description}
-                            </Typography>
-                            <Typography level="body2" color="neutral">
-                                <strong>Location Found:</strong> {foundItem?.item?.location}
-                            </Typography>
-
-                            <Divider />
-
-                            <Typography level="body2" color="neutral">
-                                <strong>Date Found:</strong> {new Date(foundItem?.item?.date).toLocaleDateString()}
-                            </Typography>
-                            <Typography level="body2" color="neutral">
-                                <strong>Published On:</strong> {new Date(foundItem?.item?.datePublished).toLocaleDateString()}
-                            </Typography>
+                            <Box>
+                                <Typography level="body2" color="neutral">
+                                    <strong>Found Location:</strong> {foundItem.item.location}
+                                </Typography>
+                                <Typography level="body2" color="neutral">
+                                    <strong>Found Date:</strong> {foundItem.item.date_time}
+                                </Typography>
+                            </Box>
                         </Stack>
                     </Card>
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                    <Card variant="outlined" sx={{ p: 3, boxShadow: 2, mb: 2 }}>
-                        <Stack spacing={2}>
-                            <Typography level="h2">Claim Instructions</Typography>
-                            <Divider />
-                            <Typography level="body2" color="neutral" textAlign="justify">
-                                Please come to <strong>{foundItem?.item?.monitoredBy?.role?.name}</strong> which is located at the <strong>{foundItem?.item?.monitoredBy?.office_location}</strong> during office hours or kindly contact <strong>{foundItem?.item?.monitoredBy?.role?.name}</strong> at <strong>{foundItem?.item?.monitoredBy?.contactNumber}</strong> or <strong>{foundItem?.item?.monitoredBy?.emailAddress}</strong>.
-                            </Typography>
-                        </Stack>
-                    </Card>
-
                     {/* Matched Lost Item Details Card */}
                     <Card variant="outlined" sx={{ p: 3, boxShadow: 2 }}>
                         <Stack spacing={2}>
                             <Typography level="h2">Matched Lost Item Details</Typography>
                             <Divider />
+                            <Carousel showThumbs={false} useKeyboardArrows>
+                                {
+                                    lostItem.item?.images?.map((image, index) => (
+                                        <Box
+                                            key={index}
+                                            sx={{
+                                                overflow: 'hidden',
+                                                display: 'inline-block',
+                                                margin: 1, // Adds some spacing between images
+                                            }}
+                                        >
+                                            <CldImage
+                                                src={image}
+                                                width={250}
+                                                height={250}
+                                                alt={lostItem.item?.name || 'Item Image'}
+                                                sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+                                            />
+                                        </Box>
+                                    ))
+                                }
+                            </Carousel>
+
+                            <Divider />
+
                             <Typography level="body2" color="neutral">
-                                <strong>Lost Item Name:</strong> {lostItem?.item?.name}
+                                <strong>Description:</strong> {lostItem.item.description}
                             </Typography>
-                            <Typography level="body2" color="neutral">
-                                <strong>Description:</strong> {lostItem?.item?.description}
-                            </Typography>
-                            <Typography level="body2" color="neutral">
-                                <strong>Date Lost:</strong> {new Date(lostItem?.item?.date).toLocaleDateString()}
-                            </Typography>
-                            <Typography level="body2" color="neutral">
-                                <strong>Location Lost:</strong> {lostItem?.item?.location}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Box>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Color:</strong> {lostItem.item.color}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Size:</strong> {lostItem.item.size}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Category:</strong> {lostItem.item.category}
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Material:</strong> {lostItem.item.material}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Condition:</strong> {lostItem.item.condition}
+                                    </Typography>
+                                    <Typography level="body2" color="neutral">
+                                        <strong>Distinctive Marks:</strong> {lostItem.item.distinctiveMarks}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            <Divider />
+                            <Box>
+                                <Typography level="body2" color="neutral">
+                                    <strong>Lost Location:</strong> {lostItem.item.location}
+                                </Typography>
+                                <Typography level="body2" color="neutral">
+                                    <strong>Start Lost Date:</strong> {lostItem.item.date_time?.split(' to ')[0] || 'Unidentified'}
+                                </Typography>
+                                <Typography level="body2" color="neutral">
+                                    <strong>End Lost Date:</strong> {lostItem.item.date_time?.split(' to ')[1] || 'Unidentified'}
+                                </Typography>
+                            </Box>
                         </Stack>
                     </Card>
                 </Grid>

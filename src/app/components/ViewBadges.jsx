@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Snackbar, Box, Typography, Button, Card, CardContent, Modal, ModalDialog, ModalClose } from '@mui/joy';
-import { Grid, Table, TableHead, TableBody, TableRow, TableCell, TablePagination } from '@mui/material';
+import { Snackbar, Table, Box, Typography, Button, Card, CardContent, Modal, ModalDialog, ModalClose } from '@mui/joy';
+import { Grid, TableContainer, TableHead, TableBody, TableRow, TableCell, TablePagination } from '@mui/material';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import AddIcon from '@mui/icons-material/Add';
 import AddBadgeModal from './Modal/AddBadge';
@@ -66,106 +66,105 @@ const ViewBadges = ({ session, badges, fetchBadges }) => {
                     <Box sx={{ mt: 4 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                             <Typography level='h4' gutterBottom>View Badges</Typography>
-                            <Button startDecorator={<AddIcon />} onClick={() => setModal(true)}>Add Badge</Button>
+                            {isAddBadgesAllowed && (
+                                <Button startDecorator={<AddIcon />} onClick={() => setModal(true)}>Add Badge</Button>
+                            )}
                             <AddBadgeModal open={modal} onClose={() => setModal(false)} refreshData={fetchBadges} />
                         </Box>
-                        <Card sx={{ height: '426px' }}>
-                            <CardContent sx={{ padding: 0 }}>
-                                <Box sx={{ height: '380px', overflowY: 'auto' }}>
-                                    <Table
-                                        stickyHeader
-                                        variant="outlined"
-                                        sx={{
-                                            borderRadius: 2,
-                                            overflow: "hidden",
-                                            maxWidth: "100%",
-                                            width: "100%",
-                                        }}
-                                    >
-                                        <TableHead>
-                                            <TableRow>
-                                                {/* Image column: hidden on xs and sm screens */}
-                                                <TableCell sx={{ width: { xs: '30%', md: '20%' } }}>Image</TableCell>
-                                                {/* Title column: width adjusted for xs and lg */}
-                                                <TableCell sx={{ width: { xs: '30%', md: '20%' } }}>Condition</TableCell>
-                                                {/* Actions column */}
-                                                <TableCell sx={{ width: { xs: '30%', md: '20%' } }}>Actions</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {
-                                                badges.map(badge => (
-                                                    <TableRow key={badge._id}>
-                                                        {/* Image cell: hidden on xs and sm */}
-                                                        <TableCell sx={{ width: { xs: '30%', md: '20%' } }}>
-                                                            <Box sx={{ width: '150px', height: '150px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                                <PreviewBadge
-                                                                    title={badge.title}
-                                                                    titleColor={badge.titleColor}
-                                                                    titleShimmer={badge.titleShimmer}
-                                                                    titleOutlineColor={badge.titleOutlineColor}
-                                                                    description={badge.description}
-                                                                    shape={badge.shape}
-                                                                    shapeColor={badge.shapeColor}
-                                                                    bgShape={badge.bgShape}
-                                                                    bgColor={badge.bgColor}
-                                                                    bgOutline={badge.bgOutline}
-                                                                    condition={badge.condition}
-                                                                    meetConditions={badge.meetConditions}
-                                                                />
-                                                            </Box>
-                                                        </TableCell>
-                                                        {/* Title cell */}
-                                                        <TableCell>{badge.meetConditions} {badge.condition}</TableCell>
-                                                        {/* Actions: stack buttons vertically on smaller screens */}
-                                                        <TableCell>
-                                                            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1 }}>
-                                                                <Button size="small" onClick={() => setOpenEditModal(badge._id)}>Edit</Button>
-                                                                <EditBadgeModal open={openEditModal} onClose={() => setOpenEditModal(null)} refreshData={fetchBadges} badge={badge} />
-                                                                <Button size="small" color="danger" onClick={() => setOpenDeleteModal(badge._id)}>Delete</Button>
-                                                                <Modal open={openDeleteModal === badge._id} onClose={() => setOpenDeleteModal(null)}>
-                                                                    <ModalDialog>
-                                                                        <ModalClose />
-                                                                        <Typography level="h4">Delete Badge</Typography>
-                                                                        <Typography>Are you sure you want to delete badge?</Typography>
-                                                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                                                            <Button loading={loading} disabled={loading} fullWidth variant="outlined" onClick={() => setOpenDeleteModal(null)}>Cancel</Button>
-                                                                            <Button loading={loading} disabled={loading} fullWidth color="danger" onClick={(e) => handleDelete(e, badge._id)}>Delete</Button>
-                                                                        </Box>
-                                                                    </ModalDialog>
-                                                                </Modal>
-                                                            </Box>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))
-                                            }
-                                        </TableBody>
-                                    </Table>
-                                </Box>
-                                <Snackbar
-                                    autoHideDuration={5000}
-                                    open={openSnackbar}
-                                    variant="solid"
-                                    color="success"
-                                    onClose={(event, reason) => {
-                                        if (reason === 'clickaway') {
-                                            return;
-                                        }
-                                        setOpenSnackbar(false);
-                                    }}
-                                >
-                                    Badge has been removed successfully!
-                                </Snackbar>
-                                <TablePagination
-                                    component="div"
-                                    count={badges.length}
-                                    page={page}
-                                    onPageChange={handleChangePage}
-                                    rowsPerPage={rowsPerPage}
-                                    onRowsPerPageChange={handleChangeRowsPerPage}
-                                />
-                            </CardContent>
-                        </Card>
+                        <Box sx={{ height: '380px' }}>
+                            <Card sx={{ height: '390px' }}>
+                                <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                    <TableContainer sx={{ flex: 1, maxHeight: 350 }}>
+                                        <Table stickyHeader>
+                                            <TableHead>
+                                                <TableRow>
+                                                    {/* Image column */}
+                                                    <TableCell sx={{ width: { xs: '30%', md: '20%' } }}>Image</TableCell>
+                                                    {/* Condition column */}
+                                                    <TableCell sx={{ width: { xs: '30%', md: '20%' } }}>Condition</TableCell>
+                                                    {/* Actions column */}
+                                                    <TableCell sx={{ width: { xs: '30%', md: '20%' } }}>Actions</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {
+                                                    badges.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(badge => (
+                                                        <TableRow key={badge._id}>
+                                                            {/* Image cell */}
+                                                            <TableCell sx={{ width: { xs: '30%', md: '20%' } }}>
+                                                                <Box sx={{ width: { xs: '100px', sm: '125px', md: '150px' }, height: { xs: '100px', sm: '125px', md: '150px' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                                    <PreviewBadge
+                                                                        title={badge.title}
+                                                                        titleColor={badge.titleColor}
+                                                                        titleShimmer={badge.titleShimmer}
+                                                                        titleOutlineColor={badge.titleOutlineColor}
+                                                                        description={badge.description}
+                                                                        shape={badge.shape}
+                                                                        shapeColor={badge.shapeColor}
+                                                                        bgShape={badge.bgShape}
+                                                                        bgColor={badge.bgColor}
+                                                                        bgOutline={badge.bgOutline}
+                                                                        condition={badge.condition}
+                                                                        meetConditions={badge.meetConditions}
+                                                                    />
+                                                                </Box>
+                                                            </TableCell>
+                                                            {/* Title cell */}
+                                                            <TableCell>{badge.meetConditions} {badge.condition}</TableCell>
+                                                            {/* Actions cell */}
+                                                            <TableCell>
+                                                                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1 }}>
+                                                                    <Button size="small" onClick={() => setOpenEditModal(badge._id)}>Edit</Button>
+                                                                    <EditBadgeModal open={openEditModal === badge._id} onClose={() => setOpenEditModal(null)} refreshData={fetchBadges} badge={badge} />
+                                                                    <Button size="small" color="danger" onClick={() => setOpenDeleteModal(badge._id)}>Delete</Button>
+                                                                    <Modal open={openDeleteModal === badge._id} onClose={() => setOpenDeleteModal(null)}>
+                                                                        <ModalDialog>
+                                                                            <ModalClose />
+                                                                            <Typography level="h4">Delete Badge</Typography>
+                                                                            <Typography>Are you sure you want to delete badge?</Typography>
+                                                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                                <Button loading={loading} disabled={loading} fullWidth variant="outlined" onClick={() => setOpenDeleteModal(null)}>Cancel</Button>
+                                                                                <Button loading={loading} disabled={loading} fullWidth color="danger" onClick={(e) => handleDelete(e, badge._id)}>Delete</Button>
+                                                                            </Box>
+                                                                        </ModalDialog>
+                                                                    </Modal>
+                                                                </Box>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                }
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                </CardContent>
+                            </Card>
+                        </Box>
+
+                        {/* Snackbar for success message */}
+                        <Snackbar
+                            autoHideDuration={5000}
+                            open={openSnackbar}
+                            variant="solid"
+                            color="success"
+                            onClose={(event, reason) => {
+                                if (reason === 'clickaway') {
+                                    return;
+                                }
+                                setOpenSnackbar(false);
+                            }}
+                        >
+                            Badge has been removed successfully!
+                        </Snackbar>
+
+                        {/* Table Pagination */}
+                        <TablePagination
+                            component="div"
+                            count={badges.length}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            rowsPerPage={rowsPerPage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                        />
                     </Box>
                 </Grid>
             </Grid>

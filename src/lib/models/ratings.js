@@ -3,11 +3,11 @@ import mongoose from "mongoose";
 const ratingSchema = new mongoose.Schema({
   sender: {
     type: mongoose.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
   },
   receiver: {
     type: mongoose.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
   },
   item: {
     type: mongoose.Types.ObjectId,

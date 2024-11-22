@@ -7,10 +7,11 @@ import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import SearchIcon from "@mui/icons-material/Search"
+import AddRole from './Modal/AddRole';
 
-const ViewRoles = ({ roles, session }) => {
-    const router = useRouter();
+const ViewRoles = ({ roles, session, refreshData }) => {
     const [open, setOpen] = useState(null);
+    const [addRole, setAddRole] = useState(false);
 
     return (
         <>
@@ -22,8 +23,9 @@ const ViewRoles = ({ roles, session }) => {
                         <Card>
                             <Box sx={{ padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Input startDecorator={<SearchIcon />} />
-                                <Button onClick={() => router.push('roles/add_role')} startDecorator={<AddIcon />}>Add Role</Button>
+                                <Button onClick={() => setAddRole(true)} startDecorator={<AddIcon />}>Add Role</Button>
                             </Box>
+                            <AddRole open={addRole} onClose={() => setAddRole(false)} refreshData={refreshData} />
                             <CardContent>
                                 <Table
                                     variant="outlined"

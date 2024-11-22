@@ -506,11 +506,13 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                 <div>
                     Item published successfully!{' '}
                     {inDashboard && (
-                        <Link href="/lost-items" style={{ color: 'inherit', textDecoration: 'underline' }}>
-                            Click here
-                        </Link>
-                    )}{' '}
-                    to redirect to the lost items list.
+                        <Typography>
+                            <Link href="/lost-items" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                                Click here
+                            </Link>
+                            to redirect to lost items page.
+                        </Typography>
+                    )}
                 </div>
             </Snackbar>
         </>

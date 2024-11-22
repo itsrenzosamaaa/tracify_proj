@@ -84,7 +84,7 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
 
     return (
         <>
-            <Modal open={open === badge._id} onClose={onClose}>
+            <Modal open={open} onClose={onClose}>
                 <ModalDialog sx={{ display: 'flex', flexDirection: 'row' }}>
                     <ModalClose />
                     <DialogContent sx={{ width: '800px' }}>

@@ -21,13 +21,12 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
     const [location, setLocation] = useState(null);
     const [foundDate, setFoundDate] = useState('');
     const [images, setImages] = useState([]);
-    const [userFindItem, setUserFindItem] = useState(false);
     const [finder, setFinder] = useState(null);
     const [loading, setLoading] = useState(false);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const { data: session, status } = useSession();
 
-    console.log(finder)
+    console.log(images)
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -45,10 +44,6 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
             fetchUsers();
         }
     }, [status, session?.user?.schoolCategory, fetchUsers]);
-
-    useEffect(() => {
-        if (!userFindItem) setFinder('');
-    }, [userFindItem]);
 
     const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court'];
 
@@ -102,7 +97,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                 const foundItemResponse = await response.json();
 
                 const finderData = {
-                    user: userFindItem ? finder?._id : session?.user?.id,
+                    user: finder?._id,
                     item: foundItemResponse._id,
                 };
 
@@ -144,8 +139,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
         setDescription('');
         setLocation(null);
         setFoundDate('');
-        setImages(null);
-        setUserFindItem(false);
+        setImages([]);
         setFinder(null);
         if (fetchItems) await fetchItems();
     };
@@ -197,26 +191,21 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                     <DialogContent sx={{ overflowX: 'hidden' }}>
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={2}>
-                                <FormControl>
-                                    <Checkbox label="Did the user find this item?" checked={userFindItem} onChange={(e) => setUserFindItem(e.target.checked)} />
+                                <FormControl required>
+                                    <FormLabel>Finder</FormLabel>
+                                    <Autocomplete
+                                        placeholder="Select a finder"
+                                        options={users || []}
+                                        value={finder}
+                                        onChange={(event, value) => {
+                                            setFinder(value);
+                                        }}
+                                        getOptionLabel={(user) => {
+                                            return user ? `${user.firstname} ${user.lastname}` : 'No Options';
+                                        }}
+                                        isOptionEqualToValue={(option, value) => option.id === value?.id}
+                                    />
                                 </FormControl>
-                                {userFindItem && (
-                                    <FormControl required>
-                                        <FormLabel>Finder</FormLabel>
-                                        <Autocomplete
-                                            placeholder="Select a finder"
-                                            options={users || []}
-                                            value={finder}
-                                            onChange={(event, value) => {
-                                                setFinder(value);
-                                            }}
-                                            getOptionLabel={(user) => {
-                                                return user ? `${user.firstname} ${user.lastname}` : 'No Options';
-                                            }}
-                                            isOptionEqualToValue={(option, value) => option.id === value?.id}
-                                        />
-                                    </FormControl>
-                                )}
                                 <FormControl required>
                                     <FormLabel>Item Name</FormLabel>
                                     <Input type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -385,7 +374,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                         }}
                                     >
                                         <FormLabel>Upload Images</FormLabel>
-                                        {images.length > 0 && (
+                                        {images?.length > 0 && (
                                             <Button
                                                 size="sm"
                                                 color="danger"
@@ -476,11 +465,13 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                 <div>
                     Item published successfully!{' '}
                     {inDashboard && (
-                        <Link href="/found-items" style={{ color: 'inherit', textDecoration: 'underline' }}>
-                            Click here
-                        </Link>
-                    )}{' '}
-                    to redirect to the found items list.
+                        <Typography>
+                            <Link href="/found-items" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                                Click here
+                            </Link>
+                            to redirect to found items page.
+                        </Typography>
+                    )}
                 </div>
             </Snackbar>
 

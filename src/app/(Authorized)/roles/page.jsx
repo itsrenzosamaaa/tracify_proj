@@ -9,16 +9,17 @@ const RolesPage = () => {
     const { data: session, status } = useSession();
     const [roles, setRoles] = useState();
 
-    useEffect(() => {
-        const fetchRoles = async () => {
-            try {
-                const response = await fetch('/api/roles');
-                const data = await response.json();
-                setRoles(data);
-            } catch (error) {
-                console.error(error);
-            }
+    const fetchRoles = async () => {
+        try {
+            const response = await fetch('/api/roles');
+            const data = await response.json();
+            setRoles(data);
+        } catch (error) {
+            console.error(error);
         }
+    }
+
+    useEffect(() => {
         fetchRoles();
     }, [])
 
@@ -28,7 +29,7 @@ const RolesPage = () => {
 
     return (
         <>
-            <ViewRoles roles={roles} session={session} />
+            <ViewRoles roles={roles} session={session} refreshData={fetchRoles} />
         </>
     )
 }

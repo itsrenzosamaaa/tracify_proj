@@ -19,8 +19,8 @@ const ItemRetrievalList = ({ items, fetchItems }) => {
                 <Grid item xs={12} lg={12}>
                     <Paper elevation={2} sx={{ padding: '1rem' }}>
                         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                            <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Item Identified</Button>
-                            <PublishItemIdentified open={open} onClose={() => setOpen(false)} refreshData={fetchItems} />
+                            {/* <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Item Identified</Button>
+                            <PublishItemIdentified open={open} onClose={() => setOpen(false)} refreshData={fetchItems} /> */}
                         </Box>
                         <ItemRetrievalTable items={items} fetchItems={fetchItems} />
                     </Paper>

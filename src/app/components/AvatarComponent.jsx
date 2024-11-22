@@ -22,14 +22,27 @@ const AvatarComponent = ({ role }) => {
       <Dropdown>
         <MenuButton
           startDecorator={<Avatar />}
-          sx={{ color: "white" }}
+          sx={{
+            color: "white",
+            display: "flex", // Flex display to align items in a row
+            alignItems: "center", // Center items vertically
+            gap: 1, // Add space between avatar and text
+          }}
           variant="solid"
           color="inherit"
         >
-          <Typography color="inherit" sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}>{role}</Typography>
+          {/* Show the role text only on medium to large screens */}
+          <Typography
+            color="inherit"
+            sx={{
+              display: { xs: "none", sm: "none", md: "block", lg: "block" }, // Hide on small screens
+            }}
+          >
+            {role}
+          </Typography>
         </MenuButton>
         <Menu>
-          <MenuItem onClick={() => signOut({ callbackUrl: '/' })}>
+          <MenuItem onClick={() => signOut({ callbackUrl: "/" })}>
             Logout
           </MenuItem>
         </Menu>

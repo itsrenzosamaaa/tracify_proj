@@ -84,7 +84,7 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                     <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                         Approve Item Request
                     </Typography>
-                    <DialogContent>
+                    <DialogContent sx={{ overflowX: 'hidden' }}>
                         <ItemDetails row={row} />
                     </DialogContent>
                     <Box sx={{ display: 'flex', gap: 2 }}>
@@ -103,11 +103,7 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                                     <Stack spacing={2}>
                                         <FormControlLabel value="Invalid Information" control={<Radio />} label="Invalid Information" />
                                         <FormControlLabel value="Item Is Not Tangible" control={<Radio />} label="Item Is Not Tangible" />
-                                        <FormControlLabel value="Incomplete Information" control={<Radio />} label="Incomplete Information" />
                                         <FormControlLabel value="Item Not Eligible for Posting" control={<Radio />} label="Item Not Eligible for Posting" />
-                                        <FormControlLabel value="Duplicate Submission" control={<Radio />} label="Duplicate Submission" />
-                                        <FormControlLabel value="Incorrect Category" control={<Radio />} label="Incorrect Category" />
-                                        <FormControlLabel value="Item Already Found" control={<Radio />} label="Item Already Found" />
                                         <FormControlLabel value="Other" control={<Radio />} label="Other" />
                                     </Stack>
                                 </RadioGroup>

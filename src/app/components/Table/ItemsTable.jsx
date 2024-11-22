@@ -52,10 +52,9 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                 elevation={2}
                 sx={{
                     borderRadius: 2,
-                    overflow: "hidden",
                     maxWidth: "100%",
                     width: "100%",
-                    height: '320px',
+                    height: '340px',
                 }}
             >
                 <Table
@@ -74,7 +73,6 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    width: { xs: "30%", lg: "20%" },
                                 }}
                             >
                                 Item {isFoundItem ? 'Finder' : 'Owner'}
@@ -83,8 +81,6 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    display: { xs: "none", lg: "table-cell" },
-                                    width: { xs: "30%", lg: "20%" }
                                 }}
                             >
                                 Item Name
@@ -93,7 +89,6 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
-                                    width: { xs: "30%", lg: "25%" },
                                 }}
                             >
                                 Date
@@ -103,8 +98,6 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                     sx={{
                                         fontWeight: "bold",
                                         backgroundColor: "#f5f5f5",
-                                        display: { xs: "none", lg: "table-cell" },
-                                        width: { xs: "30%", lg: "15%" },
                                     }}
                                 >
                                     Status
@@ -120,23 +113,13 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                     <TableBody>
                         {displayedItems.map((row) => (
                             <TableRow key={row._id}>
-                                <TableCell sx={{ width: { xs: "30%", lg: "20%" } }}>
+                                <TableCell>
                                     {row.user.firstname} {row.user.lastname}
                                 </TableCell>
-                                <TableCell
-                                    sx={{
-                                        display: { xs: "none", lg: "table-cell" },
-                                        width: { xs: "30%", lg: "20%" }
-                                    }}
-                                >
+                                <TableCell>
                                     {row.item.name}
                                 </TableCell>
-                                <TableCell
-                                    sx={{
-                                        display: { xs: "none", lg: "table-cell" },
-                                        width: { xs: "30%", lg: "25%" },
-                                    }}
-                                >
+                                <TableCell>
                                     {row.item.isFoundItem ? (
                                         {
                                             Published: row.item.datePublished,
@@ -178,12 +161,7 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                     )}
                                 </TableCell>
                                 {row.item.isFoundItem && (row.item.status === "Request" || row.item.status === "Surrender Pending") && (
-                                    <TableCell
-                                        sx={{
-                                            display: { xs: "none", lg: "table-cell" },
-                                            width: { xs: "30%", lg: "15%" }
-                                        }}
-                                    >
+                                    <TableCell>
                                         <Chip variant="solid" color={row.item.status === "Request" ? 'warning' : 'neutral'}>
                                             {row.item.status}
                                         </Chip>

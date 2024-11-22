@@ -13,8 +13,10 @@ import {
     Step,
     Divider,
 } from '@mui/joy';
-import { CldImage } from 'next-cloudinary';
 import { format, isToday } from 'date-fns';
+import { Carousel } from 'react-responsive-carousel';
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
+import { CldImage } from 'next-cloudinary';
 
 const MatchedItemsDetails = ({ row }) => {
     return (
@@ -106,6 +108,67 @@ const MatchedItemsDetails = ({ row }) => {
                                     </Stack>
                                 </Box>
                             </Box>
+                            <Box sx={{ marginBottom: 4 }}>
+                                <Typography
+                                    level="h5"
+                                    sx={{
+                                        marginBottom: 2,
+                                        fontWeight: 'bold',
+                                        color: 'primary.plainColor',
+                                    }}
+                                >
+                                    Lost Item Information
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        bgcolor: 'background.level1',
+                                        borderRadius: 'md',
+                                        boxShadow: 'sm',
+                                        padding: 3,
+                                    }}
+                                >
+                                    <Typography>
+                                        <strong>Name:</strong> {row.owner.item.name || 'N/A'}
+                                    </Typography>
+                                    <Typography>
+                                        <strong>Color:</strong> {row.owner.item.color || 'N/A'}
+                                    </Typography>
+                                    <Typography>
+                                        <strong>Size:</strong> {row.owner.item.size || 'N/A'}
+                                    </Typography>
+                                    <Typography>
+                                        <strong>Category:</strong> {row.owner.item.category || 'N/A'}
+                                    </Typography>
+                                    <Typography>
+                                        <strong>Material:</strong> {row.owner.item.material || 'N/A'}
+                                    </Typography>
+                                    <Typography>
+                                        <strong>Condition:</strong> {row.owner.item.condition || 'N/A'}
+                                    </Typography>
+                                    <Typography>
+                                        <strong>Distinctive Marks:</strong> {row.owner.item.distinctiveMarks || 'N/A'}
+                                    </Typography>
+                                    <Typography>
+                                        <strong>Location:</strong> {row.owner.item.location || 'N/A'}
+                                    </Typography>
+
+                                    {/* Description and Date/Time */}
+                                    <Divider sx={{ marginY: 2 }} />
+
+                                    <strong>Description:</strong>
+                                    <Typography>
+                                        {row.owner.item.description || 'N/A'}
+                                    </Typography>
+                                    <strong>Start Date Lost:</strong>
+                                    <Typography>
+                                        {row.owner.item.date_time?.split(' to ')[0] || 'Unidentified'}
+                                    </Typography>
+                                    <strong>End Date Lost:</strong>
+                                    <Typography>
+                                        {row.owner.item.date_time?.split(' to ')[1] || 'Unidentified'}
+                                    </Typography>
+                                </Box>
+                            </Box>
                         </Grid>
                         <Grid item xs={12} lg={6}>
                             <Box sx={{ marginBottom: 4 }}>
@@ -170,71 +233,6 @@ const MatchedItemsDetails = ({ row }) => {
                                     </Stack>
                                 </Box>
                             </Box>
-                        </Grid>
-                        <Grid item xs={12} lg={6}>
-                            <Box sx={{ marginBottom: 4 }}>
-                                <Typography
-                                    level="h5"
-                                    sx={{
-                                        marginBottom: 2,
-                                        fontWeight: 'bold',
-                                        color: 'primary.plainColor',
-                                    }}
-                                >
-                                    Lost Item Information
-                                </Typography>
-                                <Box
-                                    sx={{
-                                        bgcolor: 'background.level1',
-                                        borderRadius: 'md',
-                                        boxShadow: 'sm',
-                                        padding: 3,
-                                    }}
-                                >
-                                    <Typography>
-                                        <strong>Name:</strong> {row.owner.item.name || 'N/A'}
-                                    </Typography>
-                                    <Typography>
-                                        <strong>Color:</strong> {row.owner.item.color || 'N/A'}
-                                    </Typography>
-                                    <Typography>
-                                        <strong>Size:</strong> {row.owner.item.size || 'N/A'}
-                                    </Typography>
-                                    <Typography>
-                                        <strong>Category:</strong> {row.owner.item.category || 'N/A'}
-                                    </Typography>
-                                    <Typography>
-                                        <strong>Material:</strong> {row.owner.item.material || 'N/A'}
-                                    </Typography>
-                                    <Typography>
-                                        <strong>Condition:</strong> {row.owner.item.condition || 'N/A'}
-                                    </Typography>
-                                    <Typography>
-                                        <strong>Distinctive Marks:</strong> {row.owner.item.distinctiveMarks || 'N/A'}
-                                    </Typography>
-                                    <Typography>
-                                        <strong>Location:</strong> {row.owner.item.location || 'N/A'}
-                                    </Typography>
-
-                                    {/* Description and Date/Time */}
-                                    <Divider sx={{ marginY: 2 }} />
-
-                                    <strong>Description:</strong>
-                                    <Typography>
-                                        {row.owner.item.description || 'N/A'}
-                                    </Typography>
-                                    <strong>Start Date Lost:</strong>
-                                    <Typography>
-                                        {row.owner.item.date_time?.split(' to ')[0] || 'Unidentified'}
-                                    </Typography>
-                                    <strong>End Date Lost:</strong>
-                                    <Typography>
-                                        {row.owner.item.date_time?.split(' to ')[1] || 'Unidentified'}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Grid>
-                        <Grid item xs={12} lg={6}>
                             <Box sx={{ marginBottom: 4 }}>
                                 <Typography
                                     level="h5"
@@ -348,6 +346,9 @@ const MatchedItemsDetails = ({ row }) => {
                                                     <strong>The request has been canceled.</strong>
                                                 </Typography>
                                                 <Typography>
+                                                    <strong>Remarks: </strong>{row.remarks}
+                                                </Typography>
+                                                <Typography>
                                                     {isToday(new Date(row.dateCanceled))
                                                         ? `Today, ${format(new Date(row.dateCanceled), 'hh:mm a')}`
                                                         : format(new Date(row.dateCanceled), 'MMMM dd, yyyy, hh:mm a')}
@@ -357,7 +358,10 @@ const MatchedItemsDetails = ({ row }) => {
                                         {row.dateDeclined &&
                                             <Step>
                                                 <Typography>
-                                                    <strong>The request has been declined.</strong>
+                                                    <strong>{row.dateApproved ? 'The claim process has been declined.' : 'The request has been declined.'}</strong>
+                                                </Typography>
+                                                <Typography>
+                                                    <strong>Remarks: </strong>{row.remarks}
                                                 </Typography>
                                                 <Typography>
                                                     {isToday(new Date(row.dateDeclined))
@@ -394,51 +398,28 @@ const MatchedItemsDetails = ({ row }) => {
                                 >
                                     Lost Item Image
                                 </Typography>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        height: 0,
-                                        paddingBottom: '100%', // Maintain a square aspect ratio
-                                        position: 'relative', // Enable absolute positioning for the content
-                                        bgcolor: 'background.level1',
-                                        borderRadius: 'md',
-                                        boxShadow: 'sm',
-                                        cursor: 'pointer',
-                                        overflow: 'hidden',
-                                    }}
-                                    onClick={() => window.open(row.owner.item?.image || '#', '_blank')}
-                                >
-                                    {row.owner.item?.image ? (
-                                        <CldImage
-                                            src={row.owner.item.image}
-                                            width={200}
-                                            height={200}
-                                            alt={row.owner.item?.name || 'Item Image'}
-                                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
-                                            style={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                width: '100%',
-                                                height: '100%',
-                                            }}
-                                        />
-                                    ) : (
-                                        <Typography
-                                            sx={{
-                                                fontStyle: 'italic',
-                                                color: 'text.secondary',
-                                                position: 'absolute',
-                                                top: '50%',
-                                                left: '50%',
-                                                transform: 'translate(-50%, -50%)',
-                                                textAlign: 'center',
-                                            }}
-                                        >
-                                            No image available
-                                        </Typography>
-                                    )}
-                                </Box>
+                                <Carousel showThumbs={false} useKeyboardArrows>
+                                    {
+                                        row.owner.item?.images?.map((image, index) => (
+                                            <Box
+                                                key={index}
+                                                sx={{
+                                                    overflow: 'hidden',
+                                                    display: 'inline-block',
+                                                    margin: 1, // Adds some spacing between images
+                                                }}
+                                            >
+                                                <CldImage
+                                                    src={image}
+                                                    width={250}
+                                                    height={250}
+                                                    alt={row.owner.item?.name || 'Item Image'}
+                                                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+                                                />
+                                            </Box>
+                                        ))
+                                    }
+                                </Carousel>
                             </Box>
                         </Grid>
                         <Grid item xs={12} lg={6}>
@@ -453,51 +434,28 @@ const MatchedItemsDetails = ({ row }) => {
                                 >
                                     Found Item Image
                                 </Typography>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        height: 0,
-                                        paddingBottom: '100%', // Maintain a square aspect ratio
-                                        position: 'relative', // Enable absolute positioning for the content
-                                        bgcolor: 'background.level1',
-                                        borderRadius: 'md',
-                                        boxShadow: 'sm',
-                                        cursor: 'pointer',
-                                        overflow: 'hidden',
-                                    }}
-                                    onClick={() => window.open(row.finder.item?.image || '#', '_blank')}
-                                >
-                                    {row.finder.item?.image ? (
-                                        <CldImage
-                                            src={row.finder.item.image}
-                                            width={200}
-                                            height={200}
-                                            alt={row.finder.item?.name || 'Item Image'}
-                                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
-                                            style={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                width: '100%',
-                                                height: '100%',
-                                            }}
-                                        />
-                                    ) : (
-                                        <Typography
-                                            sx={{
-                                                fontStyle: 'italic',
-                                                color: 'text.secondary',
-                                                position: 'absolute',
-                                                top: '50%',
-                                                left: '50%',
-                                                transform: 'translate(-50%, -50%)',
-                                                textAlign: 'center',
-                                            }}
-                                        >
-                                            No image available
-                                        </Typography>
-                                    )}
-                                </Box>
+                                <Carousel showThumbs={false} useKeyboardArrows>
+                                    {
+                                        row.finder.item?.images?.map((image, index) => (
+                                            <Box
+                                                key={index}
+                                                sx={{
+                                                    overflow: 'hidden',
+                                                    display: 'inline-block',
+                                                    margin: 1, // Adds some spacing between images
+                                                }}
+                                            >
+                                                <CldImage
+                                                    src={image}
+                                                    width={250}
+                                                    height={250}
+                                                    alt={row.finder.item?.name || 'Item Image'}
+                                                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+                                                />
+                                            </Box>
+                                        ))
+                                    }
+                                </Carousel>
                             </Box>
                         </Grid>
                     </Grid>

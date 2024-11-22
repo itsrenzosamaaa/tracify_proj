@@ -295,247 +295,155 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
                                 {activeStep === 0 &&
                                     <Fade in={activeStep === 0} timeout={500}>
                                         <Box>
-                                            <Typography level="h4">Please provide an item details.</Typography>
-                                            <Stack spacing={2} sx={{ my: 5 }}>
-                                                <FormControl fullWidth>
-                                                    <FormLabel>Name of the item you {isFoundItem ? 'found' : 'lost'}</FormLabel>
-                                                    <Input placeholder='Name of your item...' value={itemName} onChange={(e) => setItemName(e.target.value)} required />
-                                                </FormControl>
-                                                <FormControl fullWidth>
-                                                    <FormLabel>Describe the item you {isFoundItem ? 'found' : 'lost'}</FormLabel>
-                                                    <Textarea placeholder='Describe your item...' value={itemDescription} onChange={(e) => setItemDescription(e.target.value)} minRows={2} required endDecorator={
-                                                        <Typography level='body-xs' sx={{ ml: "auto" }} color={itemDescription.length > 80 ? "danger" : "neutral"}>
-                                                            {itemDescription.length} character(s)
-                                                        </Typography>
-                                                    } />
-                                                    <FormHelperText>Please use your words properly to optimize in matching items.</FormHelperText>
-                                                </FormControl>
-                                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                                    <Box sx={{ width: '100%' }}>
-                                                        <FormControl>
-                                                            <FormLabel>Color</FormLabel>
-                                                            <Select
-                                                                placeholder="Select Color"
-                                                                fullWidth
-                                                                required
-                                                                value={color}
-                                                                onChange={(e, value) => setColor(value)}
-                                                                displayEmpty
-                                                            >
-                                                                <Option value="" disabled>
-                                                                    Select Color
-                                                                </Option>
-                                                                {['Black', 'White', 'Blue', 'Red', 'Brown'].map((name) => (
-                                                                    <Option key={name} value={name}>
-                                                                        {name}
-                                                                    </Option>
-                                                                ))}
-                                                            </Select>
-                                                        </FormControl>
-                                                    </Box>
+                                            <Typography level="h4" mb={3}>
+                                                Please provide item details.
+                                            </Typography>
+                                            <Grid container spacing={2}>
+                                                <Grid item xs={12}>
+                                                    <FormControl fullWidth>
+                                                        <FormLabel>Name of the item you {isFoundItem ? 'found' : 'lost'}</FormLabel>
+                                                        <Input
+                                                            placeholder="Name of your item..."
+                                                            value={itemName}
+                                                            onChange={(e) => setItemName(e.target.value)}
+                                                            required
+                                                        />
+                                                    </FormControl>
+                                                </Grid>
 
-                                                    <Box sx={{ width: '100%' }}>
-                                                        <FormControl>
-                                                            <FormLabel>Size</FormLabel>
-                                                            <Select
-                                                                placeholder="Select Size"
-                                                                required
-                                                                value={size}
-                                                                onChange={(e, value) => setSize(value)}
-                                                                displayEmpty
-                                                            >
-                                                                <Option value="" disabled>
-                                                                    Select Size
-                                                                </Option>
-                                                                {['Small', 'Medium', 'Large'].map((name) => (
-                                                                    <Option key={name} value={name}>
-                                                                        {name}
-                                                                    </Option>
-                                                                ))}
-                                                            </Select>
-                                                        </FormControl>
-                                                    </Box>
+                                                <Grid item xs={12}>
+                                                    <FormControl fullWidth>
+                                                        <FormLabel>Describe the item you {isFoundItem ? 'found' : 'lost'}</FormLabel>
+                                                        <Textarea
+                                                            placeholder="Describe your item..."
+                                                            value={itemDescription}
+                                                            onChange={(e) => setItemDescription(e.target.value)}
+                                                            minRows={2}
+                                                            required
+                                                            endDecorator={
+                                                                <Typography
+                                                                    level="body-xs"
+                                                                    sx={{ ml: 'auto' }}
+                                                                    color={itemDescription.length > 80 ? 'danger' : 'neutral'}
+                                                                >
+                                                                    {itemDescription.length} character(s)
+                                                                </Typography>
+                                                            }
+                                                        />
+                                                        <FormHelperText>
+                                                            Please use your words properly to optimize matching items.
+                                                        </FormHelperText>
+                                                    </FormControl>
+                                                </Grid>
 
-                                                    <Box sx={{ width: '100%' }}>
-                                                        <FormControl>
-                                                            <FormLabel>Category</FormLabel>
-                                                            <Select
-                                                                placeholder="Select Category"
-                                                                required
-                                                                value={category}
-                                                                onChange={(e, value) => setCategory(value)}
-                                                                displayEmpty
-                                                            >
-                                                                <Option value="" disabled>
-                                                                    Select Category
-                                                                </Option>
-                                                                {['Electronics', 'Clothing', 'Accessories'].map((name) => (
-                                                                    <Option key={name} value={name}>
-                                                                        {name}
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+                                                    {[
+                                                        { label: 'Color', value: color, onChange: setColor, options: ['Black', 'White', 'Blue', 'Red', 'Brown'] },
+                                                        { label: 'Size', value: size, onChange: setSize, options: ['Small', 'Medium', 'Large'] },
+                                                        { label: 'Category', value: category, onChange: setCategory, options: ['Electronics', 'Clothing', 'Accessories'] },
+                                                        { label: 'Material', value: material, onChange: setMaterial, options: ['Leather', 'Metal', 'Plastic', 'Fabric'] },
+                                                        { label: 'Condition', value: condition, onChange: setCondition, options: ['New', 'Damaged', 'Old'] },
+                                                        { label: 'Distinctive Marks', value: distinctiveMarks, onChange: setDistinctiveMarks, options: ['None', 'Scratches', 'Stickers', 'Initials', 'Keychain'] },
+                                                    ].map((field, index) => (
+                                                        <Box sx={{ flexBasis: { xs: '100%', sm: '30%' } }} key={index}>
+                                                            <FormControl fullWidth>
+                                                                <FormLabel>{field.label}</FormLabel>
+                                                                <Select
+                                                                    placeholder={`Select ${field.label}`}
+                                                                    value={field.value}
+                                                                    onChange={(e, value) => field.onChange(value)}
+                                                                    required
+                                                                >
+                                                                    <Option value="" disabled>
+                                                                        Select {field.label}
                                                                     </Option>
-                                                                ))}
-                                                            </Select>
-                                                        </FormControl>
-                                                    </Box>
+                                                                    {field.options.map((option) => (
+                                                                        <Option key={option} value={option}>
+                                                                            {option}
+                                                                        </Option>
+                                                                    ))}
+                                                                </Select>
+                                                            </FormControl>
+                                                        </Box>
+                                                    ))}
                                                 </Box>
 
-                                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                                    <Box sx={{ width: '100%' }}>
-                                                        <FormControl>
-                                                            <FormLabel>Material</FormLabel>
-                                                            <Select
-                                                                placeholder="Select Material"
-                                                                required
-                                                                value={material}
-                                                                onChange={(e, value) => setMaterial(value)}
-                                                                displayEmpty
-                                                            >
-                                                                <Option value="" disabled>
-                                                                    Select Material
-                                                                </Option>
-                                                                {['Leather', 'Metal', 'Plastic', 'Fabric'].map((name) => (
-                                                                    <Option key={name} value={name}>
-                                                                        {name}
-                                                                    </Option>
-                                                                ))}
-                                                            </Select>
-                                                        </FormControl>
-                                                    </Box>
-                                                    <Box sx={{ width: '100%' }}>
-                                                        <FormControl>
-                                                            <FormLabel>Condition</FormLabel>
-                                                            <Select
-                                                                placeholder="Select Condition"
-                                                                required
-                                                                value={condition}
-                                                                onChange={(e, value) => setCondition(value)}
-                                                                displayEmpty
-                                                            >
-                                                                <Option value="" disabled>
-                                                                    Select Condition
-                                                                </Option>
-                                                                {['New', 'Damaged', 'Old'].map((name) => (
-                                                                    <Option key={name} value={name}>
-                                                                        {name}
-                                                                    </Option>
-                                                                ))}
-                                                            </Select>
-                                                        </FormControl>
-                                                    </Box>
-                                                    <Box sx={{ width: '100%' }}>
-                                                        <FormControl>
-                                                            <FormLabel>Distinctive Marks</FormLabel>
-                                                            <Select
-                                                                placeholder="Select Distinctive Marks"
-                                                                required
-                                                                value={distinctiveMarks}
-                                                                onChange={(e, value) => setDistinctiveMarks(value)}
-                                                                displayEmpty
-                                                            >
-                                                                <Option value="" disabled>
-                                                                    Select Distinctive Marks
-                                                                </Option>
-                                                                {['None', 'Scratches', 'Stickers', 'Initials', 'Keychain'].map((name) => (
-                                                                    <Option key={name} value={name}>
-                                                                        {name}
-                                                                    </Option>
-                                                                ))}
-                                                            </Select>
-                                                        </FormControl>
-                                                    </Box>
-                                                </Box>
-                                                {
-                                                    !isFoundItem
-                                                        ? (
-                                                            <>
-                                                                <FormControl>
-                                                                    <Checkbox
-                                                                        label="The owner knows the item's whereabouts"
-                                                                        checked={itemWhereabouts}
-                                                                        onChange={handleCheck}
-                                                                    />
-                                                                </FormControl>
-                                                                {
-                                                                    itemWhereabouts &&
-                                                                    <>
-                                                                        <FormControl fullWidth>
-                                                                            <FormLabel>Location where you lost the item</FormLabel>
-                                                                            <Autocomplete
-                                                                                placeholder="Select a location"
-                                                                                options={locationOptions}
-                                                                                value={itemLocation}
-                                                                                onChange={(event, value) => {
-                                                                                    setItemLocation(value);
-                                                                                    console.log('Selected location:', value);
-                                                                                }}
-                                                                                getOptionLabel={(option) => option}
-                                                                            />
-                                                                        </FormControl>
+                                                {/* Conditional Lost/Found Fields */}
+                                                <Grid item xs={12}>
+                                                    {!isFoundItem ? (
+                                                        <>
+                                                            <FormControl>
+                                                                <Checkbox
+                                                                    label="The owner knows the item's whereabouts"
+                                                                    checked={itemWhereabouts}
+                                                                    onChange={handleCheck}
+                                                                />
+                                                            </FormControl>
+                                                            {itemWhereabouts && (
+                                                                <>
+                                                                    <FormControl fullWidth>
+                                                                        <FormLabel>Location where you lost the item</FormLabel>
+                                                                        <Autocomplete
+                                                                            placeholder="Select a location"
+                                                                            options={locationOptions}
+                                                                            value={itemLocation}
+                                                                            onChange={(event, value) => setItemLocation(value)}
+                                                                            getOptionLabel={(option) => option}
+                                                                        />
+                                                                    </FormControl>
 
-                                                                        <Box display="flex" gap={2}>
-                                                                            {/* Start Date and Time */}
-                                                                            <Box sx={{ width: '100%' }}>
-                                                                                <FormControl required>
-                                                                                    <FormLabel>Start Date and Time</FormLabel>
-                                                                                    <Input
-                                                                                        fullWidth
-                                                                                        required
-                                                                                        type="datetime-local" // Ensures the input is a date-time picker
-                                                                                        name="lostDateStart"
-                                                                                        value={lostDateStart} // State holding the start date-time value
-                                                                                        onChange={handleStartDateChange} // Update state with the selected date-time
-                                                                                    />
-                                                                                </FormControl>
-                                                                            </Box>
-
-                                                                            {/* End Date and Time */}
-                                                                            <Box sx={{ width: '100%' }}>
-                                                                                <FormControl required>
-                                                                                    <FormLabel>End Date and Time</FormLabel>
-                                                                                    <Input
-                                                                                        fullWidth
-                                                                                        required
-                                                                                        type="datetime-local" // Ensures the input is a date-time picker
-                                                                                        name="lostDateEnd"
-                                                                                        value={lostDateEnd} // State holding the end date-time value
-                                                                                        onChange={handleEndDateChange} // Update state with the selected date-time
-                                                                                    />
-                                                                                </FormControl>
-                                                                            </Box>
-                                                                        </Box>
-                                                                    </>
-                                                                }
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <FormControl fullWidth>
-                                                                    <FormLabel>Location where you found the item</FormLabel>
-                                                                    <Autocomplete
-                                                                        placeholder="Select a location"
-                                                                        options={locationOptions}
-                                                                        value={itemLocation}
-                                                                        onChange={(event, value) => {
-                                                                            setItemLocation(value);
-                                                                            console.log('Selected location:', value);
-                                                                        }}
-                                                                        getOptionLabel={(option) => option}
-                                                                    />
-                                                                </FormControl>
-                                                                <FormControl required>
-                                                                    <FormLabel>Found Date</FormLabel>
-                                                                    <Input
-                                                                        fullWidth
-                                                                        required
-                                                                        type="datetime-local" // Ensures the input is a date-time picker
-                                                                        name="foundDate"
-                                                                        value={foundDate} // State holding the start date-time value
-                                                                        onChange={(e) => setFoundDate(e.target.value)} // Update state with the selected date-time
-                                                                    />
-                                                                </FormControl>
-                                                            </>
-                                                        )
-                                                }
-                                            </Stack>
+                                                                    <Grid container spacing={2} mt={2}>
+                                                                        <Grid item xs={12} sm={6}>
+                                                                            <FormControl required fullWidth>
+                                                                                <FormLabel>Start Date and Time</FormLabel>
+                                                                                <Input
+                                                                                    type="datetime-local"
+                                                                                    name="lostDateStart"
+                                                                                    value={lostDateStart}
+                                                                                    onChange={handleStartDateChange}
+                                                                                />
+                                                                            </FormControl>
+                                                                        </Grid>
+                                                                        <Grid item xs={12} sm={6}>
+                                                                            <FormControl required fullWidth>
+                                                                                <FormLabel>End Date and Time</FormLabel>
+                                                                                <Input
+                                                                                    type="datetime-local"
+                                                                                    name="lostDateEnd"
+                                                                                    value={lostDateEnd}
+                                                                                    onChange={handleEndDateChange}
+                                                                                />
+                                                                            </FormControl>
+                                                                        </Grid>
+                                                                    </Grid>
+                                                                </>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <FormControl fullWidth>
+                                                                <FormLabel>Location where you found the item</FormLabel>
+                                                                <Autocomplete
+                                                                    placeholder="Select a location"
+                                                                    options={locationOptions}
+                                                                    value={itemLocation}
+                                                                    onChange={(event, value) => setItemLocation(value)}
+                                                                    getOptionLabel={(option) => option}
+                                                                />
+                                                            </FormControl>
+                                                            <FormControl required>
+                                                                <FormLabel>Found Date</FormLabel>
+                                                                <Input
+                                                                    type="datetime-local"
+                                                                    name="foundDate"
+                                                                    value={foundDate}
+                                                                    onChange={(e) => setFoundDate(e.target.value)}
+                                                                />
+                                                            </FormControl>
+                                                        </>
+                                                    )}
+                                                </Grid>
+                                            </Grid>
                                         </Box>
                                     </Fade>
                                 }

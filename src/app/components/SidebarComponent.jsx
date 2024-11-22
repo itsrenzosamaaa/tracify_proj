@@ -239,7 +239,14 @@ export default function App() {
         >
           <MenuIcon />
         </IconButton>
-        <Box sx={{ width: { xs: '85%', lg: '80%' }, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box
+          sx={{
+            width: { xs: '85%', md: '87%', lg: '82.5%' },
+            display: 'flex',
+            alignItems: 'center', // Align vertically to center
+            justifyContent: 'flex-end', // Align the avatar to the right
+          }}
+        >
           <AvatarComponent role={session.user.firstname} />
         </Box>
       </Header>

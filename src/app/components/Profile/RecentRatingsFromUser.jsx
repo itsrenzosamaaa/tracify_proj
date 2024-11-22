@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Rating, Paper, Stack, Grid, Card, CardContent, Avatar, IconButton, Menu, MenuItem, LinearProgress, CircularProgress } from '@mui/material';
+import { Rating, Paper, Stack, Grid, Card, CardContent, Avatar, IconButton, LinearProgress, CircularProgress } from '@mui/material';
 import { Box, Typography, Divider, Chip } from '@mui/joy';
 import StarIcon from "@mui/icons-material/Star";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -8,20 +8,6 @@ import { formatDistanceToNow } from 'date-fns';
 const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
     // State to track selected quantity rating
     const [selectedQuantity, setSelectedQuantity] = useState(null);
-    const [anchorEl, setAnchorEl] = useState(null);
-
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleReportUser = () => {
-        // Handle the reporting logic here
-        handleClose();
-    };
 
     if (isLoading) {
         return <CircularProgress />;
@@ -88,7 +74,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
             <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
                 Ratings from Other Users
             </Typography>
-            <Paper elevation={3} sx={{ padding: "1.5rem", borderRadius: 2 }}>
+            <Paper elevation={3} sx={{ padding: "1rem", borderRadius: 2 }}>
                 <Grid container spacing={3}>
                     {/* Average Quantity and Compliments Section */}
                     <Grid item xs={12} md={5}>
@@ -155,7 +141,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                             sx={{
                                                 display: 'flex',
                                                 alignItems: 'flex-start',
-                                                paddingX: 2,
+                                                paddingX: 1,
                                                 mb: 1,
                                                 transition: 'transform 0.2s',
                                                 '&:hover': { transform: 'scale(1.02)' }, // Subtle hover effect
@@ -167,11 +153,11 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                         <StarIcon sx={{ color: '#fff' }} />
                                                     </Avatar>
                                                     <Box>
-                                                        <Typography variant="subtitle1" fontWeight="bold">
+                                                        <Typography level="subtitle1" fontWeight="bold">
                                                             {rater.sender?.firstname} {rater.sender?.lastname}
                                                         </Typography>
 
-                                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                             <Rating
                                                                 size="small"
                                                                 name="rating"
@@ -181,7 +167,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                                 icon={<StarIcon fontSize="inherit" sx={{ color: '#FFD700' }} />}
                                                                 emptyIcon={<StarIcon fontSize="inherit" sx={{ color: '#ddd' }} />}
                                                             />
-                                                            <Typography component="span" variant="body2" sx={{ ml: 1 }}>
+                                                            <Typography level="body-md">
                                                                 Review as{' '}
                                                                 {rater.item.isFoundItem ? (
                                                                     <strong style={{ color: '#4CAF50' }}>a Finder</strong>
@@ -189,20 +175,11 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                                     <strong style={{ color: '#F44336' }}>an Owner</strong>
                                                                 )}
                                                             </Typography>
-                                                            <Typography component="span" variant="body2" sx={{ ml: 1 }}>
+                                                            <Typography sx={{ display: { xs: 'none', md: 'block' } }} level="body-md">
                                                                 {formatDistanceToNow(new Date(rater.date_created), { addSuffix: true })}
                                                             </Typography>
                                                         </Box>
                                                     </Box>
-                                                    {/* Menu Button */}
-                                                    <IconButton
-                                                        sx={{ ml: 'auto' }}
-                                                        aria-controls="report-menu"
-                                                        aria-haspopup="true"
-                                                        onClick={handleClick}
-                                                    >
-                                                        <MoreVertIcon />
-                                                    </IconButton>
                                                 </Box>
 
                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
@@ -224,20 +201,22 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                     ))}
                                                 </Box>
 
-                                                <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                                                <Typography variant="body1" color="text.secondary" sx={{ my: 3 }}>
                                                     {rater.feedback}
                                                 </Typography>
-                                            </CardContent>
 
-                                            {/* Report User Menu */}
-                                            <Menu
-                                                id="report-menu"
-                                                anchorEl={anchorEl}
-                                                open={Boolean(anchorEl)}
-                                                onClose={handleClose}
-                                            >
-                                                <MenuItem onClick={handleReportUser}>Report User</MenuItem>
-                                            </Menu>
+                                                <Box sx={{ display: 'flex', gap: 3, alignItems: 'center', justifyContent: 'flex-start' }}>
+                                                    <Avatar
+                                                        alt={rater.item.name || "Item Image"}
+                                                        src={rater.item.images[0]}
+                                                        sx={{ width: 100, height: 100, borderRadius: '12%', boxShadow: 2 }}
+                                                    />
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                        <Typography fontWeight="700">{rater.item.name}</Typography>
+                                                        <Chip variant="solid" color="success">{rater.item.status}</Chip>
+                                                    </Box>
+                                                </Box>
+                                            </CardContent>
                                         </Card>
                                     ))
                                 )}

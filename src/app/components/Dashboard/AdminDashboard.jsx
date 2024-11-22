@@ -203,19 +203,6 @@ const AdminDashboard = ({ session, users }) => {
                 <Grid item xs={12} lg={6} sx={{ display: 'flex', flexDirection: 'column' }}>
                     <TopStudentsEarnedBadges users={users} />
                 </Grid>
-
-
-                <Grid item xs={12} lg={12}>
-                    <Typography level="h6" gutterBottom>
-                        Recent System Logs
-                    </Typography>
-                    <Card>
-                        <CardContent>
-                            <Typography>System upgraded by John Doe at 10:30 AM.</Typography>
-                            <Typography>User Mary Smith added a new officer at 9:00 AM.</Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
             </Grid>
         </>
     );

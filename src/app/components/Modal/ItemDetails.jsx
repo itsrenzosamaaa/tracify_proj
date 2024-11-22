@@ -24,6 +24,8 @@ import {
 } from '@mui/joy';
 import { CldImage } from 'next-cloudinary';
 import { format, subDays, isBefore, isAfter, isToday } from 'date-fns';
+import { Carousel } from 'react-responsive-carousel';
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 const ItemDetails = ({ row, refreshData, snackBar }) => {
     const [isEditMode, setIsEditMode] = useState(false);
@@ -225,13 +227,13 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                             {/* User Details */}
                             <Stack spacing={1} sx={{ flex: 1 }}>
                                 <Typography>
-                                    <strong>Name:</strong> {row.user?.firstname || 'N/A'} {row.user?.lastname || 'N/A'}
+                                    <strong>Name:</strong> {row.sender.firstname || row.user?.firstname || 'N/A'} {row.sender.lastname || row.user?.lastname || 'N/A'}
                                 </Typography>
                                 <Typography>
-                                    <strong>Email:</strong> {row.user?.emailAddress || 'N/A'}
+                                    <strong>Email:</strong> {row.sender.emailAddress || row.user?.emailAddress || 'N/A'}
                                 </Typography>
                                 <Typography>
-                                    <strong>Contact Number:</strong> {row.user?.contactNumber || 'N/A'}
+                                    <strong>Contact Number:</strong> {row.sender.contactNumber || row.user?.contactNumber || 'N/A'}
                                 </Typography>
                             </Stack>
                         </Box>
@@ -709,28 +711,30 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                         >
                             Item Image
                         </Typography>
-                        <Box
-                            sx={{
-                                overflow: 'hidden',
-                                display: 'inline-block',
-                                cursor: 'pointer',
-                            }}
-                            onClick={() => window.open(row.item?.image || '#', '_blank')}
-                        >
-                            {row.item?.image ? (
-                                <CldImage
-                                    src={row.item.image}
-                                    width={200}
-                                    height={200}
-                                    alt={row.item?.name || 'Item Image'}
-                                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
-                                />
-                            ) : (
-                                <Typography sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
-                                    No image available
-                                </Typography>
-                            )}
-                        </Box>
+                        <Carousel showThumbs={false} useKeyboardArrows>
+                            {
+                                row.item.images?.map((image, index) => (
+                                    <Box
+                                        key={index}
+                                        sx={{
+                                            overflow: 'hidden',
+                                            display: 'inline-block',
+                                            cursor: 'pointer',
+                                            margin: 1, // Adds some spacing between images
+                                        }}
+                                        onClick={() => window.open(image || '#', '_blank')}
+                                    >
+                                        <CldImage
+                                            src={image}
+                                            width={200}
+                                            height={200}
+                                            alt={row.item?.name || 'Item Image'}
+                                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+                                        />
+                                    </Box>
+                                ))
+                            }
+                        </Carousel>
                     </Box>
                 </CardContent>
             </Card >
