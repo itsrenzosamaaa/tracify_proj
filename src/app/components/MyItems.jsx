@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
-import { Grid, Typography, Button, Modal, ModalDialog, ModalClose, DialogContent, Tabs, TabList, Tab, ListItemDecorator, Tooltip, Badge } from '@mui/joy';
+import { Grid, Typography, Button, Modal, ModalDialog, ModalClose, DialogContent, Tabs, TabList, Tab, ListItemDecorator, Badge, Select, Option, Chip } from '@mui/joy';
 import { Box, Card, CardContent } from '@mui/material';
 import { CldImage } from 'next-cloudinary';
 import AddIcon from '@mui/icons-material/Add';
@@ -10,16 +10,9 @@ import { useRouter } from 'next/navigation';
 import InfoIcon from '@mui/icons-material/Info';
 import ConfirmationRetrievalRequest from './Modal/ConfirmationRetrievalRequest';
 import CancelRequest from './Modal/CancelRequest';
-import { format, parseISO } from 'date-fns';
 import RatingsModal from './Modal/Ratings';
 import ItemDetails from './Modal/ItemDetails';
-import SearchIcon from '@mui/icons-material/Search';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import DoneAllIcon from '@mui/icons-material/DoneAll';
-import CancelIcon from '@mui/icons-material/Cancel';
-import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
-import RequestPageIcon from '@mui/icons-material/RequestPage';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import { useTheme, useMediaQuery } from '@mui/material';
 
 const MyItemsComponent = ({ session, status }) => {
   const [completedItemDetailsModal, setCompletedItemDetailsModal] = useState(null);
@@ -37,6 +30,8 @@ const MyItemsComponent = ({ session, status }) => {
   const [activeTab, setActiveTab] = useState(0); // State to track the active tab
   const [ratingModal, setRatingModal] = useState(null);
   const router = useRouter();
+  const theme = useTheme();
+  const isMd = useMediaQuery(theme.breakpoints.up('lg'));
 
   const handleChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -50,36 +45,42 @@ const MyItemsComponent = ({ session, status }) => {
     }
 
     try {
-      // Fetch user-specific items (lost and found)
-      const response = await fetch(`/api/items/${session.user.id}`);
-      const data = await response.json();
+      // Fetch user-specific items and ratings concurrently
+      const [itemsResponse, ratingsResponse, foundItemsResponse] = await Promise.all([
+        fetch(`/api/items/${session.user.id}`),
+        fetch('/api/ratings'),
+        fetch('/api/finder'),
+      ]);
 
-      const ratingsResponse = await fetch('/api/ratings');
-      const ratingsData = await ratingsResponse.json();
-
-      const filteredRatings = ratingsData.filter((rating) =>
-        rating.sender &&
-        rating.sender._id.toString() === session.user.id // Convert ObjectId to string for comparison
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user items');
+      if (!itemsResponse.ok || !ratingsResponse.ok || !foundItemsResponse.ok) {
+        throw new Error('Failed to fetch data from one or more endpoints');
       }
 
-      // Filter items based on various statuses and types
-      const lostItems = data.filter(
+      const [itemsData, ratingsData, foundItemsData] = await Promise.all([
+        itemsResponse.json(),
+        ratingsResponse.json(),
+        foundItemsResponse.json(),
+      ]);
+
+      // Filter ratings for the current user
+      const filteredRatings = ratingsData.filter(
+        (rating) => rating.sender?._id.toString() === session.user.id
+      );
+
+      // Categorize user-specific items
+      const lostItems = itemsData.filter(
         (item) =>
           !item.item.isFoundItem && ['Missing', 'Unclaimed'].includes(item.item.status)
       );
-      const foundItems = data.filter(
+      const foundItems = itemsData.filter(
         (item) =>
           item.item.isFoundItem && !['Request', 'Resolved', 'Declined', 'Canceled'].includes(item.item.status)
       );
-      const requestedItems = data.filter((item) => item.item.status === 'Request');
-      const declinedItems = data.filter((item) => item.item.status === 'Declined');
-      const canceledItems = data.filter((item) => item.item.status === 'Canceled');
+      const requestedItems = itemsData.filter((item) => item.item.status === 'Request');
+      const declinedItems = itemsData.filter((item) => item.item.status === 'Declined');
+      const canceledItems = itemsData.filter((item) => item.item.status === 'Canceled');
 
-      // Set state for categorized items
+      // Set categorized items
       setLostItems(lostItems);
       setFoundItems(foundItems);
       setCompletedItems(filteredRatings);
@@ -87,67 +88,42 @@ const MyItemsComponent = ({ session, status }) => {
       setDeclinedItems(declinedItems);
       setCanceledItems(canceledItems);
 
-      // Fetch all found items for potential matches
-      const foundItemsResponse = await fetch('/api/finder');
-      const foundItemsData = await foundItemsResponse.json();
-
-      if (!foundItemsResponse.ok) {
-        throw new Error('Failed to fetch found items');
-      }
-
-      // Filter found items that are published and do not belong to the current user
-      const filteredFoundItems = foundItemsData.filter(
+      // Filter potential matches for lost items
+      const otherFoundItems = foundItemsData.filter(
         (fItem) => fItem?.user?._id !== session.user.id && fItem?.item?.status === 'Published'
       );
 
-      // Function to fetch cosine similarity
-      const similarityCheck = async (lostItem, foundItem) => {
-        const response = await fetch('/api/similarity', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lostItem, foundItem }),
-        });
-
-        return response.json();
-      };
-
-      // Match found items with lost items based on similarity score
+      // Fetch cosine similarity for lost items and potential matches
       const matches = await Promise.all(
         lostItems.map(async (lostItem) => {
-          // Prepare the matching logic for each lost item
-          const matchedFoundItems = await Promise.all(
-            filteredFoundItems.map(async (foundItem) => {
-              const similarity = await similarityCheck(
-                lostItem,
-                foundItem,
-              );
+          const matchedItems = await Promise.all(
+            otherFoundItems.map(async (foundItem) => {
+              const response = await fetch('/api/similarity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lostItem, foundItem }),
+              });
 
-              return {
-                foundItem,
-                similarity,
-              };
+              const similarity = await response.json();
+              return { foundItem, similarity };
             })
           );
 
-          // Sort matches by similarity in descending order
-          const sortedMatches = matchedFoundItems
-            .filter((match) => match.similarity >= 50) // You can adjust the similarity threshold as needed
-            .sort((a, b) => b.similarity - a.similarity)
+          // Sort and filter matches
+          const sortedMatches = matchedItems
+            .filter((match) => match.similarity >= 50) // Threshold for similarity
+            .sort((a, b) => b.similarity - a.similarity);
 
-          return {
-            lostItem,
-            matches: sortedMatches,
-          };
+          return { lostItem, matches: sortedMatches };
         })
       );
 
       // Set suggested matches
-      setSuggestedMatches(matches); // This now contains an array of objects with lostItem and matches
-
+      setSuggestedMatches(matches);
     } catch (error) {
       console.error('Error fetching items:', error);
     }
-  }, [session?.user?.id]);  // Re-run the effect when the session id changes
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -159,84 +135,117 @@ const MyItemsComponent = ({ session, status }) => {
     <>
       <TitleBreadcrumbs title="List of My Items" text="My Items" />
 
-      <Box sx={{ padding: '1rem' }}>
-        <Box sx={{ width: '100%', mb: 5 }}>
-          <Tabs value={activeTab} onChange={handleChange} aria-label="Icon tabs" defaultValue={0}>
-            <TabList>
-              <Badge badgeContent={lostItems.length}>
-                <Tooltip title="Lost Items" arrow>
+      {isMd ? (
+        <>
+          <Box sx={{ width: '100%', mb: 5 }}>
+            <Tabs value={activeTab} onChange={handleChange} aria-label="Icon tabs" defaultValue={0}>
+              <TabList>
+                <Badge badgeContent={lostItems.length}>
                   <Tab>
-                    <ListItemDecorator sx={{ display: { xs: 'block', lg: 'none' } }}>
-                      <SearchIcon fontSize='small' />
-                    </ListItemDecorator>
-                    <Typography level="body-md" sx={{ display: { xs: 'none', lg: 'block' } }}>Lost Items</Typography>
+                    <Typography level="body-md">Lost Items</Typography>
                   </Tab>
-                </Tooltip>
-              </Badge>
-              <Badge badgeContent={foundItems.length}>
-                <Tooltip title="Found Items" arrow>
+                </Badge>
+                <Badge badgeContent={foundItems.length}>
                   <Tab>
-                    <ListItemDecorator sx={{ display: { xs: 'block', lg: 'none' } }}>
-                      <CheckCircleIcon fontSize='small' />
-                    </ListItemDecorator>
-                    <Typography level="body-md" sx={{ display: { xs: 'none', lg: 'block' } }}>Found Items</Typography>
+                    <Typography level="body-md">Found Items</Typography>
                   </Tab>
-                </Tooltip>
-              </Badge>
-              <Badge badgeContent={completedItems.length}>
-                <Tooltip title="Completed Items" arrow>
+                </Badge>
+                <Badge badgeContent={completedItems.length}>
                   <Tab>
-                    <ListItemDecorator sx={{ display: { xs: 'block', lg: 'none' } }}>
-                      <DoneAllIcon fontSize='small' />
-                    </ListItemDecorator>
-                    <Typography level="body-md" sx={{ display: { xs: 'none', lg: 'block' } }}>Completed Items</Typography>
+                    <Typography level="body-md">Completed Items</Typography>
                   </Tab>
-                </Tooltip>
-              </Badge>
-              <Badge badgeContent={declinedItems.length}>
-                <Tooltip title="Declined Items" arrow>
+                </Badge>
+                <Badge badgeContent={declinedItems.length}>
                   <Tab>
-                    <ListItemDecorator sx={{ display: { xs: 'block', lg: 'none' } }}>
-                      <CancelIcon fontSize='small' />
-                    </ListItemDecorator>
-                    <Typography level="body-md" sx={{ display: { xs: 'none', lg: 'block' } }}>Declined Items</Typography>
+                    <Typography level="body-md">Declined Items</Typography>
                   </Tab>
-                </Tooltip>
-              </Badge>
-              <Badge badgeContent={canceledItems.length}>
-                <Tooltip title="Canceled Items" arrow>
+                </Badge>
+                <Badge badgeContent={canceledItems.length}>
                   <Tab>
-                    <ListItemDecorator sx={{ display: { xs: 'block', lg: 'none' } }}>
-                      <CancelPresentationIcon fontSize='small' />
-                    </ListItemDecorator>
-                    <Typography level="body-md" sx={{ display: { xs: 'none', lg: 'block' } }}>Canceled Items</Typography>
+                    <Typography level="body-md">Canceled Items</Typography>
                   </Tab>
-                </Tooltip>
-              </Badge>
-              <Badge badgeContent={requestedItems.length}>
-                <Tooltip title="Requested Items" arrow>
+                </Badge>
+                <Badge badgeContent={requestedItems.length}>
                   <Tab>
-                    <ListItemDecorator sx={{ display: { xs: 'block', lg: 'none' } }}>
-                      <RequestPageIcon fontSize='small' />
-                    </ListItemDecorator>
-                    <Typography level="body-md" sx={{ display: { xs: 'none', lg: 'block' } }}>Requested Items</Typography>
+                    <Typography level="body-md">Requested Items</Typography>
                   </Tab>
-                </Tooltip>
-              </Badge>
-              <Badge badgeContent={suggestedMatches.reduce((total, item) => total + (item.matches?.length || 0), 0)}>
-                <Tooltip title="Suggested Items" arrow>
+                </Badge>
+                <Badge badgeContent={suggestedMatches.reduce((total, item) => total + (item.matches?.length || 0), 0)}>
                   <Tab>
-                    <ListItemDecorator sx={{ display: { xs: 'block', lg: 'none' } }}>
-                      <LightbulbIcon fontSize='small' />
-                    </ListItemDecorator>
-                    <Typography level="body-md" sx={{ display: { xs: 'none', lg: 'block' } }}>Suggested Items</Typography>
+                    <Typography level="body-md">Suggested Items</Typography>
                   </Tab>
-                </Tooltip>
-              </Badge>
-            </TabList>
-          </Tabs>
-        </Box>
+                </Badge>
+              </TabList>
+            </Tabs>
+          </Box>
+        </>
+      ) : (
+        <>
+          <Select
+            value={activeTab}
+            onChange={handleChange}
+          >
+            <Option value={0} label="Lost Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Lost Items
+              {lostItems.length > 0 && (
+                <ListItemDecorator>
+                  <Chip color="danger" variant="solid">{lostItems.length}</Chip>
+                </ListItemDecorator>
+              )}
+            </Option>
+            <Option value={1} label="Found Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Found Items
+              {foundItems.length > 0 && (
+                <ListItemDecorator>
+                  <Chip color="danger" variant="solid">{foundItems.length}</Chip>
+                </ListItemDecorator>
+              )}
+            </Option>
+            <Option value={2} label="Completed Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Completed Items
+              {completedItems.length > 0 && (
+                <ListItemDecorator>
+                  <Chip color="danger" variant="solid">{completedItems.length}</Chip>
+                </ListItemDecorator>
+              )}
+            </Option>
+            <Option value={3} label="Declined Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Declined Items
+              {declinedItems.length > 0 && (
+                <ListItemDecorator>
+                  <Chip color="danger" variant="solid">{declinedItems.length}</Chip>
+                </ListItemDecorator>
+              )}
+            </Option>
+            <Option value={4} label="Canceled Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Canceled Items
+              {canceledItems.length > 0 && (
+                <ListItemDecorator>
+                  <Chip color="danger" variant="solid">{canceledItems.length}</Chip>
+                </ListItemDecorator>
+              )}
+            </Option>
+            <Option value={5} label="Requested Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Requested Items
+              {requestedItems.length > 0 && (
+                <ListItemDecorator>
+                  <Chip color="danger" variant="solid">{requestedItems.length}</Chip>
+                </ListItemDecorator>
+              )}
+            </Option>
+            <Option value={6} label="Suggested Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Suggested Items
+              {suggestedMatches.length > 0 && (
+                <ListItemDecorator>
+                  <Chip color="danger" variant="solid">{suggestedMatches.length}</Chip>
+                </ListItemDecorator>
+              )}
+            </Option>
+          </Select>
+        </>
+      )}
 
+      <Box sx={{ padding: '1rem' }}>
         {
           activeTab === 0 &&
           <>
@@ -512,7 +521,7 @@ const MyItemsComponent = ({ session, status }) => {
                                 Completed Item
                               </Typography>
 
-                              <DialogContent>
+                              <DialogContent sx={{ overflowX: 'hidden' }}>
                                 <ItemDetails row={completedItem} />
                               </DialogContent>
                             </ModalDialog>

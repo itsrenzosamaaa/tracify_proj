@@ -26,6 +26,7 @@ import { CldImage } from 'next-cloudinary';
 import { format, subDays, isBefore, isAfter, isToday } from 'date-fns';
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
+import { useTheme, useMediaQuery } from '@mui/material';
 
 const ItemDetails = ({ row, refreshData, snackBar }) => {
     const [isEditMode, setIsEditMode] = useState(false);
@@ -76,6 +77,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
         return ""; // Default value if item is found
     });
     const [loading, setLoading] = useState(false);
+    const theme = useTheme();
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+    const isSm = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+    const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
     const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court'];
 
@@ -175,41 +180,24 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
 
     return (
         <>
-            <Card
-                variant="outlined"
-                sx={{
-                    maxWidth: 900,
-                    margin: 'auto',
-                    padding: 3,
-                    bgcolor: 'background.surface',
-                }}
-            >
-                {/* Header */}
-                <Typography
-                    level="h4"
-                    textAlign="center"
-                    sx={{
-                        marginBottom: 3,
-                        fontWeight: 'bold',
-                        color: 'text.primary',
-                    }}
-                >
-                    Item Details
-                </Typography>
-
-                <CardContent>
+            {/* Header */}
+            <Grid container spacing={2} sx={{ mt: 3 }}>
+                <Grid item xs={12}>
                     {/* User Information */}
-                    <Box sx={{ marginBottom: 4 }}>
-                        <Typography
-                            level="h5"
-                            sx={{
-                                marginBottom: 2,
-                                fontWeight: 'bold',
-                                color: 'primary.plainColor',
-                            }}
-                        >
-                            {row.item.isFoundItem ? 'Finder' : 'Owner'} Information
-                        </Typography>
+                    <Grid container spacing={2} sx={{ marginBottom: 4 }}>
+                        <Grid item xs={12}>
+                            <Typography
+                                level="h5"
+                                sx={{
+                                    marginBottom: 2,
+                                    fontWeight: 'bold',
+                                    color: 'primary.plainColor',
+                                }}
+                            >
+                                {row.item.isFoundItem ? 'Finder' : 'Owner'} Information
+                            </Typography>
+                        </Grid>
+                        {/* Avatar */}
                         <Box
                             sx={{
                                 display: 'flex',
@@ -219,57 +207,85 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 bgcolor: 'background.level1',
                                 borderRadius: 'md',
                                 boxShadow: 'sm',
+                                maxWidth: { xs: '210px', sm: '600px' }, // 100% on small screens, 600px on larger
+                                width: '100%',
                             }}
                         >
-                            {/* Avatar */}
-                            <Avatar sx={{ width: 80, height: 80 }} />
+                            <Grid container spacing={2}>
+                                <Grid
+                                    item
+                                    xs={12}
+                                    md={3}
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center', // Center the avatar
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <Avatar sx={{ width: 80, height: 80 }} />
+                                </Grid>
 
-                            {/* User Details */}
-                            <Stack spacing={1} sx={{ flex: 1 }}>
-                                <Typography>
-                                    <strong>Name:</strong> {row.sender.firstname || row.user?.firstname || 'N/A'} {row.sender.lastname || row.user?.lastname || 'N/A'}
-                                </Typography>
-                                <Typography>
-                                    <strong>Email:</strong> {row.sender.emailAddress || row.user?.emailAddress || 'N/A'}
-                                </Typography>
-                                <Typography>
-                                    <strong>Contact Number:</strong> {row.sender.contactNumber || row.user?.contactNumber || 'N/A'}
-                                </Typography>
-                            </Stack>
+                                {/* User Details */}
+                                <Grid
+                                    item
+                                    xs={12}
+                                    md={9}
+                                    sx={{
+                                        maxWidth: '100%',
+                                        flexBasis: { xs: '100%', md: '75%' }
+                                    }}
+                                >
+                                    <Stack spacing={1} sx={{ flex: 1 }}>
+                                        <Typography
+                                            fontWeight="700"
+                                            level={isXs ? 'body-sm' : 'body-md'}
+                                            sx={{
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                            }}
+                                        >
+                                            {row.sender ? row.sender.firstname : row.user?.firstname} {row.sender ? row.sender.lastname : row.user?.lastname}
+                                        </Typography>
+                                        <Typography
+                                            level={isXs ? 'body-sm' : 'body-md'}
+                                            sx={{
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                            }}
+                                        >
+                                            {row.sender ? row.sender.emailAddress : row.user?.emailAddress}
+                                        </Typography>
+                                        <Typography
+                                            level={isXs ? 'body-sm' : 'body-md'}
+                                            sx={{
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                            }}
+                                        >
+                                            {row.sender ? row.sender.contactNumber : row.user?.contactNumber}
+                                        </Typography>
+                                    </Stack>
+                                </Grid>
+                            </Grid>
                         </Box>
-                    </Box>
+                    </Grid>
 
                     {/* Item Details */}
                     <Box sx={{ marginBottom: 4 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                                <Typography
-                                    level="h5"
-                                    sx={{
-                                        marginBottom: 2,
-                                        fontWeight: 'bold',
-                                        color: 'primary.plainColor',
-                                    }}
-                                >
-                                    Item Information
-                                </Typography>
-                                <Typography>
-                                    <Chip
-                                        variant='solid'
-                                        color={
-                                            row.item.status === 'Missing' || row.item.status === "Surrender Pending" || row.item.status === "Request"
-                                                ? 'warning'
-                                                : row.item.status === "Declined" || row.item.status === "Canceled" || row.item.status === 'Unclaimed'
-                                                    ? "danger"
-                                                    : row.item.status === "Published" || row.item.status === "Matched"
-                                                        ? 'primary'
-                                                        : 'success'
-                                        }
-                                    >
-                                        {row.item.status}
-                                    </Chip>
-                                </Typography>
-                            </Box>
+                            <Typography
+                                level="h5"
+                                sx={{
+                                    marginBottom: 2,
+                                    fontWeight: 'bold',
+                                    color: 'primary.plainColor',
+                                }}
+                            >
+                                Item Information
+                            </Typography>
                             {(row.item.status === "Missing" || row.item.status === "Published") && (
                                 !isEditMode ? (
                                     <Button onClick={() => setIsEditMode(true)}>Edit</Button>
@@ -287,10 +303,25 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 padding: 3,
                             }}
                         >
+                            <Chip
+                                variant='solid'
+                                sx={{ mb: 2 }}
+                                color={
+                                    row.item.status === 'Missing' || row.item.status === "Surrender Pending" || row.item.status === "Request"
+                                        ? 'warning'
+                                        : row.item.status === "Declined" || row.item.status === "Canceled" || row.item.status === 'Unclaimed'
+                                            ? "danger"
+                                            : row.item.status === "Published" || row.item.status === "Matched"
+                                                ? 'primary'
+                                                : 'success'
+                                }
+                            >
+                                {row.item.status}
+                            </Chip>
                             <form onSubmit={handleEdit}>
-                                <Grid container spacing={3}>
+                                <Grid container spacing={2}>
                                     {/* Left Column */}
-                                    <Grid item xs={12} md={6}>
+                                    <Grid item xs={12} lg={6}>
                                         {isEditMode ? (
                                             <Input
                                                 required
@@ -300,7 +331,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 fullWidth
                                             />
                                         ) : (
-                                            <Typography>
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                 <strong>Name:</strong> {row.item.name || 'N/A'}
                                             </Typography>
                                         )}
@@ -323,7 +354,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 ))}
                                             </Select>
                                         ) : (
-                                            <Typography>
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                 <strong>Color:</strong> {row.item.color || 'N/A'}
                                             </Typography>
                                         )}
@@ -346,7 +377,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 ))}
                                             </Select>
                                         ) : (
-                                            <Typography>
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                 <strong>Size:</strong> {row.item.size || 'N/A'}
                                             </Typography>
                                         )}
@@ -369,14 +400,14 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 ))}
                                             </Select>
                                         ) : (
-                                            <Typography>
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                 <strong>Category:</strong> {row.item.category || 'N/A'}
                                             </Typography>
                                         )}
                                     </Grid>
 
                                     {/* Right Column */}
-                                    <Grid item xs={12} md={6}>
+                                    <Grid item xs={12} lg={6}>
                                         {
                                             isEditMode ?
                                                 <Autocomplete
@@ -393,7 +424,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 />
 
                                                 :
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     <strong>Location:</strong> {row.item.location || 'N/A'}
                                                 </Typography>
                                         }
@@ -415,7 +446,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 ))}
                                             </Select>
                                         ) : (
-                                            <Typography>
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                 <strong>Material:</strong> {row.item.material || 'N/A'}
                                             </Typography>
                                         )}
@@ -437,7 +468,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 ))}
                                             </Select>
                                         ) : (
-                                            <Typography>
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                 <strong>Condition:</strong> {row.item.condition || 'N/A'}
                                             </Typography>
                                         )}
@@ -460,7 +491,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 ))}
                                             </Select>
                                         ) : (
-                                            <Typography>
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                 <strong>Distinctive Marks:</strong> {row.item.distinctiveMarks || 'N/A'}
                                             </Typography>
                                         )}
@@ -479,7 +510,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 fullWidth
                                             />
                                         ) : (
-                                            <Typography>
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                 <strong>Description:</strong> {row.item.description || 'N/A'}
                                             </Typography>
                                         )}
@@ -496,10 +527,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Typography>
+                                                    <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                         <strong>Date:</strong> {new Date(row.item.date_time).toLocaleDateString()}
                                                     </Typography>
-                                                    <Typography>
+                                                    <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                         <strong>Time:</strong> {new Date(row.item.date_time).toLocaleTimeString()}
                                                     </Typography>
                                                 </>
@@ -537,10 +568,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <Typography>
+                                                        <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                             <strong>Start Lost Date:</strong> {start ? `${new Date(start).toLocaleDateString()} ${new Date(start).toLocaleTimeString()}` : 'Unidentified'}
                                                         </Typography>
-                                                        <Typography>
+                                                        <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                             <strong>End Lost Date:</strong> {end ? `${new Date(end).toLocaleDateString()} ${new Date(end).toLocaleTimeString()}` : 'Unidentified'}
                                                         </Typography>
                                                     </>
@@ -585,10 +616,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                             <Stepper orientation="vertical">
                                 {row.item.dateRequest && (
                                     <Step>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
                                             <strong>Request has been sent!</strong>
                                         </Typography>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
                                             {isToday(new Date(row.item.dateRequest))
                                                 ? `Today, ${format(new Date(row.item.dateRequest), 'hh:mm a')}`
                                                 : format(new Date(row.item.dateRequest), 'MMMM dd, yyyy, hh:mm a')}
@@ -597,10 +628,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 )}
                                 {row.item.dateValidating && (
                                     <Step>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
                                             <strong>The item request has approved!</strong>
                                         </Typography>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
                                             {isToday(new Date(row.item.dateValidating))
                                                 ? `Today, ${format(new Date(row.item.dateValidating), 'hh:mm a')}`
                                                 : format(new Date(row.item.dateValidating), 'MMMM dd, yyyy, hh:mm a')}
@@ -609,10 +640,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 )}
                                 {row.item.datePublished && (
                                     <Step>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
                                             <strong>{row.item.dateRequest ? 'The item was approved!' : 'The item has been published!'}</strong>
                                         </Typography>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
                                             {isToday(new Date(row.item.datePublished))
                                                 ? `Today, ${format(new Date(row.item.datePublished), 'hh:mm a')}`
                                                 : format(new Date(row.item.datePublished), 'MMMM dd, yyyy, hh:mm a')}
@@ -621,10 +652,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 )}
                                 {row.item.dateMatched && (
                                     <Step>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
                                             <strong>The item has been successfully matched!</strong>
                                         </Typography>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
                                             {isToday(new Date(row.item.dateMatched))
                                                 ? `Today, ${format(new Date(row.item.dateMatched), 'hh:mm a')}`
                                                 : format(new Date(row.item.dateMatched), 'MMMM dd, yyyy, hh:mm a')}
@@ -633,10 +664,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 )}
                                 {row.item.dateMissing && (
                                     <Step>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
                                             <strong>The item has been published!</strong>
                                         </Typography>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
                                             {isToday(new Date(row.item.dateMissing))
                                                 ? `Today, ${format(new Date(row.item.dateMissing), 'hh:mm a')}`
                                                 : format(new Date(row.item.dateMissing), 'MMMM dd, yyyy, hh:mm a')}
@@ -645,10 +676,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 )}
                                 {row.item.dateUnclaimed && (
                                     <Step>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
                                             <strong>The item has been tracked!</strong>
                                         </Typography>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
                                             {isToday(new Date(row.item.dateUnclaimed))
                                                 ? `Today, ${format(new Date(row.item.dateUnclaimed), 'hh:mm a')}`
                                                 : format(new Date(row.item.dateUnclaimed), 'MMMM dd, yyyy, hh:mm a')}
@@ -657,10 +688,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 )}
                                 {row.item.dateCanceled && (
                                     <Step>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
                                             <strong>The item has been canceled.</strong>
                                         </Typography>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
                                             {isToday(new Date(row.item.dateCanceled))
                                                 ? `Today, ${format(new Date(row.item.dateCanceled), 'hh:mm a')}`
                                                 : format(new Date(row.item.dateCanceled), 'MMMM dd, yyyy, hh:mm a')}
@@ -669,13 +700,13 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 )}
                                 {row.item.dateDeclined && (
                                     <Step>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
                                             <strong>The item has been declined.</strong>
                                         </Typography>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
                                             <strong>Reason: </strong> {row.item.reason}
                                         </Typography>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
                                             {isToday(new Date(row.item.dateDeclined))
                                                 ? `Today, ${format(new Date(row.item.dateDeclined), 'hh:mm a')}`
                                                 : format(new Date(row.item.dateDeclined), 'MMMM dd, yyyy, hh:mm a')}
@@ -684,10 +715,10 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 )}
                                 {(row.item.dateResolved || row.item.dateClaimed) && (
                                     <Step>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
                                             <strong>The item has successfully returned to owner!</strong>
                                         </Typography>
-                                        <Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
                                             {isToday(new Date(row.item.isFoundItem ? row.item.dateResolved : row.item.dateClaimed))
                                                 ? `Today, ${format(new Date(row.item.isFoundItem ? row.item.dateResolved : row.item.dateClaimed), 'hh:mm a')}`
                                                 : format(new Date(row.item.isFoundItem ? row.item.dateResolved : row.item.dateClaimed), 'MMMM dd, yyyy, hh:mm a')}
@@ -736,8 +767,8 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                             }
                         </Carousel>
                     </Box>
-                </CardContent>
-            </Card >
+                </Grid>
+            </Grid>
         </>
     );
 };

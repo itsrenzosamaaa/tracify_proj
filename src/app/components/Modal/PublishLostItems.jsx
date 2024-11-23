@@ -1,6 +1,6 @@
 'use client'
 
-import { Snackbar, DialogContent, Modal, ModalDialog, Stack, Typography, ModalClose, FormControl, FormLabel, Input, Autocomplete, Button, Box, Checkbox, Textarea, Select, Option } from '@mui/joy'
+import { Grid, Snackbar, DialogContent, Modal, ModalDialog, Stack, Typography, ModalClose, FormControl, FormLabel, Input, Autocomplete, Button, Box, Checkbox, Textarea, Select, Option } from '@mui/joy'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
@@ -66,7 +66,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
             description,
             location: itemWhereabouts ? location : 'Unidentified',
             date_time: itemWhereabouts ? `${format(selectedLostStartDate, 'MMMM dd, yyyy hh:mm a')} to ${format(selectedLostEndDate, 'MMMM dd, yyyy hh:mm a')}` : 'Unidentified',
-            image,
+            images,
             status: 'Missing',
             dateMissing: new Date(),
         };
@@ -123,7 +123,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
         setLocation(null);
         setLostDateStart('');
         setLostDateEnd('');
-        setImage(null);
+        setImages(null);
         setOwner(null);
         if (fetchItems) await fetchItems();
     };
@@ -225,8 +225,8 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                     <Input required type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
                                 </FormControl>
 
-                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                    <Box sx={{ width: '100%' }}>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Color</FormLabel>
                                             <Select
@@ -246,9 +246,9 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
+                                    </Grid>
 
-                                    <Box sx={{ width: '100%' }}>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Size</FormLabel>
                                             <Select
@@ -267,9 +267,9 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
+                                    </Grid>
 
-                                    <Box sx={{ width: '100%' }}>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Category</FormLabel>
                                             <Select
@@ -288,11 +288,11 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
-                                </Box>
+                                    </Grid>
+                                </Grid>
 
-                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                    <Box sx={{ width: '100%' }}>
+                                <Grid container spacing={1}>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Material</FormLabel>
                                             <Select
@@ -311,8 +311,8 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
-                                    <Box sx={{ width: '100%' }}>
+                                    </Grid>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Condition</FormLabel>
                                             <Select
@@ -331,8 +331,8 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
-                                    <Box sx={{ width: '100%' }}>
+                                    </Grid>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Distinctive Marks</FormLabel>
                                             <Select
@@ -351,8 +351,8 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
-                                </Box>
+                                    </Grid>
+                                </Grid>
                                 <FormControl>
                                     <FormLabel>Item Description</FormLabel>
                                     <Textarea required type="text" name="description" minRows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
@@ -376,33 +376,37 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 getOptionLabel={(option) => option}
                                             />
                                         </FormControl>
-                                        <Box display="flex" gap={2}>
+                                        <Grid container spacing={1}>
                                             {/* Start Date and Time */}
-                                            <FormControl required>
-                                                <FormLabel>Start Date and Time</FormLabel>
-                                                <Input
-                                                    fullWidth
-                                                    required
-                                                    type="datetime-local" // Ensures the input is a date-time picker
-                                                    name="lostDateStart"
-                                                    value={lostDateStart} // State holding the start date-time value
-                                                    onChange={handleStartDateChange} // Update state with the selected date-time
-                                                />
-                                            </FormControl>
+                                            <Grid item xs={12} md={6}>
+                                                <FormControl required>
+                                                    <FormLabel>Start Date and Time</FormLabel>
+                                                    <Input
+                                                        fullWidth
+                                                        required
+                                                        type="datetime-local" // Ensures the input is a date-time picker
+                                                        name="lostDateStart"
+                                                        value={lostDateStart} // State holding the start date-time value
+                                                        onChange={handleStartDateChange} // Update state with the selected date-time
+                                                    />
+                                                </FormControl>
+                                            </Grid>
 
-                                            {/* End Date and Time */}
-                                            <FormControl required>
-                                                <FormLabel>End Date and Time</FormLabel>
-                                                <Input
-                                                    fullWidth
-                                                    required
-                                                    type="datetime-local" // Ensures the input is a date-time picker
-                                                    name="lostDateEnd"
-                                                    value={lostDateEnd} // State holding the end date-time value
-                                                    onChange={handleEndDateChange} // Update state with the selected date-time
-                                                />
-                                            </FormControl>
-                                        </Box>
+                                            <Grid item xs={12} md={6}>
+                                                {/* End Date and Time */}
+                                                <FormControl required>
+                                                    <FormLabel>End Date and Time</FormLabel>
+                                                    <Input
+                                                        fullWidth
+                                                        required
+                                                        type="datetime-local" // Ensures the input is a date-time picker
+                                                        name="lostDateEnd"
+                                                        value={lostDateEnd} // State holding the end date-time value
+                                                        onChange={handleEndDateChange} // Update state with the selected date-time
+                                                    />
+                                                </FormControl>
+                                            </Grid>
+                                        </Grid>
                                     </>
                                 }
                                 <FormControl required>
@@ -479,7 +483,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 </Box>
                                             ))}
                                         </Box>
-                                        <input {...getInputProps()} multiple />
+                                        <input {...getInputProps()} multiple required />
                                         <p>
                                             {images.length === 0 && "Drag 'n' drop some files here, or click to select files"}
                                         </p>

@@ -1,6 +1,6 @@
 'use client'
 
-import { Snackbar, Textarea, DialogContent, Modal, ModalDialog, Stack, Typography, ModalClose, FormControl, FormLabel, Input, Autocomplete, Button, Box, Checkbox, Select, Option } from '@mui/joy'
+import { Grid, Snackbar, Textarea, DialogContent, Modal, ModalDialog, Stack, Typography, ModalClose, FormControl, FormLabel, Input, Autocomplete, Button, Box, Checkbox, Select, Option } from '@mui/joy'
 import React, { useEffect, useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
@@ -26,7 +26,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const { data: session, status } = useSession();
 
-    console.log(images)
+    console.log(finder)
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -107,7 +107,21 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                     body: JSON.stringify(finderData),
                 });
 
-                if (foundResponse.ok) {
+                const mailResponse = await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: finder.emailAddress,
+                        name: finder.firstname,
+                        link: 'tracify-project.vercel.app',
+                        success: true,
+                        title: 'Item Published Successfully!'
+                    }),
+                });
+
+                if (foundResponse.ok && mailResponse.ok) {
                     await resetForm(); // Ensure resetForm is defined to clear form inputs
                     setOpenSnackbar(true);
                 } else {
@@ -210,8 +224,8 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                     <FormLabel>Item Name</FormLabel>
                                     <Input type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
                                 </FormControl>
-                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                    <Box sx={{ width: '100%' }}>
+                                <Grid container spacing={1}>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Color</FormLabel>
                                             <Select
@@ -231,9 +245,9 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
+                                    </Grid>
 
-                                    <Box sx={{ width: '100%' }}>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Size</FormLabel>
                                             <Select
@@ -252,9 +266,9 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
+                                    </Grid>
 
-                                    <Box sx={{ width: '100%' }}>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Category</FormLabel>
                                             <Select
@@ -273,11 +287,11 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
-                                </Box>
+                                    </Grid>
+                                </Grid>
 
-                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                    <Box sx={{ width: '100%' }}>
+                                <Grid container spacing={1}>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Material</FormLabel>
                                             <Select
@@ -296,8 +310,8 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
-                                    <Box sx={{ width: '100%' }}>
+                                    </Grid>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Condition</FormLabel>
                                             <Select
@@ -316,8 +330,8 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
-                                    <Box sx={{ width: '100%' }}>
+                                    </Grid>
+                                    <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Distinctive Marks</FormLabel>
                                             <Select
@@ -336,8 +350,8 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 ))}
                                             </Select>
                                         </FormControl>
-                                    </Box>
-                                </Box>
+                                    </Grid>
+                                </Grid>
                                 <FormControl required>
                                     <FormLabel>Item Description</FormLabel>
                                     <Textarea type="text" name="description" minRows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
@@ -438,7 +452,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 </Box>
                                             ))}
                                         </Box>
-                                        <input {...getInputProps()} multiple />
+                                        <input {...getInputProps()} multiple required />
                                         <p>
                                             {images.length === 0 && "Drag 'n' drop some files here, or click to select files"}
                                         </p>
