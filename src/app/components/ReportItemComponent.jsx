@@ -266,7 +266,7 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
 
             // Redirect when countdown reaches 0
             if (countdown === 0) {
-                router.push('/my-items');
+                router.push('/my-items#requested-item');
             }
 
             // Clear interval when modal closes or component unmounts
@@ -624,7 +624,7 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
                                                 <Grid item xs={12}>
                                                     <Box sx={{ textAlign: 'center' }}>
                                                         <Typography sx={{ fontWeight: 'bold', color: '#555', marginBottom: 2 }}>
-                                                            Item Image
+                                                            Item Images
                                                         </Typography>
                                                         {images.length > 0 ? (
                                                             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 2 }}>
@@ -673,7 +673,7 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
                                 <Typography level="body1">
                                     Item has been reported successfully. Redirecting in {countdown} seconds...
                                 </Typography>
-                                <Button onClick={() => router.push('/my-items')} sx={{ mt: 2 }}>
+                                <Button onClick={() => router.push('/my-items#requested-item')} sx={{ mt: 2 }}>
                                     Redirect now
                                 </Button>
                             </ModalDialog>

@@ -10,6 +10,8 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData, session }) => {
     const [openSnackbar, setOpenSnackbar] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    console.log(row)
+
     const handleSubmit = async (e, id) => {
         if (e && e.preventDefault) {
             e.preventDefault();
@@ -24,6 +26,23 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData, session }) => {
             });
 
             if (!response.ok) throw new Error('Failed to update status');
+
+            const notificationResponse = await fetch('/api/notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    receiver: row.user._id,
+                    message: `The item (${row.item.name}) you surrendered has been published!`,
+                    type: 'Found Items',
+                    markAsRead: false,
+                    dateNotified: new Date(),
+                }),
+            });
+
+            if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
+
             setOpenSnackbar('success');
             onClose();
             await refreshData();
@@ -48,6 +67,23 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData, session }) => {
             });
 
             if (!response.ok) throw new Error('Failed to update status');
+
+            const notificationResponse = await fetch('/api/notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    receiver: row.user._id,
+                    message: `You failed to surrender the item (${row.item.name})`,
+                    type: 'Declined Items',
+                    markAsRead: false,
+                    dateNotified: new Date(),
+                }),
+            });
+
+            if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
+
             setOpenSnackbar('failed')
             onClose();
             await refreshData();

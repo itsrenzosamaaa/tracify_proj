@@ -91,7 +91,7 @@ const ViewItemPage = ({ params }) => {
                         <Stack spacing={2}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Typography level="h2">{foundItem?.item?.name}</Typography>
-                                <Button onClick={() => router.push('/my-items')} color="danger" aria-label="Back to my items">
+                                <Button onClick={() => router.push('/my-items#suggested-item')} color="danger" aria-label="Back to my items">
                                     Back
                                 </Button>
                             </Box>
@@ -133,20 +133,46 @@ const ViewItemPage = ({ params }) => {
 
                             <Divider />
 
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Avatar sx={{ width: 50, height: 50 }} />
-                                <Box>
-                                    <Typography level="body2" color="neutral">
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} md={2} display='flex' alignItems="center" justifyContent='center'>
+                                    <Avatar sx={{ width: 50, height: 50 }} />
+                                </Grid>
+                                <Grid item xs={12} md={10}>
+                                    <Typography
+                                        level="body2"
+                                        color="neutral"
+                                        sx={{
+                                            whiteSpace: { xs: 'nowrap' },
+                                            overflow: { xs: 'hidden' },
+                                            textOverflow: { xs: 'ellipsis' },
+                                        }}
+                                    >
                                         <strong>Finder:</strong> {foundItem.user.firstname} {foundItem.user.lastname}
                                     </Typography>
-                                    <Typography level="body2" color="neutral">
+                                    <Typography
+                                        level="body2"
+                                        color="neutral"
+                                        sx={{
+                                            whiteSpace: { xs: 'nowrap' },
+                                            overflow: { xs: 'hidden' },
+                                            textOverflow: { xs: 'ellipsis' },
+                                        }}
+                                    >
                                         <strong>Email Address:</strong> {foundItem.user.emailAddress}
                                     </Typography>
-                                    <Typography level="body2" color="neutral">
+                                    <Typography
+                                        level="body2"
+                                        color="neutral"
+                                        sx={{
+                                            whiteSpace: { xs: 'nowrap' },
+                                            overflow: { xs: 'hidden' },
+                                            textOverflow: { xs: 'ellipsis' },
+                                        }}
+                                    >
                                         <strong>Contact Number:</strong> {foundItem.user.contactNumber}
                                     </Typography>
-                                </Box>
-                            </Box>
+                                </Grid>
+                            </Grid>
 
                             <Typography level="body2" color="neutral">
                                 <strong>Description:</strong> {foundItem.item.description}

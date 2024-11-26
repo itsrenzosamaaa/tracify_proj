@@ -19,40 +19,44 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
         try {
             setLoading(true);
 
-            // First API call
-            const lostResponse = await fetch(`/api/lost-items/${lostItemId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Add any auth headers if needed
+            const makeRequest = async (url, method, body) => {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body ? JSON.stringify(body) : null,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Failed to perform request to ${url}`);
+                }
+
+                return response.json();
+            };
+
+            await makeRequest(`/api/lost-items/${lostItemId}`, 'PUT', { status: 'Unclaimed' });
+            await makeRequest(`/api/match-items/${matchedItemId}`, 'PUT', { request_status: 'Approved' });
+
+            const notificationData = [
+                {
+                    receiver: row.finder.user._id,
+                    message: `Your found item ${row.finder.item.name} has been matched to its owner!`,
+                    type: 'Found Items',
+                    markAsRead: false,
+                    dateNotified: new Date(),
                 },
-                body: JSON.stringify({
-                    status: 'Unclaimed',
-                }),
-            });
-
-            // Check response status and parse JSON
-            if (!lostResponse.ok) {
-                const errorData = await lostResponse.json();
-                throw new Error(errorData.message || 'Failed to update found item status');
-            }
-
-            // Second API call
-            const matchResponse = await fetch(`/api/match-items/${matchedItemId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Add any auth headers if needed
+                {
+                    receiver: row.owner.user._id,
+                    message: `Your claim request of ${row.finder.item.name} has been approved. Please come to ${row.finder.item.monitoredBy.role.name} office for claiming an item.`,
+                    type: 'Lost Items',
+                    markAsRead: false,
+                    dateNotified: new Date(),
                 },
-                body: JSON.stringify({
-                    request_status: 'Approved',
-                }),
-            });
+            ];
 
-            if (!matchResponse.ok) {
-                const errorData = await matchResponse.json();
-                throw new Error(errorData.message || 'Failed to update lost item status');
-            }
+            await Promise.all(
+                notificationData.map((notif) => makeRequest('/api/notification', 'POST', notif))
+            );
 
             // Close modals and refresh data
             setConfirmationApproveModal(null);
@@ -75,41 +79,33 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
         try {
             setLoading(true);
 
-            // First API call
-            const foundResponse = await fetch(`/api/found-items/${foundItemId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Add any auth headers if needed
-                },
-                body: JSON.stringify({
-                    status: 'Decline Retrieval',
-                }),
+            const makeRequest = async (url, method, body) => {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body ? JSON.stringify(body) : null,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Failed to perform request to ${url}`);
+                }
+
+                return response.json();
+            };
+
+            await makeRequest(`/api/found-items/${foundItemId}`, 'PUT', { status: 'Decline Retrieval' });
+            await makeRequest(`/api/match-items/${matchedItemId}`, 'PUT', {
+                request_status: 'Declined',
+                remarks: 'Item details are not matched.',
             });
-
-            // Check response status and parse JSON
-            if (!foundResponse.ok) {
-                const errorData = await foundResponse.json();
-                throw new Error(errorData.message || 'Failed to update found item status');
-            }
-
-            // Second API call
-            const matchResponse = await fetch(`/api/match-items/${matchedItemId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Add any auth headers if needed
-                },
-                body: JSON.stringify({
-                    request_status: 'Declined',
-                    remarks: 'Items are not matched.',
-                }),
-            });
-
-            if (!matchResponse.ok) {
-                const errorData = await matchResponse.json();
-                throw new Error(errorData.message || 'Failed to update lost item status');
-            }
+            await makeRequest('/api/notification', 'POST', {
+                receiver: row.owner.user._id,
+                message: `Your claim request of ${row.finder.item.name} has been declined due to unmatched details.`,
+                type: 'Lost Items',
+                markAsRead: false,
+                dateNotified: new Date(),
+            })
 
             // Close modals and refresh data
             setConfirmationApproveModal(null);

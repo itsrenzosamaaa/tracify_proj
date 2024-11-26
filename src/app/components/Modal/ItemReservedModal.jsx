@@ -59,12 +59,6 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
             const finderData = await makeRequest(`/api/finder/${row.finder.user._id}`, 'GET');
             const resolvedItemsCount = finderData.filter((finder) => finder.item.status === 'Resolved').length;
 
-            for (const badge of badgeData) {
-                if (resolvedItemsCount >= badge.meetConditions) {
-                    await makeRequest(`/api/award-badge/user/${row.finder.user._id}`, 'PUT', { badgeId: badge._id });
-                }
-            }
-
             // Update match status
             await makeRequest(`/api/match-items/${matchedId}`, 'PUT', { request_status: 'Completed' });
 
@@ -88,6 +82,40 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                 ratingData.map((rate) => makeRequest('/api/ratings', 'POST', rate))
             );
 
+            const notificationData = [
+                {
+                    receiver: row.finder.user._id,
+                    message: `Your found item ${row.finder.item.name} has been returned to its owner! Please rate your owner by clicking this!`,
+                    type: 'Completed Items',
+                    markAsRead: false,
+                    dateNotified: new Date(),
+                },
+                {
+                    receiver: row.owner.user._id,
+                    message: `Congratulations! The item (${row.owner.item.name}) has been successfully claimed. Please rate your finder by clicking this!`,
+                    type: 'Completed Items',
+                    markAsRead: false,
+                    dateNotified: new Date(),
+                },
+            ];
+
+            await Promise.all(
+                notificationData.map((notif) => makeRequest('/api/notification', 'POST', notif))
+            );
+
+            for (const badge of badgeData) {
+                if (resolvedItemsCount >= badge.meetConditions) {
+                    await makeRequest(`/api/award-badge/user/${row.finder.user._id}`, 'PUT', { badgeId: badge._id });
+                    await makeRequest('/api/notification', 'POST', {
+                        receiver: row.finder.user._id,
+                        message: `Congratulations, ${row.finder.user.firstname}! You've earned the ${badge.title} award for your amazing contribution in finding lost items. Thank you for making a difference!`,
+                        type: 'Profile',
+                        markAsRead: false,
+                        dateNotified: new Date(),
+                    })
+                }
+            }
+
             // Close modals, refresh data, and show success notification
             setConfirmationItemClaimed(null);
             onClose();
@@ -109,56 +137,47 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
         try {
             setLoading(true);
 
-            const foundResponse = await fetch(`/api/found-items/${foundItemId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Add any auth headers if needed
-                },
-                body: JSON.stringify({
-                    status: 'Decline Retrieval',
-                }),
+            const makeRequest = async (url, method, body) => {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body ? JSON.stringify(body) : null,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Failed to perform request to ${url}`);
+                }
+
+                return response.json();
+            };
+
+            await makeRequest(`/api/found-items/${foundItemId}`, 'PUT', { status: 'Decline Retrieval' });
+            await makeRequest(`/api/lost-items/${lostItemId}`, 'PUT', { status: 'Decline Retrieval' });
+            await makeRequest(`/api/match-items/${matchedItemId}`, 'PUT', {
+                request_status: 'Declined',
+                remarks: declineRemarks === 'Other' ? otherReason : declineRemarks,
             });
-
-            // Check response status and parse JSON
-            if (!foundResponse.ok) {
-                const errorData = await foundResponse.json();
-                throw new Error(errorData.message || 'Failed to update found item status');
-            }
-
-            const lostResponse = await fetch(`/api/lost-items/${lostItemId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Add any auth headers if needed
+            const notificationData = [
+                {
+                    receiver: row.finder.user._id,
+                    message: `The owner failed to claim the item. Your found item (${row.finder.item.name}) will be reverted back as Published`,
+                    type: 'Found Items',
+                    markAsRead: false,
+                    dateNotified: new Date(),
                 },
-                body: JSON.stringify({
-                    status: 'Decline Retrieval',
-                }),
-            });
-
-            // Check response status and parse JSON
-            if (!lostResponse.ok) {
-                const errorData = await lostResponse.json();
-                throw new Error(errorData.message || 'Failed to update found item status');
-            }
-
-            const matchResponse = await fetch(`/api/match-items/${matchedItemId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Add any auth headers if needed
+                {
+                    receiver: row.owner.user._id,
+                    message: `You have failed to claim an item (${row.owner.item.name}). Click here for more details.`,
+                    type: 'Lost Items',
+                    markAsRead: false,
+                    dateNotified: new Date(),
                 },
-                body: JSON.stringify({
-                    request_status: 'Declined',
-                    remarks: declineRemarks === 'Other' ? otherReason : declineRemarks,
-                }),
-            });
+            ];
 
-            if (!matchResponse.ok) {
-                const errorData = await matchResponse.json();
-                throw new Error(errorData.message || 'Failed to update lost item status');
-            }
+            await Promise.all(
+                notificationData.map((notif) => makeRequest('/api/notification', 'POST', notif))
+            );
 
             // Close modals and refresh data
             setConfirmationApproveModal(false);

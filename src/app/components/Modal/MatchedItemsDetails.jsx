@@ -51,7 +51,16 @@ const MatchedItemsDetails = ({ row }) => {
                             }}
                         >
                             {/* Avatar */}
-                            <Avatar sx={{ width: 80, height: 80 }} />
+                            <Avatar
+                                alt={`${row.owner.user.firstname} ${row.owner.user.lastname}'s Profile Picture`}
+                                src={row.owner.user.profile_picture}
+                                sx={{
+                                    width: 80,
+                                    height: 80,
+                                    borderRadius: '50%',
+                                    boxShadow: 2,
+                                }}
+                            />
 
                             {/* User Details */}
                             <Stack spacing={1} sx={{ flex: 1, width: '100%' }}>
@@ -179,7 +188,16 @@ const MatchedItemsDetails = ({ row }) => {
                             }}
                         >
                             {/* Avatar */}
-                            <Avatar sx={{ width: 80, height: 80 }} />
+                            <Avatar
+                                alt={`${row.finder.user.firstname} ${row.finder.user.lastname}'s Profile Picture`}
+                                src={row.finder.user.profile_picture}
+                                sx={{
+                                    width: 80,
+                                    height: 80,
+                                    borderRadius: '50%',
+                                    boxShadow: 2,
+                                }}
+                            />
 
                             {/* User Details */}
                             <Stack spacing={1} sx={{ flex: 1, width: '100%' }}>

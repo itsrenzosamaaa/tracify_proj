@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import ViewUserProfile from '@/app/components/ViewUserProfile';
-import { Typography } from '@mui/joy';
+import { Typography, Snackbar } from '@mui/joy';
+import Loading from '@/app/components/Loading';
 
 const ProfilePage = () => {
     const [profile, setProfile] = useState(null);
@@ -11,6 +12,7 @@ const ProfilePage = () => {
     const [items, setItems] = useState([]);
     const [ratings, setRatings] = useState([]);
     const { data: session, status } = useSession();
+    const [openSnackbar, setOpenSnackbar] = useState(null);
 
     console.log(items)
 
@@ -59,7 +61,7 @@ const ProfilePage = () => {
         try {
             const response = await fetch(`/api/ratings/receiver/${accountId}`)
             const data = await response.json();
-            if(response.ok){
+            if (response.ok) {
                 const filteredRatings = data.filter(rating => rating?.done_review)
                 setRatings(filteredRatings);
             } else {
@@ -73,7 +75,7 @@ const ProfilePage = () => {
     // Fetch role after profile is loaded
 
     if (loading) {
-        return <Typography>Loading...</Typography>; // Show loading state
+        return <Loading />; // Show loading state
     }
 
     if (!profile) {
@@ -82,7 +84,21 @@ const ProfilePage = () => {
 
     return (
         <>
-            <ViewUserProfile profile={profile} items={items} ratings={ratings} />
+            <ViewUserProfile profile={profile} items={items} ratings={ratings} refreshData={fetchData} session={session} setOpenSnackbar={setOpenSnackbar} />
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color="success"
+                onClose={(event, reason) => {
+                    if (reason === 'clickaway') {
+                        return;
+                    }
+                    setOpenSnackbar(null);
+                }}
+            >
+                {openSnackbar}
+            </Snackbar>
         </>
     );
 }

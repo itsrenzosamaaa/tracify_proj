@@ -93,7 +93,35 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                     body: JSON.stringify(ownerData),
                 });
 
-                if (lostResponse.ok) {
+                const notificationResponse = await fetch('/api/notification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        receiver: owner._id,
+                        message: `The lost item (${name}) you reported to ${session.user.roleName} has been published!`,
+                        type: 'Lost Items',
+                        markAsRead: false,
+                        dateNotified: new Date(),
+                    }),
+                });
+
+                const mailResponse = await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: owner.emailAddress,
+                        name: owner.firstname,
+                        link: 'tracify-project.vercel.app',
+                        success: false,
+                        title: 'Lost Item Published Successfully!'
+                    }),
+                });
+
+                if (lostResponse.ok && mailResponse.ok && notificationResponse.ok) {
                     await resetForm(); // Ensure resetForm is defined to clear form inputs
                     setOpenSnackbar(true);
                 } else {
@@ -181,6 +209,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
         onDrop,
         accept: 'image/jpeg, image/png, image/gif', // Restrict file types
         multiple: true,
+        required: true,
     });
 
     const removeImage = (index) => {

@@ -17,7 +17,7 @@ export async function GET(req, { params }) {
             .lean();
 
         if (!findReceiver || findReceiver.length === 0) {
-            return NextResponse.json({ message: 'No ratings found for this user' }, { status: 404 });
+            return NextResponse.json({ message: 'No ratings found for this user' }, { status: 200 });
         }
 
         return NextResponse.json(findReceiver);

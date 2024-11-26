@@ -78,6 +78,7 @@ const ViewItemPage = ({ params }) => {
         loadData();
     }, [foundId, fetchFoundItem, fetchLostItem]);
 
+    if (loading) return <Loading />;
     if (error) return <Typography color="danger">{error}</Typography>;
 
     return (
@@ -96,7 +97,7 @@ const ViewItemPage = ({ params }) => {
                                         >
                                             Surrender Instructions
                                         </Typography>
-                                        <Button onClick={() => router.push('/my-items')} color="danger" aria-label="Back to my items">
+                                        <Button onClick={() => router.push('/my-items#found-item')} color="danger" aria-label="Back to my items">
                                             Back
                                         </Button>
                                     </Box>
@@ -231,12 +232,18 @@ const ViewItemPage = ({ params }) => {
                             <Stack spacing={2}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Typography level="h2">{foundItem.name}</Typography>
+                                    {
+                                        foundItem.status !== 'Surrender Pending' &&
+                                        <Button onClick={() => router.push('/my-items#found-item')} color="danger" aria-label="Back to my items">
+                                            Back
+                                        </Button>
+                                    }
                                 </Box>
                                 <Typography level="body2" color="neutral">
                                     <strong>Status:</strong>{' '}
                                     <Chip
                                         variant="solid"
-                                        color={foundItem.status === 'Published' ? 'primary' : foundItem.status === 'Validating' ? 'warning' : 'success'}
+                                        color={foundItem.status === 'Published' ? 'primary' : foundItem.status === 'Surrender Pending' ? 'warning' : 'success'}
                                     >
                                         {foundItem.status}
                                     </Chip>

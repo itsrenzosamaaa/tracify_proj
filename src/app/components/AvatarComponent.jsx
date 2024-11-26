@@ -1,11 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import Menu from "@mui/joy/Menu";
-import MenuButton from "@mui/joy/MenuButton";
-import MenuItem from "@mui/joy/MenuItem";
-import Dropdown from "@mui/joy/Dropdown";
-import Avatar from "@mui/joy/Avatar";
-import { Typography } from "@mui/joy";
+import { Menu, MenuButton, MenuItem, Avatar, Typography, Dropdown } from "@mui/joy";
 import { signOut } from "next-auth/react";
 
 // Styled component for the dropdown container
@@ -16,12 +11,29 @@ const DropdownContainer = styled.div`
   margin-right: 2rem;
 `;
 
-const AvatarComponent = ({ role }) => {
+const AvatarComponent = ({ profile }) => {
+  console.log(profile); // To check the profile object
+
   return (
     <DropdownContainer>
       <Dropdown>
         <MenuButton
-          startDecorator={<Avatar />}
+          startDecorator={
+            profile ? (
+              <Avatar
+                alt={`${profile.firstname} ${profile.lastname}'s Profile Picture` || 'Student'}
+                src={profile.profile_picture || "https://via.placeholder.com/92"} // Fallback to a placeholder image if profile_picture is missing
+                sx={{
+                  width: 45,
+                  height: 45,
+                  borderRadius: "50%",
+                  boxShadow: 2,
+                }}
+              />
+            ) : (
+              <Avatar />
+            )
+          }
           sx={{
             color: "white",
             display: "flex", // Flex display to align items in a row
@@ -30,19 +42,18 @@ const AvatarComponent = ({ role }) => {
           }}
           variant="solid"
           color="inherit"
+        />
+        <Menu
+          placement="bottom-end"
+          sx={{
+            zIndex: 1300, // Ensure menu is above other components
+          }}
         >
-          {/* Show the role text only on medium to large screens */}
-          <Typography
-            color="inherit"
-            sx={{
-              display: { xs: "none", sm: "none", md: "block", lg: "block" }, // Hide on small screens
+          <MenuItem
+            onClick={() => {
+              signOut({ callbackUrl: "/" });
             }}
           >
-            {role}
-          </Typography>
-        </MenuButton>
-        <Menu>
-          <MenuItem onClick={() => signOut({ callbackUrl: "/" })}>
             Logout
           </MenuItem>
         </Menu>

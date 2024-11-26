@@ -1,18 +1,20 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import { Grid, Typography, Button, Modal, ModalDialog, ModalClose, DialogContent, Tabs, TabList, Tab, ListItemDecorator, Badge, Select, Option, Chip } from '@mui/joy';
 import { Box, Card, CardContent } from '@mui/material';
 import { CldImage } from 'next-cloudinary';
 import AddIcon from '@mui/icons-material/Add';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import InfoIcon from '@mui/icons-material/Info';
 import ConfirmationRetrievalRequest from './Modal/ConfirmationRetrievalRequest';
 import CancelRequest from './Modal/CancelRequest';
 import RatingsModal from './Modal/Ratings';
 import ItemDetails from './Modal/ItemDetails';
 import { useTheme, useMediaQuery } from '@mui/material';
+
+const validTabs = ['found-item', 'lost-item', 'completed-item', 'declined-item', 'canceled-item', 'requested-item', 'suggested-item'];
 
 const MyItemsComponent = ({ session, status }) => {
   const [completedItemDetailsModal, setCompletedItemDetailsModal] = useState(null);
@@ -27,16 +29,25 @@ const MyItemsComponent = ({ session, status }) => {
   const [suggestedMatches, setSuggestedMatches] = useState([]);
   const [openDetails, setOpenDetails] = useState(null);
   const [confirmationRetrievalModal, setConfirmationRetrievalModal] = useState(null);
-  const [activeTab, setActiveTab] = useState(0); // State to track the active tab
+  const [activeTab, setActiveTab] = useState('lost-item'); // State to track the active tab
   const [ratingModal, setRatingModal] = useState(null);
   const router = useRouter();
   const theme = useTheme();
   const isMd = useMediaQuery(theme.breakpoints.up('lg'));
 
-  const handleChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (validTabs.includes(hash)) {
+      setActiveTab(hash);
+    }
+  }, []);
 
+  const handleTabChange = (newValue) => {
+    if (validTabs.includes(newValue)) {
+      setActiveTab(newValue);
+      window.location.hash = newValue;
+    }
+  };
 
   const fetchItems = useCallback(async () => {
     if (!session?.user?.id) {
@@ -46,39 +57,61 @@ const MyItemsComponent = ({ session, status }) => {
 
     try {
       // Fetch user-specific items and ratings concurrently
-      const [itemsResponse, ratingsResponse, foundItemsResponse] = await Promise.all([
+      const [itemsResponse, ratingsResponse, foundItemsResponse, matchItemsResponse] = await Promise.all([
         fetch(`/api/items/${session.user.id}`),
         fetch('/api/ratings'),
         fetch('/api/finder'),
+        fetch('/api/match-items'),
       ]);
 
-      if (!itemsResponse.ok || !ratingsResponse.ok || !foundItemsResponse.ok) {
+      if (!itemsResponse.ok || !ratingsResponse.ok || !foundItemsResponse.ok || !matchItemsResponse) {
         throw new Error('Failed to fetch data from one or more endpoints');
       }
 
-      const [itemsData, ratingsData, foundItemsData] = await Promise.all([
+      const [itemsData, ratingsData, foundItemsData, matchItemsData] = await Promise.all([
         itemsResponse.json(),
         ratingsResponse.json(),
         foundItemsResponse.json(),
+        matchItemsResponse.json(),
       ]);
+
+      console.log(matchItemsData)
+
+      const filteredMatches = matchItemsData.filter(
+        (match) => match.request_status === 'Pending'
+      )
 
       // Filter ratings for the current user
       const filteredRatings = ratingsData.filter(
         (rating) => rating.sender?._id.toString() === session.user.id
       );
 
-      // Categorize user-specific items
-      const lostItems = itemsData.filter(
-        (item) =>
-          !item.item.isFoundItem && ['Missing', 'Unclaimed'].includes(item.item.status)
-      );
-      const foundItems = itemsData.filter(
-        (item) =>
-          item.item.isFoundItem && !['Request', 'Resolved', 'Declined', 'Canceled'].includes(item.item.status)
-      );
-      const requestedItems = itemsData.filter((item) => item.item.status === 'Request');
-      const declinedItems = itemsData.filter((item) => item.item.status === 'Declined');
-      const canceledItems = itemsData.filter((item) => item.item.status === 'Canceled');
+      // Categorize and sort user-specific items
+      const lostItems = itemsData
+        .filter(
+          (item) =>
+            !item.item.isFoundItem && ['Missing', 'Unclaimed'].includes(item.item.status)
+        )
+        .sort((a, b) => b.item._id.localeCompare(a.item._id));
+
+      const foundItems = itemsData
+        .filter(
+          (item) =>
+            item.item.isFoundItem && !['Request', 'Resolved', 'Declined', 'Canceled'].includes(item.item.status)
+        )
+        .sort((a, b) => b.item._id.localeCompare(a.item._id));
+
+      const requestedItems = itemsData
+        .filter((item) => item.item.status === 'Request')
+        .sort((a, b) => b.item._id.localeCompare(a.item._id));
+
+      const declinedItems = itemsData
+        .filter((item) => item.item.status === 'Declined')
+        .sort((a, b) => b.item._id.localeCompare(a.item._id));
+
+      const canceledItems = itemsData
+        .filter((item) => item.item.status === 'Canceled')
+        .sort((a, b) => b.item._id.localeCompare(a.item._id));
 
       // Set categorized items
       setLostItems(lostItems);
@@ -88,35 +121,47 @@ const MyItemsComponent = ({ session, status }) => {
       setDeclinedItems(declinedItems);
       setCanceledItems(canceledItems);
 
-      // Filter potential matches for lost items
-      const otherFoundItems = foundItemsData.filter(
-        (fItem) => fItem?.user?._id !== session.user.id && fItem?.item?.status === 'Published'
-      );
+      // Filter and sort potential matches for lost items
+      const otherFoundItems = foundItemsData
+        .filter(
+          (fItem) => fItem?.user?._id !== session.user.id && fItem?.item?.status === 'Published'
+        )
+        .sort((a, b) => b._id.localeCompare(a._id));
 
       // Fetch cosine similarity for lost items and potential matches
-      const matches = await Promise.all(
-        lostItems.map(async (lostItem) => {
-          const matchedItems = await Promise.all(
-            otherFoundItems.map(async (foundItem) => {
-              const response = await fetch('/api/similarity', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lostItem, foundItem }),
-              });
+      const matches = (
+        await Promise.all(
+          lostItems.map(async (lostItem) => {
+            const matchedItems = await Promise.all(
+              otherFoundItems.map(async (foundItem) => {
+                const response = await fetch('/api/similarity', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ lostItem, foundItem }),
+                });
 
-              const similarity = await response.json();
-              return { foundItem, similarity };
-            })
-          );
+                const similarity = await response.json();
+                return { foundItem, similarity };
+              })
+            );
 
-          // Sort and filter matches
-          const sortedMatches = matchedItems
-            .filter((match) => match.similarity >= 50) // Threshold for similarity
-            .sort((a, b) => b.similarity - a.similarity);
+            // Sort and filter matches
+            const sortedMatches = matchedItems
+              .filter((match) => match.similarity >= 50) // Threshold for similarity
+              .sort((a, b) => b.similarity - a.similarity);
 
-          return { lostItem, matches: sortedMatches };
-        })
-      );
+            // Exclude lost items that are already matched
+            const findMatched = filteredMatches.find(
+              (matched) => matched.owner.item._id === lostItem.item._id
+            );
+            if (findMatched) {
+              return null; // Skip if the lost item is already matched
+            }
+
+            return { lostItem, matches: sortedMatches };
+          })
+        )
+      ).filter(Boolean); // Remove null entries
 
       // Set suggested matches
       setSuggestedMatches(matches);
@@ -124,6 +169,7 @@ const MyItemsComponent = ({ session, status }) => {
       console.error('Error fetching items:', error);
     }
   }, [session?.user?.id]);
+
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -138,40 +184,40 @@ const MyItemsComponent = ({ session, status }) => {
       {isMd ? (
         <>
           <Box sx={{ width: '100%', mb: 5 }}>
-            <Tabs value={activeTab} onChange={handleChange} aria-label="Icon tabs" defaultValue={0}>
+            <Tabs value={activeTab} onChange={(e, newValue) => handleTabChange(newValue)} aria-label="Icon tabs">
               <TabList>
                 <Badge badgeContent={lostItems.length}>
-                  <Tab>
+                  <Tab value="lost-item">
                     <Typography level="body-md">Lost Items</Typography>
                   </Tab>
                 </Badge>
                 <Badge badgeContent={foundItems.length}>
-                  <Tab>
+                  <Tab value="found-item">
                     <Typography level="body-md">Found Items</Typography>
                   </Tab>
                 </Badge>
                 <Badge badgeContent={completedItems.length}>
-                  <Tab>
+                  <Tab value="completed-item">
                     <Typography level="body-md">Completed Items</Typography>
                   </Tab>
                 </Badge>
                 <Badge badgeContent={declinedItems.length}>
-                  <Tab>
+                  <Tab value="declined-item">
                     <Typography level="body-md">Declined Items</Typography>
                   </Tab>
                 </Badge>
                 <Badge badgeContent={canceledItems.length}>
-                  <Tab>
+                  <Tab value="canceled-item">
                     <Typography level="body-md">Canceled Items</Typography>
                   </Tab>
                 </Badge>
                 <Badge badgeContent={requestedItems.length}>
-                  <Tab>
+                  <Tab value="requested-item">
                     <Typography level="body-md">Requested Items</Typography>
                   </Tab>
                 </Badge>
                 <Badge badgeContent={suggestedMatches.reduce((total, item) => total + (item.matches?.length || 0), 0)}>
-                  <Tab>
+                  <Tab value="suggested-item">
                     <Typography level="body-md">Suggested Items</Typography>
                   </Tab>
                 </Badge>
@@ -183,9 +229,9 @@ const MyItemsComponent = ({ session, status }) => {
         <>
           <Select
             value={activeTab}
-            onChange={handleChange}
+            onChange={(e, newValue) => handleTabChange(newValue)}
           >
-            <Option value={0} label="Lost Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Option value="lost-item" label="Lost Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Lost Items
               {lostItems.length > 0 && (
                 <ListItemDecorator>
@@ -193,7 +239,7 @@ const MyItemsComponent = ({ session, status }) => {
                 </ListItemDecorator>
               )}
             </Option>
-            <Option value={1} label="Found Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Option value="found-item" label="Found Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Found Items
               {foundItems.length > 0 && (
                 <ListItemDecorator>
@@ -201,7 +247,7 @@ const MyItemsComponent = ({ session, status }) => {
                 </ListItemDecorator>
               )}
             </Option>
-            <Option value={2} label="Completed Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Option value="completed-item" label="Completed Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Completed Items
               {completedItems.length > 0 && (
                 <ListItemDecorator>
@@ -209,7 +255,7 @@ const MyItemsComponent = ({ session, status }) => {
                 </ListItemDecorator>
               )}
             </Option>
-            <Option value={3} label="Declined Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Option value="declined-item" label="Declined Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Declined Items
               {declinedItems.length > 0 && (
                 <ListItemDecorator>
@@ -217,7 +263,7 @@ const MyItemsComponent = ({ session, status }) => {
                 </ListItemDecorator>
               )}
             </Option>
-            <Option value={4} label="Canceled Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Option value="canceled-item" label="Canceled Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Canceled Items
               {canceledItems.length > 0 && (
                 <ListItemDecorator>
@@ -225,7 +271,7 @@ const MyItemsComponent = ({ session, status }) => {
                 </ListItemDecorator>
               )}
             </Option>
-            <Option value={5} label="Requested Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Option value="requested-item" label="Requested Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Requested Items
               {requestedItems.length > 0 && (
                 <ListItemDecorator>
@@ -233,7 +279,7 @@ const MyItemsComponent = ({ session, status }) => {
                 </ListItemDecorator>
               )}
             </Option>
-            <Option value={6} label="Suggested Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Option value="suggested-item" label="Suggested Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Suggested Items
               {suggestedMatches.length > 0 && (
                 <ListItemDecorator>
@@ -247,7 +293,7 @@ const MyItemsComponent = ({ session, status }) => {
 
       <Box sx={{ padding: '1rem' }}>
         {
-          activeTab === 0 &&
+          activeTab === 'lost-item' &&
           <>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 5 }}>
               <Typography level="h4" gutterBottom>
@@ -348,7 +394,7 @@ const MyItemsComponent = ({ session, status }) => {
 
 
         {
-          activeTab === 1 &&
+          activeTab === 'found-item' &&
           <>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 5 }}>
               <Typography level="h4" gutterBottom>
@@ -442,7 +488,7 @@ const MyItemsComponent = ({ session, status }) => {
         }
 
         {
-          activeTab === 2 &&
+          activeTab === 'completed-item' &&
           <>
             <Typography level="h4" gutterBottom sx={{ mb: 5 }}>
               Completed Items
@@ -565,7 +611,7 @@ const MyItemsComponent = ({ session, status }) => {
         }
 
         {
-          activeTab === 3 &&
+          activeTab === 'declined-item' &&
           <>
             <Typography level="h4" gutterBottom sx={{ mb: 5 }}>
               Declined Items
@@ -667,7 +713,7 @@ const MyItemsComponent = ({ session, status }) => {
         }
 
         {
-          activeTab === 4 &&
+          activeTab === 'canceled-item' &&
           <>
             <Typography level="h4" gutterBottom sx={{ mb: 5 }}>
               Canceled Items
@@ -768,7 +814,7 @@ const MyItemsComponent = ({ session, status }) => {
         }
 
         {
-          activeTab === 5 &&
+          activeTab === 'requested-item' &&
           <>
             <Typography level="h4" gutterBottom sx={{ mb: 5 }}>
               Requested Items
@@ -891,7 +937,7 @@ const MyItemsComponent = ({ session, status }) => {
         }
 
         {
-          activeTab === 6 &&
+          activeTab === 'suggested-item' &&
           <>
             <Box sx={{ mb: 5 }}>
               <Typography level="h4" gutterBottom>

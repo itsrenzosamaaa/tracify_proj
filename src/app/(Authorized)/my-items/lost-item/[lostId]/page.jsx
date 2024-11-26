@@ -117,7 +117,7 @@ const ViewItemPage = ({ params }) => {
                                             >
                                                 Surrender Instructions
                                             </Typography>
-                                            <Button onClick={() => router.push('/my-items')} color="danger" aria-label="Back to my items">
+                                            <Button onClick={() => router.push('/my-items#lost-item')} color="danger" aria-label="Back to my items">
                                                 Back
                                             </Button>
                                         </Box>
@@ -241,6 +241,12 @@ const ViewItemPage = ({ params }) => {
                             <Stack spacing={2}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Typography level="h2">{lostItem.name}</Typography>
+                                    {
+                                        lostItem.status === 'Missing' &&
+                                        <Button onClick={() => router.push('/my-items#lost-item')} color="danger" aria-label="Back to my items">
+                                            Back
+                                        </Button>
+                                    }
                                 </Box>
 
                                 <Typography level="body2" color="neutral">

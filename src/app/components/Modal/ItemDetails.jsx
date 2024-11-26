@@ -4,8 +4,6 @@ import React, { useState } from 'react';
 import {
     Box,
     Typography,
-    Card,
-    CardContent,
     Stack,
     Avatar,
     Grid,
@@ -223,6 +221,16 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                     }}
                                 >
                                     <Avatar sx={{ width: 80, height: 80 }} />
+                                    <Avatar
+                                        alt={`${row.sender ? row.sender.firstname : row.user.firstname} ${row.sender ? row.sender.lastname : row.user.lastname}'s Profile Picture`}
+                                        src={row.sender ? row.sender.profile_picture : row.user.profile_picture}
+                                        sx={{
+                                            width: 80,
+                                            height: 80,
+                                            borderRadius: '50%',
+                                            boxShadow: 2,
+                                        }}
+                                    />
                                 </Grid>
 
                                 {/* User Details */}
@@ -240,9 +248,9 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                             fontWeight="700"
                                             level={isXs ? 'body-sm' : 'body-md'}
                                             sx={{
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
+                                                whiteSpace: isXs ? 'nowrap' : '',
+                                                overflow: isXs ? 'hidden' : '',
+                                                textOverflow: isXs ? 'ellipsis' : '',
                                             }}
                                         >
                                             {row.sender ? row.sender.firstname : row.user?.firstname} {row.sender ? row.sender.lastname : row.user?.lastname}
@@ -250,9 +258,9 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                         <Typography
                                             level={isXs ? 'body-sm' : 'body-md'}
                                             sx={{
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
+                                                whiteSpace: isXs ? 'nowrap' : '',
+                                                overflow: isXs ? 'hidden' : '',
+                                                textOverflow: isXs ? 'ellipsis' : '',
                                             }}
                                         >
                                             {row.sender ? row.sender.emailAddress : row.user?.emailAddress}
@@ -260,9 +268,9 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                         <Typography
                                             level={isXs ? 'body-sm' : 'body-md'}
                                             sx={{
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
+                                                whiteSpace: isXs ? 'nowrap' : '',
+                                                overflow: isXs ? 'hidden' : '',
+                                                textOverflow: isXs ? 'ellipsis' : '',
                                             }}
                                         >
                                             {row.sender ? row.sender.contactNumber : row.user?.contactNumber}

@@ -107,6 +107,20 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                     body: JSON.stringify(finderData),
                 });
 
+                const notificationResponse = await fetch('/api/notification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        receiver: finder._id,
+                        message: `The found item (${name}) you reported to ${session.user.roleName} has been published!`,
+                        type: 'Found Items',
+                        markAsRead: false,
+                        dateNotified: new Date(),
+                    }),
+                });
+
                 const mailResponse = await fetch('/api/send-email', {
                     method: 'POST',
                     headers: {
@@ -117,11 +131,11 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                         name: finder.firstname,
                         link: 'tracify-project.vercel.app',
                         success: true,
-                        title: 'Item Published Successfully!'
+                        title: 'Found Item Published Successfully!'
                     }),
                 });
 
-                if (foundResponse.ok && mailResponse.ok) {
+                if (foundResponse.ok && mailResponse.ok && notificationResponse.ok) {
                     await resetForm(); // Ensure resetForm is defined to clear form inputs
                     setOpenSnackbar(true);
                 } else {
@@ -183,6 +197,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
         onDrop,
         accept: 'image/jpeg, image/png, image/gif', // Restrict file types
         multiple: true,
+        required: true,
     });
 
     const removeImage = (index) => {

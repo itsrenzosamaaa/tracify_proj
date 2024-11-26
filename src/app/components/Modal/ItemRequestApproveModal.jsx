@@ -35,6 +35,22 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
 
             if (!response.ok) throw new Error(data.message || 'Failed to update status');
 
+            const notificationResponse = await fetch('/api/notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    receiver: row.user._id,
+                    message: `The ${row.item.isFoundItem ? 'found' : 'lost'} item (${row.item.name}) you requested has been approved by ${session.user.roleName}!`,
+                    type: row.item.isFoundItem ? 'Found Items' : 'Lost Items',
+                    markAsRead: false,
+                    dateNotified: new Date(),
+                }),
+            });
+
+            if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
+
             setOpenSnackbar('success');  // Ensure this is reached on success
             onClose();
             setConfirmationApproveModal(null);
@@ -61,6 +77,22 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
             });
 
             if (!response.ok) throw new Error(data.message || 'Failed to update status');
+
+            const notificationResponse = await fetch('/api/notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    receiver: row.user._id,
+                    message: `The ${row.item.isFoundItem ? 'found' : 'lost'} item (${row.item.name}) you requested has been declined.`,
+                    type: 'Declined Items',
+                    markAsRead: false,
+                    dateNotified: new Date(),
+                }),
+            });
+
+            if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
 
             onClose();
             setConfirmationDeclineModal(null);
@@ -137,8 +169,8 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                                 <Typography level="h4" gutterbottom>Confirmation</Typography>
                                 <Typography>Are you sure you want to decline item request?</Typography>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <Button color="danger" onClick={() => setConfirmationDeclineModal(null)} fullWidth>Abort</Button>
-                                    <Button onClick={(e) => handleDecline(e, row.item._id)} fullWidth>Decline</Button>
+                                    <Button loading={loading} disabled={loading} color="danger" onClick={() => setConfirmationDeclineModal(null)} fullWidth>Abort</Button>
+                                    <Button loading={loading} disabled={loading} onClick={(e) => handleDecline(e, row.item._id)} fullWidth>Decline</Button>
                                 </Box>
                             </ModalDialog>
                         </Modal>

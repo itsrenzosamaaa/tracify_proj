@@ -10,6 +10,8 @@ const ConfirmationRetrievalRequest = ({ open, onClose, foundItem, lostItem, refr
     const router = useRouter();
     const pathname = usePathname();
 
+    console.log(foundItem)
+
     const handleSubmit = async (e, foundItemId, finderId, ownerId) => {
         if (e && e.preventDefault) {
             e.preventDefault();
@@ -24,29 +26,38 @@ const ConfirmationRetrievalRequest = ({ open, onClose, foundItem, lostItem, refr
 
         try {
             setLoading(true)
-            const response = await fetch('/api/match-items', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newMatch),
-            });
+            const makeRequest = async (url, method, body) => {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body ? JSON.stringify(body) : null,
+                });
 
-            if (!response.ok) throw new Error('Failed to update status');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Failed to perform request to ${url}`);
+                }
 
-            const foundItemResponse = await fetch(`/api/found-items/${foundItemId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'Matched' }),
+                return response.json();
+            };
+
+            await makeRequest('/api/match-items', 'POST', newMatch);
+            await makeRequest(`/api/found-items/${foundItemId}`, 'PUT', { status: 'Matched' });
+            await makeRequest('/api/notification', 'POST', {
+                receiver: foundItem.user._id,
+                message: `Someone matched their lost item to your found item (${foundItem.item.name}). Click here for review.`,
+                type: 'Found Items',
+                markAsRead: false,
+                dateNotified: new Date(),
             })
 
-            if (response.ok && foundItemResponse.ok) {
-                if (pathname === '/my-items') {
-                    onClose();
-                    refreshData();
-                    openSnackbar(true);
-                    return;
-                }
-                return router.push('/my-items');
+            if (pathname === '/my-items#suggested-item') {
+                onClose();
+                refreshData();
+                openSnackbar(true);
+                return;
             }
+            return router.push('/my-items#lost-item');
         } catch (error) {
             console.error(error)
         } finally {

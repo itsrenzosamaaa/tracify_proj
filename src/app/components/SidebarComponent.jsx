@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
@@ -34,6 +34,7 @@ import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import FindInPageIcon from '@mui/icons-material/FindInPage';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import NotificationComponent from "./NotificationComponent";
 
 // Updated Styled Link
 const StyledLink = styled(Link)`
@@ -46,20 +47,21 @@ const StyledLink = styled(Link)`
 `;
 
 // Sidebar Container with dynamic width for desktop
-const SidebarContainer = styled(Box)`
-  width: 250px;
-  height: 100vh;
-  background-color: #fff;
-  position: fixed;
-  top: 0;
-  left: 0;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-  display: none;
-  @media (min-width: 1200px) {
-    display: block;
-  }
-  transition: width 0.3s ease;
-`;
+const SidebarContainer = styled(Box)(({ collapsed }) => ({
+  width: collapsed ? '60px' : '250px',
+  height: '100vh',
+  backgroundColor: '#fff',
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  boxShadow: '2px 0 5px rgba(0, 0, 0, 0.2)',
+  display: 'none',
+  transition: 'width 0.3s ease',
+  '@media (min-width: 1200px)': {
+    display: 'block',
+  },
+}));
+
 
 // Sidebar Header
 const SidebarHeader = styled(Box)`
@@ -123,75 +125,82 @@ const IconItem = styled(ListItemIcon)`
 
 
 // Header styles
-const Header = styled(Box)`
-  height: 60px;
-  background-color: #3d5afe;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 1200;
-  width: 100%;
-  transition: left 0.3s ease;
-  @media (min-width: 1200px) {
-    left: 250px;
-  }
-`;
+const Header = styled(Box)(({ collapsed }) => ({
+  height: '60px',
+  backgroundColor: '#3d5afe',
+  color: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  position: 'fixed',
+  top: 0,
+  right: 0,
+  zIndex: 1200,
+  width: '100%',
+  transition: 'left 0.3s ease',
+  '@media (min-width: 1200px)': {
+    left: collapsed ? '60px' : '250px',
+  },
+}));
+
 
 // Main App Component
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  let navigation = [{ icon: <HomeIcon />, menu: 'Home', url: '/dashboard' }];
+  const fetchProfile = useCallback(async (accountId) => {
+    try {
+      const response = await fetch(`/api/users/${accountId}`);
+      const data = await response.json();
+      if (response.ok) setProfile(data);
+      else console.error('Failed to fetch user data:', data.message);
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    }
+  }, []);
 
-  // Handling authenticated session and adding routes
-  if (status === "authenticated") {
-    if (session?.user?.userType === 'user') {
-      navigation.push({ icon: <AccountCircleIcon />, menu: 'Profile', url: '/profile' });
-      navigation.push({ icon: <LuggageIcon />, menu: 'My Items', url: '/my-items' });
-    } else {
-      // Check role-based permissions for non-students
-      const roleData = session?.user?.permissions;
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push('/');
+    }
+  }, [status, router]);
 
-      if (roleData?.manageRequestReportedFoundItems) {
-        navigation.push({ icon: <FindInPageIcon />, menu: 'Found Items', url: '/found-items' });
-      }
-      if (roleData?.manageRequestItemRetrieval) {
-        navigation.push({ icon: <MoveToInboxIcon />, menu: 'Item Retrieval', url: '/item-retrieval' });
-      }
-      if (roleData?.manageRequestReportedLostItems) {
-        navigation.push({ icon: <HelpOutlineIcon />, menu: 'Lost Items', url: '/lost-items' });
-      }
-      if (roleData?.viewItemHistory) {
-        navigation.push({ icon: <HistoryIcon />, menu: 'Item History', url: '/item-history' });
-      }
-      if (roleData?.viewBadges) {
-        navigation.push({ icon: <EmojiEventsOutlinedIcon />, menu: 'Badges', url: '/badges' });
-      }
-      if (roleData?.viewRoles) {
-        navigation.push({ icon: <SecurityIcon />, menu: 'Roles', url: '/roles' });
-      }
-      if (roleData?.viewAdminsList) {
-        navigation.push({ icon: <PeopleOutlineIcon />, menu: 'Admin', url: '/admin' });
-      }
-      if (roleData?.viewStudentsList) {
-        navigation.push({ icon: <PeopleOutlineIcon />, menu: 'Users', url: '/users' });
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.id && session?.user?.userType === 'user') {
+      fetchProfile(session.user.id);
+    }
+  }, [status, session?.user?.id, session?.user?.userType, fetchProfile]);
+
+
+  const userType = session?.user?.userType || '';
+  const userPermissions = useMemo(() => session?.user?.permissions || {}, [session?.user?.permissions]);
+
+  const navigation = useMemo(() => {
+    const base = [{ icon: <HomeIcon />, menu: 'Home', url: '/dashboard' }];
+    if (status === "authenticated") {
+      if (userType === 'user') {
+        base.push({ icon: <AccountCircleIcon />, menu: 'Profile', url: '/profile' });
+        base.push({ icon: <LuggageIcon />, menu: 'My Items', url: '/my-items' });
+      } else {
+        if (userPermissions.manageRequestReportedFoundItems) base.push({ icon: <FindInPageIcon />, menu: 'Found Items', url: '/found-items' });
+        if (userPermissions.manageRequestItemRetrieval) base.push({ icon: <MoveToInboxIcon />, menu: 'Item Retrieval', url: '/item-retrieval' });
+        if (userPermissions.manageRequestReportedLostItems) base.push({ icon: <HelpOutlineIcon />, menu: 'Lost Items', url: '/lost-items' });
+        if (userPermissions.viewItemHistory) base.push({ icon: <HistoryIcon />, menu: 'Item History', url: '/item-history' });
+        if (userPermissions.viewBadges) base.push({ icon: <EmojiEventsOutlinedIcon />, menu: 'Badges', url: '/badges' });
+        if (userPermissions.viewRoles) base.push({ icon: <SecurityIcon />, menu: 'Roles', url: '/roles' });
+        if (userPermissions.viewAdminsList) base.push({ icon: <PeopleOutlineIcon />, menu: 'Admin', url: '/admin' });
+        if (userPermissions.viewStudentsList) base.push({ icon: <PeopleOutlineIcon />, menu: 'Users', url: '/users' });
       }
     }
-  }
+    return base;
+  }, [status, userType, userPermissions]);
 
-  if (status === 'loading') {
-    return <Loading />;
-  }
+  const toggleMobileDrawer = () => setMobileOpen(!mobileOpen);
 
-  if (status === "unauthenticated") {
-    return router.push('/');
-  }
+  if (status === 'loading') return <Loading />;
 
   const DrawerContent = ({ navigation, toggleMobileDrawer, collapsed }) => {
     const pathname = usePathname();
@@ -223,13 +232,8 @@ export default function App() {
     );
   };
 
-  const toggleMobileDrawer = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
   return (
     <div>
-      {/* Header */}
       <Header collapsed={collapsed}>
         <IconButton
           color="inherit"
@@ -243,26 +247,24 @@ export default function App() {
           sx={{
             width: { xs: '85%', md: '87%', lg: '82.5%' },
             display: 'flex',
-            alignItems: 'center', // Align vertically to center
-            justifyContent: 'flex-end', // Align the avatar to the right
+            alignItems: 'center',
+            justifyContent: 'flex-end',
           }}
         >
-          <AvatarComponent role={session.user.firstname} />
+          <Box sx={{ display: 'flex' }}>
+            {userType === 'user' && <NotificationComponent session={session} status={status} />}
+            <AvatarComponent profile={profile} />
+          </Box>
         </Box>
       </Header>
-
-      {/* Fixed Sidebar for Desktop */}
       <SidebarContainer collapsed={collapsed}>
         <DrawerContent navigation={navigation} toggleMobileDrawer={toggleMobileDrawer} collapsed={collapsed} />
       </SidebarContainer>
-
-      {/* Mobile Drawer */}
       <Drawer
         anchor="left"
         open={mobileOpen}
         onClose={toggleMobileDrawer}
-        role="navigation"
-        aria-label="Main Navigation Menu"
+        ModalProps={{ keepMounted: true, disableRestoreFocus: true }}
         sx={{ display: { xs: "block", lg: "none" } }}
       >
         <DrawerContent navigation={navigation} toggleMobileDrawer={toggleMobileDrawer} collapsed={collapsed} />

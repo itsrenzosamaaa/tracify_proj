@@ -54,21 +54,6 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
         ? ratings.filter(rater => rater.quantity === selectedQuantity)
         : ratings;
 
-    const renderQuantityRow = (quantity, count) => (
-        <Box
-            sx={{ display: 'flex', alignItems: 'center', width: '100%', mt: 1, cursor: 'pointer', transition: 'background 0.3s', '&:hover': { backgroundColor: '#f0f0f0' } }}
-            onClick={() => setSelectedQuantity(selectedQuantity === quantity ? null : quantity)} // Toggle selection
-        >
-            <Typography sx={{ minWidth: 35, display: 'inline-flex', fontWeight: 'medium' }}>
-                {quantity} <StarIcon sx={{ color: '#FFD700' }} />
-            </Typography>
-            <Box sx={{ flexGrow: 1, mx: 2 }}>
-                <LinearProgress variant="determinate" value={totalQuantities > 0 ? (count / totalQuantities) * 100 : 0} />
-            </Box>
-            <Typography fontWeight="medium">{count}</Typography>
-        </Box>
-    );
-
     return (
         <Box>
             <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
@@ -94,21 +79,19 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                     <Typography variant="body2" sx={{ color: '#666' }}>{totalQuantities} rating(s)</Typography>
                                 </Box>
 
-                                <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
+                                <Divider orientation="vertical" sx={{ mx: 2 }} />
 
                                 <Box sx={{ flexGrow: 1, mt: 2 }}>
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                        {Object.entries(complimentCounts).map(([compliment, count]) => (
+                                        {Object.entries(complimentCounts).map(([compliment, count], index) => (
                                             <Chip
-                                                key={compliment}
+                                                key={`${compliment}-${index}`} // Generate a unique key for each compliment
                                                 variant="outlined"
                                                 sx={{
                                                     bgcolor: '#f5f5f5',
                                                     color: '#333',
                                                     border: '1px solid #ddd',
-                                                    '&:hover': {
-                                                        bgcolor: '#e0e0e0',
-                                                    },
+                                                    '&:hover': { bgcolor: '#e0e0e0' },
                                                 }}
                                             >
                                                 {`${compliment} (${count})`}
@@ -121,7 +104,29 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                             <Divider sx={{ width: '100%', mt: 2, mb: 1 }} />
 
                             {/* Quantities Summary */}
-                            {countQuantities.map(({ quantity, count }) => renderQuantityRow(quantity, count))}
+                            {countQuantities.map(({ quantity, count }) => (
+                                <Box
+                                    key={quantity} // Add unique key here
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        width: '100%',
+                                        mt: 1,
+                                        cursor: 'pointer',
+                                        transition: 'background 0.3s',
+                                        '&:hover': { backgroundColor: '#f0f0f0' },
+                                    }}
+                                    onClick={() => setSelectedQuantity(selectedQuantity === quantity ? null : quantity)}
+                                >
+                                    <Typography sx={{ minWidth: 35, display: 'inline-flex', fontWeight: 'medium' }}>
+                                        {quantity} <StarIcon sx={{ color: '#FFD700' }} />
+                                    </Typography>
+                                    <Box sx={{ flexGrow: 1, mx: 2 }}>
+                                        <LinearProgress variant="determinate" value={totalQuantities > 0 ? (count / totalQuantities) * 100 : 0} />
+                                    </Box>
+                                    <Typography fontWeight="medium">{count}</Typography>
+                                </Box>
+                            ))}
                         </Stack>
                     </Grid>
 
@@ -136,7 +141,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                 ) : (
                                     filteredRatings.map((rater) => (
                                         <Card
-                                            key={rater._id}
+                                            key={rater._id} // Use _id as the unique key
                                             elevation={2}
                                             sx={{
                                                 display: 'flex',
