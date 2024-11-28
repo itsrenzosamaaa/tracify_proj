@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Rating, Box } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
+import { useTheme, useMediaQuery } from '@mui/material';
 import { Snackbar, Avatar, Modal, ModalDialog, ModalClose, Button, Typography, FormLabel, Chip, FormControl, Textarea, Stack, FormHelperText, DialogContent } from '@mui/joy';
 
 const finderComplimentsList = [
@@ -8,7 +9,7 @@ const finderComplimentsList = [
 ];
 
 const ownerComplimentsList = [
-    'Trustworthy', 'Kind-hearted', 'Patient', 'Organized', 'Reliable', 'Flexible', 'Thoughtful', 'Self-aware', 'Empathetic' 
+    'Trustworthy', 'Kind-hearted', 'Patient', 'Organized', 'Reliable', 'Flexible', 'Thoughtful', 'Self-aware', 'Empathetic'
 ];
 
 const RatingsModal = ({ item, session, open, onClose, refreshData }) => {
@@ -17,6 +18,8 @@ const RatingsModal = ({ item, session, open, onClose, refreshData }) => {
     const [selectedCompliments, setSelectedCompliments] = useState([]);
     const [loading, setLoading] = useState(false);
     const [openSnackbar, setOpenSnackbar] = useState(false);
+    const theme = useTheme();
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
     const complimentsList = item?.item.isFoundItem ? ownerComplimentsList : finderComplimentsList;
 
@@ -85,6 +88,14 @@ const RatingsModal = ({ item, session, open, onClose, refreshData }) => {
                 })
             );
 
+            await makeRequest('/api/notification', 'POST', {
+                receiver: item?.receiver?._id,
+                message: `${item?.sender?.firstname} (${item?.item?.isFoundItem ? 'Owner' : 'Finder'}) provided you a feedback! Check your profile to view your ratings.`,
+                type: 'Profile',
+                markAsRead: false,
+                dateNotified: new Date(),
+            });
+
             // Success actions
             onClose();
             refreshData();
@@ -111,18 +122,16 @@ const RatingsModal = ({ item, session, open, onClose, refreshData }) => {
                         width: '90%', // Set a percentage width for responsiveness
                         maxWidth: 600, // Set a maximum width
                         borderRadius: 3, // Adjust border radius
-                        p: 3, // Add padding
                     }}
                 >
                     <ModalClose />
+                    <Typography level="h4" fontWeight="bold" gutterBottom sx={{ color: 'text.primary' }}>
+                        Review for {item?.item.isFoundItem ? 'Owner' : 'Finder'}
+                    </Typography>
                     <DialogContent sx={{ overflowX: 'hidden' }}>
                         {item?.done_review ? (
                             // Review Section
                             <Stack spacing={3} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper', boxShadow: 2 }}>
-                                <Typography level="h4" component="h2" fontWeight="bold" gutterBottom sx={{ color: 'text.primary' }}>
-                                    Review for {item?.item.isFoundItem ? 'Owner' : 'Finder'}
-                                </Typography>
-
                                 {/* Item and Receiver Information */}
                                 <Box sx={{ bgcolor: 'grey.100', borderRadius: 1, p: 3, boxShadow: 1 }}>
                                     <Typography variant="body1" color="text.secondary" gutterBottom>
@@ -183,14 +192,10 @@ const RatingsModal = ({ item, session, open, onClose, refreshData }) => {
                             // Feedback Form Section
                             <form onSubmit={handleSubmit}>
                                 <Stack spacing={2}>
-                                    <Typography level="h4" gutterBottom>
-                                        Rate {item.item?.isFoundItem ? 'Owner' : 'Finder'}
-                                    </Typography>
-
                                     {/* Receiver Info */}
                                     <FormControl>
                                         <FormLabel>Receiver</FormLabel>
-                                        <Typography variant="body1" fontWeight="bold">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} fontWeight="bold">
                                             {`${item?.receiver?.firstname} ${item?.receiver?.lastname}`}
                                         </Typography>
                                     </FormControl>
@@ -205,8 +210,8 @@ const RatingsModal = ({ item, session, open, onClose, refreshData }) => {
                                                 sx={{ width: 100, height: 100, borderRadius: '12%', boxShadow: 2 }}
                                             />
                                             <Box>
-                                                <Typography level="body-lg" fontWeight="700">{item.item.name}</Typography>
-                                                <Chip color="success" variant="solid">{item.item.status}</Chip>
+                                                <Typography level={isXs ? 'body-md' : 'body-lg'} fontWeight="700">{item.item.name}</Typography>
+                                                <Chip size={isXs ? 'sm' : 'md'} color="success" variant="solid">{item.item.status}</Chip>
                                             </Box>
                                         </Box>
                                     </FormControl>
@@ -235,6 +240,7 @@ const RatingsModal = ({ item, session, open, onClose, refreshData }) => {
                                             <Box sx={{ gap: 1, display: 'flex', flexWrap: 'wrap', mt: 1 }}>
                                                 {complimentsList.map((compliment) => (
                                                     <Chip
+                                                        variant="outlined"
                                                         key={compliment}
                                                         color={selectedCompliments.includes(compliment) ? 'primary' : 'default'}
                                                         onClick={() => handleComplimentChange(compliment)}

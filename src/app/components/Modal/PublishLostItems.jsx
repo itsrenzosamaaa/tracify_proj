@@ -207,7 +207,11 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
 
     const { getRootProps, getInputProps } = useDropzone({
         onDrop,
-        accept: 'image/jpeg, image/png, image/gif', // Restrict file types
+        accept: {
+            'image/jpeg': [],
+            'image/png': [],
+            'image/gif': [],
+        },
         multiple: true,
         required: true,
     });
@@ -263,7 +267,6 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 required
                                                 value={color}
                                                 onChange={(e, value) => setColor(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Color
@@ -284,7 +287,6 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 required
                                                 value={size}
                                                 onChange={(e, value) => setSize(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Size
@@ -305,7 +307,6 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 required
                                                 value={category}
                                                 onChange={(e, value) => setCategory(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Category
@@ -328,7 +329,6 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 required
                                                 value={material}
                                                 onChange={(e, value) => setMaterial(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Material
@@ -348,7 +348,6 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 required
                                                 value={condition}
                                                 onChange={(e, value) => setCondition(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Condition
@@ -368,7 +367,6 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 required
                                                 value={distinctiveMarks}
                                                 onChange={(e, value) => setDistinctiveMarks(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Distinctive Marks
@@ -448,7 +446,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                         }}
                                     >
                                         <FormLabel>Upload Images</FormLabel>
-                                        {images.length > 0 && (
+                                        {images?.length > 0 && (
                                             <Button
                                                 size="sm"
                                                 color="danger"

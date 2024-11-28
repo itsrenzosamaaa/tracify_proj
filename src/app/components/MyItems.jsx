@@ -281,9 +281,9 @@ const MyItemsComponent = ({ session, status }) => {
             </Option>
             <Option value="suggested-item" label="Suggested Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Suggested Items
-              {suggestedMatches.length > 0 && (
+              {suggestedMatches.reduce((total, item) => total + (item.matches?.length || 0), 0) > 0 && (
                 <ListItemDecorator>
-                  <Chip color="danger" variant="solid">{suggestedMatches.length}</Chip>
+                  <Chip color="danger" variant="solid">{suggestedMatches.reduce((total, item) => total + (item.matches?.length || 0), 0)}</Chip>
                 </ListItemDecorator>
               )}
             </Option>
@@ -299,7 +299,7 @@ const MyItemsComponent = ({ session, status }) => {
               <Typography level="h4" gutterBottom>
                 Lost Items
               </Typography>
-              <Button startDecorator={<AddIcon />} onClick={() => router.push('/my-items/report-lost-item')}>
+              <Button size="small" startDecorator={<AddIcon />} onClick={() => router.push('/my-items/report-lost-item')}>
                 Report Lost Item
               </Button>
             </Box>
@@ -323,7 +323,7 @@ const MyItemsComponent = ({ session, status }) => {
                           position: 'absolute',
                           top: 8,
                           left: 8,
-                          backgroundColor: lostItem.item?.status === 'Matched' ? '#81c784' : lostItem.item.status === 'Surrender Pending' ? '#e57373' : 'blue',
+                          backgroundColor: lostItem.item?.status === 'Unclaimed' ? '#ffb74d' : '#e57373',
                           color: '#fff',
                           padding: '4px 8px',
                           borderRadius: 1,
@@ -400,7 +400,7 @@ const MyItemsComponent = ({ session, status }) => {
               <Typography level="h4" gutterBottom>
                 Found Items
               </Typography>
-              <Button startDecorator={<AddIcon />} onClick={() => router.push('my-items/report-found-item')}>
+              <Button size="small" startDecorator={<AddIcon />} onClick={() => router.push('my-items/report-found-item')}>
                 Report Found Item
               </Button>
             </Box>
@@ -496,95 +496,97 @@ const MyItemsComponent = ({ session, status }) => {
             <Grid container spacing={2}>
               {completedItems.length > 0 ?
                 completedItems.map((completedItem, index) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Card
-                      sx={{
-                        maxWidth: 250,
-                        flexShrink: 0,
-                        boxShadow: 3,
-                        borderRadius: 2,
-                        overflow: 'hidden', // Ensures that content doesn't overflow the card
-                        position: 'relative', // Allows absolutely positioning elements inside
-                      }}
-                    >
-                      {/* Identifier at the top-left of the image */}
-                      <Box
+                  <>
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Card
                         sx={{
-                          position: 'absolute',
-                          top: 8,
-                          left: 8,
-                          backgroundColor: completedItem.item?.isFoundItem ? '#81c784' : '#e57373',
-                          color: '#fff',
-                          padding: '4px 8px',
-                          borderRadius: 1,
-                          fontSize: '0.8rem',
-                          fontWeight: 'bold',
-                          textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
+                          maxWidth: 250,
+                          flexShrink: 0,
+                          boxShadow: 3,
+                          borderRadius: 2,
+                          overflow: 'hidden', // Ensures that content doesn't overflow the card
+                          position: 'relative', // Allows absolutely positioning elements inside
                         }}
                       >
-                        {completedItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
-                      </Box>
-
-                      <CldImage
-                        priority
-                        src={completedItem.item.images[0]}
-                        width={250}
-                        height={250}
-                        alt={completedItem.item.name || "Item Image"}
-                        sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        style={{ objectFit: 'fill' }}
-                      />
-                      <CardContent>
-                        <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
-                          {completedItem.item.name}
-                        </Typography>
-                        <Typography
-                          level="body2"
+                        {/* Identifier at the top-left of the image */}
+                        <Box
                           sx={{
-                            color: 'text.secondary',
-                            marginBottom: '0.5rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            maxWidth: '250px', // Adjust the width as needed
+                            position: 'absolute',
+                            top: 8,
+                            left: 8,
+                            backgroundColor: completedItem.item?.isFoundItem ? '#81c784' : '#e57373',
+                            color: '#fff',
+                            padding: '4px 8px',
+                            borderRadius: 1,
+                            fontSize: '0.8rem',
+                            fontWeight: 'bold',
+                            textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
                           }}
                         >
-                          {completedItem.item.description}
-                        </Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
-                          <Button
-                            variant="contained"
-                            sx={{ minWidth: '0', padding: '6px 8px' }}
-                            onClick={() => setCompletedItemDetailsModal(completedItem.item._id)}
-                          >
-                            <InfoIcon color="action" />
-                          </Button>
-
-                          <Modal open={completedItemDetailsModal === completedItem.item._id} onClose={() => setCompletedItemDetailsModal(null)}>
-                            <ModalDialog sx={{ borderRadius: 4, boxShadow: 6, padding: 3 }}>
-                              <ModalClose />
-                              <Typography level="h4" fontWeight="bold">
-                                Completed Item
-                              </Typography>
-
-                              <DialogContent sx={{ overflowX: 'hidden' }}>
-                                <ItemDetails row={completedItem} />
-                              </DialogContent>
-                            </ModalDialog>
-                          </Modal>
-                          <Button
-                            color={completedItem?.done_review ? 'primary' : 'success'}
-                            fullWidth
-                            sx={{ padding: '6px 0' }}
-                            onClick={() => setRatingModal(completedItem._id)}
-                          >
-                            {completedItem?.done_review ? 'View Review' : 'Leave Review'}
-                          </Button>
-                          <RatingsModal open={ratingModal} onClose={() => setRatingModal(null)} item={completedItem} session={session} refreshData={fetchItems} />
+                          {completedItem.item?.isFoundItem ? 'Found Item' : 'Lost Item'}
                         </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+
+                        <CldImage
+                          priority
+                          src={completedItem.item.images[0]}
+                          width={250}
+                          height={250}
+                          alt={completedItem.item.name || "Item Image"}
+                          sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          style={{ objectFit: 'fill' }}
+                        />
+                        <CardContent>
+                          <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
+                            {completedItem.item.name}
+                          </Typography>
+                          <Typography
+                            level="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              marginBottom: '0.5rem',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              maxWidth: '250px', // Adjust the width as needed
+                            }}
+                          >
+                            {completedItem.item.description}
+                          </Typography>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
+                            <Button
+                              variant="contained"
+                              sx={{ minWidth: '0', padding: '6px 8px' }}
+                              onClick={() => setCompletedItemDetailsModal(completedItem.item._id)}
+                            >
+                              <InfoIcon color="action" />
+                            </Button>
+
+                            <Modal open={completedItemDetailsModal === completedItem.item._id} onClose={() => setCompletedItemDetailsModal(null)}>
+                              <ModalDialog sx={{ borderRadius: 4, boxShadow: 6, padding: 3 }}>
+                                <ModalClose />
+                                <Typography level="h4" fontWeight="bold">
+                                  Completed Item
+                                </Typography>
+
+                                <DialogContent sx={{ overflowX: 'hidden' }}>
+                                  <ItemDetails row={completedItem} />
+                                </DialogContent>
+                              </ModalDialog>
+                            </Modal>
+                            <Button
+                              color={completedItem?.done_review ? 'primary' : 'success'}
+                              fullWidth
+                              sx={{ padding: '6px 0' }}
+                              onClick={() => setRatingModal(completedItem._id)}
+                            >
+                              {completedItem?.done_review ? 'View Review' : 'Leave Review'}
+                            </Button>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    <RatingsModal open={ratingModal} onClose={() => setRatingModal(null)} item={completedItem} session={session} refreshData={fetchItems} />
+                  </>
                 )) :
                 <Box
                   sx={{
@@ -954,67 +956,69 @@ const MyItemsComponent = ({ session, status }) => {
                   matches.map((match, index) => {
                     const { foundItem } = match;
                     return lostItem.item.status === 'Missing' && (
-                      <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Card
-                          sx={{
-                            maxWidth: 250,
-                            flexShrink: 0,
-                            boxShadow: 3,
-                            borderRadius: 2,
-                          }}
-                        >
-                          <CldImage
-                            priority
-                            src={foundItem.item.images[0]}
-                            width={250}
-                            height={250}
-                            alt={foundItem.item.name || "Item Image"}
-                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            style={{ objectFit: 'fill', borderRadius: '8px 8px 0 0' }}
-                          />
-                          <CardContent>
-                            <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
-                              {foundItem.item.name}
-                            </Typography>
-                            <Typography
-                              level="body2"
-                              sx={{
-                                color: 'text.secondary',
-                                marginBottom: '0.5rem',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                maxWidth: '250px',
-                              }}
-                            >
-                              {foundItem.item.description}
-                            </Typography>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
-                              <Button
-                                onClick={() =>
-                                  router.push(
-                                    `/my-items/${lostItem.item._id}/matchedTo/${foundItem.item._id}?owner=${lostItem.user._id}&finder=${foundItem.user._id}`
-                                  )
-                                }
-                                variant="contained"
-                                sx={{ minWidth: '0', padding: '6px 8px' }}
-                                aria-label={`View details for ${foundItem.item.name}`}
+                      <>
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Card
+                            sx={{
+                              maxWidth: 250,
+                              flexShrink: 0,
+                              boxShadow: 3,
+                              borderRadius: 2,
+                            }}
+                          >
+                            <CldImage
+                              priority
+                              src={foundItem.item.images[0]}
+                              width={250}
+                              height={250}
+                              alt={foundItem.item.name || "Item Image"}
+                              sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              style={{ objectFit: 'fill', borderRadius: '8px 8px 0 0' }}
+                            />
+                            <CardContent>
+                              <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
+                                {foundItem.item.name}
+                              </Typography>
+                              <Typography
+                                level="body2"
+                                sx={{
+                                  color: 'text.secondary',
+                                  marginBottom: '0.5rem',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  maxWidth: '250px',
+                                }}
                               >
-                                <InfoIcon color="action" />
-                              </Button>
-                              <Button
-                                onClick={() => setConfirmationRetrievalModal(foundItem.item._id)}
-                                fullWidth
-                                sx={{ padding: '6px 0' }}
-                                aria-label={`Claim request for ${foundItem.item.name}`}
-                              >
-                                Claim Request
-                              </Button>
-                            </Box>
-                          </CardContent>
-                          <ConfirmationRetrievalRequest refreshData={fetchItems} open={confirmationRetrievalModal === foundItem.item._id} onClose={() => setConfirmationRetrievalModal(null)} foundItem={foundItem} lostItem={lostItem} />
-                        </Card>
-                      </Grid>
+                                {foundItem.item.description}
+                              </Typography>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
+                                <Button
+                                  onClick={() =>
+                                    router.push(
+                                      `/my-items/${lostItem.item._id}/matchedTo/${foundItem.item._id}?owner=${lostItem.user._id}&finder=${foundItem.user._id}`
+                                    )
+                                  }
+                                  variant="contained"
+                                  sx={{ minWidth: '0', padding: '6px 8px' }}
+                                  aria-label={`View details for ${foundItem.item.name}`}
+                                >
+                                  <InfoIcon color="action" />
+                                </Button>
+                                <Button
+                                  onClick={() => setConfirmationRetrievalModal(foundItem.item._id)}
+                                  fullWidth
+                                  sx={{ padding: '6px 0' }}
+                                  aria-label={`Claim request for ${foundItem.item.name}`}
+                                >
+                                  Claim Request
+                                </Button>
+                              </Box>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                        <ConfirmationRetrievalRequest refreshData={fetchItems} open={confirmationRetrievalModal === foundItem.item._id} onClose={() => setConfirmationRetrievalModal(null)} foundItem={foundItem} lostItem={lostItem} />
+                      </>
                     )
                   })
                 )

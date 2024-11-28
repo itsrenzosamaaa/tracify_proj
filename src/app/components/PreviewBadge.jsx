@@ -12,7 +12,7 @@ const PreviewBadge = ({ title, titleColor, titleShimmer, titleOutlineColor, shap
     // Determine size based on screen size
     const containerSize = isXs ? '60px' : isSm ? '80px' : '100px';
     const shapeSize = isXs ? '40px' : isSm ? '55px' : '70px'; // Smaller size for the shape
-    const fontSize = isXs ? '11px' : isSm ? '13px' : '15px';
+    const fontSize = isXs ? '12px' : isSm ? '14px' : '16px';
 
     const createStarShape = (size, color) => ({
         width: size,

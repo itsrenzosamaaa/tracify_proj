@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Rating, Paper, Stack, Grid, Card, CardContent, Avatar, IconButton, LinearProgress, CircularProgress } from '@mui/material';
 import { Box, Typography, Divider, Chip } from '@mui/joy';
 import StarIcon from "@mui/icons-material/Star";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { useTheme, useMediaQuery } from '@mui/material';
 import { formatDistanceToNow } from 'date-fns';
 
 const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
     // State to track selected quantity rating
     const [selectedQuantity, setSelectedQuantity] = useState(null);
+    const theme = useTheme();
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
     if (isLoading) {
         return <CircularProgress />;
@@ -85,6 +87,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                         {Object.entries(complimentCounts).map(([compliment, count], index) => (
                                             <Chip
+                                                size={isXs ? 'sm' : 'md'}
                                                 key={`${compliment}-${index}`} // Generate a unique key for each compliment
                                                 variant="outlined"
                                                 sx={{
@@ -146,7 +149,6 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                             sx={{
                                                 display: 'flex',
                                                 alignItems: 'flex-start',
-                                                paddingX: 1,
                                                 mb: 1,
                                                 transition: 'transform 0.2s',
                                                 '&:hover': { transform: 'scale(1.02)' }, // Subtle hover effect
@@ -154,9 +156,16 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                         >
                                             <CardContent sx={{ flexGrow: 1 }}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                                                    <Avatar sx={{ bgcolor: '#FFD700' }}>
-                                                        <StarIcon sx={{ color: '#fff' }} />
-                                                    </Avatar>
+                                                    <Avatar
+                                                        alt={`${rater.sender.firstname} ${rater.sender.lastname}'s Profile Picture`}
+                                                        src={rater.sender.profile_picture}
+                                                        sx={{
+                                                            width: { xs: 40, sm: 92 },
+                                                            height: { xs: 40, sm: 92 },
+                                                            borderRadius: '50%',
+                                                            boxShadow: 2,
+                                                        }}
+                                                    />
                                                     <Box>
                                                         <Typography level="subtitle1" fontWeight="bold">
                                                             {rater.sender?.firstname} {rater.sender?.lastname}
@@ -172,7 +181,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                                 icon={<StarIcon fontSize="inherit" sx={{ color: '#FFD700' }} />}
                                                                 emptyIcon={<StarIcon fontSize="inherit" sx={{ color: '#ddd' }} />}
                                                             />
-                                                            <Typography level="body-md">
+                                                            <Typography level={isXs ? 'body-xs' : 'body-sm'}>
                                                                 Review as{' '}
                                                                 {rater.item.isFoundItem ? (
                                                                     <strong style={{ color: '#4CAF50' }}>a Finder</strong>
@@ -190,6 +199,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
                                                     {rater.compliments.map((compliment) => (
                                                         <Chip
+                                                            size={isXs ? 'sm' : 'md'}
                                                             key={compliment}
                                                             variant="outlined"
                                                             sx={{
@@ -206,7 +216,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                     ))}
                                                 </Box>
 
-                                                <Typography variant="body1" color="text.secondary" sx={{ my: 3 }}>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'} color="text.secondary" sx={{ my: 3 }}>
                                                     {rater.feedback}
                                                 </Typography>
 
@@ -217,8 +227,8 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                         sx={{ width: 100, height: 100, borderRadius: '12%', boxShadow: 2 }}
                                                     />
                                                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                                        <Typography fontWeight="700">{rater.item.name}</Typography>
-                                                        <Chip variant="solid" color="success">{rater.item.status}</Chip>
+                                                        <Typography level={isXs ? 'body-sm' : 'body-xs'} fontWeight="700">{rater.item.name}</Typography>
+                                                        <Chip size={isXs ? 'sm' : 'md'} variant="solid" color="success">{rater.item.status}</Chip>
                                                     </Box>
                                                 </Box>
                                             </CardContent>

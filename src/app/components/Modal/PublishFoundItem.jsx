@@ -195,7 +195,11 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
 
     const { getRootProps, getInputProps } = useDropzone({
         onDrop,
-        accept: 'image/jpeg, image/png, image/gif', // Restrict file types
+        accept: {
+            'image/jpeg': [],
+            'image/png': [],
+            'image/gif': [],
+        },
         multiple: true,
         required: true,
     });
@@ -248,7 +252,6 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 required
                                                 value={color}
                                                 onChange={(e, value) => setColor(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Color
@@ -269,7 +272,6 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 required
                                                 value={size}
                                                 onChange={(e, value) => setSize(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Size
@@ -290,7 +292,6 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 required
                                                 value={category}
                                                 onChange={(e, value) => setCategory(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Category
@@ -313,7 +314,6 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 required
                                                 value={material}
                                                 onChange={(e, value) => setMaterial(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Material
@@ -333,7 +333,6 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 required
                                                 value={condition}
                                                 onChange={(e, value) => setCondition(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Condition
@@ -353,7 +352,6 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 required
                                                 value={distinctiveMarks}
                                                 onChange={(e, value) => setDistinctiveMarks(value)}
-                                                displayEmpty
                                             >
                                                 <Option value="" disabled>
                                                     Select Distinctive Marks
@@ -467,7 +465,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 </Box>
                                             ))}
                                         </Box>
-                                        <input {...getInputProps()} multiple required />
+                                        <input {...getInputProps()} />
                                         <p>
                                             {images.length === 0 && "Drag 'n' drop some files here, or click to select files"}
                                         </p>

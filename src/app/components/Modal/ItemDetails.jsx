@@ -202,10 +202,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 alignItems: 'center',
                                 gap: 3,
                                 padding: 2,
-                                bgcolor: 'background.level1',
-                                borderRadius: 'md',
-                                boxShadow: 'sm',
-                                maxWidth: { xs: '210px', sm: '600px' }, // 100% on small screens, 600px on larger
+                                maxWidth: { xs: '235px', sm: '600px' }, // 100% on small screens, 600px on larger
                                 width: '100%',
                             }}
                         >
@@ -220,7 +217,6 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                         alignItems: 'center'
                                     }}
                                 >
-                                    <Avatar sx={{ width: 80, height: 80 }} />
                                     <Avatar
                                         alt={`${row.sender ? row.sender.firstname : row.user.firstname} ${row.sender ? row.sender.lastname : row.user.lastname}'s Profile Picture`}
                                         src={row.sender ? row.sender.profile_picture : row.user.profile_picture}
@@ -303,14 +299,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                             )}
 
                         </Box>
-                        <Box
-                            sx={{
-                                bgcolor: 'background.level1',
-                                borderRadius: 'md',
-                                boxShadow: 'sm',
-                                padding: 3,
-                            }}
-                        >
+                        <Box sx={{ padding: 1 }}>
                             <Chip
                                 variant='solid'
                                 sx={{ mb: 2 }}

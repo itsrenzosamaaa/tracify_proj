@@ -22,6 +22,9 @@ const ViewItemPage = ({ params }) => {
     const router = useRouter();
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+    const isSm = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+    const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
     console.log(lostItem)
 
@@ -92,7 +95,7 @@ const ViewItemPage = ({ params }) => {
                                 <Card variant="outlined" sx={{ p: 3, boxShadow: 2, maxWidth: '100%', mx: 'auto', overflow: 'hidden' }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <Typography
-                                            level="h2"
+                                            level={isXs ? 'h3' : 'h2'}
                                             sx={{ color: 'primary.main', fontWeight: 'bold', mb: 2 }}
                                         >
                                             Surrender Instructions
@@ -108,7 +111,7 @@ const ViewItemPage = ({ params }) => {
                                         <Grid item xs={12} md={4}>
                                             <Box>
                                                 {/* Introduction */}
-                                                <Typography level="body2" sx={{ mb: 2 }}>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'} sx={{ mb: 2 }}>
                                                     Please surrender the item to{' '}
                                                     <strong>{foundItem.monitoredBy?.role.name}</strong>{' '}
                                                     located at the{' '}
@@ -140,7 +143,7 @@ const ViewItemPage = ({ params }) => {
                                         {/* Right Side: Stepper */}
                                         <Grid item xs={12} md={7}>
                                             <Stepper
-                                                size="md"
+                                                level={isXs ? 'sm' : 'md'}
                                                 orientation={isSmallScreen ? 'vertical' : 'horizontal'}
                                                 sx={{
                                                     display: 'flex',
@@ -163,10 +166,10 @@ const ViewItemPage = ({ params }) => {
                                                             maxWidth: { xs: '100%', md: 200 },
                                                         }}
                                                     >
-                                                        <Typography level="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                                        <Typography level={isXs ? 'h6' : 'h5'} sx={{ fontWeight: 'bold', mb: 1 }}>
                                                             Visit the Office
                                                         </Typography>
-                                                        <Typography level="body-md" sx={{ color: 'text.secondary' }}>
+                                                        <Typography level={isXs ? 'body-sm' : 'body-md'} sx={{ color: 'text.secondary' }}>
                                                             Go to the designated office to surrender the item.
                                                         </Typography>
                                                     </Box>
@@ -187,10 +190,10 @@ const ViewItemPage = ({ params }) => {
                                                             maxWidth: { xs: '100%', md: 200 },
                                                         }}
                                                     >
-                                                        <Typography level="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                                        <Typography level={isXs ? 'h6' : 'h5'} sx={{ fontWeight: 'bold', mb: 1 }}>
                                                             Contact the Person-in-Charge
                                                         </Typography>
-                                                        <Typography level="body-md" sx={{ color: 'text.secondary' }}>
+                                                        <Typography level={isXs ? 'body-sm' : 'body-md'} sx={{ color: 'text.secondary' }}>
                                                             Reach out to the officer in charge for further assistance.
                                                         </Typography>
                                                     </Box>
@@ -211,10 +214,10 @@ const ViewItemPage = ({ params }) => {
                                                             maxWidth: { xs: '100%', md: 200 },
                                                         }}
                                                     >
-                                                        <Typography level="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                                        <Typography level={isXs ? 'h6' : 'h5'} sx={{ fontWeight: 'bold', mb: 1 }}>
                                                             Confirm the Surrender
                                                         </Typography>
-                                                        <Typography level="body-md" sx={{ color: 'text.secondary' }}>
+                                                        <Typography level={isXs ? 'body-sm' : 'body-md'} sx={{ color: 'text.secondary' }}>
                                                             Confirm the item has been surrendered to complete the process.
                                                         </Typography>
                                                     </Box>
@@ -231,7 +234,7 @@ const ViewItemPage = ({ params }) => {
                         <Card variant="outlined" sx={{ p: 3, boxShadow: 2 }}>
                             <Stack spacing={2}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Typography level="h2">{foundItem.name}</Typography>
+                                    <Typography level={isXs ? 'h3' : 'h2'}>{foundItem.name}</Typography>
                                     {
                                         foundItem.status !== 'Surrender Pending' &&
                                         <Button onClick={() => router.push('/my-items#found-item')} color="danger" aria-label="Back to my items">
@@ -239,7 +242,7 @@ const ViewItemPage = ({ params }) => {
                                         </Button>
                                     }
                                 </Box>
-                                <Typography level="body2" color="neutral">
+                                <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                     <strong>Status:</strong>{' '}
                                     <Chip
                                         variant="solid"
@@ -272,39 +275,39 @@ const ViewItemPage = ({ params }) => {
                                 </Carousel>
                                 <Divider />
 
-                                <Typography level="body2" color="neutral">
+                                <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                     <strong>Description:</strong> {foundItem.description}
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Box>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Color:</strong> {foundItem.color}
                                         </Typography>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Size:</strong> {foundItem.size}
                                         </Typography>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Category:</strong> {foundItem.category}
                                         </Typography>
                                     </Box>
                                     <Box>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Material:</strong> {foundItem.material}
                                         </Typography>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Condition:</strong> {foundItem.condition}
                                         </Typography>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Distinctive Marks:</strong> {foundItem.distinctiveMarks}
                                         </Typography>
                                     </Box>
                                 </Box>
                                 <Divider />
                                 <Box>
-                                    <Typography level="body2" color="neutral">
+                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                         <strong>Found Location:</strong> {foundItem.location}
                                     </Typography>
-                                    <Typography level="body2" color="neutral">
+                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                         <strong>Found Date:</strong> {foundItem.date_time}
                                     </Typography>
                                 </Box>
@@ -313,10 +316,10 @@ const ViewItemPage = ({ params }) => {
                                     <Stepper orientation="vertical">
                                         {foundItem.dateRequest && (
                                             <Step>
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     <strong>Request has been sent!</strong>
                                                 </Typography>
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     {isToday(new Date(foundItem.dateRequest))
                                                         ? `Today, ${format(new Date(foundItem.dateRequest), 'hh:mm a')}`
                                                         : format(new Date(foundItem.dateRequest), 'MMMM dd, yyyy, hh:mm a')}
@@ -325,10 +328,10 @@ const ViewItemPage = ({ params }) => {
                                         )}
                                         {foundItem.dateValidating && (
                                             <Step>
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     <strong>Your item has been approved! Please surrender the item to {foundItem.monitoredBy.role.name}</strong>
                                                 </Typography>
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     {isToday(new Date(foundItem.dateValidating))
                                                         ? `Today, ${format(new Date(foundItem.dateValidating), 'hh:mm a')}`
                                                         : format(new Date(foundItem.dateValidating), 'MMMM dd, yyyy, hh:mm a')}
@@ -337,10 +340,10 @@ const ViewItemPage = ({ params }) => {
                                         )}
                                         {foundItem.datePublished && (
                                             <Step>
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     <strong>Your item has been published!</strong>
                                                 </Typography>
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     {isToday(new Date(foundItem.datePublished))
                                                         ? `Today, ${format(new Date(foundItem.datePublished), 'hh:mm a')}`
                                                         : format(new Date(foundItem.datePublished), 'MMMM dd, yyyy, hh:mm a')}
@@ -349,10 +352,10 @@ const ViewItemPage = ({ params }) => {
                                         )}
                                         {foundItem.dateMatched && (
                                             <Step>
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     <strong>The item has been successfully matched!</strong>
                                                 </Typography>
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     {isToday(new Date(foundItem.dateMatched))
                                                         ? `Today, ${format(new Date(foundItem.dateMatched), 'hh:mm a')}`
                                                         : format(new Date(foundItem.dateMatched), 'MMMM dd, yyyy, hh:mm a')}
@@ -361,10 +364,10 @@ const ViewItemPage = ({ params }) => {
                                         )}
                                         {(foundItem.dateResolved) && (
                                             <Step>
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     <strong>The item has successfully returned to owner!</strong>
                                                 </Typography>
-                                                <Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     {isToday(new Date(foundItem.isFoundItem ? foundItem.dateResolved : foundItem.dateClaimed))
                                                         ? `Today, ${format(new Date(foundItem.isFoundItem ? foundItem.dateResolved : foundItem.dateClaimed), 'hh:mm a')}`
                                                         : format(new Date(foundItem.isFoundItem ? foundItem.dateResolved : foundItem.dateClaimed), 'MMMM dd, yyyy, hh:mm a')}
@@ -381,7 +384,7 @@ const ViewItemPage = ({ params }) => {
                         <Card variant="outlined" sx={{ p: 3, boxShadow: 4, mb: 2 }}>
                             {lostItem ? (
                                 <Stack spacing={2}>
-                                    <Typography level="h2" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                                    <Typography level={isXs ? 'h4' : 'h3'} sx={{ color: 'primary.main', fontWeight: 'bold' }}>
                                         Matched Lost Item
                                     </Typography>
                                     <Carousel showThumbs={false} useKeyboardArrows>
@@ -409,42 +412,42 @@ const ViewItemPage = ({ params }) => {
 
                                     <Divider />
 
-                                    <Typography level="body2" color="neutral">
+                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                         <strong>Description:</strong> {lostItem.owner.item.description}
                                     </Typography>
                                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <Box>
-                                            <Typography level="body2" color="neutral">
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                 <strong>Color:</strong> {lostItem.owner.item.color}
                                             </Typography>
-                                            <Typography level="body2" color="neutral">
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                 <strong>Size:</strong> {lostItem.owner.item.size}
                                             </Typography>
-                                            <Typography level="body2" color="neutral">
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                 <strong>Category:</strong> {lostItem.owner.item.category}
                                             </Typography>
                                         </Box>
                                         <Box>
-                                            <Typography level="body2" color="neutral">
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                 <strong>Material:</strong> {lostItem.owner.item.material}
                                             </Typography>
-                                            <Typography level="body2" color="neutral">
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                 <strong>Condition:</strong> {lostItem.owner.item.condition}
                                             </Typography>
-                                            <Typography level="body2" color="neutral">
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                 <strong>Distinctive Marks:</strong> {lostItem.owner.item.distinctiveMarks}
                                             </Typography>
                                         </Box>
                                     </Box>
                                     <Divider />
                                     <Box>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Lost Location:</strong> {lostItem.owner.item.location}
                                         </Typography>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Start Lost Date:</strong> {lostItem.owner.item.date_time?.split(' to ')[0] || 'Unidentified'}
                                         </Typography>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>End Lost Date:</strong> {lostItem.owner.item.date_time?.split(' to ')[1] || 'Unidentified'}
                                         </Typography>
                                     </Box>

@@ -38,8 +38,7 @@ const ViewItemPage = ({ params }) => {
     const theme = useTheme();
     const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
     const router = useRouter();
-
-    console.log(foundItem)
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
     const fetchFoundItem = useCallback(async (lostItemId) => {
         setError(null);
@@ -102,7 +101,7 @@ const ViewItemPage = ({ params }) => {
     return (
         <>
             {lostItem ? (
-                <Grid container spacing={2} sx={{ maxWidth: 1200, mx: 'auto' }}>
+                <Grid container spacing={2} sx={{ maxWidth: 1200 }}>
                     <Grid item xs={12}>
                         {
                             lostItem.status === 'Unclaimed' &&
@@ -112,23 +111,23 @@ const ViewItemPage = ({ params }) => {
                                     <Card variant="outlined" sx={{ p: 3, boxShadow: 2, maxWidth: '100%', mx: 'auto', overflow: 'hidden' }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <Typography
-                                                level="h2"
+                                                level={isXs ? 'h4' : 'h3'}
                                                 sx={{ color: 'primary.main', fontWeight: 'bold', mb: 2 }}
                                             >
-                                                Surrender Instructions
+                                                Claim Instructions
                                             </Typography>
-                                            <Button onClick={() => router.push('/my-items#lost-item')} color="danger" aria-label="Back to my items">
+                                            <Button size={isXs ? 'small' : 'medium'} onClick={() => router.push('/my-items#lost-item')} color="danger" aria-label="Back to my items">
                                                 Back
                                             </Button>
                                         </Box>
-                                        <Divider sx={{ mb: 3, borderColor: 'primary.main' }} />
+                                        <Divider sx={{ borderColor: 'primary.main' }} />
 
                                         <Grid container spacing={2} alignItems="flex-start">
                                             {/* Left Side: Surrender Details */}
                                             <Grid item xs={12} md={4}>
                                                 <Box>
                                                     {/* Introduction */}
-                                                    <Typography level="body2" color="danger" textAlign="justify" sx={{ my: 2, fontWeight: 'bold' }}>
+                                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="danger" textAlign="justify" sx={{ my: 2, fontWeight: 'bold' }}>
                                                         <strong>Reminder:</strong> Falsely claiming an item that does not belong to you is a serious offense and may result in consequences such as suspension. If the item does not belong to you, you may cancel the retrieval process.
                                                     </Typography>
                                                     <Button color="danger" fullWidth>Cancel Retrieval Process</Button>
@@ -169,10 +168,10 @@ const ViewItemPage = ({ params }) => {
                                                                 marginLeft: { xs: '1rem', md: '' },
                                                             }}
                                                         >
-                                                            <Typography level="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                                            <Typography level={isXs ? 'title-sm' : 'h6'} sx={{ fontWeight: 'bold', mb: 1 }}>
                                                                 Visit the Office
                                                             </Typography>
-                                                            <Typography level="body-md" sx={{ color: 'text.secondary' }}>
+                                                            <Typography level={isXs ? 'body-sm' : 'body-md'} sx={{ color: 'text.secondary' }}>
                                                                 Go to the <strong>{foundItem.finder.item.monitoredBy.role.name}</strong> office at <strong>{foundItem.finder.item.monitoredBy.office_location}</strong>. Make sure to bring any required documents or proof of ownership.
                                                             </Typography>
                                                         </Box>
@@ -194,10 +193,10 @@ const ViewItemPage = ({ params }) => {
                                                                 marginLeft: { xs: '1rem', md: '' },
                                                             }}
                                                         >
-                                                            <Typography level="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                                            <Typography level={isXs ? 'title-sm' : 'h6'} sx={{ fontWeight: 'bold', mb: 1 }}>
                                                                 Verify Ownership
                                                             </Typography>
-                                                            <Typography level="body-md" sx={{ color: 'text.secondary' }}>
+                                                            <Typography level={isXs ? 'body-sm' : 'body-md'} sx={{ color: 'text.secondary' }}>
                                                                 Present your proof of ownership or identification to the person-in-charge. Answer any questions to confirm you are the rightful owner.
                                                             </Typography>
                                                         </Box>
@@ -219,10 +218,10 @@ const ViewItemPage = ({ params }) => {
                                                                 marginLeft: { xs: '1rem', md: '' },
                                                             }}
                                                         >
-                                                            <Typography level="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                                                            <Typography level={isXs ? 'title-sm' : 'h6'} sx={{ fontWeight: 'bold', mb: 1 }}>
                                                                 Claim the Item
                                                             </Typography>
-                                                            <Typography level="body-md" sx={{ color: 'text.secondary' }}>
+                                                            <Typography level={isXs ? 'body-sm' : 'body-md'} sx={{ color: 'text.secondary' }}>
                                                                 Once your claim is verified, the item will be handed to you. Sign any required documents to finalize the process.
                                                             </Typography>
                                                         </Box>
@@ -240,7 +239,7 @@ const ViewItemPage = ({ params }) => {
                         <Card variant="outlined" sx={{ p: 3, boxShadow: 2 }}>
                             <Stack spacing={2}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Typography level="h2">{lostItem.name}</Typography>
+                                    <Typography level={isXs ? 'h3' : 'h2'}>{lostItem.name}</Typography>
                                     {
                                         lostItem.status === 'Missing' &&
                                         <Button onClick={() => router.push('/my-items#lost-item')} color="danger" aria-label="Back to my items">
@@ -249,8 +248,8 @@ const ViewItemPage = ({ params }) => {
                                     }
                                 </Box>
 
-                                <Typography level="body2" color="neutral">
-                                    <strong>Status:</strong> <Chip variant="solid" color="danger">{lostItem.status}</Chip>
+                                <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
+                                    <strong>Status:</strong> <Chip variant="solid" color={lostItem.status === 'Missing' ? 'danger' : 'warning'}>{lostItem.status}</Chip>
                                 </Typography>
 
                                 <Carousel showThumbs={false} useKeyboardArrows>
@@ -265,6 +264,7 @@ const ViewItemPage = ({ params }) => {
                                                 }}
                                             >
                                                 <CldImage
+                                                    priority
                                                     src={image}
                                                     width={250}
                                                     height={250}
@@ -281,29 +281,29 @@ const ViewItemPage = ({ params }) => {
                                 <Button onClick={() => setOpenHistoryModal(true)}>View Retrieval History</Button>
                                 <ViewRetrievalHistory open={openHistoryModal} onClose={() => setOpenHistoryModal(false)} retrievalItems={itemRetrievalHistory} />
 
-                                <Typography level="body2" color="neutral">
+                                <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                     <strong>Description:</strong> {lostItem.description}
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Box>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Color:</strong> {lostItem.color}
                                         </Typography>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Size:</strong> {lostItem.size}
                                         </Typography>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Category:</strong> {lostItem.category}
                                         </Typography>
                                     </Box>
                                     <Box>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Material:</strong> {lostItem.material}
                                         </Typography>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Condition:</strong> {lostItem.condition}
                                         </Typography>
-                                        <Typography level="body2" color="neutral">
+                                        <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Distinctive Marks:</strong> {lostItem.distinctiveMarks}
                                         </Typography>
                                     </Box>
@@ -312,13 +312,13 @@ const ViewItemPage = ({ params }) => {
                                 <Divider />
 
                                 <Box>
-                                    <Typography level="body2" color="neutral">
+                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                         <strong>Location Lost:</strong> {lostItem.location}
                                     </Typography>
-                                    <Typography level="body2" color="neutral">
+                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                         <strong>Lost Start Date:</strong> {formatDate(lostItem.date_time?.split(' to ')[0])}
                                     </Typography>
-                                    <Typography level="body2" color="neutral">
+                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                         <strong>Lost End Date:</strong> {formatDate(lostItem.date_time?.split(' to ')[1])}
                                     </Typography>
                                 </Box>
@@ -389,7 +389,7 @@ const ViewItemPage = ({ params }) => {
                                     {/* Found Item Details */}
                                     <Box>
                                         <Stack spacing={2}>
-                                            <Typography level="h2" sx={{ color: 'success.main', fontWeight: 'bold' }}>{lostItem.status === 'Missing' ? 'Potential Matched Item' : 'Your Item Has Been Found!'}</Typography>
+                                            <Typography level={isXs ? 'h4' : 'h3'} sx={{ color: 'success.main', fontWeight: 'bold' }}>{lostItem.status === 'Missing' ? 'Potential Matched Item' : 'Your Item Has Been Found!'}</Typography>
                                             <Carousel showThumbs={false} useKeyboardArrows>
                                                 {
                                                     foundItem?.finder.item.images?.map((image, index) => (
@@ -402,6 +402,7 @@ const ViewItemPage = ({ params }) => {
                                                             }}
                                                         >
                                                             <CldImage
+                                                                priority
                                                                 src={image}
                                                                 width={250}
                                                                 height={250}
@@ -423,56 +424,92 @@ const ViewItemPage = ({ params }) => {
 
                                             <Divider />
 
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <Avatar sx={{ width: 50, height: 50 }} />
-                                                <Box>
-                                                    <Typography level="body2" color="neutral">
-                                                        <strong>Finder:</strong> {foundItem.finder.user.firstname} {foundItem.finder.user.lastname}
+                                            <Grid container spacing={2}>
+                                                <Grid item xs={12} md={2} display='flex' alignItems="center" justifyContent='center'>
+                                                    <Avatar
+                                                        alt={`${foundItem.finder.user.firstname} ${foundItem.finder.user.lastname}'s Profile Picture`}
+                                                        src={foundItem.finder.user.profile_picture}
+                                                        sx={{
+                                                            width: 50,
+                                                            height: 50,
+                                                            borderRadius: '50%',
+                                                            boxShadow: 2,
+                                                        }}
+                                                    />
+                                                </Grid>
+                                                <Grid item xs={12} md={10}>
+                                                    <Typography
+                                                        level={isXs ? 'body-sm' : 'body-md'}
+                                                        color="neutral"
+                                                        fontWeight="700"
+                                                        sx={{
+                                                            whiteSpace: { xs: 'nowrap' },
+                                                            overflow: { xs: 'hidden' },
+                                                            textOverflow: { xs: 'ellipsis' },
+                                                        }}
+                                                    >
+                                                        {foundItem.finder.user.firstname} {foundItem.finder.user.lastname}
                                                     </Typography>
-                                                    <Typography level="body2" color="neutral">
-                                                        <strong>Email Address:</strong> {foundItem.finder.user.emailAddress}
+                                                    <Typography
+                                                        level={isXs ? 'body-sm' : 'body-md'}
+                                                        color="neutral"
+                                                        sx={{
+                                                            whiteSpace: { xs: 'nowrap' },
+                                                            overflow: { xs: 'hidden' },
+                                                            textOverflow: { xs: 'ellipsis' },
+                                                        }}
+                                                    >
+                                                        {foundItem.finder.user.emailAddress}
                                                     </Typography>
-                                                    <Typography level="body2" color="neutral">
-                                                        <strong>Contact Number:</strong> {foundItem.finder.user.contactNumber}
+                                                    <Typography
+                                                        level={isXs ? 'body-sm' : 'body-md'}
+                                                        color="neutral"
+                                                        sx={{
+                                                            whiteSpace: { xs: 'nowrap' },
+                                                            overflow: { xs: 'hidden' },
+                                                            textOverflow: { xs: 'ellipsis' },
+                                                        }}
+                                                    >
+                                                        {foundItem.finder.user.contactNumber}
                                                     </Typography>
-                                                </Box>
-                                            </Box>
+                                                </Grid>
+                                            </Grid>
 
                                             <Divider />
 
-                                            <Typography level="body2" color="neutral">
+                                            <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                 <strong>Description:</strong> {foundItem.finder.item.description}
                                             </Typography>
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                                 <Box>
-                                                    <Typography level="body2" color="neutral">
+                                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                         <strong>Color:</strong> {foundItem.finder.item.color}
                                                     </Typography>
-                                                    <Typography level="body2" color="neutral">
+                                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                         <strong>Size:</strong> {foundItem.finder.item.size}
                                                     </Typography>
-                                                    <Typography level="body2" color="neutral">
+                                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                         <strong>Category:</strong> {foundItem.finder.item.category}
                                                     </Typography>
                                                 </Box>
                                                 <Box>
-                                                    <Typography level="body2" color="neutral">
+                                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                         <strong>Material:</strong> {foundItem.finder.item.material}
                                                     </Typography>
-                                                    <Typography level="body2" color="neutral">
+                                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                         <strong>Condition:</strong> {foundItem.finder.item.condition}
                                                     </Typography>
-                                                    <Typography level="body2" color="neutral">
+                                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                         <strong>Distinctive Marks:</strong> {foundItem.finder.item.distinctiveMarks}
                                                     </Typography>
                                                 </Box>
                                             </Box>
                                             <Divider />
                                             <Box>
-                                                <Typography level="body2" color="neutral">
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                     <strong>Found Location:</strong> {foundItem.finder.item.location}
                                                 </Typography>
-                                                <Typography level="body2" color="neutral">
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                                     <strong>Found Date:</strong> {foundItem.finder.item.date_time}
                                                 </Typography>
                                             </Box>

@@ -18,6 +18,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Typography, Input, Button } from "@mui/joy";
 import KeyboardTabIcon from '@mui/icons-material/KeyboardTab';
+import { LinearProgress } from "@mui/material";
 import { useSession } from "next-auth/react";
 import Loading from "./Loading";
 import Image from "next/image";
@@ -59,6 +60,9 @@ const SidebarContainer = styled(Box)(({ collapsed }) => ({
   transition: 'width 0.3s ease',
   '@media (min-width: 1200px)': {
     display: 'block',
+  },
+  '@media (max-width: 600px)': {
+    width: collapsed ? "0px" : "250px", // Fully hide sidebar when collapsed on mobile
   },
 }));
 
@@ -140,6 +144,10 @@ const Header = styled(Box)(({ collapsed }) => ({
   '@media (min-width: 1200px)': {
     left: collapsed ? '60px' : '250px',
   },
+  '@media (max-width: 600px)': {
+    height: '48px', // Shorter height for mobile devices
+    width: '100%'
+  },
 }));
 
 
@@ -148,6 +156,8 @@ export default function App() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const pathname = usePathname();
   const router = useRouter();
   const { data: session, status } = useSession();
 
@@ -174,7 +184,6 @@ export default function App() {
     }
   }, [status, session?.user?.id, session?.user?.userType, fetchProfile]);
 
-
   const userType = session?.user?.userType || '';
   const userPermissions = useMemo(() => session?.user?.permissions || {}, [session?.user?.permissions]);
 
@@ -188,7 +197,6 @@ export default function App() {
         if (userPermissions.manageRequestReportedFoundItems) base.push({ icon: <FindInPageIcon />, menu: 'Found Items', url: '/found-items' });
         if (userPermissions.manageRequestItemRetrieval) base.push({ icon: <MoveToInboxIcon />, menu: 'Item Retrieval', url: '/item-retrieval' });
         if (userPermissions.manageRequestReportedLostItems) base.push({ icon: <HelpOutlineIcon />, menu: 'Lost Items', url: '/lost-items' });
-        if (userPermissions.viewItemHistory) base.push({ icon: <HistoryIcon />, menu: 'Item History', url: '/item-history' });
         if (userPermissions.viewBadges) base.push({ icon: <EmojiEventsOutlinedIcon />, menu: 'Badges', url: '/badges' });
         if (userPermissions.viewRoles) base.push({ icon: <SecurityIcon />, menu: 'Roles', url: '/roles' });
         if (userPermissions.viewAdminsList) base.push({ icon: <PeopleOutlineIcon />, menu: 'Admin', url: '/admin' });
@@ -200,66 +208,119 @@ export default function App() {
 
   const toggleMobileDrawer = () => setMobileOpen(!mobileOpen);
 
+  useEffect(() => {
+    setLoading(false)
+  }, [pathname]);
+
+  const handleNavigation = useCallback((url) => {
+    try {
+      setLoading(true)
+      router.push(url);
+    } catch (error) {
+      console.error('Navigation failed:', error);
+      setLoading(false);
+    }
+  }, [router]);
+
   if (status === 'loading') return <Loading />;
 
-  const DrawerContent = ({ navigation, toggleMobileDrawer, collapsed }) => {
-    const pathname = usePathname();
-
-    return (
-      <Box role="presentation">
-        <SidebarHeader>
-          {!collapsed && <Image priority width="150" height="150" src="/tracify_logo.png" alt="tracify" />}
-          <IconButton sx={{ display: { xs: 'block', lg: 'none' } }}>
-            <CloseIcon onClick={toggleMobileDrawer} />
-          </IconButton>
-        </SidebarHeader>
-        <Divider />
-        <List>
-          {navigation.map((item, index) => (
-            <StyledLink href={item.url} key={index}>
-              <SidebarItem selected={pathname === item.url} disablePadding>
-                <ListItemButton>
-                  <IconItem>
-                    {item.icon}
-                  </IconItem>
-                  {!collapsed && <ListItemText primary={item.menu} />}
-                </ListItemButton>
-              </SidebarItem>
-            </StyledLink>
-          ))}
-        </List>
-      </Box>
-    );
-  };
+  const DrawerContent = ({ navigation, toggleMobileDrawer, collapsed }) => (
+    <Box role="presentation">
+      <SidebarHeader>
+        {!collapsed && (
+          <Image priority width={150} height={150} src="/tracify_logo.png" alt="tracify" />
+        )}
+        <IconButton sx={{ display: { xs: "block", lg: "none" } }} onClick={toggleMobileDrawer}>
+          <CloseIcon />
+        </IconButton>
+      </SidebarHeader>
+      <Divider />
+      <List>
+        {navigation.map((item, index) => (
+          <StyledLink
+            href={item.url}
+            key={index}
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavigation(item.url);
+              toggleMobileDrawer();
+            }}
+          >
+            <SidebarItem selected={pathname === item.url} disablePadding>
+              <ListItemButton>
+                <IconItem>{item.icon}</IconItem>
+                {!collapsed && <ListItemText primary={item.menu} />}
+              </ListItemButton>
+            </SidebarItem>
+          </StyledLink>
+        ))}
+      </List>
+    </Box>
+  );
 
   return (
-    <div>
+    <>
+      {loading && (
+        <LinearProgress
+          color="info"
+          sx={{
+            height: '4px',
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            zIndex: 9999,
+          }}
+        />
+      )}
+
       <Header collapsed={collapsed}>
         <IconButton
           color="inherit"
           onClick={toggleMobileDrawer}
           variant="outlined"
-          sx={{ display: { xs: "block", lg: "none" }, marginX: 2 }}
+          sx={{
+            display: { xs: "block", lg: "none" },
+            marginX: 2,
+            position: "absolute",
+            left: 0,
+            zIndex: 1201,
+          }}
         >
           <MenuIcon />
         </IconButton>
+
         <Box
           sx={{
-            width: { xs: '85%', md: '87%', lg: '82.5%' },
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
+            height: "100%",
+            marginLeft: { xs: "auto", lg: "70%" },
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            paddingX: 2,
+            gap: 5,
           }}
         >
-          <Box sx={{ display: 'flex' }}>
-            {userType === 'user' && <NotificationComponent session={session} status={status} />}
+          {userType === "user" && (
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "40px" }}>
+              <NotificationComponent session={session} status={status} />
+            </Box>
+          )}
+
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "40px" }}>
             <AvatarComponent profile={profile} />
           </Box>
         </Box>
       </Header>
+
       <SidebarContainer collapsed={collapsed}>
-        <DrawerContent navigation={navigation} toggleMobileDrawer={toggleMobileDrawer} collapsed={collapsed} />
+        <DrawerContent
+          navigation={navigation}
+          toggleMobileDrawer={toggleMobileDrawer}
+          collapsed={collapsed}
+        />
       </SidebarContainer>
+
       <Drawer
         anchor="left"
         open={mobileOpen}
@@ -267,8 +328,12 @@ export default function App() {
         ModalProps={{ keepMounted: true, disableRestoreFocus: true }}
         sx={{ display: { xs: "block", lg: "none" } }}
       >
-        <DrawerContent navigation={navigation} toggleMobileDrawer={toggleMobileDrawer} collapsed={collapsed} />
+        <DrawerContent
+          navigation={navigation}
+          toggleMobileDrawer={toggleMobileDrawer}
+          collapsed={collapsed}
+        />
       </Drawer>
-    </div>
+    </>
   );
 }

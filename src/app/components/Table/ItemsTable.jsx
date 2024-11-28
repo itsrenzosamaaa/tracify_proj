@@ -185,21 +185,21 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                     {row.item.status === 'Surrender Pending' && (
                                         <>
                                             <Button onClick={() => setOpenValidatingModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
-                                            <Button onClick={() => setOpenValidatingModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
+                                            <Button onClick={() => setOpenValidatingModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
                                             <ItemValidatingModal row={row} open={openValidatingModal} onClose={() => setOpenValidatingModal(null)} refreshData={fetchItems} />
                                         </>
                                     )}
                                     {row.item.status === 'Published' && (
                                         <>
                                             <Button onClick={() => setOpenPublishedModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
-                                            <Button onClick={() => setOpenPublishedModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
+                                            <Button onClick={() => setOpenPublishedModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
                                             <ItemPublishedModal row={row} open={openPublishedModal} onClose={() => setOpenPublishedModal(null)} refreshData={fetchItems} snackBar={setOpenSnackbar} />
                                         </>
                                     )}
                                     {row.item.status === 'Missing' && (
                                         <>
                                             <Button onClick={() => setOpenMissingModal(row._id)} size="small" sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
-                                            <Button onClick={() => setOpenMissingModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon /></Button>
+                                            <Button onClick={() => setOpenMissingModal(row._id)} size="small" sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
                                             <ItemMissingModal row={row} open={openMissingModal} onClose={() => setOpenMissingModal(null)} refreshData={fetchItems} snackBar={setOpenSnackbar} />
                                         </>
                                     )}

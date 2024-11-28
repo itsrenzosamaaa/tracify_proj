@@ -132,7 +132,7 @@ const NotificationComponent = ({ status, session }) => {
                     >
                         <NotificationsIcon
                             sx={{
-                                fontSize: '35px',
+                                fontSize: { xs: 25, md: 35 },
                                 color: 'inherit',
                                 transition: 'color 0.2s',
                             }}
@@ -151,7 +151,20 @@ const NotificationComponent = ({ status, session }) => {
                         mt: 1, // Margin top to position it below the button
                     }}
                 >
-                    <Typography level='h3' sx={{ padding: '1rem' }}>Notifications</Typography>
+                    <Typography
+                        level="h3"
+                        sx={{
+                            padding: '1rem',
+                            position: 'sticky', // Make the title sticky
+                            top: 0, // Stick to the top of the menu
+                            backgroundColor: 'white', // Ensure the title has a background to overlay the content
+                            zIndex: 1, // Make sure it stays on top of the content
+                            borderTopLeftRadius: 'sm', // Optional: add rounded corners to the top
+                            borderTopRightRadius: 'sm', // Optional: add rounded corners to the top
+                        }}
+                    >
+                        Notifications
+                    </Typography>
                     <Divider />
                     {isLoading ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>

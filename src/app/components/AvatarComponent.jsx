@@ -12,26 +12,29 @@ const DropdownContainer = styled.div`
 `;
 
 const AvatarComponent = ({ profile }) => {
-  console.log(profile); // To check the profile object
-
   return (
     <DropdownContainer>
       <Dropdown>
         <MenuButton
           startDecorator={
-            profile ? (
+            profile?.profile_picture ? (
               <Avatar
                 alt={`${profile.firstname} ${profile.lastname}'s Profile Picture` || 'Student'}
                 src={profile.profile_picture || "https://via.placeholder.com/92"} // Fallback to a placeholder image if profile_picture is missing
                 sx={{
-                  width: 45,
-                  height: 45,
+                  width: { xs: 35, md: 45 },
+                  height: { xs: 35, md: 45 },
                   borderRadius: "50%",
                   boxShadow: 2,
                 }}
               />
             ) : (
-              <Avatar />
+              <Avatar
+                sx={{
+                  width: { xs: 35, md: 45 },
+                  height: { xs: 35, md: 45 },
+                }}
+              />
             )
           }
           sx={{

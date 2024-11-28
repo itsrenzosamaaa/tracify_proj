@@ -10,8 +10,6 @@ const ConfirmationRetrievalRequest = ({ open, onClose, foundItem, lostItem, refr
     const router = useRouter();
     const pathname = usePathname();
 
-    console.log(foundItem)
-
     const handleSubmit = async (e, foundItemId, finderId, ownerId) => {
         if (e && e.preventDefault) {
             e.preventDefault();
@@ -51,10 +49,10 @@ const ConfirmationRetrievalRequest = ({ open, onClose, foundItem, lostItem, refr
                 dateNotified: new Date(),
             })
 
-            if (pathname === '/my-items#suggested-item') {
+            if (pathname === '/my-items') {
                 onClose();
                 refreshData();
-                openSnackbar(true);
+                setOpenSnackbar(true);
                 return;
             }
             return router.push('/my-items#lost-item');

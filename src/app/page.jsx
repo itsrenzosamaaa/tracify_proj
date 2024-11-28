@@ -109,12 +109,12 @@ export default function Home() {
                 justifyContent: "center",
               }}
             >
-              <Image width="200" height="200" src="/tracify_logo1.png" alt="tracify" />
+              <Image priority width="150" height="150" src="/tracify_logo1.png" alt="tracify" />
             </Box>
             <form onSubmit={handleSubmit}>
               <Box sx={{ padding: "1rem", textAlign: "center" }}>
-                <Typography level="h2">Hello</Typography>
-                <Typography level="h3">Sign into your Account</Typography>
+                <Typography level="h3" fontWeight="700">Hello</Typography>
+                <Typography level="h4">Sign into your Account</Typography>
                 <Stack spacing={1} sx={{ paddingY: "2rem", marginX: "3rem" }}>
                   <FormLabel>ID*</FormLabel>
                   <FormControl>
@@ -158,7 +158,7 @@ export default function Home() {
                   <Typography
                     level="p"
                     sx={{
-                      fontSize: "0.9rem",
+                      fontSize: { xs: '0.8rem', md: "0.9rem" },
                       textAlign: "right",
                       marginTop: "0.5rem",
                       marginBottom: "5rem",

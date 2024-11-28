@@ -85,147 +85,186 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
     return (
         <>
             <Modal open={open} onClose={onClose}>
-                <ModalDialog sx={{ display: 'flex', flexDirection: 'row' }}>
+                <ModalDialog>
                     <ModalClose />
-                    <DialogContent sx={{ width: '800px' }}>
-                        <Box sx={{ flex: 1, paddingRight: '20px', display: 'flex', flexDirection: 'column' }}>
-                            <Typography level="h4" gutterBottom sx={{ mb: 3 }}>Add Badge</Typography>
+                    <Typography level="h4" gutterBottom sx={{ mb: 3 }}>
+                        Edit Badge
+                    </Typography>
+                    <DialogContent>
+                        <form onSubmit={handleSubmit}>
                             <Grid container spacing={2}>
-                                <Grid item xs={12} lg={9}>
-                                    <form onSubmit={handleSubmit}>
-                                        <Stack spacing={2}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <Box sx={{ width: '100%' }}>
-                                                    <FormControl fullWidth>
-                                                        <FormLabel>Badge Title</FormLabel>
-                                                        <Input
-                                                            name="name"
-                                                            value={title}
-                                                            onChange={(e) => setTitle(e.target.value)}
-                                                            required
-                                                        />
-                                                    </FormControl>
-                                                </Box>
-
-                                                <Box sx={{ width: '100%' }}>
-                                                    <FormLabel>Title Color</FormLabel>
-                                                    <Input
-                                                        fullWidth
-                                                        type="color"
-                                                        value={titleColor}
-                                                        onChange={(e) => setTitleColor(e.target.value)}
-                                                    />
-                                                </Box>
-
-                                                <Box sx={{ width: '100%' }}>
-                                                    <FormLabel>Title Outline Color</FormLabel>
-                                                    <Input
-                                                        fullWidth
-                                                        type="color"
-                                                        value={titleOutlineColor}
-                                                        onChange={(e) => setTitleOutlineColor(e.target.value)}
-                                                    />
-                                                </Box>
-                                            </Box>
-
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <Box sx={{ width: '100%' }}>
-                                                    <FormLabel>Shape</FormLabel>
-                                                    <Select
-                                                        value={shape}
-                                                        onChange={(e, value) => setShape(value)}
-                                                        fullWidth
-                                                    >
-                                                        <Option value="circle">Circle</Option>
-                                                        <Option value="square">Square</Option>
-                                                        <Option value="star">Star</Option>
-                                                        <Option value="triangle">Triangle</Option>
-                                                        <Option value="hexagon">Hexagon</Option>
-                                                    </Select>
-                                                </Box>
-
-                                                <Box sx={{ width: '100%' }}>
-                                                    <FormLabel>Shape Color</FormLabel>
-                                                    <Input
-                                                        fullWidth
-                                                        type="color"
-                                                        value={shapeColor}
-                                                        onChange={(e) => setShapeColor(e.target.value)}
-                                                    />
-                                                </Box>
-                                            </Box>
-
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                                <Box sx={{ width: '100%' }}>
-                                                    <FormLabel>Background Shape</FormLabel>
-                                                    <Select
-                                                        value={bgShape}
-                                                        onChange={(e, value) => setBgShape(value)}
-                                                        fullWidth
-                                                    >
-                                                        <Option value="circle">Circle</Option>
-                                                        <Option value="square">Square</Option>
-                                                    </Select>
-                                                </Box>
-
-                                                <Box sx={{ width: '100%' }}>
-                                                    <FormLabel>Background Color</FormLabel>
-                                                    <Input
-                                                        fullWidth
-                                                        type="color"
-                                                        value={bgColor}
-                                                        onChange={(e) => setBgColor(e.target.value)}
-                                                    />
-                                                </Box>
-
-                                                <Box sx={{ width: '100%' }}>
-                                                    <FormLabel>Background Outline Color</FormLabel>
-                                                    <Input
-                                                        fullWidth
-                                                        type="color"
-                                                        value={bgOutline}
-                                                        onChange={(e) => setBgOutline(e.target.value)}
-                                                    />
-                                                </Box>
-                                            </Box>
-
-                                            <FormControl>
-                                                <FormLabel>Condition</FormLabel>
-                                                <Select
-                                                    value={condition}
-                                                    onChange={(e, value) => setCondition(value)}
-                                                    fullWidth
-                                                >
-                                                    <Option value="Found Item/s">No. of Found Items</Option>
-                                                    <Option value="Rating/s">No. of Ratings</Option>
-                                                </Select>
-                                            </FormControl>
-
-                                            {
-                                                condition &&
-                                                <FormControl>
-                                                    <FormLabel>Meet Conditions</FormLabel>
-                                                    <Input
-                                                        fullWidth
-                                                        type="number"
-                                                        value={meetConditions}
-                                                        onChange={(e) => setMeetConditions(e.target.value)}
-                                                    />
-                                                </FormControl>
-                                            }
-
-                                            <FormControl>
-                                                <Checkbox label="Add a shimmering effect?" checked={titleShimmer} onChange={(e) => setTitleShimmer(e.target.checked)} />
-                                            </FormControl>
-
-                                            <Button loading={loading} disabled={loading} type="submit" fullWidth>Update Badge</Button>
-                                        </Stack>
-                                    </form>
+                                {/* Badge Title */}
+                                <Grid item xs={12} md={4}>
+                                    <FormControl fullWidth>
+                                        <FormLabel>Badge Title</FormLabel>
+                                        <Input
+                                            name="name"
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            required
+                                        />
+                                    </FormControl>
                                 </Grid>
-                                <Grid item xs={12} lg={3}>
-                                    <Typography level="h4" textAlign="center" gutterBottom>Preview</Typography>
-                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingLeft: '20px' }}>
-                                        <Box sx={{ width: '150px', height: '150px', border: '1px solid #ddd', display: 'flex', flexDirection: 'column', borderRadius: '10px', padding: '10px', alignItems: 'center', justifyContent: 'center' }}>
+
+                                {/* Title Color */}
+                                <Grid item xs={6} md={4}>
+                                    <FormControl fullWidth>
+                                        <FormLabel>Title Color</FormLabel>
+                                        <Input
+                                            type="color"
+                                            value={titleColor}
+                                            onChange={(e) => setTitleColor(e.target.value)}
+                                        />
+                                    </FormControl>
+                                </Grid>
+
+                                {/* Title Outline Color */}
+                                <Grid item xs={6} md={4}>
+                                    <FormControl fullWidth>
+                                        <FormLabel>Title Outline Color</FormLabel>
+                                        <Input
+                                            type="color"
+                                            value={titleOutlineColor}
+                                            onChange={(e) => setTitleOutlineColor(e.target.value)}
+                                        />
+                                    </FormControl>
+                                </Grid>
+
+                                {/* Shape and Shape Color */}
+                                <Grid item xs={12} sm={6}>
+                                    <FormControl fullWidth>
+                                        <FormLabel>Shape</FormLabel>
+                                        <Select
+                                            value={shape}
+                                            onChange={(e, value) => setShape(value)}
+                                        >
+                                            <Option value="circle">Circle</Option>
+                                            <Option value="square">Square</Option>
+                                            <Option value="star">Star</Option>
+                                            <Option value="triangle">Triangle</Option>
+                                            <Option value="hexagon">Hexagon</Option>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <FormControl fullWidth>
+                                        <FormLabel>Shape Color</FormLabel>
+                                        <Input
+                                            type="color"
+                                            value={shapeColor}
+                                            onChange={(e) => setShapeColor(e.target.value)}
+                                        />
+                                    </FormControl>
+                                </Grid>
+
+                                {/* Background Shape, Color, and Outline */}
+                                <Grid item xs={12} sm={4}>
+                                    <FormControl fullWidth>
+                                        <FormLabel>BG Shape</FormLabel>
+                                        <Select
+                                            value={bgShape}
+                                            onChange={(e, value) => setBgShape(value)}
+                                        >
+                                            <Option value="circle">Circle</Option>
+                                            <Option value="square">Square</Option>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                                <Grid item xs={6} sm={4}>
+                                    <FormControl fullWidth>
+                                        <FormLabel>BG Color</FormLabel>
+                                        <Input
+                                            type="color"
+                                            value={bgColor}
+                                            onChange={(e) => setBgColor(e.target.value)}
+                                        />
+                                    </FormControl>
+                                </Grid>
+                                <Grid item xs={6} sm={4}>
+                                    <FormControl fullWidth>
+                                        <FormLabel>BG Outline Color</FormLabel>
+                                        <Input
+                                            type="color"
+                                            value={bgOutline}
+                                            onChange={(e) => setBgOutline(e.target.value)}
+                                        />
+                                    </FormControl>
+                                </Grid>
+
+                                {/* Condition and Meet Conditions */}
+                                <Grid item xs={12}>
+                                    <FormControl fullWidth>
+                                        <FormLabel>Condition</FormLabel>
+                                        <Select
+                                            value={condition}
+                                            onChange={(e, value) => setCondition(value)}
+                                        >
+                                            <Option value="Found Item/s">No. of Found Items</Option>
+                                            <Option value="Rating/s">No. of Ratings</Option>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+
+                                <Grid item xs={12}>
+                                    <FormControl fullWidth>
+                                        <FormLabel>Meet Conditions</FormLabel>
+                                        <Input
+                                            type="number"
+                                            value={meetConditions}
+                                            onChange={(e) => setMeetConditions(e.target.value)}
+                                        />
+                                    </FormControl>
+                                </Grid>
+
+                                {/* Shimmer Effect */}
+                                <Grid item xs={12}>
+                                    <FormControl>
+                                        <Checkbox
+                                            label="Add a shimmering effect?"
+                                            checked={titleShimmer}
+                                            onChange={(e) => setTitleShimmer(e.target.checked)}
+                                        />
+                                    </FormControl>
+                                </Grid>
+
+                                {/* Submit Button */}
+                                <Grid item xs={12}>
+                                    <Button
+                                        loading={loading}
+                                        disabled={loading}
+                                        type="submit"
+                                        fullWidth
+                                    >
+                                        Update Badge
+                                    </Button>
+                                </Grid>
+
+                                {/* Preview Section */}
+                                <Grid item xs={12}>
+                                    <Typography level="h4" textAlign="center" gutterBottom>
+                                        Preview
+                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            width: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                    >
+                                        <Box
+                                            sx={{
+                                                width: '150px',
+                                                height: '150px',
+                                                border: '1px solid #ddd',
+                                                borderRadius: '10px',
+                                                padding: '10px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                            }}
+                                        >
                                             <PreviewBadge
                                                 title={title}
                                                 titleColor={titleColor}
@@ -243,7 +282,7 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
                                     </Box>
                                 </Grid>
                             </Grid>
-                        </Box>
+                        </form>
                     </DialogContent>
                 </ModalDialog>
             </Modal>

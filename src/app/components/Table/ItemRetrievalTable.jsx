@@ -59,6 +59,10 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                         borderCollapse: "collapse",
                         "@media (max-width: 600px)": {
                             minWidth: 600,
+                            "& th, & td": {
+                                fontSize: "0.8rem", // Smaller font size for mobile
+                                padding: "6px", // Reduce padding
+                            },
                         },
                     }}
                 >
@@ -92,6 +96,7 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
+                                    width: { xs: '90px', md: '150px' }
                                 }}
                             >
                                 Request Status
@@ -100,6 +105,7 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 sx={{
                                     fontWeight: "bold",
                                     backgroundColor: "#f5f5f5",
+                                    width: { xs: '140px', md: '150px' }
                                 }}
                             >
                                 Item Status
@@ -123,7 +129,7 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                 <TableCell>
                                     {format(parseISO(row.datePending), "MMMM dd, yyyy - hh:mm a")}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell sx={{ width: { xs: '90px', md: '150px' } }}>
                                     <Chip
                                         variant='solid'
                                         color={
@@ -139,7 +145,7 @@ const ItemRetrievalTable = ({ items, fetchItems, session }) => {
                                         {row.request_status}
                                     </Chip>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell sx={{ width: { xs: '140px', md: '150px' } }}>
                                     {(() => {
                                         if (row.request_status === "Pending") {
                                             return (

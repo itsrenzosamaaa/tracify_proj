@@ -8,8 +8,6 @@ export async function GET() {
 
     const findAdmin = await admin.find().populate("role");
 
-    console.log(findAdmin)
-
     return NextResponse.json(findAdmin, { status: 200 });
   } catch (error) {
     console.error("Error fetching admins:", error);

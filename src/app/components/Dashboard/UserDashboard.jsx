@@ -9,8 +9,6 @@ import TopStudentsEarnedBadges from "../TopStudentsEarnedBadges";
 
 const UserDashboard = ({ session, status, users }) => {
     const [userItems, setUserItems] = useState([]);
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const router = useRouter();
@@ -41,8 +39,8 @@ const UserDashboard = ({ session, status, users }) => {
     }, [status, session?.user?.id]);
 
     const PaperOverview = useMemo(() => [
-        { title: 'Total Found Items', quantity: userItems.filter(userItem => userItem.item.isFoundItem).length, description: 'Items reported as found by users.' },
-        { title: 'Total Lost Items', quantity: userItems.filter(userItem => !userItem.item.isFoundItem).length, description: 'Items reported as lost by users.' },
+        { title: 'Total Found Items', quantity: userItems.filter(userItem => userItem.item.isFoundItem).length, description: 'Items reported as found by the user.' },
+        { title: 'Total Lost Items', quantity: userItems.filter(userItem => !userItem.item.isFoundItem).length, description: 'Items reported as lost by the user.' },
         { title: 'Pending Requests', quantity: userItems.filter(userItem => userItem.item.status === 'Request').length, description: 'Requests currently being processed.' },
         { title: 'Resolved Cases', quantity: userItems.filter(userItem => userItem.item.status === 'Resolved' || userItem.item.status === 'Claimed').length, description: 'Cases that have been successfully resolved.' },
     ], [userItems]);
@@ -67,8 +65,8 @@ const UserDashboard = ({ session, status, users }) => {
                     Dashboard Overview
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                    <Button onClick={() => router.push('/my-items/report-found-item')}>Report Found Item</Button>
-                    <Button onClick={() => router.push('/my-items/report-lost-item')} color="danger">Report Lost Item</Button>
+                    <Button size="small" onClick={() => router.push('/my-items/report-found-item')}>Report Found Item</Button>
+                    <Button size="small" onClick={() => router.push('/my-items/report-lost-item')} color="danger">Report Lost Item</Button>
                 </Box>
             </Box>
 

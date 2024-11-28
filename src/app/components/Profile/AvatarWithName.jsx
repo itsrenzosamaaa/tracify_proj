@@ -1,12 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Paper } from '@mui/material';
-import { Avatar, Box, Typography } from '@mui/joy';
+import { Avatar, Box, Typography, Menu, MenuItem, MenuButton, Dropdown } from '@mui/joy';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ChangeProfilePicture from '../Modal/ChangeProfilePicture';
+import ChangeUsername from '../Modal/ChangeUsername';
 
-const AvatarWithName = ({ user, image }) => {
+const AvatarWithName = ({ profile, session, refreshData, setOpenSnackbar }) => {
+    const [image, setImage] = useState(profile.profile_picture || null);
+    const [openModal, setOpenModal] = useState(false);
+    const [openUsernameModal, setOpenUsernameModal] = useState(false);
+    const [openPasswordModal, setOpenPasswordModal] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     return (
         <>
-            <Box sx={{ padding: '1rem 1rem 1rem 0' }}>
+            <Box sx={{ padding: '1rem 1rem 1rem 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography level="body-lg" fontWeight="500">Name</Typography>
+                <Dropdown>
+                    <MenuButton variant="plain" size="small" startDecorator={<MoreVertIcon />} />
+                    <Menu>
+                        <MenuItem onClick={() => setOpenModal(true)}>
+                            Change Profile Picture
+                        </MenuItem>
+                        <MenuItem onClick={() => setOpenUsernameModal(true)}>
+                            Change Username
+                        </MenuItem>
+                        <MenuItem onClick={() => setOpenPasswordModal(true)}>
+                            Change Password
+                        </MenuItem>
+                    </Menu>
+                </Dropdown>
+                <ChangeProfilePicture loading={loading} setImage={setImage} setLoading={setLoading} refreshData={refreshData} session={session} setOpenSnackbar={setOpenSnackbar} setOpenModal={setOpenModal} openModal={openModal} />
+                <ChangeUsername session={session} profile={profile} openUsernameModal={openUsernameModal} setOpenUsernameModal={setOpenUsernameModal} refreshData={refreshData} setOpenSnackbar={setOpenSnackbar} />
             </Box>
             <Paper
                 elevation={2}
@@ -20,8 +45,8 @@ const AvatarWithName = ({ user, image }) => {
             >
                 {image ? (
                     <Avatar
-                        alt={`${user.firstname} ${user.lastname}'s Profile Picture`}
-                        src={user.profile_picture}
+                        alt={`${profile.firstname} ${profile.lastname}'s Profile Picture`}
+                        src={profile.profile_picture}
                         sx={{
                             width: { xs: 70, sm: 92 },
                             height: { xs: 70, sm: 92 },
@@ -39,16 +64,16 @@ const AvatarWithName = ({ user, image }) => {
                         }}
                     >
                         <Typography level="h2">
-                            {user.firstname?.charAt(0).toUpperCase() || 'U'}
+                            {profile.firstname?.charAt(0).toUpperCase() || 'U'}
                         </Typography>
                     </Avatar>
                 )}
                 <Box sx={{ textAlign: { xs: 'left', md: 'center' } }}>
                     <Typography level="body-lg" fontWeight="500">
-                        {user.firstname} {user.lastname}
+                        {profile.firstname} {profile.lastname}
                     </Typography>
                     <Typography level="body-sm" fontWeight="400">
-                        {user.username}
+                        {profile.username}
                     </Typography>
                 </Box>
             </Paper>

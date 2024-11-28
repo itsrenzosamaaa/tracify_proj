@@ -8,6 +8,7 @@ import AddIcon from '@mui/icons-material/Add';
 import AddBadgeModal from './Modal/AddBadge';
 import PreviewBadge from './PreviewBadge';
 import EditBadgeModal from './Modal/EditBadge';
+import { useTheme, useMediaQuery } from '@mui/material';
 
 const ViewBadges = ({ session, badges, fetchBadges }) => {
     const [modal, setModal] = useState(false);
@@ -15,6 +16,10 @@ const ViewBadges = ({ session, badges, fetchBadges }) => {
     const [openDeleteModal, setOpenDeleteModal] = useState(null);
     const [loading, setLoading] = useState(false);
     const [openSnackbar, setOpenSnackbar] = useState(false);
+    const theme = useTheme();
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+    const isSm = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+    const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
     // Pagination state
     const [page, setPage] = useState(0);
@@ -92,7 +97,7 @@ const ViewBadges = ({ session, badges, fetchBadges }) => {
                                                         <TableRow key={badge._id}>
                                                             {/* Image cell */}
                                                             <TableCell sx={{ width: { xs: '30%', md: '20%' } }}>
-                                                                <Box sx={{ width: { xs: '100px', sm: '125px', md: '150px' }, height: { xs: '100px', sm: '125px', md: '150px' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <Box sx={{ width: { xs: '80px', sm: '105px', md: '130px' }, height: { xs: '80px', sm: '105px', md: '130px' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                                                                     <PreviewBadge
                                                                         title={badge.title}
                                                                         titleColor={badge.titleColor}
@@ -110,13 +115,15 @@ const ViewBadges = ({ session, badges, fetchBadges }) => {
                                                                 </Box>
                                                             </TableCell>
                                                             {/* Title cell */}
-                                                            <TableCell>{badge.meetConditions} {badge.condition}</TableCell>
+                                                            <TableCell>
+                                                                <Typography level={isXs ? 'body-xs' : 'body-md'}>{badge.meetConditions} {badge.condition}</Typography>
+                                                            </TableCell>
                                                             {/* Actions cell */}
                                                             <TableCell>
                                                                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1 }}>
-                                                                    <Button size="small" onClick={() => setOpenEditModal(badge._id)}>Edit</Button>
+                                                                    <Button size={isXs ? 'small' : 'medium'} onClick={() => setOpenEditModal(badge._id)}>Edit</Button>
                                                                     <EditBadgeModal open={openEditModal === badge._id} onClose={() => setOpenEditModal(null)} refreshData={fetchBadges} badge={badge} />
-                                                                    <Button size="small" color="danger" onClick={() => setOpenDeleteModal(badge._id)}>Delete</Button>
+                                                                    <Button size={isXs ? 'small' : 'medium'} color="danger" onClick={() => setOpenDeleteModal(badge._id)}>Delete</Button>
                                                                     <Modal open={openDeleteModal === badge._id} onClose={() => setOpenDeleteModal(null)}>
                                                                         <ModalDialog>
                                                                             <ModalClose />

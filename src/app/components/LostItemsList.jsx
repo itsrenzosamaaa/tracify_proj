@@ -37,7 +37,7 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
                                         name="status-selection"
                                         aria-labelledby="status-selection"
                                         orientation="horizontal"
-                                        sx={{ flexWrap: 'wrap', gap: 1 }}
+                                        sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1 }}
                                     >
                                         {statusOptions.map((name) => {
                                             const checked = status === name;
@@ -85,7 +85,7 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
                                     </RadioGroup>
                                 </Box>
                             </FormControl>
-                            <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Lost Item</Button>
+                            <Button size="small" startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Lost Item</Button>
                             <PublishLostItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
                         </Box>
                         <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={false} />

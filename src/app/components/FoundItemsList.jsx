@@ -76,7 +76,7 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
                                         name="status-selection"
                                         aria-labelledby="status-selection"
                                         orientation="horizontal"
-                                        sx={{ flexWrap: 'wrap', gap: 1 }}
+                                        sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1 }}
                                     >
                                         {statusOptions.map((name) => {
                                             const isChecked = status === name;
@@ -90,7 +90,7 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
                                     </RadioGroup>
                                 </Box>
                             </FormControl>
-                            <Button startDecorator={<AddIcon />} onClick={() => setOpen(true)}>
+                            <Button size="small" sx={{ width: { xs: '40%', md: '170px' } }} startDecorator={<AddIcon />} onClick={() => setOpen(true)}>
                                 Publish a Found Item
                             </Button>
                             <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />

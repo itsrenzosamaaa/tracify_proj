@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Paper, Dialog, DialogActions, DialogContent, DialogTitle, Button } from '@mui/material';
+import { Paper, Dialog, DialogActions, DialogContent, DialogTitle, Button, IconButton } from '@mui/material';
 import { Box, Typography } from '@mui/joy';
 import PreviewBadge from "../PreviewBadge";
+import AddCircleIcon from '@mui/icons-material/AddCircle'; // Add icon
 
 const Badges = ({ user }) => {
     const [selectedBadge, setSelectedBadge] = useState(user.selectedBadge || null);
@@ -68,24 +69,13 @@ const Badges = ({ user }) => {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: 'center',
-                    justifyContent: 'space-around',
+                    justifyContent: 'center', // Center content vertically and horizontally
                     minHeight: '8.75rem',
                     maxHeight: '8.75rem',
+                    textAlign: 'center', // Center text
                 }}
             >
-                <Typography
-                    level="body-sm"
-                    sx={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        textDecoration: 'underline',
-                        cursor: 'pointer',
-                    }}
-                    onClick={selectedBadge ? handleBadgeRemove : handleOpenDialog}
-                >
-                    {selectedBadge ? 'Remove' : 'Select'}
-                </Typography>
+                {/* Display badge or Add Icon */}
                 {selectedBadge ? (
                     <Box onClick={handleOpenDialog} sx={{ cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
                         <PreviewBadge
@@ -104,7 +94,28 @@ const Badges = ({ user }) => {
                         />
                     </Box>
                 ) : (
-                    <Typography level="body-md" sx={{ textAlign: 'center' }}>Select your badges here</Typography>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                        }}
+                        onClick={handleOpenDialog}
+                    >
+                        <IconButton
+                            sx={{
+                                color: '#1976d2', // Change to your desired color
+                                fontSize: '3rem', // Set icon size
+                            }}
+                        >
+                            <AddCircleIcon />
+                        </IconButton>
+                        <Typography level="body-md" sx={{ marginTop: '0.5rem' }}>
+                            Select a Badge
+                        </Typography>
+                    </Box>
                 )}
             </Paper>
 
