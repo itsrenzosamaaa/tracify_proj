@@ -12,10 +12,8 @@ import { useTheme, useMediaQuery } from '@mui/material';
 
 const ViewItemPage = ({ params }) => {
     const router = useRouter();
-    const searchParams = useSearchParams();
 
     // State for query params and items
-    const [loadingParams, setLoadingParams] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
@@ -23,24 +21,16 @@ const ViewItemPage = ({ params }) => {
     const [foundItem, setFoundItem] = useState(null);
 
     const { lostId, foundId } = params;
-    const owner = searchParams.get('owner'); // Assuming 'owner' is a query param
-    const finder = searchParams.get('finder'); // Assuming 'finder' is a query param
 
     const theme = useTheme();
     const isXs = useMediaQuery(theme.breakpoints.down('sm'));
-    const isSm = useMediaQuery(theme.breakpoints.between('sm', 'md'));
-    const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
-    // Effect to wait for the params to load
-    useEffect(() => {
-        if (owner && finder) {
-            setLoadingParams(false); // Allow API call once params are available
-        }
-    }, [owner, finder]);
+    console.log(lostItem)
+    console.log(foundItem)
 
     // Fetching items based on ids and owner/finder parameters
     const fetchItems = useCallback(async () => {
-        if (!owner || !finder || !lostId || !foundId) {
+        if (!lostId || !foundId) {
             return; // Skip fetching if required params are missing
         }
 
@@ -48,14 +38,14 @@ const ViewItemPage = ({ params }) => {
         setError(null); // Reset error state on each fetch attempt
         try {
             // Fetch lost item
-            const lostResponse = await fetch(`/api/owner/${owner}/items/${lostId}`);
+            const lostResponse = await fetch(`/api/owner/matched/${lostId}`);
             if (!lostResponse.ok) {
                 throw new Error('Failed to fetch lost item');
             }
             const lostData = await lostResponse.json();
 
             // Fetch found item
-            const foundResponse = await fetch(`/api/finder/${finder}/items/${foundId}`);
+            const foundResponse = await fetch(`/api/finder/matched/${foundId}`);
             if (!foundResponse.ok) {
                 throw new Error('Failed to fetch found item');
             }
@@ -69,15 +59,15 @@ const ViewItemPage = ({ params }) => {
         } finally {
             setLoading(false);
         }
-    }, [owner, finder, lostId, foundId]);
+    }, [lostId, foundId]);
 
     useEffect(() => {
-        if (owner && finder && lostId && foundId) {
+        if (lostId && foundId) {
             fetchItems();
         }
-    }, [owner, finder, lostId, foundId, fetchItems]);
+    }, [lostId, foundId, fetchItems]);
 
-    if (loadingParams || loading) return <Loading />;
+    if (loading) return <Loading />;
     if (error) return <Typography color="error">{error}</Typography>;
 
     // If either lostItem or foundItem are null, display a message

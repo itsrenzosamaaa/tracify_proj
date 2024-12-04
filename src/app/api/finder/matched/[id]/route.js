@@ -3,14 +3,11 @@ import dbConnect from "@/lib/mongodb";
 import finder from "@/lib/models/finder";
 
 export async function GET(req, { params }) {
-    const { userId, itemId } = params;
+    const { id } = params;
     try {
       await dbConnect();
   
-      const findFoundItem = await finder.findOne({
-        user: userId,
-        item: itemId,
-      })
+      const findFoundItem = await finder.findById(id)
         .populate('user')
         .populate({
           path: 'item',
@@ -21,7 +18,8 @@ export async function GET(req, { params }) {
               model: 'Role',
             },
           },
-        });
+        })
+        .lean();
 
       return NextResponse.json(findFoundItem, { status: 200 });
     } catch (error) {

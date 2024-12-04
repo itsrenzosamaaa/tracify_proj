@@ -45,7 +45,11 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
         }
     }, [status, session?.user?.schoolCategory, fetchUsers]);
 
-    const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court'];
+    const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court', 'Function Hall', 'Library', 'Computer Laboratory'];
+
+    // const floorBuilding = ['1st Floor', '2nd Floor', '3rd Floor'];
+
+    // const specificBuildingLocations = ['Hallway', 'Inside the Room', 'Restroom'];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -256,11 +260,12 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 <Option value="" disabled>
                                                     Select Color
                                                 </Option>
-                                                {['Black', 'White', 'Blue', 'Red', 'Brown'].map((name) => (
+                                                {['Black', 'White', 'Blue', 'Red', 'Brown', 'Yellow', 'Green', 'Orange', 'Violet', 'Pink', 'Gray', 'Cyan', 'Beige', 'Gold', 'Silver'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
                                                 ))}
+
                                             </Select>
                                         </FormControl>
                                     </Grid>
@@ -296,7 +301,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 <Option value="" disabled>
                                                     Select Category
                                                 </Option>
-                                                {['Electronics', 'Clothing', 'Accessories'].map((name) => (
+                                                {['Electronics', 'Clothing', 'Accessories', 'School Supplies', 'Books', 'Tools', 'Sports Equipment'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -318,7 +323,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 <Option value="" disabled>
                                                     Select Material
                                                 </Option>
-                                                {['Leather', 'Metal', 'Plastic', 'Fabric'].map((name) => (
+                                                {['Leather', 'Metal', 'Plastic', 'Fabric', 'Wood', 'Glass', 'Ceramic', 'Stone', 'Rubber', 'Silicone', 'Paper', 'Wool', 'Cotton', 'Nylon'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -337,7 +342,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 <Option value="" disabled>
                                                     Select Condition
                                                 </Option>
-                                                {['New', 'Damaged', 'Old'].map((name) => (
+                                                {['New', 'Damaged', 'Old', 'Used', 'Broken', 'Worn'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -356,7 +361,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 <Option value="" disabled>
                                                     Select Distinctive Marks
                                                 </Option>
-                                                {['None', 'Scratches', 'Stickers', 'Initials', 'Keychain'].map((name) => (
+                                                {['None', 'Scratches', 'Stickers', 'Initials', 'Keychain', 'Dents', 'Stains', 'Fading', 'Pen Marks'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -377,7 +382,6 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                         value={location}
                                         onChange={(event, value) => {
                                             setLocation(value);
-                                            console.log('Selected location:', value);
                                         }}
                                         getOptionLabel={(option) => option}
                                     />

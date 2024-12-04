@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import roles from '@/lib/models/roles';
+import { getToken } from 'next-auth/jwt';
 
 export async function GET(req, { params }) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+    if (!token || token.userType === 'user') {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id } = params;
 
     await dbConnect(); // Connect to your MongoDB database
 
     try {
-        const findRole = await roles.findOne({ _id : id }).lean(); // Fetch officer by ID
+        const findRole = await roles.findOne({ _id: id }).lean(); // Fetch officer by ID
 
         if (!findRole) {
             return NextResponse.json({ message: 'Role not found' }, { status: 404 });
@@ -31,7 +37,7 @@ export async function GET(req, { params }) {
 //             { accountId : id },
 //             { $set: formData },
 //             { new: true }
-//         );  
+//         );
 
 //         console.log('Updated User: ', updatedUser)
 

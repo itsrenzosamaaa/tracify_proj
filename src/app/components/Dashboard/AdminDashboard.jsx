@@ -32,6 +32,8 @@ const AdminDashboard = ({ session, users }) => {
         }
     });
 
+    console.log(session)
+
     const fetchFoundItems = useCallback(async () => {
         try {
             const response = await fetch('/api/found-items');

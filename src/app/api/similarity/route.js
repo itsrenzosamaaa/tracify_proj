@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import levenshtein from 'js-levenshtein';
+import keyword_extractor from 'keyword-extractor';
 
 // Tokenizer function for splitting and converting to lowercase
 const tokenize = (text) => {
@@ -19,28 +21,18 @@ export async function POST(request) {
       );
     }
 
+    const lostKeywords = extractKeywords(lostItem.item.description);
+    const foundKeywords = extractKeywords(foundItem.item.description);
+
     // Compute both similarities
-    const cosine = cosineSimilarity(lostItem.item.description, foundItem.item.description);
+    const cosine = cosineSimilarity(lostKeywords, foundKeywords);
     const jaccard = jaccardSimilarity(lostItem.item.name, foundItem.item.name);
     const itemSimilarity = calculateItemSimilarity(lostItem.item, foundItem.item);
 
-    let score = 0;
-
-    if (cosine >= 70) {
-      score += 25;
-    }
-
-    if (jaccard >= 50) {
-      score += 25;
-    }
-
-    if (itemSimilarity >= 50) {
-      score += 50;  // Adjust the weight for item similarity as needed
-    }
+    const finalScore = (cosine * 0.3) + (jaccard * 0.3) + (itemSimilarity * 0.4);
 
     // Return both similarities in the response
-    return NextResponse.json(score);
-
+    return NextResponse.json(finalScore);
   } catch (error) {
     // Handle unexpected errors
     console.error('Error in similarity calculation:', error);
@@ -51,27 +43,73 @@ export async function POST(request) {
   }
 }
 
+const extractKeywords = (text) => {
+  const options = {
+    language: "english",
+    remove_digits: false,
+    return_changed_case: true,
+    remove_duplicates: true,
+  };
+
+  return keyword_extractor.extract(text, options);
+};
+
 // Jaccard similarity function
-const jaccardSimilarity = (itemName1, itemName2) => {
-  const set1 = tokenize(itemName1);
-  const set2 = tokenize(itemName2);
+const jaccardSimilarity = (text1, text2) => {
+  let set1 = Array.from(tokenize(text1)); // Tokenize text1
+  const set2 = Array.from(tokenize(text2)); // Tokenize text2
 
-  // Intersection and union of the two sets
-  const intersection = new Set([...set1].filter(x => set2.has(x)));
-  const union = new Set([...set1, ...set2]);
+  const matchedWords = new Set();
+  const maxDistance = 2; // Threshold for fuzzy matching with Levenshtein
 
-  // Jaccard similarity is the size of the intersection divided by the size of the union
-  return (intersection.size / union.size) * 100;
+  // Match words using exact or fuzzy matching
+  set1 = set1.map(word1 => {
+    if (matchedWords.size >= 2) return word1;
+
+    let closestMatch = word1; // Default to the original word if no match is found
+    let minDistance = Infinity;
+
+    for (const word2 of set2) {
+      if (matchedWords.size >= 2) break;
+      const distance = levenshtein(word1, word2); // Compute Levenshtein distance
+      if (word1 === word2 || distance <= maxDistance) {
+        if (distance < minDistance) {
+          closestMatch = word2; // Replace typo with the closest matching word
+          minDistance = distance;
+        }
+      }
+    }
+
+    // Add the matched word to the set of matched words
+    if (closestMatch !== word1) {
+      matchedWords.add(closestMatch); // A typo was corrected
+    } else if (set2.includes(word1)) {
+      matchedWords.add(word1); // Exact match
+    }
+
+    return closestMatch; // Replace the word in set1 with the corrected word
+  });
+
+
+  // Determine the denominator
+  const isSingleWordCase = set1.length === 1 && set2.length === 1;
+  const denominator = isSingleWordCase ? new Set([...set1, ...set2]).size : 2;
+
+  // Compute similarity
+  const similarity = (matchedWords.size / denominator) * 100;
+
+  return similarity;
 };
 
 // Cosine similarity function
-const cosineSimilarity = (text1, text2) => {
-  const words1 = text1.split(/\s+/);
-  const words2 = text2.split(/\s+/);
+const cosineSimilarity = (keywords1, keywords2) => {
+  console.log(keywords1)
+  console.log(keywords2)
+  const freqMap1 = getWordFrequency(keywords1);
+  const freqMap2 = getWordFrequency(keywords2);
 
-  // Get word frequencies for both texts
-  const freqMap1 = getWordFrequency(words1);
-  const freqMap2 = getWordFrequency(words2);
+  console.log(freqMap1)
+  console.log(freqMap2)
 
   // Get the set of unique words from both texts
   const allWords = new Set([...Object.keys(freqMap1), ...Object.keys(freqMap2)]);
@@ -106,15 +144,14 @@ const getWordFrequency = (words) => {
 // Item similarity calculation with additional penalty for missing features
 const calculateItemSimilarity = (lostItem, foundItem) => {
   let totalScore = 0;
-  const totalWeight = 6; // Number of features
 
   const featureWeights = {
-    color: 1,
-    size: 0.8,
-    material: 1,
-    condition: 0.5,
-    category: 1,
-    distinctiveMarks: 0.8
+    color: 20,
+    size: 10,
+    material: 20,
+    condition: 15,
+    category: 15,
+    distinctiveMarks: 20
   };
 
   // Check for missing features and adjust the score accordingly
@@ -134,7 +171,5 @@ const calculateItemSimilarity = (lostItem, foundItem) => {
   compareFeatures("category", featureWeights.category);
   compareFeatures("distinctiveMarks", featureWeights.distinctiveMarks);
 
-  // Normalize the score to 0-100
-  const finalScore = (totalScore / totalWeight) * 100;
-  return finalScore;
+  return totalScore;
 };

@@ -222,39 +222,45 @@ export default function App() {
     }
   }, [router]);
 
-  if (status === 'loading') return <Loading />;
-
   const DrawerContent = ({ navigation, toggleMobileDrawer, collapsed }) => (
     <Box role="presentation">
-      <SidebarHeader>
-        {!collapsed && (
-          <Image priority width={150} height={150} src="/tracify_logo.png" alt="tracify" />
-        )}
-        <IconButton sx={{ display: { xs: "block", lg: "none" } }} onClick={toggleMobileDrawer}>
-          <CloseIcon />
-        </IconButton>
-      </SidebarHeader>
-      <Divider />
-      <List>
-        {navigation.map((item, index) => (
-          <StyledLink
-            href={item.url}
-            key={index}
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavigation(item.url);
-              toggleMobileDrawer();
-            }}
-          >
-            <SidebarItem selected={pathname === item.url} disablePadding>
-              <ListItemButton>
-                <IconItem>{item.icon}</IconItem>
-                {!collapsed && <ListItemText primary={item.menu} />}
-              </ListItemButton>
-            </SidebarItem>
-          </StyledLink>
-        ))}
-      </List>
+      {
+        status === 'loading' ? (
+          <Loading />
+        ) : (
+          <>
+            <SidebarHeader>
+              {!collapsed && (
+                <Image priority width={150} height={150} src="/tracify_logo.png" alt="tracify" />
+              )}
+              <IconButton sx={{ display: { xs: "block", lg: "none" } }} onClick={toggleMobileDrawer}>
+                <CloseIcon />
+              </IconButton>
+            </SidebarHeader>
+            <Divider />
+            <List>
+              {navigation.map((item, index) => (
+                <StyledLink
+                  href={item.url}
+                  key={index}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavigation(item.url);
+                    toggleMobileDrawer();
+                  }}
+                >
+                  <SidebarItem selected={pathname === item.url} disablePadding>
+                    <ListItemButton>
+                      <IconItem>{item.icon}</IconItem>
+                      {!collapsed && <ListItemText primary={item.menu} />}
+                    </ListItemButton>
+                  </SidebarItem>
+                </StyledLink>
+              ))}
+            </List>
+          </>
+        )
+      }
     </Box>
   );
 

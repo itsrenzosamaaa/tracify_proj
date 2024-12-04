@@ -18,7 +18,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
     const [condition, setCondition] = useState();
     const [distinctiveMarks, setDistinctiveMarks] = useState();
     const [description, setDescription] = useState('');
-    const [location, setLocation] = useState(null);
+    const [location, setLocation] = useState('');
     const [lostDateStart, setLostDateStart] = useState('');
     const [lostDateEnd, setLostDateEnd] = useState('');
     const [images, setImages] = useState([]);
@@ -28,7 +28,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
     const [itemWhereabouts, setItemWhereabouts] = useState(false);
     const { data: session, status } = useSession();
 
-    const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court'];
+    const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court', 'Function Hall', 'Library', 'Computer Laboratory'];
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -148,10 +148,10 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
         setCondition();
         setDistinctiveMarks();
         setDescription('');
-        setLocation(null);
+        setLocation('');
         setLostDateStart('');
         setLostDateEnd('');
-        setImages(null);
+        setImages([]);
         setOwner(null);
         if (fetchItems) await fetchItems();
     };
@@ -271,7 +271,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 <Option value="" disabled>
                                                     Select Color
                                                 </Option>
-                                                {['Black', 'White', 'Blue', 'Red', 'Brown'].map((name) => (
+                                                {['Black', 'White', 'Blue', 'Red', 'Brown', 'Yellow', 'Green', 'Orange', 'Violet', 'Pink', 'Gray', 'Cyan', 'Beige', 'Gold', 'Silver'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -311,11 +311,12 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 <Option value="" disabled>
                                                     Select Category
                                                 </Option>
-                                                {['Electronics', 'Clothing', 'Accessories'].map((name) => (
+                                                {['Electronics', 'Clothing', 'Accessories', 'School Supplies', 'Books', 'Tools', 'Sports Equipment'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
                                                 ))}
+
                                             </Select>
                                         </FormControl>
                                     </Grid>
@@ -333,11 +334,12 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 <Option value="" disabled>
                                                     Select Material
                                                 </Option>
-                                                {['Leather', 'Metal', 'Plastic', 'Fabric'].map((name) => (
+                                                {['Leather', 'Metal', 'Plastic', 'Fabric', 'Wood', 'Glass', 'Ceramic', 'Stone', 'Rubber', 'Silicone', 'Paper', 'Wool', 'Cotton', 'Nylon'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
                                                 ))}
+
                                             </Select>
                                         </FormControl>
                                     </Grid>
@@ -352,7 +354,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 <Option value="" disabled>
                                                     Select Condition
                                                 </Option>
-                                                {['New', 'Damaged', 'Old'].map((name) => (
+                                                {['New', 'Damaged', 'Old', 'Used', 'Broken', 'Worn'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -371,7 +373,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 <Option value="" disabled>
                                                     Select Distinctive Marks
                                                 </Option>
-                                                {['None', 'Scratches', 'Stickers', 'Initials', 'Keychain'].map((name) => (
+                                                {['None', 'Scratches', 'Stickers', 'Initials', 'Keychain', 'Dents', 'Stains', 'Fading', 'Pen Marks'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>

@@ -50,7 +50,7 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
         { label: 'Review & Confirm', description: 'Verify all details before submission.' },
     ];
 
-    const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court'];
+    const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court', 'Function Hall', 'Library', 'Computer Laboratory'];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -338,12 +338,12 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
 
                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
                                                     {[
-                                                        { label: 'Color', value: color, onChange: setColor, options: ['Black', 'White', 'Blue', 'Red', 'Brown'] },
+                                                        { label: 'Color', value: color, onChange: setColor, options: ['Black', 'White', 'Blue', 'Red', 'Brown', 'Yellow', 'Green', 'Orange', 'Violet', 'Pink', 'Gray', 'Cyan', 'Beige', 'Gold', 'Silver'] },
                                                         { label: 'Size', value: size, onChange: setSize, options: ['Small', 'Medium', 'Large'] },
-                                                        { label: 'Category', value: category, onChange: setCategory, options: ['Electronics', 'Clothing', 'Accessories'] },
-                                                        { label: 'Material', value: material, onChange: setMaterial, options: ['Leather', 'Metal', 'Plastic', 'Fabric'] },
-                                                        { label: 'Condition', value: condition, onChange: setCondition, options: ['New', 'Damaged', 'Old'] },
-                                                        { label: 'Distinctive Marks', value: distinctiveMarks, onChange: setDistinctiveMarks, options: ['None', 'Scratches', 'Stickers', 'Initials', 'Keychain'] },
+                                                        { label: 'Category', value: category, onChange: setCategory, options: ['Electronics', 'Clothing', 'Accessories', 'School Supplies', 'Books', 'Tools', 'Sports Equipment'] },
+                                                        { label: 'Material', value: material, onChange: setMaterial, options: ['Leather', 'Metal', 'Plastic', 'Fabric', 'Wood', 'Glass', 'Ceramic', 'Stone', 'Rubber', 'Silicone', 'Paper', 'Wool', 'Cotton', 'Nylon'] },
+                                                        { label: 'Condition', value: condition, onChange: setCondition, options: ['New', 'Damaged', 'Old', 'Used', 'Broken', 'Worn'] },
+                                                        { label: 'Distinctive Marks', value: distinctiveMarks, onChange: setDistinctiveMarks, options: ['None', 'Scratches', 'Stickers', 'Initials', 'Keychain', 'Dents', 'Stains', 'Fading', 'Pen Marks'] },
                                                     ].map((field, index) => (
                                                         <Box sx={{ flexBasis: { xs: '100%', sm: '30%' } }} key={index}>
                                                             <FormControl fullWidth>

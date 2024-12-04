@@ -13,6 +13,7 @@ import CancelRequest from './Modal/CancelRequest';
 import RatingsModal from './Modal/Ratings';
 import ItemDetails from './Modal/ItemDetails';
 import { useTheme, useMediaQuery } from '@mui/material';
+import SearchOffIcon from '@mui/icons-material/SearchOff';
 
 const validTabs = ['found-item', 'lost-item', 'completed-item', 'declined-item', 'canceled-item', 'requested-item', 'suggested-item'];
 
@@ -35,6 +36,8 @@ const MyItemsComponent = ({ session, status }) => {
   const theme = useTheme();
   const isMd = useMediaQuery(theme.breakpoints.up('lg'));
 
+  console.log(suggestedMatches)
+
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
     if (validTabs.includes(hash)) {
@@ -56,15 +59,15 @@ const MyItemsComponent = ({ session, status }) => {
     }
 
     try {
-      // Fetch user-specific items and ratings concurrently
+      // Fetch all required data concurrently
       const [itemsResponse, ratingsResponse, foundItemsResponse, matchItemsResponse] = await Promise.all([
         fetch(`/api/items/${session.user.id}`),
         fetch('/api/ratings'),
         fetch('/api/finder'),
-        fetch('/api/match-items'),
+        fetch('/api/match-items')
       ]);
 
-      if (!itemsResponse.ok || !ratingsResponse.ok || !foundItemsResponse.ok || !matchItemsResponse) {
+      if (!itemsResponse.ok || !ratingsResponse.ok || !foundItemsResponse.ok || !matchItemsResponse.ok) {
         throw new Error('Failed to fetch data from one or more endpoints');
       }
 
@@ -75,96 +78,69 @@ const MyItemsComponent = ({ session, status }) => {
         matchItemsResponse.json(),
       ]);
 
-      console.log(matchItemsData)
+      // Filter and categorize items before processing
+      const lostItems = itemsData.filter(
+        (item) => !item.item.isFoundItem && ['Missing', 'Unclaimed'].includes(item.item.status)
+      );
 
-      const filteredMatches = matchItemsData.filter(
-        (match) => match.request_status === 'Pending'
-      )
+      const foundItems = itemsData.filter(
+        (item) => item.item.isFoundItem && !['Request', 'Resolved', 'Declined', 'Canceled'].includes(item.item.status)
+      );
+
+      const otherFoundItems = foundItemsData.filter(
+        (fItem) => fItem?.user?._id !== session.user.id && fItem?.item?.status === 'Published'
+      );
 
       // Filter ratings for the current user
       const filteredRatings = ratingsData.filter(
         (rating) => rating.sender?._id.toString() === session.user.id
       );
 
-      // Categorize and sort user-specific items
-      const lostItems = itemsData
-        .filter(
-          (item) =>
-            !item.item.isFoundItem && ['Missing', 'Unclaimed'].includes(item.item.status)
-        )
-        .sort((a, b) => b.item._id.localeCompare(a.item._id));
+      const filteredMatches = matchItemsData.filter((match) => match.request_status === 'Pending');
 
-      const foundItems = itemsData
-        .filter(
-          (item) =>
-            item.item.isFoundItem && !['Request', 'Resolved', 'Declined', 'Canceled'].includes(item.item.status)
-        )
-        .sort((a, b) => b.item._id.localeCompare(a.item._id));
-
-      const requestedItems = itemsData
-        .filter((item) => item.item.status === 'Request')
-        .sort((a, b) => b.item._id.localeCompare(a.item._id));
-
-      const declinedItems = itemsData
-        .filter((item) => item.item.status === 'Declined')
-        .sort((a, b) => b.item._id.localeCompare(a.item._id));
-
-      const canceledItems = itemsData
-        .filter((item) => item.item.status === 'Canceled')
-        .sort((a, b) => b.item._id.localeCompare(a.item._id));
-
-      // Set categorized items
+      // Set states
       setLostItems(lostItems);
       setFoundItems(foundItems);
       setCompletedItems(filteredRatings);
-      setRequestedItems(requestedItems);
-      setDeclinedItems(declinedItems);
-      setCanceledItems(canceledItems);
+      setRequestedItems(itemsData.filter((item) => item.item.status === 'Request'));
+      setDeclinedItems(itemsData.filter((item) => item.item.status === 'Declined'));
+      setCanceledItems(itemsData.filter((item) => item.item.status === 'Canceled'));
 
-      // Filter and sort potential matches for lost items
-      const otherFoundItems = foundItemsData
-        .filter(
-          (fItem) => fItem?.user?._id !== session.user.id && fItem?.item?.status === 'Published'
-        )
-        .sort((a, b) => b._id.localeCompare(a._id));
+      // Fetch cosine similarity for lost items and potential matches concurrently
+      const matches = await Promise.all(
+        lostItems.map(async (lostItem) => {
+          // Fetch all similarity results for one lost item in parallel
+          const matchedItems = await Promise.all(
+            otherFoundItems.map(async (foundItem) => {
+              const response = await fetch('/api/similarity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lostItem, foundItem }),
+              });
 
-      // Fetch cosine similarity for lost items and potential matches
-      const matches = (
-        await Promise.all(
-          lostItems.map(async (lostItem) => {
-            const matchedItems = await Promise.all(
-              otherFoundItems.map(async (foundItem) => {
-                const response = await fetch('/api/similarity', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ lostItem, foundItem }),
-                });
+              const similarity = await response.json();
+              return { foundItem, similarity };
+            })
+          );
 
-                const similarity = await response.json();
-                return { foundItem, similarity };
-              })
-            );
+          // Filter and sort matches
+          const sortedMatches = matchedItems
+            .filter((match) => match.similarity >= 60) // Similarity threshold
+            .sort((a, b) => b.similarity - a.similarity);
 
-            // Sort and filter matches
-            const sortedMatches = matchedItems
-              .filter((match) => match.similarity >= 50) // Threshold for similarity
-              .sort((a, b) => b.similarity - a.similarity);
+          // Skip already matched lost items
+          const alreadyMatched = filteredMatches.some(
+            (matched) => matched.owner.item._id === lostItem.item._id
+          );
+          if (alreadyMatched) return null;
 
-            // Exclude lost items that are already matched
-            const findMatched = filteredMatches.find(
-              (matched) => matched.owner.item._id === lostItem.item._id
-            );
-            if (findMatched) {
-              return null; // Skip if the lost item is already matched
-            }
+          return { lostItem, matches: sortedMatches };
+        })
+      );
 
-            return { lostItem, matches: sortedMatches };
-          })
-        )
-      ).filter(Boolean); // Remove null entries
+      // Remove null values and set the matches
+      setSuggestedMatches(matches.filter(Boolean));
 
-      // Set suggested matches
-      setSuggestedMatches(matches);
     } catch (error) {
       console.error('Error fetching items:', error);
     }
@@ -184,8 +160,13 @@ const MyItemsComponent = ({ session, status }) => {
       {isMd ? (
         <>
           <Box sx={{ width: '100%', mb: 5 }}>
-            <Tabs value={activeTab} onChange={(e, newValue) => handleTabChange(newValue)} aria-label="Icon tabs">
-              <TabList>
+            <Tabs 
+              value={activeTab}
+              onChange={(e, newValue) => handleTabChange(newValue)}
+              aria-label="Icon tabs"
+              variant="scrollable"
+            >
+              <TabList sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', padding: 0 }}>
                 <Badge badgeContent={lostItems.length}>
                   <Tab value="lost-item">
                     <Typography level="body-md">Lost Items</Typography>
@@ -378,13 +359,19 @@ const MyItemsComponent = ({ session, status }) => {
                     border: '1px dashed #ccc',
                     borderRadius: '8px',
                     backgroundColor: '#f9f9f9',
-                    padding: 2,
-                    gridColumn: 'span 4', // Make the "No lost items" message span across the grid
+                    padding: 3,
+                    textAlign: 'center', // Centers the content
+                    gap: 2, // Adds space between elements
                   }}
                 >
-                  <Typography>No lost items found.</Typography>
+                  <Box sx={{ fontSize: 50, color: '#ccc' }}>
+                    <SearchOffIcon /> {/* Optional icon indicating no results */}
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    No lost items available
+                  </Typography>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    If you have lost something, please report it.
+                    If you&apos;ve lost something, please report it immediately.
                   </Typography>
                 </Box>
               }
@@ -474,12 +461,19 @@ const MyItemsComponent = ({ session, status }) => {
                     border: '1px dashed #ccc',
                     borderRadius: '8px',
                     backgroundColor: '#f9f9f9',
-                    padding: 2,
+                    padding: 3,
+                    textAlign: 'center', // Centers the content
+                    gap: 2, // Adds space between elements
                   }}
                 >
-                  <Typography>No found items available.</Typography>
+                  <Box sx={{ fontSize: 50, color: '#ccc' }}>
+                    <SearchOffIcon /> {/* Optional icon indicating no results */}
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    No found items available
+                  </Typography>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    If you have found something, please report it.
+                    If you&apos;ve found something, please report it to help others.
                   </Typography>
                 </Box>
               }
@@ -599,12 +593,19 @@ const MyItemsComponent = ({ session, status }) => {
                     border: '1px dashed #ccc',
                     borderRadius: '8px',
                     backgroundColor: '#f9f9f9',
-                    padding: 2,
+                    padding: 3,
+                    textAlign: 'center', // Centers the content
+                    gap: 2, // Adds space between elements
                   }}
                 >
-                  <Typography>No found items available.</Typography>
+                  <Box sx={{ fontSize: 50, color: '#ccc' }}>
+                    <SearchOffIcon /> {/* Optional icon indicating no results */}
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    No completed items available
+                  </Typography>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    If you have found something, please report it.
+                    The items you lost or found has not been completed yet.
                   </Typography>
                 </Box>
               }
@@ -701,12 +702,19 @@ const MyItemsComponent = ({ session, status }) => {
                     border: '1px dashed #ccc',
                     borderRadius: '8px',
                     backgroundColor: '#f9f9f9',
-                    padding: 2,
+                    padding: 3,
+                    textAlign: 'center', // Centers the content
+                    gap: 2, // Adds space between elements
                   }}
                 >
-                  <Typography>No declined items available.</Typography>
+                  <Box sx={{ fontSize: 50, color: '#ccc' }}>
+                    <SearchOffIcon /> {/* Optional icon indicating no results */}
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    No declined items available.
+                  </Typography>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    If you have found something, please report it.
+                    If you believe this item should not have been declined, please report it again.
                   </Typography>
                 </Box>
               }
@@ -802,12 +810,19 @@ const MyItemsComponent = ({ session, status }) => {
                     border: '1px dashed #ccc',
                     borderRadius: '8px',
                     backgroundColor: '#f9f9f9',
-                    padding: 2,
+                    padding: 3,
+                    textAlign: 'center', // Centers the content
+                    gap: 2, // Adds space between elements
                   }}
                 >
-                  <Typography>No canceled items available.</Typography>
+                  <Box sx={{ fontSize: 50, color: '#ccc' }}>
+                    <SearchOffIcon /> {/* Optional icon indicating no results */}
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    No canceled items available.
+                  </Typography>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    If you have found something, please report it.
+                    If you’ve canceled an item, you can always re-report it or check its status.
                   </Typography>
                 </Box>
               }
@@ -925,12 +940,19 @@ const MyItemsComponent = ({ session, status }) => {
                     border: '1px dashed #ccc',
                     borderRadius: '8px',
                     backgroundColor: '#f9f9f9',
-                    padding: 2,
+                    padding: 3,
+                    textAlign: 'center', // Centers the content
+                    gap: 2, // Adds space between elements
                   }}
                 >
-                  <Typography>No requested items available.</Typography>
+                  <Box sx={{ fontSize: 50, color: '#ccc' }}>
+                    <SearchOffIcon /> {/* Optional icon indicating no results */}
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    No requested items available.
+                  </Typography>
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    If you found or lost an item, kindly report it.
+                    If you’re looking for something specific, please feel free to create a request.
                   </Typography>
                 </Box>
               }
@@ -954,7 +976,7 @@ const MyItemsComponent = ({ session, status }) => {
               {suggestedMatches.length > 0 && suggestedMatches.some(({ matches }) => matches.length > 0) ? (
                 suggestedMatches.flatMap(({ lostItem, matches }) =>
                   matches.map((match, index) => {
-                    const { foundItem } = match;
+                    const { foundItem, similarity } = match;
                     return lostItem.item.status === 'Missing' && (
                       <>
                         <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -964,8 +986,27 @@ const MyItemsComponent = ({ session, status }) => {
                               flexShrink: 0,
                               boxShadow: 3,
                               borderRadius: 2,
+                              overflow: 'hidden', // Ensures that content doesn't overflow the card
+                              position: 'relative', // Allows absolutely positioning elements inside
                             }}
                           >
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: 12,
+                                left: 12,
+                                backgroundColor: '#81c784', // A vibrant green background
+                                color: '#fff',
+                                padding: '8px 8px', // Slightly bigger padding for readability
+                                borderRadius: '50%', // Rounded corners
+                                fontSize: '1rem', // Larger font size for better visibility
+                                fontWeight: 'bold',
+                                textShadow: '0px 0px 6px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
+                                boxShadow: '0px 0px 6px rgba(0, 0, 0, 0.2)', // Added shadow for better contrast
+                              }}
+                            >
+                              {Math.round(similarity)}%
+                            </Box>
                             <CldImage
                               priority
                               src={foundItem.item.images[0]}
@@ -996,7 +1037,7 @@ const MyItemsComponent = ({ session, status }) => {
                                 <Button
                                   onClick={() =>
                                     router.push(
-                                      `/my-items/${lostItem.item._id}/matchedTo/${foundItem.item._id}?owner=${lostItem.user._id}&finder=${foundItem.user._id}`
+                                      `/my-items/${lostItem._id}/matchedTo/${foundItem._id}`
                                     )
                                   }
                                   variant="contained"
@@ -1034,13 +1075,21 @@ const MyItemsComponent = ({ session, status }) => {
                     border: '1px dashed #ccc',
                     borderRadius: '8px',
                     backgroundColor: '#f9f9f9',
-                    padding: 2,
+                    padding: 3,
+                    textAlign: 'center', // Centers the content
+                    gap: 2, // Adds space between elements
                   }}
                 >
-                  <Typography>No suggested items available.</Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    Please report any lost item to see this content.
+                  <Box sx={{ fontSize: 50, color: '#ccc' }}>
+                    <SearchOffIcon /> {/* Optional icon indicating no results */}
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    No suggested items available.
                   </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    We don’t have any suggested items at the moment. Check back later for new recommendations.
+                  </Typography>
+
                 </Box>
               )}
             </Grid>
