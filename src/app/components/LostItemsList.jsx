@@ -1,16 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } from '@mui/joy';
-import { Paper, Badge } from '@mui/material';
+import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button, Select, Option } from '@mui/joy';
+import { Paper, Badge, useMediaQuery } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ItemsTable from './Table/ItemsTable';
 import PublishLostItem from './Modal/PublishLostItems';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
+import FilterListIcon from '@mui/icons-material/FilterList';
 
 const LostItemsList = ({ owners, fetchItems, session }) => {
     const [status, setStatus] = useState('Missing');
     const [open, setOpen] = useState(false);
+    const isMobile = useMediaQuery('(max-width:600px)');
 
     const statusOptions = ['Missing', 'Request'];
 
@@ -33,56 +35,74 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
                             <FormControl>
                                 <FormLabel>Filter by Status</FormLabel>
                                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
-                                    <RadioGroup
-                                        name="status-selection"
-                                        aria-labelledby="status-selection"
-                                        orientation="horizontal"
-                                        sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1 }}
-                                    >
-                                        {statusOptions.map((name) => {
-                                            const checked = status === name;
-                                            const itemCount = statusCounts[name];
+                                    {isMobile ? (
+                                        <>
+                                            <Select
+                                                value={status}
+                                                onChange={(e, newValue) => setStatus(newValue)}
+                                                size="sm"
+                                            >
+                                                {statusOptions.map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name} ({statusCounts[name] || 0})
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <RadioGroup
+                                                name="status-selection"
+                                                aria-labelledby="status-selection"
+                                                orientation="horizontal"
+                                                sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1 }}
+                                            >
+                                                {statusOptions.map((name) => {
+                                                    const checked = status === name;
+                                                    const itemCount = statusCounts[name];
 
-                                            const chipContent = (
-                                                <Chip
-                                                    key={name}
-                                                    variant="plain"
-                                                    color={checked ? 'primary' : 'neutral'}
-                                                    onClick={() => setStatus(name)}
-                                                    sx={{ cursor: 'pointer' }}
-                                                >
-                                                    <Radio
-                                                        variant="outlined"
-                                                        color={checked ? 'primary' : 'neutral'}
-                                                        disableIcon
-                                                        overlay
-                                                        label={name}
-                                                        value={name}
-                                                        checked={checked}
-                                                        onChange={(event) => {
-                                                            if (event.target.checked) {
-                                                                setStatus(name);
-                                                            }
-                                                        }}
-                                                    />
-                                                </Chip>
-                                            );
+                                                    const chipContent = (
+                                                        <Chip
+                                                            key={name}
+                                                            variant="plain"
+                                                            color={checked ? 'primary' : 'neutral'}
+                                                            onClick={() => setStatus(name)}
+                                                            sx={{ cursor: 'pointer' }}
+                                                        >
+                                                            <Radio
+                                                                variant="outlined"
+                                                                color={checked ? 'primary' : 'neutral'}
+                                                                disableIcon
+                                                                overlay
+                                                                label={name}
+                                                                value={name}
+                                                                checked={checked}
+                                                                onChange={(event) => {
+                                                                    if (event.target.checked) {
+                                                                        setStatus(name);
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </Chip>
+                                                    );
 
-                                            return itemCount > 0 ? (
-                                                <Badge
-                                                    key={name}
-                                                    badgeContent={itemCount}
-                                                    color="error"
-                                                >
-                                                    {chipContent}
-                                                </Badge>
-                                            ) : (
-                                                <React.Fragment key={name}>
-                                                    {chipContent}
-                                                </React.Fragment>
-                                            );
-                                        })}
-                                    </RadioGroup>
+                                                    return itemCount > 0 ? (
+                                                        <Badge
+                                                            key={name}
+                                                            badgeContent={itemCount}
+                                                            color="error"
+                                                        >
+                                                            {chipContent}
+                                                        </Badge>
+                                                    ) : (
+                                                        <React.Fragment key={name}>
+                                                            {chipContent}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                            </RadioGroup>
+                                        </>
+                                    )}
                                 </Box>
                             </FormControl>
                             <Button size="small" startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Lost Item</Button>

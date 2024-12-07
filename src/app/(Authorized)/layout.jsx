@@ -14,7 +14,7 @@ export default function Layout({ children }) {
           sx={{
             marginTop: '60px',
             marginLeft: { xs: '0px', lg: '250px' },
-            padding: { xs: '8px', md: '20px' },
+            padding: { xs: '4px', md: '20px' },
             transition: 'margin-left 0.3s ease',
           }}
         >

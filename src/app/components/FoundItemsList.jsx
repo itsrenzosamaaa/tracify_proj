@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button } from '@mui/joy'
-import { Paper, Badge } from '@mui/material'
-import ItemsTable from './Table/ItemsTable'
+import React, { useState } from 'react';
+import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button, Select, Option } from '@mui/joy';
+import { Paper, Badge, useMediaQuery } from '@mui/material';
+import ItemsTable from './Table/ItemsTable';
 import AddIcon from '@mui/icons-material/Add';
 import PublishFoundItem from './Modal/PublishFoundItem';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
@@ -11,12 +11,13 @@ import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 const FoundItemsList = ({ finders, fetchItems, session }) => {
     const [status, setStatus] = useState('Published');
     const [open, setOpen] = useState(false);
+    const isMobile = useMediaQuery('(max-width:600px)');
 
     // Define status options
-    const statusOptions = ['Published', 'Request']; // Note: We'll group 'Request' and 'Surrender Pending' as one category
-    const requestStatuses = ['Request', 'Surrender Pending']; // Treat both as 'Request'
+    const statusOptions = ['Published', 'Request']; // Group 'Request' and 'Surrender Pending'
+    const requestStatuses = ['Request', 'Surrender Pending'];
 
-    // Count how many items have each status (group "Request" and "Surrender Pending" together)
+    // Count how many items have each status
     const statusCounts = statusOptions.reduce((acc, currentStatus) => {
         if (currentStatus === 'Request') {
             acc['Request'] = finders.filter(finder => requestStatuses.includes(finder.item.status)).length;
@@ -26,7 +27,7 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
         return acc;
     }, {});
 
-    // Filter items based on selected status (treating 'Request' and 'Surrender Pending' as 'Request')
+    // Filter items based on selected status
     const filteredItems = finders.filter(finder => {
         if (status === 'Request') {
             return requestStatuses.includes(finder.item.status);
@@ -34,7 +35,7 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
         return finder.item.status === status;
     });
 
-    // Render individual status options with badge count
+    // Render chips for status selection
     const StatusChip = ({ name, count, isChecked }) => (
         <Badge
             badgeContent={count}
@@ -66,28 +67,42 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
             <TitleBreadcrumbs title="List of Found Items" text="Found Items" />
 
             <Grid container spacing={2}>
-                <Grid item xs={12} lg={12}>
+                <Grid item xs={12}>
                     <Paper elevation={2} sx={{ padding: '1rem' }}>
                         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <FormControl>
                                 <FormLabel>Filter by Status</FormLabel>
-                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
-                                    <RadioGroup
-                                        name="status-selection"
-                                        aria-labelledby="status-selection"
-                                        orientation="horizontal"
-                                        sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1 }}
-                                    >
-                                        {statusOptions.map((name) => {
-                                            const isChecked = status === name;
-                                            const itemCount = statusCounts[name];
-                                            return itemCount > 0 ? (
-                                                <StatusChip key={name} name={name} count={itemCount} isChecked={isChecked} />
-                                            ) : (
-                                                <StatusChip key={name} name={name} count={0} isChecked={isChecked} />
-                                            );
-                                        })}
-                                    </RadioGroup>
+                                <Box sx={{ mt: 1 }}>
+                                    {isMobile ? (
+                                        <Select
+                                            value={status}
+                                            onChange={(e, newValue) => setStatus(newValue)}
+                                            size="sm"
+                                        >
+                                            {statusOptions.map((name) => (
+                                                <Option key={name} value={name}>
+                                                    {name} ({statusCounts[name] || 0})
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    ) : (
+                                        <RadioGroup
+                                            name="status-selection"
+                                            aria-labelledby="status-selection"
+                                            orientation="horizontal"
+                                            sx={{ display: 'flex', gap: 1 }}
+                                        >
+                                            {statusOptions.map((name) => {
+                                                const isChecked = status === name;
+                                                const itemCount = statusCounts[name];
+                                                return itemCount > 0 ? (
+                                                    <StatusChip key={name} name={name} count={itemCount} isChecked={isChecked} />
+                                                ) : (
+                                                    <StatusChip key={name} name={name} count={0} isChecked={isChecked} />
+                                                );
+                                            })}
+                                        </RadioGroup>
+                                    )}
                                 </Box>
                             </FormControl>
                             <Button size="small" sx={{ width: { xs: '40%', md: '170px' } }} startDecorator={<AddIcon />} onClick={() => setOpen(true)}>
@@ -101,6 +116,6 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
             </Grid>
         </>
     );
-}
+};
 
 export default FoundItemsList;

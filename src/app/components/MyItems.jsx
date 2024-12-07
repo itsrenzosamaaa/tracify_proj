@@ -211,6 +211,7 @@ const MyItemsComponent = ({ session, status }) => {
           <Select
             value={activeTab}
             onChange={(e, newValue) => handleTabChange(newValue)}
+            size="sm"
             sx={{ width: '50%' }}
           >
             <Option value="lost-item" label="Lost Items" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

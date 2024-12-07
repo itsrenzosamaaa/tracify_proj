@@ -292,9 +292,9 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                             </Typography>
                             {(row.item.status === "Missing" || row.item.status === "Published") && (
                                 !isEditMode ? (
-                                    <Button onClick={() => setIsEditMode(true)}>Edit</Button>
+                                    <Button size={isXs ? 'small' : 'medium'} onClick={() => setIsEditMode(true)}>Edit</Button>
                                 ) : (
-                                    <Button color="danger" onClick={() => setIsEditMode(false)}>Cancel</Button>
+                                    <Button size={isXs ? 'small' : 'medium'} color="danger" onClick={() => setIsEditMode(false)}>Cancel</Button>
                                 )
                             )}
 
@@ -303,6 +303,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                             <Chip
                                 variant='solid'
                                 sx={{ mb: 2 }}
+                                size={isXs ? 'sm' : 'md'}
                                 color={
                                     row.item.status === 'Missing' || row.item.status === "Surrender Pending" || row.item.status === "Request"
                                         ? 'warning'
@@ -344,7 +345,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 <Option value="" disabled>
                                                     Select Color
                                                 </Option>
-                                                {['Black', 'White', 'Blue', 'Red', 'Brown'].map((name) => (
+                                                {['Black', 'White', 'Blue', 'Red', 'Brown', 'Yellow', 'Green', 'Orange', 'Violet', 'Pink', 'Gray', 'Cyan', 'Beige', 'Gold', 'Silver'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -390,7 +391,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 <Option value="" disabled>
                                                     Select Category
                                                 </Option>
-                                                {['Electronics', 'Clothing', 'Accessories'].map((name) => (
+                                                {['Electronics', 'Clothing', 'Accessories', 'School Supplies', 'Books', 'Tools', 'Sports Equipment'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -436,7 +437,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 <Option value="" disabled>
                                                     Select Material
                                                 </Option>
-                                                {['Leather', 'Metal', 'Plastic', 'Fabric'].map((name) => (
+                                                {['Leather', 'Metal', 'Plastic', 'Fabric', 'Wood', 'Glass', 'Ceramic', 'Stone', 'Rubber', 'Silicone', 'Paper', 'Wool', 'Cotton', 'Nylon'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -458,7 +459,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 <Option value="" disabled>
                                                     Select Condition
                                                 </Option>
-                                                {['New', 'Damaged', 'Old'].map((name) => (
+                                                {['New', 'Damaged', 'Old', 'Used', 'Broken', 'Worn'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
@@ -481,7 +482,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                                 <Option value="" disabled>
                                                     Select Distinctive Marks
                                                 </Option>
-                                                {['None', 'Scratches', 'Stickers', 'Initials', 'Keychain'].map((name) => (
+                                                {['None', 'Scratches', 'Stickers', 'Initials', 'Keychain', 'Dents', 'Stains', 'Fading', 'Pen Marks'].map((name) => (
                                                     <Option key={name} value={name}>
                                                         {name}
                                                     </Option>
