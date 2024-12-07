@@ -2,16 +2,9 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import user from "@/lib/models/user";
 import badge from "@/lib/models/badge";
-import { getToken } from "next-auth/jwt";
 
 export async function GET(req, { params }) {
   const { id } = params;
-
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-
-  if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     await dbConnect();

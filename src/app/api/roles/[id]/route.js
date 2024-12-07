@@ -1,14 +1,8 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import roles from '@/lib/models/roles';
-import { getToken } from 'next-auth/jwt';
 
-export async function GET(req, { params }) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-
-    if (!token || token.userType === 'user') {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export async function GET({ params }) {
     const { id } = params;
 
     await dbConnect(); // Connect to your MongoDB database

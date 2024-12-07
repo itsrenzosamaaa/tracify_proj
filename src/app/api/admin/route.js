@@ -1,15 +1,9 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import admin from "@/lib/models/admin";
-import { getToken } from "next-auth/jwt";
 
 export async function GET(req) {
   try {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-
-    if (!token) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
     await dbConnect();
 
     const findAdmin = await admin.find().populate("role");
@@ -28,11 +22,6 @@ export async function POST(req) {
   await dbConnect();
 
   try {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-
-    if (!token) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
     const adminFormData = await req.json();
 
     const newAdmin = new admin(adminFormData);
@@ -56,11 +45,6 @@ export async function DELETE(request) {
   const account = searchParams.get("account"); // Extract accountId from query params
 
   try {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-
-    if (!token) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
     await dbConnect();
 
     // Delete the admin by accountId
