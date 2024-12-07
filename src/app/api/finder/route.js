@@ -3,6 +3,9 @@ import dbConnect from "@/lib/mongodb";
 import finder from "@/lib/models/finder";
 import item from "@/lib/models/item";
 import badge from "@/lib/models/badge";
+import user from "@/lib/models/user";
+import admin from "@/lib/models/admin";
+import roles from "@/lib/models/roles";
 
 export async function GET() {
   try {
