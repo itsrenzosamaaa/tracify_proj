@@ -24,8 +24,8 @@ const ViewRoles = ({ roles, session, refreshData }) => {
                             <Box sx={{ padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Input startDecorator={<SearchIcon />} />
                                 <Button onClick={() => setAddRole(true)} startDecorator={<AddIcon />}>Add Role</Button>
+                                <AddRole open={addRole} onClose={() => setAddRole(false)} refreshData={refreshData} />
                             </Box>
-                            <AddRole open={addRole} onClose={() => setAddRole(false)} refreshData={refreshData} />
                             <CardContent>
                                 <Table
                                     variant="outlined"

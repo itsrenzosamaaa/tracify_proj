@@ -115,7 +115,7 @@ const ViewItemPage = ({ params }) => {
                                                     Please surrender the item to{' '}
                                                     <strong>{foundItem.monitoredBy?.role.name}</strong>{' '}
                                                     located at the{' '}
-                                                    <strong>{foundItem.monitoredBy.office_location}</strong>
+                                                    <strong>{foundItem.monitoredBy.role.office_location}</strong>
                                                     . For more information, you may contact{' '}
                                                     <strong>{foundItem.monitoredBy.role.name}</strong> at:
                                                 </Typography>

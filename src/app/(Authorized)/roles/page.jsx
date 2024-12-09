@@ -13,7 +13,8 @@ const RolesPage = () => {
         try {
             const response = await fetch('/api/roles');
             const data = await response.json();
-            setRoles(data);
+            const filteredRoles = data.filter(role => role.name.toLowerCase() !== "admin")
+            setRoles(filteredRoles);
         } catch (error) {
             console.error(error);
         }

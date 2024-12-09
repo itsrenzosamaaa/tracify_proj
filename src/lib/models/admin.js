@@ -29,9 +29,6 @@ const adminSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: 'Role',
   },
-  office_location: {
-    type: String,
-  },
   date_created: {
     type: Date,
     default: Date.now,

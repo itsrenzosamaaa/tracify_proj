@@ -13,13 +13,13 @@ import {
     ModalClose,
     DialogContent,
     Modal,
-    Snackbar
+    Snackbar,
 } from '@mui/joy';
 import { FormGroup } from '@mui/material';
-import { useRouter } from 'next/navigation';
 
 const AddRole = ({ open, onClose }) => {
     const [name, setName] = useState('');
+    const [officeLocation, setOfficeLocation] = useState('');
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -42,19 +42,7 @@ const AddRole = ({ open, onClose }) => {
 
     const handlePermissionChange = (perm, checked) => {
         setPermissions((prevPermissions) => {
-            let updatedPermissions = { ...prevPermissions, [perm]: checked };
-
-            // If "viewRoles" is unchecked, reset related permissions
-            if (perm === 'viewRoles' && !checked) {
-                updatedPermissions.addRole = false;
-                updatedPermissions.editRole = false;
-                updatedPermissions.deleteRole = false;
-            } else if (perm === 'viewBadges' && !checked) {
-                updatedPermissions.addBadge = false;
-                updatedPermissions.editBadge = false;
-                updatedPermissions.deleteBadge = false;
-            }
-
+            const updatedPermissions = { ...prevPermissions, [perm]: checked };
             return updatedPermissions;
         });
     };
@@ -64,6 +52,7 @@ const AddRole = ({ open, onClose }) => {
         setLoading(true)
         const roleData = {
             name,
+            office_location: officeLocation,
             permissions,
         };
 
@@ -93,9 +82,12 @@ const AddRole = ({ open, onClose }) => {
 
     return (
         <>
-            <Modal open={open} onClose={onClose} size="large">
-                <ModalDialog sx={{ maxWidth: '80%' }}>
+            <Modal open={open} onClose={onClose}>
+                <ModalDialog>
                     <ModalClose />
+                    <Typography level="h4" sx={{ mb: 2 }}>
+                        Add Role
+                    </Typography>
                     <DialogContent
                         sx={{
                             overflowX: 'hidden',
@@ -105,13 +97,9 @@ const AddRole = ({ open, onClose }) => {
                             'scrollbar-width': 'none', // Hides scrollbar in Firefox
                         }}
                     >
-                        <Typography level="h4" sx={{ mb: 2 }}>
-                            Add Role
-                        </Typography>
-
                         <form onSubmit={handleSubmit}>
                             {/* Role Name Input */}
-                            <FormControl fullWidth sx={{ mb: 3 }}>
+                            <FormControl fullWidth>
                                 <FormLabel>Role Name</FormLabel>
                                 <Input
                                     type="text"
@@ -121,8 +109,18 @@ const AddRole = ({ open, onClose }) => {
                                 />
                             </FormControl>
 
+                            <FormControl fullWidth sx={{ mb: 3 }}>
+                                <FormLabel>Office Location</FormLabel>
+                                <Input
+                                    type="text"
+                                    value={officeLocation}
+                                    onChange={(e) => setOfficeLocation(e.target.value)}
+                                    placeholder="Enter office location"
+                                />
+                            </FormControl>
+
                             {/* Permissions */}
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 <Typography level="h4" sx={{ mb: 2 }}>Permissions</Typography>
 
                                 {/* Admin Permissions */}
@@ -169,31 +167,6 @@ const AddRole = ({ open, onClose }) => {
                                                 />
                                                 <FormLabel sx={{ ml: 1 }}>View Roles</FormLabel>
                                             </Box>
-                                            {permissions.viewRoles && (
-                                                <>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <Checkbox
-                                                            checked={permissions.addRole}
-                                                            onChange={(e) => handlePermissionChange('addRole', e.target.checked)}
-                                                        />
-                                                        <FormLabel sx={{ ml: 1 }}>Add Role</FormLabel>
-                                                    </Box>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <Checkbox
-                                                            checked={permissions.editRole}
-                                                            onChange={(e) => handlePermissionChange('editRole', e.target.checked)}
-                                                        />
-                                                        <FormLabel sx={{ ml: 1 }}>Edit Role</FormLabel>
-                                                    </Box>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <Checkbox
-                                                            checked={permissions.deleteRole}
-                                                            onChange={(e) => handlePermissionChange('deleteRole', e.target.checked)}
-                                                        />
-                                                        <FormLabel sx={{ ml: 1 }}>Delete Role</FormLabel>
-                                                    </Box>
-                                                </>
-                                            )}
                                         </Box>
                                     </FormGroup>
                                 </FormControl>
@@ -210,31 +183,6 @@ const AddRole = ({ open, onClose }) => {
                                                 />
                                                 <FormLabel sx={{ ml: 1 }}>View Badges</FormLabel>
                                             </Box>
-                                            {permissions.viewBadges && (
-                                                <>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <Checkbox
-                                                            checked={permissions.addBadge}
-                                                            onChange={(e) => handlePermissionChange('addBadge', e.target.checked)}
-                                                        />
-                                                        <FormLabel sx={{ ml: 1 }}>Add Badge</FormLabel>
-                                                    </Box>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <Checkbox
-                                                            checked={permissions.editBadge}
-                                                            onChange={(e) => handlePermissionChange('editBadge', e.target.checked)}
-                                                        />
-                                                        <FormLabel sx={{ ml: 1 }}>Edit Badge</FormLabel>
-                                                    </Box>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <Checkbox
-                                                            checked={permissions.deleteBadge}
-                                                            onChange={(e) => handlePermissionChange('deleteBadge', e.target.checked)}
-                                                        />
-                                                        <FormLabel sx={{ ml: 1 }}>Delete Badge</FormLabel>
-                                                    </Box>
-                                                </>
-                                            )}
                                         </Box>
                                     </FormGroup>
                                 </FormControl>

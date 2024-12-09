@@ -43,8 +43,6 @@ const ViewAdminUsers = ({ users, roles, fetchAdminUsers, session }) => {
             contactNumber,
             school_category: schoolCategory,
             role: selectedRole,
-            office_name: officeName,
-            office_location: officeLocation,
             account: '', // Will be set after account creation
         };
 
@@ -141,8 +139,6 @@ const ViewAdminUsers = ({ users, roles, fetchAdminUsers, session }) => {
         setEmailAddress(user.account.emailAddress);
         setSchoolCategory(user.school_category);
         setSelectedRole(user.role);
-        setOfficeName(user.office_name);
-        setOfficeLocation(user.office_location);
     };
 
     const handleDelete = async (accountId) => {

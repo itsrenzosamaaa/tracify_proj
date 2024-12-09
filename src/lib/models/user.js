@@ -27,10 +27,12 @@ const userSchema = new mongoose.Schema({
   badges: [{
     type: mongoose.Types.ObjectId,
     ref: 'Badge',
+    default: [],
   }],
   selectedBadge: { 
     type: mongoose.Types.ObjectId,
     ref: 'Badge',
+    default: null,
   },
   school_category: {
     type: String,

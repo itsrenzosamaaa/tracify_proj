@@ -75,7 +75,6 @@ export const authOptions = {
           user.contact_number = dbAccount.contactNumber;
           user.school_category = dbAccount.school_category;
           user.userType = userType;
-          user.office_location = dbAccount.office_location;
           user.roleName = dbAccount.roleName;
           user.permissions = dbAccount.permissions;
         }
@@ -95,7 +94,6 @@ export const authOptions = {
         token.email = user.email;
         token.schoolCategory = user.school_category;
         token.userType = user.userType;
-        token.office_location = user.office_location;
         token.roleName = user.roleName;
         token.permissions = user.permissions;
       }
@@ -111,7 +109,6 @@ export const authOptions = {
         session.user.email = token.email;
         session.user.schoolCategory = token.schoolCategory;
         session.user.userType = token.userType;
-        session.user.office_location = token.office_location;
         session.user.roleName = token.roleName;
         session.user.permissions = token.permissions;
       }
@@ -137,7 +134,6 @@ async function getUserDetails(account, userType) {
     contact_number: account.contactNumber,
     school_category: account.school_category,
     userType: userType,
-    office_location: userType === "admin" ? account.office_location || null : null,
     roleName: roleData ? roleData.name : null,
     permissions: roleData ? roleData.permissions : null,
   };

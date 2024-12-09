@@ -2,12 +2,13 @@ import mongoose from "mongoose";
 
 const roleSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true }, // Ensures role names are unique
+  office_location: { type: String, required: true, unique: true },
   // User permissions
   permissions: {
     viewAdminsList: { type: Boolean, default: false },
-    addAdmin: { type: Boolean, default: false },
-    editAdmin: { type: Boolean, default: false },
-    deleteAdmin: { type: Boolean, default: false },
+    // addAdmin: { type: Boolean, default: false },
+    // editAdmin: { type: Boolean, default: false },
+    // deleteAdmin: { type: Boolean, default: false },
     viewUsersList: { type: Boolean, default: false },
     // Role Management
     viewRoles: { type: Boolean, default: false },
@@ -21,7 +22,7 @@ const roleSchema = new mongoose.Schema({
     // viewPublishedItems: { type: Boolean, default: false },
     manageRequestItemRetrieval: { type: Boolean, default: false },
     // viewReservedItems: { type: Boolean, default: false },
-    viewItemHistory: { type: Boolean, default: false },
+    // viewItemHistory: { type: Boolean, default: false },
     manageRequestReportedLostItems: { type: Boolean, default: false },
     // viewMissingItems: { type: Boolean, default: false },
     // Badge Management
@@ -30,10 +31,10 @@ const roleSchema = new mongoose.Schema({
     editBadge: { type: Boolean, default: false },
     deleteBadge: { type: Boolean, default: false },
     // Ratings management
-    viewRatings: { type: Boolean, default: false },
-    addRatings: { type: Boolean, default: false },
-    updateRatings: { type: Boolean, default: false },
-    deleteRatings: { type: Boolean, default: false },
+    // viewRatings: { type: Boolean, default: false },
+    // addRatings: { type: Boolean, default: false },
+    // updateRatings: { type: Boolean, default: false },
+    // deleteRatings: { type: Boolean, default: false },
   },
 });
 

@@ -8,9 +8,6 @@ const UsersPage = () => {
     const { data: session, status } = useSession();
     const [users, setUsers] = useState([]);
 
-    console.log(users)
-    console.log(session)
-
     const fetchUsers = useCallback(async () => {
         try {
             const response = await fetch('/api/users');
@@ -39,7 +36,7 @@ const UsersPage = () => {
 
     return (
         <>
-            <ViewUsers users={users} />
+            <ViewUsers users={users} refreshData={fetchUsers} />
         </>
     )
 }
