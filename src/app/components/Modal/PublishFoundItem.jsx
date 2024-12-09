@@ -225,7 +225,15 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                 >
                     <ModalClose />
                     <Typography level="h4" sx={{ mb: 2 }}>Publish a Found Item</Typography>
-                    <DialogContent sx={{ overflowX: 'hidden' }}>
+                    <DialogContent
+                        sx={{
+                            overflowX: 'hidden',
+                            overflowY: 'auto', // Allows vertical scrolling
+                            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                            '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                            'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                        }}
+                    >
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={2}>
                                 <FormControl required>

@@ -116,7 +116,15 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                     <Typography level="h4" sx={{ marginBottom: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                         Approve Item Request
                     </Typography>
-                    <DialogContent sx={{ overflowX: 'hidden' }}>
+                    <DialogContent
+                        sx={{
+                            overflowX: 'hidden',
+                            overflowY: 'auto', // Allows vertical scrolling
+                            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                            '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                            'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                        }}
+                    >
                         <ItemDetails row={row} />
                     </DialogContent>
                     <Box sx={{ display: 'flex', gap: 2 }}>

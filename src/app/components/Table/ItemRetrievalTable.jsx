@@ -43,6 +43,7 @@ const ItemRetrievalTable = ({ items, fetchItems, selectedStatus }) => {
         currentPage * rowsPerPage
     );
 
+
     return (
         <>
             {
@@ -388,11 +389,11 @@ const ItemRetrievalTable = ({ items, fetchItems, selectedStatus }) => {
                             </Table>
                         </TableContainer>
                         <TablePagination
-                            rowsPerPageOptions={5}
+                            rowsPerPageOptions={5} // Make sure the rowsPerPage options are an array
                             component="div"
                             count={items.length} // Total number of items
                             rowsPerPage={rowsPerPage} // Current rows per page
-                            page={currentPage} // Current page
+                            page={currentPage - 1} // TablePagination expects 0-based page index
                             onPageChange={handleChangePage} // Page change handler
                             onRowsPerPageChange={handleChangeRowsPerPage} // Rows per page change handler
                         />

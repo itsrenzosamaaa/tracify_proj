@@ -128,7 +128,15 @@ const RatingsModal = ({ item, session, open, onClose, refreshData }) => {
                     <Typography level="h4" fontWeight="bold" gutterBottom sx={{ color: 'text.primary' }}>
                         Review for {item?.item.isFoundItem ? 'Owner' : 'Finder'}
                     </Typography>
-                    <DialogContent sx={{ overflowX: 'hidden' }}>
+                    <DialogContent
+                        sx={{
+                            overflowX: 'hidden',
+                            overflowY: 'auto', // Allows vertical scrolling
+                            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                            '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                            'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                        }}
+                    >
                         {item?.done_review ? (
                             // Review Section
                             <Stack spacing={3} sx={{ p: 3, borderRadius: 2, bgcolor: 'background.paper', boxShadow: 2 }}>

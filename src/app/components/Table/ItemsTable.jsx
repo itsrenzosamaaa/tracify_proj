@@ -453,7 +453,6 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                             page={currentPage - 1} // Convert to zero-based index for TablePagination
                             onPageChange={handleChangePage}
                             onRowsPerPageChange={handleChangeRowsPerPage}
-                            sx={{ mt: 2 }}
                         />
                     </>
             }

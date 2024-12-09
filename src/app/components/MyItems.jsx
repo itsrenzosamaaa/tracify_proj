@@ -35,6 +35,7 @@ const MyItemsComponent = ({ session, status }) => {
   const router = useRouter();
   const theme = useTheme();
   const isMd = useMediaQuery(theme.breakpoints.up('lg'));
+  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   console.log(suggestedMatches)
 
@@ -160,7 +161,7 @@ const MyItemsComponent = ({ session, status }) => {
       {isMd ? (
         <>
           <Box sx={{ width: '100%', mb: 5 }}>
-            <Tabs 
+            <Tabs
               value={activeTab}
               onChange={(e, newValue) => handleTabChange(newValue)}
               aria-label="Icon tabs"
@@ -294,7 +295,7 @@ const MyItemsComponent = ({ session, status }) => {
                   <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}> {/* Adjust grid item sizes for different screen widths */}
                     <Card
                       sx={{
-                        maxWidth: 250,
+                        maxWidth: isXs ? 300 : 250,
                         flexShrink: 0,
                         boxShadow: 3,
                         borderRadius: 2,
@@ -320,8 +321,8 @@ const MyItemsComponent = ({ session, status }) => {
                       <CldImage
                         priority
                         src={lostItem.item.images[0]}
-                        width={250} // Adjusted width to match smaller card size
-                        height={250} // Adjusted height to match smaller card size
+                        width={isXs ? 300 : 250} // Adjusted width to match smaller card size
+                        height={isXs ? 300 : 250} // Adjusted height to match smaller card size
                         alt={lostItem.item.name || "Item Image"}
                         sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         style={{ objectFit: 'fill' }}
@@ -400,7 +401,7 @@ const MyItemsComponent = ({ session, status }) => {
                   <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Card
                       sx={{
-                        maxWidth: 250,
+                        maxWidth: isXs ? 300 : 250,
                         flexShrink: 0,
                         boxShadow: 3,
                         borderRadius: 2,
@@ -427,8 +428,8 @@ const MyItemsComponent = ({ session, status }) => {
                       <CldImage
                         priority
                         src={foundItem.item.images[0]}
-                        width={250} // Adjusted width to match smaller card size
-                        height={250} // Adjusted height to match smaller card size
+                        width={isXs ? 300 : 250} // Adjusted width to match smaller card size
+                        height={isXs ? 300 : 250} // Adjusted height to match smaller card size
                         alt={foundItem.item.name || "Item Image"}
                         sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         style={{ objectFit: 'fill' }}
@@ -496,7 +497,7 @@ const MyItemsComponent = ({ session, status }) => {
                     <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Card
                         sx={{
-                          maxWidth: 250,
+                          maxWidth: isXs ? 300 : 250,
                           flexShrink: 0,
                           boxShadow: 3,
                           borderRadius: 2,
@@ -525,8 +526,8 @@ const MyItemsComponent = ({ session, status }) => {
                         <CldImage
                           priority
                           src={completedItem.item.images[0]}
-                          width={250}
-                          height={250}
+                          width={isXs ? 300 : 250}
+                          height={isXs ? 300 : 250}
                           alt={completedItem.item.name || "Item Image"}
                           sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           style={{ objectFit: 'fill' }}
@@ -564,7 +565,15 @@ const MyItemsComponent = ({ session, status }) => {
                                   Completed Item
                                 </Typography>
 
-                                <DialogContent sx={{ overflowX: 'hidden' }}>
+                                <DialogContent
+                                  sx={{
+                                    overflowX: 'hidden',
+                                    overflowY: 'auto', // Allows vertical scrolling
+                                    '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                                    '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                                    'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                                  }}
+                                >
                                   <ItemDetails row={completedItem} />
                                 </DialogContent>
                               </ModalDialog>
@@ -628,7 +637,7 @@ const MyItemsComponent = ({ session, status }) => {
                   <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Card
                       sx={{
-                        maxWidth: 250,
+                        maxWidth: isXs ? 300 : 250,
                         flexShrink: 0,
                         boxShadow: 3,
                         borderRadius: 2,
@@ -656,8 +665,8 @@ const MyItemsComponent = ({ session, status }) => {
                       <CldImage
                         priority
                         src={declinedItem.item.images[0]}
-                        width={250}
-                        height={250}
+                        width={isXs ? 300 : 250}
+                        height={isXs ? 300 : 250}
                         alt={declinedItem.item.name || "Item Image"}
                         sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         style={{ objectFit: 'fill' }}
@@ -684,7 +693,15 @@ const MyItemsComponent = ({ session, status }) => {
                               Item Details
                             </Typography>
 
-                            <DialogContent>
+                            <DialogContent
+                              sx={{
+                                overflowX: 'hidden',
+                                overflowY: 'auto', // Allows vertical scrolling
+                                '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                                '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                                'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                              }}
+                            >
                               <ItemDetails row={declinedItem} />
                             </DialogContent>
                           </ModalDialog>
@@ -737,7 +754,7 @@ const MyItemsComponent = ({ session, status }) => {
                   <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Card
                       sx={{
-                        maxWidth: 250,
+                        maxWidth: isXs ? 300 : 250,
                         flexShrink: 0,
                         boxShadow: 3,
                         borderRadius: 2,
@@ -765,8 +782,8 @@ const MyItemsComponent = ({ session, status }) => {
                       <CldImage
                         priority
                         src={canceledItem.item.images[0]}
-                        width={250}
-                        height={250}
+                        width={isXs ? 300 : 250}
+                        height={isXs ? 300 : 250}
                         alt={canceledItem.item.name || "Item Image"}
                         sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         style={{ objectFit: 'fill' }}
@@ -792,7 +809,15 @@ const MyItemsComponent = ({ session, status }) => {
                             <Typography level="h4" fontWeight="bold">
                               Item Details
                             </Typography>
-                            <DialogContent>
+                            <DialogContent
+                              sx={{
+                                overflowX: 'hidden',
+                                overflowY: 'auto', // Allows vertical scrolling
+                                '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                                '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                                'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                              }}
+                            >
                               <ItemDetails row={canceledItem} />
                             </DialogContent>
                           </ModalDialog>
@@ -845,7 +870,7 @@ const MyItemsComponent = ({ session, status }) => {
                   <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Card
                       sx={{
-                        maxWidth: 250,
+                        maxWidth: isXs ? 300 : 250,
                         flexShrink: 0,
                         boxShadow: 3,
                         borderRadius: 2,
@@ -874,8 +899,8 @@ const MyItemsComponent = ({ session, status }) => {
                       <CldImage
                         priority
                         src={requestedItem.item.images[0]}
-                        width={250}
-                        height={250}
+                        width={isXs ? 300 : 250}
+                        height={isXs ? 300 : 250}
                         alt={requestedItem.item.name || "Item Image"}
                         sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         style={{ objectFit: 'fill' }}
@@ -912,7 +937,15 @@ const MyItemsComponent = ({ session, status }) => {
                               <Typography level="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
                                 Item Details
                               </Typography>
-                              <DialogContent>
+                              <DialogContent
+                                sx={{
+                                  overflowX: 'hidden',
+                                  overflowY: 'auto', // Allows vertical scrolling
+                                  '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                                  '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                                  'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                                }}
+                              >
                                 <ItemDetails row={requestedItem} />
                               </DialogContent>
                             </ModalDialog>
@@ -984,7 +1017,7 @@ const MyItemsComponent = ({ session, status }) => {
                         <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <Card
                             sx={{
-                              maxWidth: 250,
+                              maxWidth: isXs ? 300 : 250,
                               flexShrink: 0,
                               boxShadow: 3,
                               borderRadius: 2,
@@ -1012,8 +1045,8 @@ const MyItemsComponent = ({ session, status }) => {
                             <CldImage
                               priority
                               src={foundItem.item.images[0]}
-                              width={250}
-                              height={250}
+                              width={isXs ? 300 : 250}
+                              height={isXs ? 300 : 250}
                               alt={foundItem.item.name || "Item Image"}
                               sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               style={{ objectFit: 'fill', borderRadius: '8px 8px 0 0' }}

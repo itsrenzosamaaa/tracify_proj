@@ -143,10 +143,11 @@ const Header = styled(Box)(({ collapsed }) => ({
   transition: 'left 0.3s ease',
   '@media (min-width: 1200px)': {
     left: collapsed ? '60px' : '250px',
+    width: collapsed ? 'calc(100% - 60px)' : 'calc(100% - 250px)',
   },
   '@media (max-width: 600px)': {
     height: '48px', // Shorter height for mobile devices
-    width: '100%'
+    left: 0,
   },
 }));
 
@@ -298,24 +299,22 @@ export default function App() {
 
         <Box
           sx={{
-            height: "100%",
-            marginLeft: { xs: "auto", lg: "70%" },
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            paddingX: 2,
-            gap: 5,
+            marginLeft: { xs: '48px', lg: '0' }, // Leave space for menu icon on mobile
+            flex: 1,
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            gap: 2,
           }}
         >
-          {userType === "user" && (
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "40px" }}>
-              <NotificationComponent session={session} status={status} />
-            </Box>
+          {/* Notification for Users */}
+          {userType === 'user' && (
+            <NotificationComponent session={session} status={status} />
           )}
 
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "40px" }}>
-            <AvatarComponent profile={profile} />
-          </Box>
+          {/* Avatar */}
+          <AvatarComponent profile={profile} />
         </Box>
       </Header>
 

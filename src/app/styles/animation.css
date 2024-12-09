@@ -28,7 +28,6 @@
 .animate-shimmer {
     position: relative;
     overflow: hidden;
-    display: inline-block;
 }
 
 .animate-shimmer::before {

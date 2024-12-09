@@ -3,10 +3,8 @@ import { Snackbar, Checkbox, Modal, ModalDialog, ModalClose, DialogContent, Typo
 import PreviewBadge from '../PreviewBadge';
 
 const AddBadgeModal = ({ open, onClose, refreshData }) => {
-    const [title, setTitle] = useState('Example Title');
-    const [titleColor, setTitleColor] = useState('#000000');
+    const [title, setTitle] = useState('Treasure Hunter');
     const [titleShimmer, setTitleShimmer] = useState(false);
-    const [titleOutlineColor, setTitleOutlineColor] = useState('#FFFFFF');
     const [shape, setShape] = useState('circle');
     const [shapeColor, setShapeColor] = useState('#FFD700');
     const [bgShape, setBgShape] = useState('circle');
@@ -29,9 +27,7 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
 
         const badgeFormData = {
             title,
-            titleColor,
             titleShimmer,
-            titleOutlineColor,
             shape,
             shapeColor,
             bgShape,
@@ -68,10 +64,8 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
 
     const handleClose = () => {
         onClose();
-        setTitle('Example Title');
-        setTitleColor('#000000');
+        setTitle('Treasure Hunter');
         setTitleShimmer(false);
-        setTitleOutlineColor('#FFFFFF');
         setShape('circle');
         setShapeColor('#FFD700');
         setBgShape('circle');
@@ -87,11 +81,19 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
                 <ModalDialog>
                     <ModalClose />
                     <Typography level="h4" gutterBottom sx={{ mb: 3 }}>Add Badge</Typography>
-                    <DialogContent>
+                    <DialogContent
+                        sx={{
+                            overflowX: 'hidden',
+                            overflowY: 'auto', // Allows vertical scrolling
+                            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                            '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                            'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                        }}
+                    >
                         <form onSubmit={handleSubmit}>
                             <Grid container spacing={2}>
                                 {/* Badge Title */}
-                                <Grid item xs={12} md={4}>
+                                <Grid item xs={12} md={12}>
                                     <FormControl fullWidth>
                                         <FormLabel>Badge Title</FormLabel>
                                         <Input
@@ -99,30 +101,6 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
                                             required
-                                        />
-                                    </FormControl>
-                                </Grid>
-
-                                {/* Title Color */}
-                                <Grid item xs={6} md={4}>
-                                    <FormControl fullWidth>
-                                        <FormLabel>Title Color</FormLabel>
-                                        <Input
-                                            type="color"
-                                            value={titleColor}
-                                            onChange={(e) => setTitleColor(e.target.value)}
-                                        />
-                                    </FormControl>
-                                </Grid>
-
-                                {/* Title Outline Color */}
-                                <Grid item xs={6} md={4}>
-                                    <FormControl fullWidth>
-                                        <FormLabel>Title Outline Color</FormLabel>
-                                        <Input
-                                            type="color"
-                                            value={titleOutlineColor}
-                                            onChange={(e) => setTitleOutlineColor(e.target.value)}
                                         />
                                     </FormControl>
                                 </Grid>
@@ -278,9 +256,7 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
                                         >
                                             <PreviewBadge
                                                 title={title}
-                                                titleColor={titleColor}
                                                 titleShimmer={titleShimmer}
-                                                titleOutlineColor={titleOutlineColor}
                                                 shape={shape}
                                                 shapeColor={shapeColor}
                                                 bgShape={bgShape}

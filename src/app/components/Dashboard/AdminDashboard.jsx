@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Box, Grid, Card, CardContent } from "@mui/material";
-import { Typography, Button } from '@mui/joy';
+import { Box, Grid, Card, CardContent, Paper, useTheme, useMediaQuery } from "@mui/material";
+import { Typography } from '@mui/joy';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import TopStudentsEarnedBadges from '../TopStudentsEarnedBadges';
 import PublishFoundItem from '../Modal/PublishFoundItem';
 import PublishLostItem from '../Modal/PublishLostItems';
+import { MoreHoriz } from '@mui/icons-material';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -31,6 +32,8 @@ const AdminDashboard = ({ session, users }) => {
             yaxis: { title: { text: 'Number of Lost Items' } }
         }
     });
+    const theme = useTheme();
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
     console.log(session)
 
@@ -170,19 +173,6 @@ const AdminDashboard = ({ session, users }) => {
                             Welcome back, {session.user.firstname}!
                         </Typography>
                         <Typography>Dashboard Overview</Typography>
-                        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                            {
-                                session.user.permissions.publishItems &&
-                                <>
-                                    <Button size="small" onClick={() => setOpenFound(true)}>Publish Found Item</Button>
-                                    <PublishFoundItem open={openFound} onClose={() => setOpenFound(false)} inDashboard={true} />
-                                    <Button size="small" color="danger" onClick={() => setOpenLost(true)}>Publish Lost Item</Button>
-                                    <PublishLostItem open={openLost} onClose={() => setOpenLost(false)} inDashboard={true} />
-                                </>
-                            }
-                            {(session.user.permissions.viewBadges && session.user.permissions.addBadge) && <Button size="small">Add Badge</Button>}
-                            {(session.user.permissions.viewRoles && session.user.permissions.addRole) && <Button size="small">Add Role</Button>}
-                        </Box>
                     </Box>
                 </Grid>
 
@@ -190,94 +180,227 @@ const AdminDashboard = ({ session, users }) => {
                 <Grid item xs={12}>
                     <Grid container spacing={3}>
                         {
-                            session.user.permissions.viewStudentsList &&
-                            <Grid item xs={12} sm={6} md={3}>
-                                <Card
-                                    component={Link}
-                                    href="/users"
-                                    sx={{
-                                        textDecoration: 'none',
-                                        display: 'block',
-                                        '&:hover': {
-                                            boxShadow: 6, // Adds a hover effect for better feedback
-                                        },
-                                    }}
-                                >
-                                    <CardContent>
-                                        <Typography level="h6" gutterBottom>
-                                            Total Users
-                                        </Typography>
-                                        <Typography level="h4">{users.length}</Typography>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                        }
-                        {
                             session.user.permissions.manageRequestReportedFoundItems &&
-                            <Grid item xs={12} sm={6} md={3}>
-                                <Card
+                            <Grid item xs={12} md={4}>
+                                <Paper
                                     component={Link}
-                                    href="/found-items"
+                                    href='/found-items'
+                                    elevation={3}
                                     sx={{
+                                        backgroundColor: '#1976d2', // Blue background for the card
+                                        color: '#fff',
                                         textDecoration: 'none',
-                                        display: 'block',
+                                        padding: '1rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start',
+                                        borderRadius: '8px',
                                         '&:hover': {
-                                            boxShadow: 6, // Adds a hover effect for better feedback
+                                            backgroundColor: '#1565c0', // Darker blue on hover
+                                            transform: 'translateY(-4px)',
+                                            transition: '0.3s ease-in-out',
                                         },
                                     }}
                                 >
-                                    <CardContent>
-                                        <Typography level="h6" gutterBottom>Found Items Monitored</Typography>
-                                        <Typography level="h4">{foundItems.length}</Typography>
-                                    </CardContent>
-                                </Card>
+                                    <Typography
+                                        level={isXs ? 'title-md' : 'title-lg'}
+                                        sx={{
+                                            color: '#fff',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            paddingTop: 2,
+                                        }}
+                                    >
+                                        Found Items
+                                    </Typography>
+                                    <Typography
+                                        level={isXs ? 'body-xs' : 'body-sm'}
+                                        sx={{
+                                            fontWeight: '400',
+                                            color: '#fff',
+                                            lineHeight: '1.4',
+                                            flexGrow: 1,
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            paddingBottom: 2,
+                                        }}
+                                    >
+                                        View your monitored found items here
+                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            marginTop: 'auto', // Pushes the footer to the bottom
+                                            paddingTop: 2,
+                                            display: 'flex',
+                                            justifyContent: 'center', // Centers the content horizontally
+                                            alignItems: 'center', // Centers the content vertically if needed
+                                            width: '100%', // Ensures the Box takes up the full width of the Paper
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '0.9rem',
+                                                fontWeight: '500',
+                                                color: '#ddd',
+                                            }}
+                                        >
+                                            More info &rarr;
+                                        </Typography>
+                                    </Box>
+                                </Paper>
                             </Grid>
                         }
                         {
                             session.user.permissions.manageRequestReportedLostItems &&
-                            <Grid item xs={12} sm={6} md={3}>
-                                <Card
+                            <Grid item xs={12} md={4}>
+                                <Paper
                                     component={Link}
-                                    href="/lost-items"
+                                    href='/lost-items'
+                                    elevation={3}
                                     sx={{
+                                        backgroundColor: '#ff1744', // Blue background for the card
+                                        color: '#fff',
                                         textDecoration: 'none',
-                                        display: 'block',
+                                        padding: '1rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start',
+                                        borderRadius: '8px',
                                         '&:hover': {
-                                            boxShadow: 6, // Adds a hover effect for better feedback
+                                            backgroundColor: '#d50000', // Darker blue on hover
+                                            transform: 'translateY(-4px)',
+                                            transition: '0.3s ease-in-out',
                                         },
                                     }}
                                 >
-                                    <CardContent>
-                                        <Typography level="h6" gutterBottom>Lost Items Monitored</Typography>
-                                        <Typography level="h4">{lostItems.length}</Typography>
-                                    </CardContent>
-                                </Card>
+                                    <Typography
+                                        level={isXs ? 'title-md' : 'title-lg'}
+                                        sx={{
+                                            color: '#fff',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            paddingTop: 2,
+                                        }}
+                                    >
+                                        Lost Items
+                                    </Typography>
+                                    <Typography
+                                        level={isXs ? 'body-xs' : 'body-sm'}
+                                        sx={{
+                                            fontWeight: '400',
+                                            color: '#fff',
+                                            lineHeight: '1.4',
+                                            flexGrow: 1,
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            paddingBottom: 2,
+                                        }}
+                                    >
+                                        View your monitored lost items here
+                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            marginTop: 'auto', // Pushes the footer to the bottom
+                                            paddingTop: 2,
+                                            display: 'flex',
+                                            justifyContent: 'center', // Centers the content horizontally
+                                            alignItems: 'center', // Centers the content vertically if needed
+                                            width: '100%', // Ensures the Box takes up the full width of the Paper
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '0.9rem',
+                                                fontWeight: '500',
+                                                color: '#ddd',
+                                            }}
+                                        >
+                                            More info &rarr;
+                                        </Typography>
+                                    </Box>
+                                </Paper>
                             </Grid>
                         }
                         {
                             session.user.permissions.manageRequestItemRetrieval &&
-                            <Grid item xs={12} sm={6} md={3}>
-                                <Card
+                            <Grid item xs={12} md={4}>
+                                <Paper
                                     component={Link}
-                                    href="/item-retrieval"
+                                    href='/item-retrieval'
+                                    elevation={3}
                                     sx={{
+                                        backgroundColor: '#2e7d32', // Blue background for the card
+                                        color: '#fff',
                                         textDecoration: 'none',
-                                        display: 'block',
+                                        padding: '1rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start',
+                                        borderRadius: '8px',
                                         '&:hover': {
-                                            boxShadow: 6, // Adds a hover effect for better feedback
+                                            backgroundColor: '#1b5e20', // Darker blue on hover
+                                            transform: 'translateY(-4px)',
+                                            transition: '0.3s ease-in-out',
                                         },
                                     }}
                                 >
-                                    <CardContent>
-                                        <Typography level="h6" gutterBottom>Items Resolved</Typography>
-                                        <Typography level="h4">{resolvedItems.length}</Typography>
-                                    </CardContent>
-                                </Card>
+                                    <Typography
+                                        level={isXs ? 'title-md' : 'title-lg'}
+                                        sx={{
+                                            color: '#fff',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            paddingTop: 2,
+                                        }}
+                                    >
+                                        Resolved Items
+                                    </Typography>
+                                    <Typography
+                                        level={isXs ? 'body-xs' : 'body-sm'}
+                                        sx={{
+                                            fontWeight: '400',
+                                            color: '#fff',
+                                            lineHeight: '1.4',
+                                            flexGrow: 1,
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            paddingBottom: 2,
+                                        }}
+                                    >
+                                        View your resolved items here
+                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            marginTop: 'auto', // Pushes the footer to the bottom
+                                            paddingTop: 2,
+                                            display: 'flex',
+                                            justifyContent: 'center', // Centers the content horizontally
+                                            alignItems: 'center', // Centers the content vertically if needed
+                                            width: '100%', // Ensures the Box takes up the full width of the Paper
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '0.9rem',
+                                                fontWeight: '500',
+                                                color: '#ddd',
+                                            }}
+                                        >
+                                            More info &rarr;
+                                        </Typography>
+                                    </Box>
+                                </Paper>
                             </Grid>
                         }
                         {
                             session.user.permissions.viewAdminsList &&
-                            <Grid item xs={12} sm={6} md={3}>
+                            <Grid item xs={12} sm={6} md={4}>
                                 <Card
                                     component={Link}
                                     href="/admin"
@@ -298,7 +421,7 @@ const AdminDashboard = ({ session, users }) => {
                         }
                         {
                             session.user.permissions.viewRoles &&
-                            <Grid item xs={12} sm={6} md={3}>
+                            <Grid item xs={12} sm={6} md={4}>
                                 <Card
                                     component={Link}
                                     href="/roles"
@@ -319,7 +442,7 @@ const AdminDashboard = ({ session, users }) => {
                         }
                         {
                             session.user.permissions.viewBadges &&
-                            <Grid item xs={12} sm={6} md={3}>
+                            <Grid item xs={12} sm={6} md={4}>
                                 <Card
                                     component={Link}
                                     href="/badges"

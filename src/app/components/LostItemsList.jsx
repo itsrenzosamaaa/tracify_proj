@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button, Select, Option } from '@mui/joy';
+import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button, Select, Option, Input } from '@mui/joy';
 import { Paper, Badge, useMediaQuery } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ItemsTable from './Table/ItemsTable';
 import PublishLostItem from './Modal/PublishLostItems';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import { Search } from '@mui/icons-material';
 
 const LostItemsList = ({ owners, fetchItems, session }) => {
     const [status, setStatus] = useState('Missing');
@@ -29,7 +30,7 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
             <TitleBreadcrumbs title="List of Lost Items" text="Lost Items" />
 
             <Grid container spacing={2}>
-                <Grid item xs={12} lg={12}>
+                <Grid item xs={12}>
                     <Paper elevation={2} sx={{ padding: '1rem' }}>
                         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <FormControl>
@@ -105,9 +106,10 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
                                     )}
                                 </Box>
                             </FormControl>
-                            <Button size="small" startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Publish a Lost Item</Button>
+                            <Button size="small" startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Post Lost Item</Button>
                             <PublishLostItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
                         </Box>
+                        <Input startDecorator={<Search />} sx={{ mb: 3, width: isMobile ? '100%' : '30%' }} />
                         <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={false} />
                     </Paper>
                 </Grid>

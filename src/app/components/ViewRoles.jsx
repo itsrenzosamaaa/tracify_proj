@@ -55,7 +55,15 @@ const ViewRoles = ({ roles, session, refreshData }) => {
                                                             <ModalDialog>
                                                                 <Typography level="h4">Permissions List</Typography>
                                                                 <ModalClose />
-                                                                <DialogContent>
+                                                                <DialogContent
+                                                                    sx={{
+                                                                        overflowX: 'hidden',
+                                                                        overflowY: 'auto', // Allows vertical scrolling
+                                                                        '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                                                                        '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                                                                        'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                                                                    }}
+                                                                >
                                                                     {Object.entries(role.permissions).map(([key, value]) => (
                                                                         value ? <Chip key={key}>{key} </Chip> : null
                                                                     ))}

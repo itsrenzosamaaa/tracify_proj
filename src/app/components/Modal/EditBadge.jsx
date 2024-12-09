@@ -4,9 +4,7 @@ import PreviewBadge from '../PreviewBadge';
 
 const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
     const [title, setTitle] = useState(badge.title);
-    const [titleColor, setTitleColor] = useState(badge.titleColor);
     const [titleShimmer, setTitleShimmer] = useState(badge.titleShimmer);
-    const [titleOutlineColor, setTitleOutlineColor] = useState(badge.titleOutlineColor);
     const [shape, setShape] = useState(badge.shape);
     const [shapeColor, setShapeColor] = useState(badge.shapeColor);
     const [bgShape, setBgShape] = useState(badge.bgShape);
@@ -20,9 +18,7 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
     useEffect(() => {
         if (badge) {
             setTitle(badge.title);
-            setTitleColor(badge.titleColor);
             setTitleShimmer(badge.titleShimmer);
-            setTitleOutlineColor(badge.titleOutlineColor);
             setShape(badge.shape);
             setShapeColor(badge.shapeColor);
             setBgShape(badge.bgShape);
@@ -45,9 +41,7 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
 
         const badgeFormData = {
             title,
-            titleColor,
             titleShimmer,
-            titleOutlineColor,
             shape,
             shapeColor,
             bgShape,
@@ -90,11 +84,19 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
                     <Typography level="h4" gutterBottom sx={{ mb: 3 }}>
                         Edit Badge
                     </Typography>
-                    <DialogContent>
+                    <DialogContent
+                        sx={{
+                            overflowX: 'hidden',
+                            overflowY: 'auto', // Allows vertical scrolling
+                            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                            '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                            'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                        }}
+                    >
                         <form onSubmit={handleSubmit}>
                             <Grid container spacing={2}>
                                 {/* Badge Title */}
-                                <Grid item xs={12} md={4}>
+                                <Grid item xs={12}>
                                     <FormControl fullWidth>
                                         <FormLabel>Badge Title</FormLabel>
                                         <Input
@@ -102,30 +104,6 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
                                             required
-                                        />
-                                    </FormControl>
-                                </Grid>
-
-                                {/* Title Color */}
-                                <Grid item xs={6} md={4}>
-                                    <FormControl fullWidth>
-                                        <FormLabel>Title Color</FormLabel>
-                                        <Input
-                                            type="color"
-                                            value={titleColor}
-                                            onChange={(e) => setTitleColor(e.target.value)}
-                                        />
-                                    </FormControl>
-                                </Grid>
-
-                                {/* Title Outline Color */}
-                                <Grid item xs={6} md={4}>
-                                    <FormControl fullWidth>
-                                        <FormLabel>Title Outline Color</FormLabel>
-                                        <Input
-                                            type="color"
-                                            value={titleOutlineColor}
-                                            onChange={(e) => setTitleOutlineColor(e.target.value)}
                                         />
                                     </FormControl>
                                 </Grid>
@@ -267,9 +245,7 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
                                         >
                                             <PreviewBadge
                                                 title={title}
-                                                titleColor={titleColor}
                                                 titleShimmer={titleShimmer}
-                                                titleOutlineColor={titleOutlineColor}
                                                 shape={shape}
                                                 shapeColor={shapeColor}
                                                 bgShape={bgShape}

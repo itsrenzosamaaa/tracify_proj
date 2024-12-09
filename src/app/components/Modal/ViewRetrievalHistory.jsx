@@ -12,7 +12,15 @@ const ViewRetrievalHistory = ({ open, onClose, retrievalItems }) => {
             <ModalDialog>
                 <ModalClose />
                 <Typography level={isXs ? 'h4' : 'h3'} sx={{ textAlign: 'center', mb: 2 }}>Retrieval History</Typography>
-                <DialogContent>
+                <DialogContent
+                    sx={{
+                        overflowX: 'hidden',
+                        overflowY: 'auto', // Allows vertical scrolling
+                        '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                        '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                        'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                    }}
+                >
                     {retrievalItems.length > 0 ? (
                         retrievalItems.map((retrievalItem) => (
                             <Card

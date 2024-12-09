@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from "react";
-import { Box, Typography, Grid, Button, Table } from "@mui/joy";
-import { Paper, TableBody, TableCell, TableHead, TableRow, TablePagination, Chip, Card, CardContent, TableContainer } from "@mui/material";
+import { Box, Typography, Grid, Button, Table, List, ListItem } from "@mui/joy";
+import { Paper, TableBody, TableCell, TableHead, TableRow, TablePagination, Chip, Card, CardContent, TableContainer, ListItemIcon, ListItemText } from "@mui/material";
 import { useRouter } from "next/navigation";
 import Loading from "../Loading";
 import TopStudentsEarnedBadges from "../TopStudentsEarnedBadges";
+import { Circle } from "@mui/icons-material";
 
 const UserDashboard = ({ session, status, users }) => {
     const [userItems, setUserItems] = useState([]);
@@ -133,7 +134,60 @@ const UserDashboard = ({ session, status, users }) => {
                         </Paper>
                     </Grid>
                 ))}
-                <Grid item xs={12} lg={12}>
+                <Grid item xs={12} md={6}>
+                    <Typography level="h3" gutterBottom>
+                        Our Mission
+                    </Typography>
+                    <Paper sx={{ padding: '1rem', height: '250px' }}>
+                        <Box>
+                            <Typography level="title-md">
+                                The Lewis College is committed to:
+                            </Typography>
+                            <List sx={{ paddingLeft: '1.5rem' }}> {/* Adjust padding to position bullets correctly */}
+                                <ListItem sx={{ display: 'flex', alignItems: 'flex-start' }}> {/* Align text and bullet */}
+                                    <ListItemIcon sx={{ minWidth: 'auto', marginTop: 1.5 }}> {/* Adjust position of icon */}
+                                        <Circle sx={{ fontSize: '8px' }} /> {/* Bullet size and color */}
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary="Serving the people of God through a value-focused educational environment."
+                                    />
+                                </ListItem>
+                                <ListItem sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                                    <ListItemIcon sx={{ minWidth: 'auto', marginTop: 1.5 }}>
+                                        <Circle sx={{ fontSize: '8px' }} />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary="Developing entrepreneurial leadership and information technology competencies."
+                                    />
+                                </ListItem>
+                                <ListItem sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                                    <ListItemIcon sx={{ minWidth: 'auto', marginTop: 1.5 }}>
+                                        <Circle sx={{ fontSize: '8px' }} />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                        primary="Forming students to be well-rounded, skilled, and professional men and women."
+                                    />
+                                </ListItem>
+                            </List>
+                        </Box>
+                    </Paper>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <Typography level="h3" gutterBottom>
+                        Our Vision
+                    </Typography>
+                    <Paper sx={{ padding: '1rem', height: '250px' }}>
+                        <Box>
+                            <Typography level="body-lg" fontWeight={400} sx={{ marginBottom: '1rem', lineHeight: 1.6 }}>
+                                The Lewis College is an education community and a Center of Excellence founded on the Christian Values of Faith, Service, and Personhood.
+                            </Typography>
+                            <Typography level="body-lg" fontWeight={400} sx={{ lineHeight: 1.6 }}>
+                                It exists to provide the Bicol Region with high quality and low-cost education that is accessible to all students aspiring to be productive members of society, propelling them as catalysts for progress in the region.
+                            </Typography>
+                        </Box>
+                    </Paper>
+                </Grid>
+                <Grid item xs={12}>
                     <TopStudentsEarnedBadges users={users} />
                 </Grid>
             </Grid>

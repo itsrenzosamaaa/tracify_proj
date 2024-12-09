@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
 import React, { useState } from 'react';
 import { Grid, Box, Button, Menu, MenuItem, Typography, Input } from '@mui/joy';
-import { Paper } from '@mui/material';
+import { Paper, useMediaQuery } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import PublishItemIdentified from './Modal/PublishItemIdentified';
@@ -13,11 +13,23 @@ import SearchIcon from '@mui/icons-material/Search';
 const ItemRetrievalList = ({ items, fetchItems }) => {
     const [anchorEl, setAnchorEl] = useState(null); // For the Menu
     const [selectedStatus, setSelectedStatus] = useState('All'); // Default status
+    const [searchQuery, setSearchQuery] = useState(''); // Track search input
+    const isMobile = useMediaQuery('(max-width:600px)');
 
+    // Filter the items based on status and search query
     const filteredItems = items.filter(item => {
-        return selectedStatus === 'All' || item.request_status === selectedStatus;
+        const matchesStatus = selectedStatus === 'All' || item.request_status === selectedStatus;
+
+        const matchesSearch =
+            item.finder.item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.owner.user.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.request_status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.owner.user.lastname.toLowerCase().includes(searchQuery.toLowerCase());
+
+        return matchesStatus && matchesSearch;
     });
 
+    // Menu open and close handlers for selecting status
     const handleMenuOpen = (event) => {
         setAnchorEl(event.currentTarget); // Open the menu
     };
@@ -26,9 +38,15 @@ const ItemRetrievalList = ({ items, fetchItems }) => {
         setAnchorEl(null); // Close the menu
     };
 
+    // Set the selected status from the menu
     const handleStatusSelect = (status) => {
         setSelectedStatus(status); // Set the selected status
         handleMenuClose(); // Close the menu after selection
+    };
+
+    // Handle search query change
+    const handleSearchChange = (event) => {
+        setSearchQuery(event.target.value); // Update the search query
     };
 
     return (
@@ -39,11 +57,16 @@ const ItemRetrievalList = ({ items, fetchItems }) => {
                 <Grid item xs={12} lg={12}>
                     <Paper elevation={2} sx={{ padding: '1rem' }}>
                         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            {/* Search Input */}
                             <Input
                                 startDecorator={<SearchIcon />}
-                                placeholder='Search name...'
+                                placeholder="Search name..."
+                                value={searchQuery}
+                                onChange={handleSearchChange} // Update search query on input change
+                                sx={{ flexGrow: 1, marginRight: 2 }}
                             />
-                            {/* Filter Menu */}
+
+                            {/* Filter Menu Button */}
                             <Button
                                 startDecorator={<FilterListIcon />}
                                 onClick={handleMenuOpen}
@@ -65,7 +88,13 @@ const ItemRetrievalList = ({ items, fetchItems }) => {
                                 <MenuItem onClick={() => handleStatusSelect('Completed')}>Completed</MenuItem>
                             </Menu>
                         </Box>
-                        <ItemRetrievalTable items={filteredItems} fetchItems={fetchItems} selectedStatus={selectedStatus} />
+
+                        {/* Item Retrieval Table */}
+                        <ItemRetrievalTable
+                            items={filteredItems}
+                            fetchItems={fetchItems}
+                            selectedStatus={selectedStatus}
+                        />
                     </Paper>
                 </Grid>
             </Grid>

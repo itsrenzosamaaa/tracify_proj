@@ -127,7 +127,15 @@ const ChangeProfilePicture = ({ setImage, setLoading, refreshData, session, setO
                     <Box sx={{ mb: 2 }}>
                         <FormLabel>Upload and Crop Profile Picture</FormLabel>
                     </Box>
-                    <DialogContent>
+                    <DialogContent
+                        sx={{
+                            overflowX: 'hidden',
+                            overflowY: 'auto', // Allows vertical scrolling
+                            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                            '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                            'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                        }}
+                    >
                         {previewImage ? (
                             <Box sx={{ position: 'relative', width: '100%', height: 300, display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 {/* Cropper Component */}

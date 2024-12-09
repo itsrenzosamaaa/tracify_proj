@@ -121,7 +121,15 @@ const Badges = ({ user }) => {
 
             <Dialog open={openDialog} onClose={handleCloseDialog}>
                 <DialogTitle>Select a Badge to Display on Your Profile</DialogTitle>
-                <DialogContent>
+                <DialogContent
+                    sx={{
+                        overflowX: 'hidden',
+                        overflowY: 'auto', // Allows vertical scrolling
+                        '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                        '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                        'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                    }}
+                >
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         {user.badges?.map((badge) => (
                             <Box

@@ -48,7 +48,7 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
     }, [status, session?.user?.schoolCategory, fetchUsers]);
 
     useEffect(() => {
-        if (owner?._id){
+        if (owner?._id) {
             fetchLostItems()
         }
     }, [owner?._id, fetchLostItems])
@@ -61,18 +61,18 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         if (finder && owner && finder === owner) {
             alert('The finder and owner should not be the same user.');
             return;
         }
-    
+
         let lostItemId = null;
         let lostItemDescription = null;
         let lostItemLocation = null;
         const lostItemDate = new Date().toISOString().split("T")[0];
         const lostItemTime = new Date().toTimeString().split(" ")[0].slice(0, 5);
-    
+
         const status = 'Unclaimed';
         if (selectedLostItem.name === 'None') {
             const lostItemData = {
@@ -85,7 +85,7 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
                 image,
                 status,
             };
-    
+
             try {
                 const response = await fetch('/api/lost-items', {
                     method: 'POST',
@@ -93,12 +93,12 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
                     body: JSON.stringify(lostItemData),
                 });
                 if (!response.ok) throw new Error("Failed to create lost item");
-    
+
                 const savedLostItem = await response.json();
                 lostItemId = savedLostItem?._id;
                 lostItemDescription = savedLostItem?.description;
                 lostItemLocation = savedLostItem?.location;
-    
+
                 console.log("Created Lost Item ID:", lostItemId);
             } catch (error) {
                 console.error("Error creating lost item:", error);
@@ -111,21 +111,21 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status }),
                 });
-    
+
                 if (!response.ok) throw new Error('Failed to update status');
-    
+
                 const updatedItem = await response.json();
                 lostItemId = updatedItem?._id;
                 lostItemDescription = updatedItem?.description;
                 lostItemLocation = updatedItem?.location;
-    
+
                 console.log("Updated Lost Item ID:", lostItemId);
             } catch (error) {
                 console.error("Error updating lost item status:", error);
                 return;
             }
         }
-    
+
         const foundItemData = {
             finder: finder?._id || null,
             name,
@@ -138,16 +138,16 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
             matched: lostItemId || null,
             monitoredBy: session?.user?.id,
         };
-    
+
         console.log("Found Item Data:", foundItemData);
-    
+
         try {
             const response = await fetch('/api/found-items', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(foundItemData),
             });
-    
+
             if (response.ok) {
                 alert('Item successfully published');
                 await resetForm();
@@ -158,8 +158,8 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
         } catch (error) {
             console.error("Error creating found item:", error);
         }
-    };    
-    
+    };
+
     // Helper function to reset form fields and close the modal
     const resetForm = async () => {
         await onClose();
@@ -173,8 +173,8 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
         setFinder(null);
         setSelectedLostItem(null);
     };
-    
-    
+
+
     const onDrop = (acceptedFiles) => {
         const file = acceptedFiles[0]; // Get the first selected file
         if (file) {
@@ -196,7 +196,7 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-    if(status === 'loading') return null;
+    if (status === 'loading') return null;
 
     return (
         <>
@@ -204,7 +204,15 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
                 <ModalDialog>
                     <ModalClose />
                     <Typography level="h4" sx={{ mb: 2 }}>Publish an Identified Item</Typography>
-                    <DialogContent sx={{ overflowX: 'hidden' }}>
+                    <DialogContent
+                        sx={{
+                            overflowX: 'hidden',
+                            overflowY: 'auto', // Allows vertical scrolling
+                            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                            '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                            'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                        }}
+                    >
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={2}>
                                 <FormControl required>

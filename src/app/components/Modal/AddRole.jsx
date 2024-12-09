@@ -96,7 +96,15 @@ const AddRole = ({ open, onClose }) => {
             <Modal open={open} onClose={onClose} size="large">
                 <ModalDialog sx={{ maxWidth: '80%' }}>
                     <ModalClose />
-                    <DialogContent>
+                    <DialogContent
+                        sx={{
+                            overflowX: 'hidden',
+                            overflowY: 'auto', // Allows vertical scrolling
+                            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                            '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                            'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                        }}
+                    >
                         <Typography level="h4" sx={{ mb: 2 }}>
                             Add Role
                         </Typography>

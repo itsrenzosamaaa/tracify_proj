@@ -7,8 +7,6 @@ import { signOut } from "next-auth/react";
 const DropdownContainer = styled.div`
   display: flex;
   align-items: center;
-  margin-left: auto;
-  margin-right: 2rem;
 `;
 
 const AvatarComponent = ({ profile }) => {

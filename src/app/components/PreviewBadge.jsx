@@ -1,9 +1,17 @@
 import React from 'react';
-import { Tooltip, Box, Typography } from '@mui/joy';
+import { Tooltip, Box } from '@mui/joy';
 import { useTheme, useMediaQuery } from '@mui/material';
 import './../styles/animation.css';
 
-const PreviewBadge = ({ title, titleColor, titleShimmer, titleOutlineColor, shape, shapeColor, bgShape, bgColor, bgOutline, condition, meetConditions }) => {
+const PreviewBadge = ({
+    title,
+    titleShimmer,
+    shape,
+    shapeColor,
+    bgShape,
+    bgColor,
+    bgOutline
+}) => {
     const theme = useTheme();
     const isXs = useMediaQuery(theme.breakpoints.down('sm'));
     const isSm = useMediaQuery(theme.breakpoints.between('sm', 'md'));
@@ -11,14 +19,12 @@ const PreviewBadge = ({ title, titleColor, titleShimmer, titleOutlineColor, shap
 
     // Determine size based on screen size
     const containerSize = isXs ? '60px' : isSm ? '80px' : '100px';
-    const shapeSize = isXs ? '40px' : isSm ? '55px' : '70px'; // Smaller size for the shape
-    const fontSize = isXs ? '12px' : isSm ? '14px' : '16px';
+    const shapeSize = isXs ? '40px' : isSm ? '55px' : '70px';
 
     const createStarShape = (size, color) => ({
         width: size,
         height: size,
         backgroundColor: color,
-        boxSizing: 'border-box',
         clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
     });
 
@@ -28,17 +34,12 @@ const PreviewBadge = ({ title, titleColor, titleShimmer, titleOutlineColor, shap
         borderLeft: `${parseInt(size) / 2}px solid transparent`,
         borderRight: `${parseInt(size) / 2}px solid transparent`,
         borderBottom: `${size} solid ${color}`,
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
     });
 
     const createHexagonShape = (size, color) => ({
         width: size,
-        height: `calc(${parseInt(size) * 0.6}px)`,
+        height: `${Math.sqrt(3) / 2 * parseInt(size)}px`,
         backgroundColor: color,
-        boxSizing: 'border-box',
         clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
     });
 
@@ -56,16 +57,7 @@ const PreviewBadge = ({ title, titleColor, titleShimmer, titleOutlineColor, shap
                     height: shapeSize,
                     backgroundColor: shapeColor,
                     borderRadius: shape === 'circle' ? '50%' : '0',
-                    position: 'absolute',
                 };
-        }
-    };
-
-    const description = (condition) => {
-        if (condition === 'Found Item/s') {
-            return `Accommodate ${meetConditions} ${meetConditions === 1 ? 'found item' : 'found items'} successfully.`;
-        } else if (condition === 'Rating/s') {
-            return `Provide ${meetConditions} ${meetConditions === 1 ? 'feedback' : 'feedbacks'} to students.`;
         }
     };
 
@@ -82,28 +74,14 @@ const PreviewBadge = ({ title, titleColor, titleShimmer, titleOutlineColor, shap
     };
 
     return (
-        <>
-            <Tooltip title={description(condition)} arrow placement="top">
-                <Box sx={badgePreviewStyle}>
-                    <Box sx={shapeStyle()}></Box>
-                </Box>
-            </Tooltip>
-            <Typography
-                className={titleShimmer ? 'animate-shimmer' : ''}
-                sx={{
-                    textAlign: 'center',
-                    marginTop: '10px',
-                    color: titleColor,
-                    WebkitTextStrokeWidth: '0.5px',
-                    WebkitTextStrokeColor: titleOutlineColor,
-                    fontSize,
-                }}
-                fontWeight="700"
-                level="h5"
-            >
-                {title}
-            </Typography>
-        </>
+        <Tooltip
+            title={title}
+            arrow
+        >
+            <Box className={titleShimmer ? 'animate-shimmer' : ''} sx={badgePreviewStyle}>
+                <Box className={titleShimmer ? 'animate-shimmer' : ''} sx={shapeStyle()} />
+            </Box>
+        </Tooltip>
     );
 };
 

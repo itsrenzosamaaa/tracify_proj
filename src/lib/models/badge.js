@@ -2,9 +2,7 @@ import mongoose from "mongoose";
 
 const badgeSchema = new mongoose.Schema({
   title: { type: String },
-  titleColor: { type: String },
   titleShimmer: { type: Boolean },
-  titleOutlineColor: { type: String },
   description: { type: String },
   shape: { type: String },
   shapeColor: { type: String },

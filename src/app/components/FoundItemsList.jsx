@@ -1,16 +1,16 @@
-'use client';
-
 import React, { useState } from 'react';
-import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button, Select, Option } from '@mui/joy';
+import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button, Select, Option, Input } from '@mui/joy';
 import { Paper, Badge, useMediaQuery } from '@mui/material';
 import ItemsTable from './Table/ItemsTable';
 import AddIcon from '@mui/icons-material/Add';
 import PublishFoundItem from './Modal/PublishFoundItem';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
+import { Search } from '@mui/icons-material';
 
 const FoundItemsList = ({ finders, fetchItems, session }) => {
     const [status, setStatus] = useState('Published');
     const [open, setOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState(''); // Track search input
     const isMobile = useMediaQuery('(max-width:600px)');
 
     // Define status options
@@ -27,12 +27,16 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
         return acc;
     }, {});
 
-    // Filter items based on selected status
+    // Filter items based on selected status and search query
     const filteredItems = finders.filter(finder => {
-        if (status === 'Request') {
-            return requestStatuses.includes(finder.item.status);
-        }
-        return finder.item.status === status;
+        const matchesStatus = status === 'Request' ? requestStatuses.includes(finder.item.status) : finder.item.status === status;
+
+        // Search across multiple fields (name, description, category, location, etc.)
+        const matchesSearch =
+            finder.item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            finder.user.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            finder.user.lastname.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesStatus && matchesSearch;
     });
 
     // Render chips for status selection
@@ -69,7 +73,7 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
             <Grid container spacing={2}>
                 <Grid item xs={12}>
                     <Paper elevation={2} sx={{ padding: '1rem' }}>
-                        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <FormControl>
                                 <FormLabel>Filter by Status</FormLabel>
                                 <Box sx={{ mt: 1 }}>
@@ -105,11 +109,19 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
                                     )}
                                 </Box>
                             </FormControl>
-                            <Button size="small" sx={{ width: { xs: '40%', md: '170px' } }} startDecorator={<AddIcon />} onClick={() => setOpen(true)}>
-                                Publish a Found Item
+                            <Button size="small" sx={{ width: isMobile ? '50%' : '170px' }} startDecorator={<AddIcon />} onClick={() => setOpen(true)}>
+                                Post Found Item
                             </Button>
                             <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
                         </Box>
+                        {/* Search Input */}
+                        <Input
+                            startDecorator={<Search />}
+                            sx={{ mb: 3, width: isMobile ? '100%' : '30%' }}
+                            placeholder="Search for items"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)} // Update search query
+                        />
                         <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={true} status={status === 'Published' ? 'Published' : 'Request'} />
                     </Paper>
                 </Grid>
