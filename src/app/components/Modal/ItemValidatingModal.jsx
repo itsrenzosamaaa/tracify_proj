@@ -4,13 +4,10 @@ import { Button, Modal, ModalClose, ModalDialog, Typography, Box, Snackbar, Dial
 import React, { useState } from 'react';
 import ItemDetails from './ItemDetails';
 
-const ItemValidatingModal = ({ row, open, onClose, refreshData, session }) => {
+const ItemValidatingModal = ({ row, open, onClose, refreshData, session, setMessage, setOpenSnackbar }) => {
     const [itemValidate, setItemValidate] = useState(null);
     const [itemInvalidate, setItemInvalidate] = useState(null);
-    const [openSnackbar, setOpenSnackbar] = useState(null);
     const [loading, setLoading] = useState(false);
-
-    console.log(row)
 
     const handleSubmit = async (e, id) => {
         if (e && e.preventDefault) {
@@ -44,6 +41,7 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData, session }) => {
             if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
 
             setOpenSnackbar('success');
+            setMessage('Item has been published!')
             onClose();
             await refreshData();
         } catch (error) {
@@ -84,11 +82,13 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData, session }) => {
 
             if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
 
-            setOpenSnackbar('failed')
+            setOpenSnackbar('success');
+            setMessage('Item has been invalidated.')
             onClose();
             await refreshData();
         } catch (error) {
-            console.error(error)
+            setOpenSnackbar('success');
+            setMessage(error);
         } finally {
             setLoading(false)
         }
@@ -141,20 +141,6 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData, session }) => {
                     </Box>
                 </ModalDialog>
             </Modal>
-            <Snackbar
-                autoHideDuration={5000}
-                open={openSnackbar}
-                variant="solid"
-                color="success"
-                onClose={(event, reason) => {
-                    if (reason === 'clickaway') {
-                        return;
-                    }
-                    setOpenSnackbar(null);
-                }}
-            >
-                Item has been {openSnackbar === 'success' ? 'published' : 'invalidated'}!
-            </Snackbar>
         </>
     );
 };

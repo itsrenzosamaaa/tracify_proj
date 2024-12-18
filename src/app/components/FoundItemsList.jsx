@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button, Select, Option, Input } from '@mui/joy';
+import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button, Select, Option, Input, Snackbar } from '@mui/joy';
 import { Paper, Badge, useMediaQuery } from '@mui/material';
 import ItemsTable from './Table/ItemsTable';
 import AddIcon from '@mui/icons-material/Add';
@@ -11,10 +11,12 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
     const [status, setStatus] = useState('Published');
     const [open, setOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState(''); // Track search input
+    const [openSnackbar, setOpenSnackbar] = useState(null);
+    const [message, setMessage] = useState('');
     const isMobile = useMediaQuery('(max-width:600px)');
 
     // Define status options
-    const statusOptions = ['Published', 'Request']; // Group 'Request' and 'Surrender Pending'
+    const statusOptions = ['Published', 'Request', 'Declined', 'Canceled']; // Group 'Request' and 'Surrender Pending'
     const requestStatuses = ['Request', 'Surrender Pending'];
 
     // Count how many items have each status
@@ -72,7 +74,7 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
 
             <Grid container spacing={2}>
                 <Grid item xs={12}>
-                    <Paper elevation={2} sx={{ padding: '1rem' }}>
+                    <Paper elevation={2} sx={{ padding: '1rem', borderTop: '3px solid #3f51b5' }}>
                         <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <FormControl>
                                 <FormLabel>Filter by Status</FormLabel>
@@ -112,7 +114,7 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
                             <Button size="small" sx={{ width: isMobile ? '50%' : '170px' }} startDecorator={<AddIcon />} onClick={() => setOpen(true)}>
                                 Post Found Item
                             </Button>
-                            <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
+                            <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} />
                         </Box>
                         {/* Search Input */}
                         <Input
@@ -122,10 +124,24 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)} // Update search query
                         />
-                        <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={true} status={status === 'Published' ? 'Published' : 'Request'} />
+                        <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={true} status={status} />
                     </Paper>
                 </Grid>
             </Grid>
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color={openSnackbar}
+                onClose={(event, reason) => {
+                    if (reason === 'clickaway') {
+                        return;
+                    }
+                    setOpenSnackbar(null);
+                }}
+            >
+                {message}
+            </Snackbar>
         </>
     );
 };

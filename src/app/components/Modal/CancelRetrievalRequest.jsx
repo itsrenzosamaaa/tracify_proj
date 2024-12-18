@@ -51,8 +51,6 @@ const CancelRetrievalRequest = ({ open, onClose, matchItem }) => {
             router.push('/my-items');
         } catch (error) {
             console.error(error)
-        } finally {
-            setLoading(false)
         }
     }
     return (

@@ -73,16 +73,13 @@ const RatingsModal = ({ item, session, open, onClose, refreshData }) => {
             // Fetch badges and sender data
             const [badgeData, senderData] = await Promise.all([
                 makeRequest('/api/badge/ratings', 'GET'),
-                makeRequest(`/api/ratings/sender/${session.user.id}`, 'GET'),
+                makeRequest(`/api/users/${session.user.id}`, 'PUT', { increment: 'ratings' }),
             ]);
-
-            // Filter sender ratings
-            const completedReviews = senderData.filter((sender) => sender.done_review).length;
 
             // Award badges if conditions are met
             await Promise.all(
                 badgeData.map(async (badge) => {
-                    if (completedReviews >= badge.meetConditions) {
+                    if (senderData.updatedUser.ratingsCount >= badge.meetConditions) {
                         await makeRequest(`/api/award-badge/user/${session.user.id}`, 'PUT', { badgeId: badge._id });
                     }
                 })

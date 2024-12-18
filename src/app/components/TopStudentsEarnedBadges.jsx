@@ -15,7 +15,7 @@ const TopStudentsEarnedBadges = ({ users }) => {
             <Typography level="h3" gutterBottom>
                 Top Students
             </Typography>
-            <Card sx={{ height: '390px' }}>
+            <Card sx={{ height: '390px', borderTop: '3px solid #3f51b5' }}>
                 <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                     <TableContainer sx={{ flex: 1, overflowY: 'auto', maxHeight: 350 }}>
                         <Table stickyHeader>

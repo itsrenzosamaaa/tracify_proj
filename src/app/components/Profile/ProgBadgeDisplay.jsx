@@ -14,14 +14,14 @@ const trophyImages = {
     diamond: '/trophy/diamond_trophy.png',
 };
 
-const ProgBadgeDisplay = ({ user, items }) => {
+const ProgBadgeDisplay = ({ user, items, sentRatings }) => {
     const [open, setOpen] = useState(false);
 
     const filteredResolvedItems = items.filter(item => item.status === 'Resolved');
     console.log(filteredResolvedItems)
 
     const multiplierSFI = filteredResolvedItems.length * 500;
-    const multiplierRateToUser = 2 * 250;
+    const multiplierRateToUser = sentRatings * 250;
     const multiplier = multiplierSFI + multiplierRateToUser;
 
     let trophy = trophyImages.blank;

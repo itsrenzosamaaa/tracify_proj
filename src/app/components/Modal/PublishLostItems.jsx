@@ -6,9 +6,8 @@ import { useDropzone } from 'react-dropzone';
 import Image from "next/image";
 import { useSession } from 'next-auth/react';
 import { format } from 'date-fns';
-import Link from 'next/link';
 
-const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null }) => {
+const PublishLostItem = ({ open, onClose, fetchItems, setOpenSnackbar, setMessage, setActiveTab }) => {
     const [users, setUsers] = useState([]);
     const [name, setName] = useState('');
     const [color, setColor] = useState();
@@ -24,9 +23,23 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
     const [images, setImages] = useState([]);
     const [owner, setOwner] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
     const [itemWhereabouts, setItemWhereabouts] = useState(false);
     const { data: session, status } = useSession();
+
+    const handleCheck = (e) => {
+        const check = e.target.checked;
+        setItemWhereabouts(check)
+
+        if (check) {
+            setLocation('');
+            setLostDateStart('');
+            setLostDateEnd('');
+        } else {
+            setLocation('Unidentified');
+            setLostDateStart('Unidentified');
+            setLostDateEnd('Unidentified');
+        }
+    }
 
     const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court', 'Function Hall', 'Library', 'Computer Laboratory'];
 
@@ -42,36 +55,47 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
     }, [session?.user?.schoolCategory]);
 
     useEffect(() => {
-        if (status === 'authenticated' && session?.user?.schoolCategory) {
+        if (status === 'authenticated' && session?.user?.schoolCategory && session?.user?.userType !== 'user') {
             fetchUsers();
         }
-    }, [status, session?.user?.schoolCategory, fetchUsers]);
+    }, [status, session?.user?.schoolCategory, session?.user?.userType, fetchUsers]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        const selectedLostStartDate = new Date(lostDateStart);
-        const selectedLostEndDate = new Date(lostDateEnd);
-
-        const lostItemData = {
-            isFoundItem: false,
-            name,
-            color,
-            size,
-            category,
-            material,
-            condition,
-            distinctiveMarks,
-            description,
-            location: itemWhereabouts ? location : 'Unidentified',
-            date_time: itemWhereabouts ? `${format(selectedLostStartDate, 'MMMM dd, yyyy hh:mm a')} to ${format(selectedLostEndDate, 'MMMM dd, yyyy hh:mm a')}` : 'Unidentified',
-            images,
-            status: 'Missing',
-            dateMissing: new Date(),
-        };
-
         try {
+            if (images.length === 0) {
+                setOpenSnackbar('danger');
+                setMessage('Please upload at least one image.');
+                return;
+            }
+
+            const selectedLostStartDate = new Date(lostDateStart);
+            const selectedLostEndDate = new Date(lostDateEnd);
+
+            let lostItemData = {
+                isFoundItem: false,
+                name,
+                color,
+                size,
+                category,
+                material,
+                condition,
+                distinctiveMarks,
+                description,
+                location: itemWhereabouts ? location : 'Unidentified',
+                date_time: itemWhereabouts ? `${format(selectedLostStartDate, 'MMMM dd, yyyy hh:mm a')} to ${format(selectedLostEndDate, 'MMMM dd, yyyy hh:mm a')}` : 'Unidentified',
+                images,
+                status: session.user.userType === 'user' ? 'Request' : 'Missing',
+            };
+
+            if (lostItemData.status === 'Request') {
+                lostItemData.dateRequest = new Date();
+            } else {
+                lostItemData.dateMissing = new Date();
+            }
+
             const response = await fetch('/api/lost-items', {
                 method: 'POST',
                 headers: {
@@ -79,62 +103,66 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                 },
                 body: JSON.stringify(lostItemData),
             });
-            if (response.ok) {
-                const lostItemResponse = await response.json();
 
-                const ownerData = {
-                    user: owner?._id,
-                    item: lostItemResponse._id,
-                };
-
-                const lostResponse = await fetch('/api/owner', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(ownerData),
-                });
-
-                const notificationResponse = await fetch('/api/notification', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        receiver: owner._id,
-                        message: `The lost item (${name}) you reported to ${session.user.roleName} has been published!`,
-                        type: 'Lost Items',
-                        markAsRead: false,
-                        dateNotified: new Date(),
-                    }),
-                });
-
-                const mailResponse = await fetch('/api/send-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        to: owner.emailAddress,
-                        name: owner.firstname,
-                        link: 'tracify-project.vercel.app',
-                        success: false,
-                        title: 'Lost Item Published Successfully!'
-                    }),
-                });
-
-                if (lostResponse.ok && mailResponse.ok && notificationResponse.ok) {
-                    await resetForm(); // Ensure resetForm is defined to clear form inputs
-                    setOpenSnackbar(true);
-                } else {
-                    const data = await lostResponse.json().catch(() => ({ error: "Unexpected response format" }));
-                    alert(`Failed to add owner: ${data.error}`);
-                }
-            } else {
-                const data = await response.json();
-                alert(`Failed to add lost item: ${data.error}`);
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Unexpected response format' }));
+                setOpenSnackbar('danger');
+                setMessage(`Failed to add found item: ${errorData.error}`)
             }
+
+            const lostItemResponse = await response.json();
+
+            const ownerData = {
+                user: session?.user?.userType === 'user' ? session?.user?.id : owner?._id,
+                item: lostItemResponse._id,
+            };
+
+            const lostResponse = await fetch('/api/owner', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ownerData),
+            });
+
+            if (session?.user?.userType !== 'user') {
+                await Promise.all([
+                    fetch('/api/notification', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            receiver: owner._id,
+                            message: `The lost item (${name}) you reported to ${session.user.roleName} has been published!`,
+                            type: 'Lost Items',
+                            markAsRead: false,
+                            dateNotified: new Date(),
+                        }),
+                    }),
+                    fetch('/api/send-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            to: owner.emailAddress,
+                            name: owner.firstname,
+                            link: 'tracify-project.vercel.app',
+                            success: false,
+                            title: 'Lost Item Published Successfully!'
+                        }),
+                    }),
+                ]);
+            }
+
+            resetForm();
+            if (session?.user?.userType === 'user') setActiveTab('requested-item');
+            setOpenSnackbar('success');
+            setMessage(session?.user?.userType === 'user' ? 'Item requested successfully!' : 'Item published successfully!')
         } catch (error) {
-            console.error('Error adding lost item:', error);
-            alert('An error occurred while adding the lost item.');
+            setOpenSnackbar('danger');
+            setMessage('An unexpected error occurred.')
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -153,7 +181,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
         setLostDateEnd('');
         setImages([]);
         setOwner(null);
-        if (fetchItems) await fetchItems();
+        await fetchItems();
     };
 
     const handleStartDateChange = (e) => {
@@ -230,7 +258,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                     }}
                 >
                     <ModalClose />
-                    <Typography level="h4" sx={{ mb: 2 }}>Publish a Lost Item</Typography>
+                    <Typography level="h4" sx={{ mb: 2 }}>{session?.user?.userType === 'user' ? 'Request' : 'Post'} Lost Item</Typography>
                     <DialogContent
                         sx={{
                             overflowX: 'hidden',
@@ -242,31 +270,34 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                     >
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={2}>
-                                <FormControl>
-                                    <FormLabel>Owner</FormLabel>
-                                    <Autocomplete
-                                        required
-                                        placeholder='Select owner'
-                                        options={users || []}  // Ensure users is an array
-                                        value={owner}  // Ensure value corresponds to an option in users
-                                        onChange={(event, value) => {
-                                            setOwner(value); // Update state with selected user
-                                        }}
-                                        getOptionLabel={(user) => {
-                                            if (!user || !user.firstname || !user.lastname) {
-                                                return 'No Options'; // Safeguard in case user data is undefined
-                                            }
-                                            return `${user.firstname} ${user.lastname}`; // Correctly format user names
-                                        }}
-                                        isOptionEqualToValue={(option, value) => option.id === value?.id} // Ensure comparison by unique identifier
-                                    />
-                                </FormControl>
+                                {
+                                    session?.user?.userType !== 'user' &&
+                                    <FormControl>
+                                        <FormLabel>Owner</FormLabel>
+                                        <Autocomplete
+                                            required
+                                            placeholder='Select owner'
+                                            options={users || []}  // Ensure users is an array
+                                            value={owner}  // Ensure value corresponds to an option in users
+                                            onChange={(event, value) => {
+                                                setOwner(value); // Update state with selected user
+                                            }}
+                                            getOptionLabel={(user) => {
+                                                if (!user || !user.firstname || !user.lastname) {
+                                                    return 'No Options'; // Safeguard in case user data is undefined
+                                                }
+                                                return `${user.firstname} ${user.lastname}`; // Correctly format user names
+                                            }}
+                                            isOptionEqualToValue={(option, value) => option.id === value?.id} // Ensure comparison by unique identifier
+                                        />
+                                    </FormControl>
+                                }
                                 <FormControl>
                                     <FormLabel>Item Name</FormLabel>
                                     <Input required type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
                                 </FormControl>
 
-                                <Grid container spacing={2}>
+                                <Grid container spacing={1}>
                                     <Grid item xs={12} sm={4}>
                                         <FormControl>
                                             <FormLabel>Color</FormLabel>
@@ -395,7 +426,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                     <Textarea required type="text" name="description" minRows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
                                 </FormControl>
                                 <FormControl>
-                                    <Checkbox label="The owner knows the item's location" checked={itemWhereabouts} onChange={(e) => setItemWhereabouts(e.target.checked)} />
+                                    <Checkbox label="The owner knows the item's whereabouts" checked={itemWhereabouts} onChange={handleCheck} />
                                 </FormControl>
                                 {
                                     itemWhereabouts &&
@@ -446,7 +477,7 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                         </Grid>
                                     </>
                                 }
-                                <FormControl required>
+                                <FormControl>
                                     <Box
                                         sx={{
                                             display: 'inline-flex',
@@ -520,42 +551,18 @@ const PublishLostItem = ({ open, onClose, fetchItems = null, inDashboard = null 
                                                 </Box>
                                             ))}
                                         </Box>
-                                        <input {...getInputProps()} multiple required />
+                                        <input {...getInputProps()} multiple style={{ display: 'none' }} />
                                         <p>
                                             {images.length === 0 && "Drag 'n' drop some files here, or click to select files"}
                                         </p>
                                     </Box>
                                 </FormControl>
-                                <Button disabled={loading} loading={loading} type="submit">Publish</Button>
+                                <Button disabled={loading} loading={loading} type="submit">{session?.user?.userType === 'user' ? 'Request' : 'Post'}</Button>
                             </Stack>
                         </form>
                     </DialogContent>
                 </ModalDialog>
             </Modal>
-            <Snackbar
-                autoHideDuration={5000}
-                open={openSnackbar}
-                variant="solid"
-                color="success"
-                onClose={(event, reason) => {
-                    if (reason === 'clickaway') {
-                        return;
-                    }
-                    setOpenSnackbar(false);
-                }}
-            >
-                <div>
-                    Item published successfully!{' '}
-                    {inDashboard && (
-                        <Typography>
-                            <Link href="/lost-items" style={{ color: 'inherit', textDecoration: 'underline' }}>
-                                Click here
-                            </Link>
-                            to redirect to lost items page.
-                        </Typography>
-                    )}
-                </div>
-            </Snackbar>
         </>
     )
 }

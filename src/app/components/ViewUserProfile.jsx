@@ -6,13 +6,14 @@ import {
     Button,
     Box,
 } from '@mui/joy';
+import { Paper } from '@mui/material';
 import AvatarWithName from './Profile/AvatarWithName';
 import Badges from './Profile/Badges';
 import ProgBadgeDisplay from './Profile/ProgBadgeDisplay';
 import RecentRatingsFromUser from './Profile/RecentRatingsFromUser';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 
-const ViewUserProfile = ({ profile, items, ratings, refreshData, session, setOpenSnackbar }) => {
+const ViewUserProfile = ({ profile, items, receivedRatings, sentRatings, refreshData, session, setOpenSnackbar, setMessage, badges }) => {
     const foundItems = items.filter(finder => finder.item.isFoundItem);
 
     return (
@@ -20,19 +21,14 @@ const ViewUserProfile = ({ profile, items, ratings, refreshData, session, setOpe
             <TitleBreadcrumbs title="Profile" text="Profile" />
 
             <Grid container spacing={2} sx={{ marginBottom: '1rem' }}>
-                <Grid item xs={12} md={4}>
-                    <AvatarWithName profile={profile} session={session} refreshData={refreshData} setOpenSnackbar={setOpenSnackbar} />
+                <Grid item xs={12} md={6}>
+                    <AvatarWithName profile={profile} session={session} refreshData={refreshData} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} />
                 </Grid>
-                <Grid item xs={6} md={4}>
-                    <Badges user={profile} />
+                <Grid item xs={12} md={6}>
+                    <Badges badges={badges} profile={profile} />
                 </Grid>
-                <Grid item xs={6} md={4}>
-                    <ProgBadgeDisplay user={profile} items={foundItems} />
-                </Grid>
-            </Grid>
-            <Grid container spacing={2} sx={{ marginBottom: '1rem' }}>
-                <Grid item xs={12} lg={12}>
-                    <RecentRatingsFromUser ratings={ratings} />
+                <Grid item xs={12}>
+                    <RecentRatingsFromUser receivedRatings={receivedRatings} />
                 </Grid>
             </Grid>
         </>

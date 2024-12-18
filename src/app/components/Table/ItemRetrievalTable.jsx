@@ -1,6 +1,6 @@
 'use client';
 
-import { Table, Button, Chip, Box, Card, CardContent, CardActions, Typography } from "@mui/joy";
+import { Table, Button, Chip, Box, Card, CardContent, CardActions, Typography, Snackbar } from "@mui/joy";
 import {
     Paper,
     TableContainer,
@@ -19,12 +19,14 @@ import { format, parseISO } from 'date-fns';
 import CompletedModal from "../Modal/CompletedModal";
 import EmojiObjectsIcon from '@mui/icons-material/EmojiObjects';
 
-const ItemRetrievalTable = ({ items, fetchItems, selectedStatus }) => {
+const ItemRetrievalTable = ({ items, fetchItems }) => {
     const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
     const [openReservedModal, setOpenReservedModal] = useState(null);
     const [openCompletedModal, setOpenCompletedModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1); // Tracks current page
     const [rowsPerPage, setRowsPerPage] = useState(5); // Tracks rows per page
+    const [message, setMessage] = useState('');
+    const [openSnackbar, setOpenSnackbar] = useState(null);
     const isMobile = useMediaQuery('(max-width:720px)');
 
     // Handle changing the page
@@ -118,7 +120,7 @@ const ItemRetrievalTable = ({ items, fetchItems, selectedStatus }) => {
                                                         &&
                                                         <>
                                                             <Button size='small' onClick={() => setOpenClaimRequestModal(row._id)}>View Details</Button>
-                                                            <ItemClaimRequestModal row={row} open={openClaimRequestModal} onClose={() => setOpenClaimRequestModal(null)} refreshData={fetchItems} />
+                                                            <ItemClaimRequestModal row={row} open={openClaimRequestModal} onClose={() => setOpenClaimRequestModal(null)} refreshData={fetchItems} setMessage={setMessage} setOpenSnackbar={setOpenSnackbar} />
                                                         </>
                                                     }
                                                     {
@@ -126,7 +128,7 @@ const ItemRetrievalTable = ({ items, fetchItems, selectedStatus }) => {
                                                         &&
                                                         <>
                                                             <Button size="small" onClick={() => setOpenReservedModal(row._id)}>View Details</Button>
-                                                            <ItemReservedModal row={row} open={openReservedModal} onClose={() => setOpenReservedModal(null)} refreshData={fetchItems} />
+                                                            <ItemReservedModal row={row} open={openReservedModal} onClose={() => setOpenReservedModal(null)} refreshData={fetchItems} setMessage={setMessage} setOpenSnackbar={setOpenSnackbar} />
                                                         </>
                                                     }
                                                     {
@@ -329,7 +331,7 @@ const ItemRetrievalTable = ({ items, fetchItems, selectedStatus }) => {
                                                                 <>
                                                                     <Button size='small' onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                                                     <Button size='small' onClick={() => setOpenClaimRequestModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
-                                                                    <ItemClaimRequestModal row={row} open={openClaimRequestModal} onClose={() => setOpenClaimRequestModal(null)} refreshData={fetchItems} />
+                                                                    <ItemClaimRequestModal row={row} open={openClaimRequestModal} onClose={() => setOpenClaimRequestModal(null)} refreshData={fetchItems} setMessage={setMessage} setOpenSnackbar={setOpenSnackbar} />
                                                                 </>
                                                             }
                                                             {
@@ -338,7 +340,7 @@ const ItemRetrievalTable = ({ items, fetchItems, selectedStatus }) => {
                                                                 <>
                                                                     <Button size="small" onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'none', lg: 'block' } }}>View Details</Button>
                                                                     <Button size="small" onClick={() => setOpenReservedModal(row._id)} sx={{ display: { xs: 'block', lg: 'none' } }}><InfoIcon fontSize="small" /></Button>
-                                                                    <ItemReservedModal row={row} open={openReservedModal} onClose={() => setOpenReservedModal(null)} refreshData={fetchItems} />
+                                                                    <ItemReservedModal row={row} open={openReservedModal} onClose={() => setOpenReservedModal(null)} refreshData={fetchItems} setMessage={setMessage} setOpenSnackbar={setOpenSnackbar} />
                                                                 </>
                                                             }
                                                             {
@@ -400,6 +402,20 @@ const ItemRetrievalTable = ({ items, fetchItems, selectedStatus }) => {
                     </>
                 )
             }
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color={openSnackbar}
+                onClose={(event, reason) => {
+                    if (reason === 'clickaway') {
+                        return;
+                    }
+                    setOpenSnackbar(false);
+                }}
+            >
+                {message}
+            </Snackbar>
         </>
     );
 };

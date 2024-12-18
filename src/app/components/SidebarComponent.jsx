@@ -11,6 +11,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import IconButton from "@mui/material/IconButton";
+import { useMediaQuery, useTheme } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import MenuIcon from "@mui/icons-material/Menu";
 import AvatarComponent from "./AvatarComponent";
@@ -161,6 +162,8 @@ export default function App() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, status } = useSession();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
 
   const fetchProfile = useCallback(async (accountId) => {
     try {
@@ -201,7 +204,7 @@ export default function App() {
         if (userPermissions.viewBadges) base.push({ icon: <EmojiEventsOutlinedIcon />, menu: 'Badges', url: '/badges' });
         if (userPermissions.viewRoles) base.push({ icon: <SecurityIcon />, menu: 'Roles', url: '/roles' });
         if (userPermissions.viewAdminsList) base.push({ icon: <PeopleOutlineIcon />, menu: 'Admin', url: '/admin' });
-        if (userPermissions.viewStudentsList) base.push({ icon: <PeopleOutlineIcon />, menu: 'Users', url: '/users' });
+        if (userPermissions.viewUsersList) base.push({ icon: <PeopleOutlineIcon />, menu: 'Users', url: '/users' });
       }
     }
     return base;
@@ -232,9 +235,15 @@ export default function App() {
           <>
             <SidebarHeader>
               {!collapsed && (
-                <Image priority width={150} height={150} src="/tracify_logo.png" alt="tracify" />
+                <Image priority width={150} height={150} src="/tracify.png" alt="tracify" />
               )}
-              <IconButton sx={{ display: { xs: "block", lg: "none" } }} onClick={toggleMobileDrawer}>
+              <IconButton
+                sx={{ display: { xs: "block", lg: "none" } }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMobileDrawer();
+                }}
+              >
                 <CloseIcon />
               </IconButton>
             </SidebarHeader>
@@ -247,7 +256,7 @@ export default function App() {
                   onClick={(e) => {
                     e.preventDefault();
                     handleNavigation(item.url);
-                    toggleMobileDrawer();
+                    if (isMobile) toggleMobileDrawer();
                   }}
                 >
                   <SidebarItem selected={pathname === item.url} disablePadding>
@@ -314,7 +323,7 @@ export default function App() {
           )}
 
           {/* Avatar */}
-          <AvatarComponent profile={profile} />
+          <AvatarComponent profile={profile} session={session} />
         </Box>
       </Header>
 

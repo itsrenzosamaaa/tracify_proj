@@ -6,6 +6,7 @@ import badge from "@/lib/models/badge";
 import user from "@/lib/models/user";
 import admin from "@/lib/models/admin";
 import roles from "@/lib/models/roles";
+import { nanoid } from "nanoid";
 
 export async function GET() {
   try {
@@ -44,6 +45,8 @@ export async function POST(req) {
   try {
     await dbConnect();
     const finderData = await req.json();
+
+    finderData._id =  `FD_${nanoid(6)}`;
 
     const newFinder = new finder(finderData);
     await newFinder.save();

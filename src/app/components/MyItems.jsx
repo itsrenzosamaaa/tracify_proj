@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
-import { Grid, Typography, Button, Modal, ModalDialog, ModalClose, DialogContent, Tabs, TabList, Tab, ListItemDecorator, Badge, Select, Option, Chip } from '@mui/joy';
+import { Grid, Typography, Button, Modal, ModalDialog, ModalClose, DialogContent, Tabs, TabList, Tab, ListItemDecorator, Badge, Select, Option, Chip, Snackbar } from '@mui/joy';
 import { Box, Card, CardContent } from '@mui/material';
 import { CldImage } from 'next-cloudinary';
 import AddIcon from '@mui/icons-material/Add';
@@ -14,6 +14,8 @@ import RatingsModal from './Modal/Ratings';
 import ItemDetails from './Modal/ItemDetails';
 import { useTheme, useMediaQuery } from '@mui/material';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
+import PublishFoundItem from './Modal/PublishFoundItem';
+import PublishLostItem from './Modal/PublishLostItems';
 
 const validTabs = ['found-item', 'lost-item', 'completed-item', 'declined-item', 'canceled-item', 'requested-item', 'suggested-item'];
 
@@ -32,6 +34,10 @@ const MyItemsComponent = ({ session, status }) => {
   const [confirmationRetrievalModal, setConfirmationRetrievalModal] = useState(null);
   const [activeTab, setActiveTab] = useState('lost-item'); // State to track the active tab
   const [ratingModal, setRatingModal] = useState(null);
+  const [message, setMessage] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(null);
+  const [openLostRequestModal, setOpenLostRequestModal] = useState(false);
+  const [openFoundRequestModal, setOpenFoundRequestModal] = useState(false);
   const router = useRouter();
   const theme = useTheme();
   const isMd = useMediaQuery(theme.breakpoints.up('lg'));
@@ -88,16 +94,10 @@ const MyItemsComponent = ({ session, status }) => {
         (item) => item.item.isFoundItem && !['Request', 'Resolved', 'Declined', 'Canceled'].includes(item.item.status)
       );
 
-      const otherFoundItems = foundItemsData.filter(
-        (fItem) => fItem?.user?._id !== session.user.id && fItem?.item?.status === 'Published'
-      );
-
       // Filter ratings for the current user
       const filteredRatings = ratingsData.filter(
         (rating) => rating.sender?._id.toString() === session.user.id
       );
-
-      const filteredMatches = matchItemsData.filter((match) => match.request_status === 'Pending');
 
       // Set states
       setLostItems(lostItems);
@@ -108,39 +108,69 @@ const MyItemsComponent = ({ session, status }) => {
       setCanceledItems(itemsData.filter((item) => item.item.status === 'Canceled'));
 
       // Fetch cosine similarity for lost items and potential matches concurrently
-      const matches = await Promise.all(
-        lostItems.map(async (lostItem) => {
-          // Fetch all similarity results for one lost item in parallel
-          const matchedItems = await Promise.all(
-            otherFoundItems.map(async (foundItem) => {
-              const response = await fetch('/api/similarity', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lostItem, foundItem }),
-              });
+      if (lostItems.length > 0) {
+        const filteredMatches = new Set(
+          matchItemsData
+            .filter((match) => match.request_status === 'Pending')
+            .map((matched) => matched.owner.item._id)
+        );
 
-              const similarity = await response.json();
-              return { foundItem, similarity };
-            })
-          );
+        const otherFoundItems = foundItemsData.filter(
+          (fItem) =>
+            fItem?.user?._id !== session.user.id &&
+            fItem?.item?.status === 'Published'
+        );
 
-          // Filter and sort matches
-          const sortedMatches = matchedItems
-            .filter((match) => match.similarity >= 60) // Similarity threshold
-            .sort((a, b) => b.similarity - a.similarity);
+        // Skip computation if no other found items
+        if (otherFoundItems.length === 0) {
+          setSuggestedMatches([]);
+          return;
+        }
 
-          // Skip already matched lost items
-          const alreadyMatched = filteredMatches.some(
-            (matched) => matched.owner.item._id === lostItem.item._id
-          );
-          if (alreadyMatched) return null;
+        const matches = await Promise.all(
+          lostItems.map(async (lostItem) => {
+            if (filteredMatches.has(lostItem.item._id)) {
+              return null; // Skip already matched items
+            }
 
-          return { lostItem, matches: sortedMatches };
-        })
-      );
+            try {
+              // Compute similarity for each `lostItem` against all `otherFoundItems`
+              const matchedItems = await Promise.all(
+                otherFoundItems.map(async (foundItem) => {
+                  const response = await fetch('/api/similarity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lostItem, foundItem }),
+                  });
 
-      // Remove null values and set the matches
-      setSuggestedMatches(matches.filter(Boolean));
+                  const similarity = await response.json();
+
+                  // Ensure similarity is a number
+                  if (typeof similarity === 'number' && similarity >= 60) { // Similarity threshold
+                    return { foundItem, similarity };
+                  }
+
+                  return null; // Skip items with low similarity
+                })
+              );
+
+              // Filter out null results
+              const validMatches = matchedItems.filter(Boolean);
+
+              // Sort the matches by similarity
+              const sortedMatches = validMatches.sort((a, b) => b.similarity - a.similarity);
+
+              return { lostItem, matches: sortedMatches };
+            } catch (error) {
+              console.error(`Error fetching similarity for lostItem ${lostItem.item._id}:`, error);
+              return null;
+            }
+          })
+        );
+
+        // Remove null values and set the matches
+        setSuggestedMatches(matches.filter(Boolean));
+      }
 
     } catch (error) {
       console.error('Error fetching items:', error);
@@ -283,9 +313,10 @@ const MyItemsComponent = ({ session, status }) => {
               <Typography level="h4" gutterBottom>
                 Lost Items
               </Typography>
-              <Button size="small" startDecorator={<AddIcon />} onClick={() => router.push('/my-items/report-lost-item')}>
+              <Button size="small" startDecorator={<AddIcon />} onClick={() => setOpenLostRequestModal(true)}>
                 Report Lost Item
               </Button>
+              <PublishLostItem open={openLostRequestModal} onClose={() => setOpenLostRequestModal(false)} fetchItems={fetchItems} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} setActiveTab={setActiveTab} />
             </Box>
 
             {/* Grid layout for the Lost Items */}
@@ -390,9 +421,10 @@ const MyItemsComponent = ({ session, status }) => {
               <Typography level="h4" gutterBottom>
                 Found Items
               </Typography>
-              <Button size="small" startDecorator={<AddIcon />} onClick={() => router.push('my-items/report-found-item')}>
+              <Button size="small" startDecorator={<AddIcon />} onClick={() => setOpenFoundRequestModal(true)}>
                 Report Found Item
               </Button>
+              <PublishFoundItem open={openFoundRequestModal} onClose={() => setOpenFoundRequestModal(false)} fetchItems={fetchItems} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} setActiveTab={setActiveTab} />
             </Box>
 
             <Grid container spacing={2}>
@@ -867,102 +899,112 @@ const MyItemsComponent = ({ session, status }) => {
             <Grid container spacing={2}>
               {requestedItems.length > 0 ?
                 requestedItems.map((requestedItem, index) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Card
-                      sx={{
-                        maxWidth: isXs ? 300 : 250,
-                        flexShrink: 0,
-                        boxShadow: 3,
-                        borderRadius: 2,
-                        overflow: 'hidden', // Ensures that content doesn't overflow the card
-                        position: 'relative', // Allows absolutely positioning elements inside
-                      }}
-                    >
-                      {/* Identifier at the top-left of the image */}
-                      <Box
+                  <>
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Card
                         sx={{
-                          position: 'absolute',
-                          top: 8,
-                          left: 8,
-                          backgroundColor: requestedItem.item?.isFoundItem ? '#81c784' : '#e57373',
-                          color: '#fff',
-                          padding: '4px 8px',
-                          borderRadius: 1,
-                          fontSize: '0.8rem',
-                          fontWeight: 'bold',
-                          textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
+                          maxWidth: isXs ? 300 : 250,
+                          flexShrink: 0,
+                          boxShadow: 3,
+                          borderRadius: 2,
+                          overflow: 'hidden', // Ensures that content doesn't overflow the card
+                          position: 'relative', // Allows absolutely positioning elements inside
                         }}
                       >
-                        {requestedItem.item?.isFoundItem ? 'Found' : 'Lost'} Item
-                      </Box>
-
-                      <CldImage
-                        priority
-                        src={requestedItem.item.images[0]}
-                        width={isXs ? 300 : 250}
-                        height={isXs ? 300 : 250}
-                        alt={requestedItem.item.name || "Item Image"}
-                        sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        style={{ objectFit: 'fill' }}
-                      />
-                      <CardContent>
-                        <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
-                          {requestedItem.item.name}
-                        </Typography>
-                        <Typography
-                          level="body2"
+                        {/* Identifier at the top-left of the image */}
+                        <Box
                           sx={{
-                            color: 'text.secondary',
-                            marginBottom: '0.5rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            maxWidth: '250px', // Adjust the width as needed
+                            position: 'absolute',
+                            top: 8,
+                            left: 8,
+                            backgroundColor: requestedItem.item?.isFoundItem ? '#81c784' : '#e57373',
+                            color: '#fff',
+                            padding: '4px 8px',
+                            borderRadius: 1,
+                            fontSize: '0.8rem',
+                            fontWeight: 'bold',
+                            textShadow: '0px 0px 4px rgba(0, 0, 0, 0.7)', // Slight shadow for text readability
                           }}
                         >
-                          {requestedItem.item.description}
-                        </Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
-                          <Button
-                            variant="contained"
-                            sx={{ minWidth: 0, padding: '6px 8px', borderRadius: '8px' }}
-                            onClick={() => setOpenDetails(requestedItem?.item?._id)}
-                          >
-                            <InfoIcon color="action" />
-                          </Button>
-
-                          <Modal open={openDetails} onClose={() => setOpenDetails(null)}>
-                            <ModalDialog>
-                              <ModalClose />
-                              <Typography level="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
-                                Item Details
-                              </Typography>
-                              <DialogContent
-                                sx={{
-                                  overflowX: 'hidden',
-                                  overflowY: 'auto', // Allows vertical scrolling
-                                  '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
-                                  '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
-                                  'scrollbar-width': 'none', // Hides scrollbar in Firefox
-                                }}
-                              >
-                                <ItemDetails row={requestedItem} />
-                              </DialogContent>
-                            </ModalDialog>
-                          </Modal>
-                          <Button
-                            fullWidth
-                            color="danger"
-                            sx={{ padding: '6px 0' }}
-                            onClick={() => setCancelRequestModal(requestedItem.item._id)}
-                          >
-                            Cancel Request
-                          </Button>
-                          <CancelRequest open={cancelRequestModal} onClose={() => setCancelRequestModal(null)} item={requestedItem.item} api={requestedItem.item?.isFoundItem ? 'found-items' : 'lost-items'} refreshData={fetchItems} />
+                          {requestedItem.item?.isFoundItem ? 'Found' : 'Lost'} Item
                         </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+
+                        <CldImage
+                          priority
+                          src={requestedItem.item.images[0]}
+                          width={isXs ? 300 : 250}
+                          height={isXs ? 300 : 250}
+                          alt={requestedItem.item.name || "Item Image"}
+                          sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          style={{ objectFit: 'fill' }}
+                        />
+                        <CardContent>
+                          <Typography level="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>
+                            {requestedItem.item.name}
+                          </Typography>
+                          <Typography
+                            level="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              marginBottom: '0.5rem',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              maxWidth: '250px', // Adjust the width as needed
+                            }}
+                          >
+                            {requestedItem.item.description}
+                          </Typography>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mt: 2 }}>
+                            <Button
+                              variant="contained"
+                              sx={{ minWidth: 0, padding: '6px 8px', borderRadius: '8px' }}
+                              onClick={() => setOpenDetails(requestedItem?.item?._id)}
+                            >
+                              <InfoIcon color="action" />
+                            </Button>
+
+                            <Modal open={openDetails} onClose={() => setOpenDetails(null)}>
+                              <ModalDialog>
+                                <ModalClose />
+                                <Typography level="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
+                                  Item Details
+                                </Typography>
+                                <DialogContent
+                                  sx={{
+                                    overflowX: 'hidden',
+                                    overflowY: 'auto', // Allows vertical scrolling
+                                    '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                                    '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
+                                    'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                                  }}
+                                >
+                                  <ItemDetails row={requestedItem} refreshData={fetchItems} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} />
+                                </DialogContent>
+                              </ModalDialog>
+                            </Modal>
+                            <Button
+                              fullWidth
+                              color="danger"
+                              sx={{ padding: '6px 0' }}
+                              onClick={() => setCancelRequestModal(requestedItem.item._id)}
+                            >
+                              Cancel Request
+                            </Button>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    <CancelRequest
+                      open={cancelRequestModal}
+                      onClose={() => setCancelRequestModal(null)}
+                      item={requestedItem.item}
+                      api={requestedItem.item?.isFoundItem ? 'found-items' : 'lost-items'}
+                      refreshData={fetchItems}
+                      setMessage={setMessage}
+                      setOpenSnackbar={setOpenSnackbar}
+                    />
+                  </>
                 )) :
                 <Box
                   sx={{
@@ -1001,9 +1043,6 @@ const MyItemsComponent = ({ session, status }) => {
             <Box sx={{ mb: 5 }}>
               <Typography level="h4" gutterBottom>
                 Suggested Matches
-              </Typography>
-              <Typography level="body-sm" color="neutral" sx={{ marginTop: 1 }}>
-                These are the found items matched based on your lost items
               </Typography>
             </Box>
 
@@ -1131,6 +1170,20 @@ const MyItemsComponent = ({ session, status }) => {
           </>
         }
       </Box>
+      <Snackbar
+        autoHideDuration={5000}
+        open={openSnackbar}
+        variant="solid"
+        color={openSnackbar}
+        onClose={(event, reason) => {
+          if (reason === 'clickaway') {
+            return;
+          }
+          setOpenSnackbar(null);
+        }}
+      >
+        {message}
+      </Snackbar>
     </>
   );
 };

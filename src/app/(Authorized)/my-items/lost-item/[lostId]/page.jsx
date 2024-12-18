@@ -40,6 +40,11 @@ const ViewItemPage = ({ params }) => {
     const router = useRouter();
     const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
+    const formatDate1 = (date) =>
+        isToday(new Date(date))
+            ? `Today, ${format(new Date(date), 'hh:mm a')}`
+            : format(new Date(date), 'MMMM dd, yyyy, hh:mm a');
+
     const fetchFoundItem = useCallback(async (lostItemId) => {
         setError(null);
         try {
@@ -125,13 +130,9 @@ const ViewItemPage = ({ params }) => {
                                         <Grid container spacing={2} alignItems="flex-start">
                                             {/* Left Side: Surrender Details */}
                                             <Grid item xs={12} md={4}>
-                                                <Box>
-                                                    {/* Introduction */}
-                                                    <Typography level={isXs ? 'body-sm' : 'body-md'} color="danger" textAlign="justify" sx={{ my: 2, fontWeight: 'bold' }}>
-                                                        <strong>Reminder:</strong> Falsely claiming an item that does not belong to you is a serious offense and may result in consequences such as suspension. If the item does not belong to you, you may cancel the retrieval process.
-                                                    </Typography>
-                                                    <Button color="danger" fullWidth>Cancel Retrieval Process</Button>
-                                                </Box>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'} color="danger" textAlign="justify" sx={{ my: 2, fontWeight: 'bold' }}>
+                                                    <strong>Reminder:</strong> Falsely claiming an item that does not belong to you is a serious offense and may result in consequences such as suspension.
+                                                </Typography>
                                             </Grid>
 
                                             {/* Vertical Divider */}
@@ -327,27 +328,13 @@ const ViewItemPage = ({ params }) => {
 
                                 <Box sx={{ marginBottom: 4 }}>
                                     <Stepper orientation="vertical">
-                                        {lostItem.dateRequest && (
+                                        {(lostItem.dateClaimed) && (
                                             <Step>
                                                 <Typography>
-                                                    <strong>Request has been sent!</strong>
+                                                    <strong>The item has successfully returned to owner!</strong>
                                                 </Typography>
                                                 <Typography>
-                                                    {isToday(new Date(lostItem.dateRequest))
-                                                        ? `Today, ${format(new Date(lostItem.dateRequest), 'hh:mm a')}`
-                                                        : format(new Date(lostItem.dateRequest), 'MMMM dd, yyyy, hh:mm a')}
-                                                </Typography>
-                                            </Step>
-                                        )}
-                                        {lostItem.dateMissing && (
-                                            <Step>
-                                                <Typography>
-                                                    <strong>{lostItem.dateRequest ? 'The item was approved!' : 'The item has been published!'}</strong>
-                                                </Typography>
-                                                <Typography>
-                                                    {isToday(new Date(lostItem.dateMissing))
-                                                        ? `Today, ${format(new Date(lostItem.dateMissing), 'hh:mm a')}`
-                                                        : format(new Date(lostItem.dateMissing), 'MMMM dd, yyyy, hh:mm a')}
+                                                    {formatDate1(lostItem.dateClaimed)}
                                                 </Typography>
                                             </Step>
                                         )}
@@ -357,21 +344,27 @@ const ViewItemPage = ({ params }) => {
                                                     <strong>The item has been tracked!</strong>
                                                 </Typography>
                                                 <Typography>
-                                                    {isToday(new Date(lostItem.dateUnclaimed))
-                                                        ? `Today, ${format(new Date(lostItem.dateUnclaimed), 'hh:mm a')}`
-                                                        : format(new Date(lostItem.dateUnclaimed), 'MMMM dd, yyyy, hh:mm a')}
+                                                    {formatDate1(lostItem.dateUnclaimed)}
                                                 </Typography>
                                             </Step>
                                         )}
-                                        {(lostItem.dateClaimed) && (
+                                        {lostItem.dateMissing && (
                                             <Step>
                                                 <Typography>
-                                                    <strong>The item has successfully returned to owner!</strong>
+                                                    <strong>{lostItem.dateRequest ? 'The item was approved!' : 'The item has been published!'}</strong>
                                                 </Typography>
                                                 <Typography>
-                                                    {isToday(new Date(lostItem.isFoundItem ? lostItem.dateResolved : lostItem.dateClaimed))
-                                                        ? `Today, ${format(new Date(lostItem.isFoundItem ? lostItem.dateResolved : lostItem.dateClaimed), 'hh:mm a')}`
-                                                        : format(new Date(lostItem.isFoundItem ? lostItem.dateResolved : lostItem.dateClaimed), 'MMMM dd, yyyy, hh:mm a')}
+                                                    {formatDate1(lostItem.dateMissing)}
+                                                </Typography>
+                                            </Step>
+                                        )}
+                                        {lostItem.dateRequest && (
+                                            <Step>
+                                                <Typography>
+                                                    <strong>Request has been sent!</strong>
+                                                </Typography>
+                                                <Typography>
+                                                    {formatDate1(lostItem.dateRequest)}
                                                 </Typography>
                                             </Step>
                                         )}

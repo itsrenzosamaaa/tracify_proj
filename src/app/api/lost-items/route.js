@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import item from "@/lib/models/item";
 import { v2 as cloudinary } from 'cloudinary';
+import { nanoid } from "nanoid";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -37,6 +38,8 @@ export async function POST(req) {
       );
     }
 
+    lostItemData._id = `LI_${nanoid(6)}`;
+
     // Assuming you're sending the image as a URL or base64 from the frontend
     const uploadedImages = [];
     for (const image of lostItemData.images) {
@@ -50,10 +53,6 @@ export async function POST(req) {
         ],
       });
       uploadedImages.push(uploadResponse.secure_url);
-    }
-
-    if (lostItemData.status === 'Unclaimed') {
-      lostItemData.dateUnclaimed = new Date();
     }
 
     const newLostItem = new item({

@@ -22,8 +22,6 @@ export async function POST(req) {
     const newRole = new Role(roleData);
     await newRole.save();
 
-    console.log(newRole);
-
     return NextResponse.json(
       { success: true, message: "Role created" },
       { status: 201 }

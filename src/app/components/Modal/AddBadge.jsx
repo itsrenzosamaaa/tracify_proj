@@ -224,7 +224,7 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
                                         type="submit"
                                         fullWidth
                                     >
-                                        Update Badge
+                                        Add Badge
                                     </Button>
                                 </Grid>
 

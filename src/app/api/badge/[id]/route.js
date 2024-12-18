@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import badge from '@/lib/models/badge';
+import user from '@/lib/models/user';
 
 export async function GET({ params }) {
     const { id } = params;
@@ -28,10 +29,10 @@ export async function PUT(req, { params }) {
     try {
         const formData = await req.json();
         const updatedBadge = await badge.findOneAndUpdate(
-            { _id : id },
+            { _id: id },
             { $set: formData },
             { new: true }
-        );  
+        );
 
         if (!updatedBadge) {
             return NextResponse.json({ message: 'Badge not found' }, { status: 404 });
@@ -49,11 +50,19 @@ export async function DELETE(req, { params }) {
     await dbConnect();
 
     try {
-        const deletedBadge = await badge.findByIdAndDelete({ _id: id });
-
-        if (!deletedBadge) {
+        const badgeToDelete = await badge.findById(id);
+        if (!badgeToDelete) {
             return NextResponse.json({ message: 'Badge not found' }, { status: 404 });
         }
+
+        // Remove the badge from all users who have it
+        const usersUpdated = await user.updateMany(
+            { badges: id }, // Find users with this badge
+            { $pull: { badges: id } } // Remove the badge from the array
+        );
+
+        // Delete the badge
+        await badge.findByIdAndDelete(id);
 
         return NextResponse.json({ message: 'Badge deleted successfully' }, { status: 200 });
     } catch (error) {

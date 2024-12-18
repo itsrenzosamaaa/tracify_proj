@@ -65,10 +65,6 @@ const UserDashboard = ({ session, status, users }) => {
                 <Typography gutterBottom>
                     Dashboard Overview
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                    <Button size="small" onClick={() => router.push('/my-items/report-found-item')}>Report Found Item</Button>
-                    <Button size="small" onClick={() => router.push('/my-items/report-lost-item')} color="danger">Report Lost Item</Button>
-                </Box>
             </Box>
 
             {/* Grid Section */}
@@ -138,7 +134,7 @@ const UserDashboard = ({ session, status, users }) => {
                     <Typography level="h3" gutterBottom>
                         Our Mission
                     </Typography>
-                    <Paper sx={{ padding: '1rem', height: '250px' }}>
+                    <Paper sx={{ padding: '1rem', height: '250px', borderTop: '3px solid #3f51b5' }}>
                         <Box>
                             <Typography level="title-md">
                                 The Lewis College is committed to:
@@ -176,8 +172,8 @@ const UserDashboard = ({ session, status, users }) => {
                     <Typography level="h3" gutterBottom>
                         Our Vision
                     </Typography>
-                    <Paper sx={{ padding: '1rem', height: '250px' }}>
-                        <Box>
+                    <Paper sx={{ padding: '1rem', height: '250px', borderTop: '3px solid #3f51b5' }}>
+                        <Box sx={{ textAlign: 'justify' }}>
                             <Typography level="body-lg" fontWeight={400} sx={{ marginBottom: '1rem', lineHeight: 1.6 }}>
                                 The Lewis College is an education community and a Center of Excellence founded on the Christian Values of Faith, Service, and Personhood.
                             </Typography>

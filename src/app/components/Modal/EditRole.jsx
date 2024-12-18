@@ -19,22 +19,23 @@ import {
 } from '@mui/joy';
 import { FormGroup } from '@mui/material';
 
-const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) => {
-    const [name, setName] = useState('');
-    const [officeLocation, setOfficeLocation] = useState('');
-    const [schoolCategory, setSchoolCategory] = useState(null);
-    const [loading, setLoading] = useState(false);
+const EditRole = ({ open, onClose, refreshData, role, setMessage, setOpenSnackbar }) => {
+    const [name, setName] = useState(role?.name || ''); // Default to an empty string if role or role.name is undefined
+    const [officeLocation, setOfficeLocation] = useState(role?.office_location || ''); // Default to an empty string
+    const [schoolCategory, setSchoolCategory] = useState(role?.school_category || ''); // Default to an empty string
+    const [loading, setLoading] = useState(false); // Default to false
 
-    // Define permissions as an object
+    // Initialize permissions with default values to avoid errors if role or role.permissions is undefined
     const [permissions, setPermissions] = useState({
-        viewAdminsList: false,
-        viewUsersList: false,
-        viewRoles: false,
-        manageRequestReportedFoundItems: false,
-        manageRequestItemRetrieval: false,
-        manageRequestReportedLostItems: false,
-        viewBadges: false,
+        viewAdminsList: role?.permissions?.viewAdminsList || false,
+        viewUsersList: role?.permissions?.viewUsersList || false,
+        viewRoles: role?.permissions?.viewRoles || false,
+        manageRequestReportedFoundItems: role?.permissions?.manageRequestReportedFoundItems || false,
+        manageRequestItemRetrieval: role?.permissions?.manageRequestItemRetrieval || false,
+        manageRequestReportedLostItems: role?.permissions?.manageRequestReportedLostItems || false,
+        viewBadges: role?.permissions?.viewBadges || false,
     });
+
 
     const handlePermissionChange = (perm, checked) => {
         setPermissions((prevPermissions) => {
@@ -54,8 +55,8 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
         };
 
         try {
-            const response = await fetch('/api/roles', {
-                method: 'POST',
+            const response = await fetch(`/api/roles/${role._id}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -65,15 +66,15 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
                 onClose();
                 await refreshData();
                 setOpenSnackbar('success');
-                setMessage('Role added successfully!');
+                setMessage('Role updated successfully!');
             } else {
                 const data = await response.json();
                 setOpenSnackbar('danger');
-                setMessage(`Failed to add role: ${data.error}`);
+                setMessage(`Failed to update role: ${data.error}`);
             }
         } catch (error) {
             setOpenSnackbar('danger');
-            setMessage('An error occurred while adding the role.');
+            setMessage('An error occurred while updating the role.');
         } finally {
             setLoading(false)
         }
@@ -81,11 +82,11 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
 
     return (
         <>
-            <Modal open={open} onClose={onClose}>
+            <Modal open={open === role._id} onClose={onClose}>
                 <ModalDialog>
                     <ModalClose />
                     <Typography level="h4" sx={{ mb: 2 }}>
-                        Add Role
+                        Edit Role
                     </Typography>
                     <DialogContent
                         sx={{
@@ -235,7 +236,7 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
 
                             {/* Submit Button */}
                             <Button sx={{ mt: 3 }} type="submit" loading={loading} disabled={loading}>
-                                Add Role
+                                Update Role
                             </Button>
                         </form>
                     </DialogContent>
@@ -245,4 +246,4 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
     );
 };
 
-export default AddRole;
+export default EditRole;

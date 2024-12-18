@@ -5,7 +5,7 @@ import StarIcon from "@mui/icons-material/Star";
 import { useTheme, useMediaQuery } from '@mui/material';
 import { formatDistanceToNow } from 'date-fns';
 
-const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
+const RecentRatingsFromUser = ({ receivedRatings, isLoading, error }) => {
     // State to track selected quantity rating
     const [selectedQuantity, setSelectedQuantity] = useState(null);
     const theme = useTheme();
@@ -24,7 +24,7 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
     }
 
     // Count the occurrences of each quantity rating
-    const quantityCounts = ratings.reduce((acc, curr) => {
+    const quantityCounts = receivedRatings.reduce((acc, curr) => {
         if (curr.quantity) {
             acc[curr.quantity] = (acc[curr.quantity] || 0) + 1;
         }
@@ -40,11 +40,11 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
     ];
 
     const totalQuantities = countQuantities.reduce((acc, curr) => acc + curr.count, 0);
-    const totalQuantity = ratings.reduce((sum, rater) => sum + (rater.quantity || 0), 0); // Adjust to use 'quantity'
+    const totalQuantity = receivedRatings.reduce((sum, rater) => sum + (rater.quantity || 0), 0); // Adjust to use 'quantity'
     const averageQuantity = totalQuantities > 0 ? (totalQuantity / totalQuantities).toFixed(1) : 0; // Avoid NaN
 
     // Compliments count logic
-    const complimentCounts = ratings.reduce((acc, curr) => {
+    const complimentCounts = receivedRatings.reduce((acc, curr) => {
         curr.compliments?.forEach(compliment => {
             acc[compliment] = (acc[compliment] || 0) + 1;
         });
@@ -53,8 +53,8 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
 
     // Filter ratings based on selected quantity
     const filteredRatings = selectedQuantity
-        ? ratings.filter(rater => rater.quantity === selectedQuantity)
-        : ratings;
+        ? receivedRatings.filter(rater => rater.quantity === selectedQuantity)
+        : receivedRatings;
 
     return (
         <Box>
@@ -224,11 +224,11 @@ const RecentRatingsFromUser = ({ ratings, isLoading, error }) => {
                                                     <Avatar
                                                         alt={rater.item.name || "Item Image"}
                                                         src={rater.item.images[0]}
-                                                        sx={{ width: 100, height: 100, borderRadius: '12%', boxShadow: 2 }}
+                                                        sx={{ width: 80, height: 80, borderRadius: '12%', boxShadow: 2 }}
                                                     />
                                                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                                         <Typography level={isXs ? 'body-sm' : 'body-xs'} fontWeight="700">{rater.item.name}</Typography>
-                                                        <Chip size={isXs ? 'sm' : 'md'} variant="solid" color="success">{rater.item.status}</Chip>
+                                                        <Chip size='sm' variant="solid" color="success">{rater.item.status}</Chip>
                                                     </Box>
                                                 </Box>
                                             </CardContent>

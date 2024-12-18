@@ -103,13 +103,8 @@ const jaccardSimilarity = (text1, text2) => {
 
 // Cosine similarity function
 const cosineSimilarity = (keywords1, keywords2) => {
-  console.log(keywords1)
-  console.log(keywords2)
   const freqMap1 = getWordFrequency(keywords1);
   const freqMap2 = getWordFrequency(keywords2);
-
-  console.log(freqMap1)
-  console.log(freqMap2)
 
   // Get the set of unique words from both texts
   const allWords = new Set([...Object.keys(freqMap1), ...Object.keys(freqMap2)]);

@@ -5,16 +5,16 @@ import React, { useState } from 'react';
 import { FormControlLabel } from '@mui/material';
 import MatchedItemsDetails from './MatchedItemsDetails';
 
-const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
+const ItemClaimRequestModal = ({ row, open, onClose, refreshData, setMessage, setOpenSnackbar }) => {
     const [confirmationApproveModal, setConfirmationApproveModal] = useState(null);
     const [confirmationDeclineModal, setConfirmationDeclineModal] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [openSnackbar, setOpenSnackbar] = useState(null);
+
+    console.log(setMessage)
+    console.log(setOpenSnackbar)
 
     const handleSubmit = async (e, lostItemId, matchedItemId) => {
-        if (e && e.preventDefault) {
-            e.preventDefault();
-        }
+        if (e?.preventDefault) e.preventDefault();
 
         try {
             setLoading(true);
@@ -61,11 +61,12 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
             // Close modals and refresh data
             setConfirmationApproveModal(null);
             onClose();
-            refreshData(); // Renamed from fetch to be more descriptive
+            await refreshData(); // Renamed from fetch to be more descriptive
             setOpenSnackbar('success');
+            setMessage('The retrieval request has been approved!');
         } catch (error) {
-            console.error('Error updating items:', error);
-            // You might want to show an error message to the user here
+            setOpenSnackbar('danger');
+            setMessage(`Error updating items: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -91,6 +92,8 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
                     throw new Error(errorData.message || `Failed to perform request to ${url}`);
                 }
 
+                console.log(response)
+
                 return response.json();
             };
 
@@ -111,16 +114,15 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
             setConfirmationApproveModal(null);
             onClose();
             refreshData(); // Renamed from fetch to be more descriptive
-            setOpenSnackbar('failed');
+            setOpenSnackbar('success');
+            setMessage('The retrieval request has been declined.');
         } catch (error) {
-            console.error('Error updating items:', error);
-            // You might want to show an error message to the user here
+            setOpenSnackbar('danger');
+            setMessage(`Error updating items: ${error.message}`);
         } finally {
             setLoading(false);
         }
     };
-
-    console.log(row)
 
     return (
         <>
@@ -209,20 +211,6 @@ const ItemClaimRequestModal = ({ row, open, onClose, refreshData }) => {
                     </Box>
                 </ModalDialog>
             </Modal>
-            <Snackbar
-                autoHideDuration={5000}
-                open={openSnackbar}
-                variant="solid"
-                color="success"
-                onClose={(event, reason) => {
-                    if (reason === 'clickaway') {
-                        return;
-                    }
-                    setOpenSnackbar(null);
-                }}
-            >
-                The retrieval request has been {openSnackbar === 'success' ? 'approved!' : 'declined.'}
-            </Snackbar>
         </>
     );
 };

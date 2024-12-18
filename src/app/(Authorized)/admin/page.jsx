@@ -13,7 +13,8 @@ const UsersPage = () => {
         try {
             const response = await fetch('/api/roles');
             const data = await response.json();
-            setRoles(data);
+            const filteredRoles = data.filter(role => role.name !== 'Super Admin');
+            setRoles(filteredRoles);
         } catch (error) {
             console.error(error);
         }
@@ -23,7 +24,8 @@ const UsersPage = () => {
         try {
             const response = await fetch('/api/admin');
             const data = await response.json();
-            setAdminUsers(data);
+            const filteredAdmins = data.filter(admin => !admin.role || admin.role.name !== 'Super Admin');
+            setAdminUsers(filteredAdmins);
         } catch (error) {
             console.error(error);
         }
@@ -40,7 +42,7 @@ const UsersPage = () => {
 
     return (
         <>
-            <ViewAdminUsers users={adminUsers} roles={roles} fetchAdminUsers={fetchAdminUsers} session={session} />
+            <ViewAdminUsers users={adminUsers} roles={roles} refreshData={fetchAdminUsers} session={session} />
         </>
     )
 }

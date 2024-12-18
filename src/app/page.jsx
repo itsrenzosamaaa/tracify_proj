@@ -67,7 +67,7 @@ export default function Home() {
 
     if (result.ok) {
       const session = await getSession();
-      if (session && session.user.role) {
+      if (session && session.user.roleName) {
         router.push(`/dashboard`);
       } else {
         setError("Failed to fetch role.");
@@ -98,24 +98,31 @@ export default function Home() {
       <Grid
         container
         spacing={2}
-        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: '100vh', padding: 2 }}
       >
-        <Grid item lg={4} md={8} sm={10} xs={12}>
-          <Paper elevation={2} sx={{ height: "100%" }}>
+        <Grid item lg={4} md={6} sm={10} xs={12}>
+          <Paper elevation={2}>
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                position: 'relative',
+                width: '100%',
+                height: '200px', // Set the height based on your design needs
               }}
             >
-              <Image priority width="150" height="150" src="/tracify_logo1.png" alt="tracify" />
+              <Image
+                priority
+                src="/tracify.png"
+                alt="tracify"
+                fill
+                style={{
+                  objectFit: 'cover',
+                  borderRadius: '4px',
+                }}
+              />
             </Box>
             <form onSubmit={handleSubmit}>
-              <Box sx={{ padding: "1rem", textAlign: "center" }}>
-                <Typography level="h3" fontWeight="700">Hello</Typography>
-                <Typography level="h4">Sign into your Account</Typography>
-                <Stack spacing={1} sx={{ paddingY: "2rem", marginX: "3rem" }}>
+              <Box sx={{ padding: "0 2rem 2rem 2rem", textAlign: "center" }}>
+                <Stack spacing={1}>
                   <FormLabel>ID*</FormLabel>
                   <FormControl>
                     <Input
@@ -182,14 +189,17 @@ export default function Home() {
                     variant="soft"
                     startDecorator={<GoogleLogo width={30} height={30} />}
                     disabled={isLoading}
-                    sx={{ marginTop: "1rem" }}
                     onClick={handleGoogleSignIn}
                   >
                     Sign in using Google
                   </Button>
-                  <Typography color="danger">
-                    {error && error}
-                  </Typography>
+                  {error &&
+                    <>
+                      <Typography color="danger">
+                        {error}
+                      </Typography>
+                    </>
+                  }
                 </Stack>
               </Box>
             </form>

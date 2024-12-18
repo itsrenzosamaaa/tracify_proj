@@ -5,15 +5,12 @@ import { FormControlLabel } from '@mui/material';
 import React, { useState } from 'react';
 import ItemDetails from './ItemDetails';
 
-const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) => {
+const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session, setMessage, setOpenSnackbar }) => {
     const [confirmationApproveModal, setConfirmationApproveModal] = useState(null);
     const [confirmationDeclineModal, setConfirmationDeclineModal] = useState(null);
     const [reasonModal, setReasonModal] = useState(null);
     const [declineReason, setDeclineReason] = useState('');
-    const [openSnackbar, setOpenSnackbar] = useState(null);
     const [loading, setLoading] = useState(false);
-
-    console.log(row)
 
     const handleReasonChange = (event) => {
         setDeclineReason(event.target.value);
@@ -51,12 +48,14 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
 
             if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
 
-            setOpenSnackbar('success');  // Ensure this is reached on success
+            setOpenSnackbar('success');
+            setMessage('Item request has been approved!')
             onClose();
             setConfirmationApproveModal(null);
             refreshData();
         } catch (error) {
-            console.error(error);
+            setOpenSnackbar('danger');
+            setMessage(error)
         } finally {
             setLoading(false)
         }
@@ -64,9 +63,11 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
 
     const handleDecline = async (e, id) => {
         e?.preventDefault();
-        setLoading(true)
+        setLoading(true);
         const apiEndpoint = row?.item?.isFoundItem ? `/api/found-items/${id}` : `/api/lost-items/${id}`;
+
         try {
+            // First request
             const response = await fetch(apiEndpoint, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -76,37 +77,49 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                 }),
             });
 
-            if (!response.ok) throw new Error(data.message || 'Failed to update status');
+            const responseData = await response.json();
 
+            if (!response.ok) {
+                throw new Error(responseData.message || 'Failed to update status');
+            }
+
+            // Notification request
             const notificationResponse = await fetch('/api/notification', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    receiver: row.user._id,
-                    message: `The ${row.item.isFoundItem ? 'found' : 'lost'} item (${row.item.name}) you requested has been declined.`,
+                    receiver: row?.user?._id || '',
+                    message: `The ${row?.item?.isFoundItem ? 'found' : 'lost'} item (${row?.item?.name || ''}) you requested has been declined.`,
                     type: 'Declined Items',
                     markAsRead: false,
                     dateNotified: new Date(),
                 }),
             });
 
-            if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
+            const notificationData = await notificationResponse.json();
 
+            if (!notificationResponse.ok) {
+                throw new Error(notificationData.message || 'Failed to send notification');
+            }
+
+            // Success path
             onClose();
             setConfirmationDeclineModal(null);
             setReasonModal(null);
             setDeclineReason('');
             await refreshData();
-            setOpenSnackbar('failed');
+            setOpenSnackbar('success');
+            setMessage('Item request declined successfully!');
         } catch (error) {
-            console.error(error);
+            console.error('Error in handleDecline:', error);
+            setOpenSnackbar('danger');
+            setMessage(error.message || 'An error occurred while declining the request');
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     };
-
 
     return (
         <>
@@ -133,7 +146,7 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                         <Modal open={reasonModal} onClose={() => setReasonModal(null)}>
                             <ModalDialog>
                                 <ModalClose />
-                                <Typography level="h4" gutterbottom>Decline</Typography>
+                                <Typography level="h4" gutterBottom>Decline</Typography>
                                 <Typography>Reason to Decline</Typography>
                                 <RadioGroup
                                     value={declineReason}
@@ -162,7 +175,7 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                         <Modal open={confirmationApproveModal} onClose={() => setConfirmationApproveModal(null)}>
                             <ModalDialog>
                                 <ModalClose />
-                                <Typography level="h4" gutterbottom>Confirmation</Typography>
+                                <Typography level="h4" gutterBottom>Confirmation</Typography>
                                 <Typography>{row.item?.isFoundItem ? 'Proceed with surrendering the item?' : 'Would you like to mark this item as missing?'}
                                 </Typography>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
@@ -171,10 +184,10 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
                                 </Box>
                             </ModalDialog>
                         </Modal>
-                        <Modal open={confirmationDeclineModal} onClose={() => setConfirmationDeclineModal(null)}>
+                        <Modal open={Boolean(confirmationDeclineModal)} onClose={() => setConfirmationDeclineModal(null)}>
                             <ModalDialog>
                                 <ModalClose />
-                                <Typography level="h4" gutterbottom>Confirmation</Typography>
+                                <Typography level="h4" gutterBottom>Confirmation</Typography>
                                 <Typography>Are you sure you want to decline item request?</Typography>
                                 <Box sx={{ display: 'flex', gap: 2 }}>
                                     <Button loading={loading} disabled={loading} color="danger" onClick={() => setConfirmationDeclineModal(null)} fullWidth>Abort</Button>
@@ -186,20 +199,6 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session }) =
 
                 </ModalDialog>
             </Modal>
-            <Snackbar
-                autoHideDuration={5000}
-                open={openSnackbar}
-                variant="solid"
-                color="success"
-                onClose={(event, reason) => {
-                    if (reason === 'clickaway') {
-                        return;
-                    }
-                    setOpenSnackbar(false);
-                }}
-            >
-                Item Request {openSnackbar === 'success' ? 'Approved' : 'Declined'}!
-            </Snackbar>
         </>
     );
 };

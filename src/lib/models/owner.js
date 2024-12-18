@@ -1,12 +1,16 @@
 import mongoose from "mongoose";
 
 const ownerSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    required: true,
+  },
   user: {
-    type: mongoose.Types.ObjectId,
+    type: String,
     ref: 'User',
   },
   item: {
-    type: mongoose.Types.ObjectId,
+    type: String,
     ref: 'Item',
   },
 });

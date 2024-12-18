@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const MatchItemsSchema = new mongoose.Schema({
   finder: {
-    type: mongoose.Types.ObjectId,
+    type: String,
     ref: "Finder",
   },
   owner: {
-    type: mongoose.Types.ObjectId,
+    type: String,
     ref: "Owner",
   },
   matched_date: {

@@ -8,7 +8,7 @@ import { useSession } from 'next-auth/react';
 import { format, subDays, isBefore, isAfter } from 'date-fns';
 import Link from 'next/link';
 
-const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null }) => {
+const PublishFoundItem = ({ open, onClose, fetchItems, setOpenSnackbar, setMessage, setActiveTab }) => {
     const [users, setUsers] = useState([]);
     const [name, setName] = useState('');
     const [color, setColor] = useState();
@@ -23,10 +23,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
     const [images, setImages] = useState([]);
     const [finder, setFinder] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
     const { data: session, status } = useSession();
-
-    console.log(finder)
 
     const fetchUsers = useCallback(async () => {
         try {
@@ -40,10 +37,10 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
     }, [session?.user?.schoolCategory]);
 
     useEffect(() => {
-        if (status === 'authenticated' && session?.user?.schoolCategory) {
+        if (status === 'authenticated' && session?.user?.schoolCategory && session?.user?.userType !== 'user') {
             fetchUsers();
         }
-    }, [status, session?.user?.schoolCategory, fetchUsers]);
+    }, [status, session?.user?.schoolCategory, session?.user?.userType, fetchUsers]);
 
     const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court', 'Function Hall', 'Library', 'Computer Laboratory'];
 
@@ -55,104 +52,114 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
         e.preventDefault();
         setLoading(true);
 
-        const now = new Date();
-        const thirtyDaysAgo = subDays(now, 30);
-        const selectedDate = new Date(foundDate);
-
-        if (isBefore(selectedDate, thirtyDaysAgo)) {
-            alert('The found date should be within the last 30 days.');
-            setLoading(false);
-            return;
-        }
-
-        if (isAfter(selectedDate, now)) {
-            alert('The found date cannot be in the future.');
-            setLoading(false);
-            return;
-        }
-
-        // Create found item data with lost item ID as the owner
-        const foundItemData = {
-            isFoundItem: true,
-            name,
-            color,
-            size,
-            category,
-            material,
-            condition,
-            distinctiveMarks,
-            description,
-            location,
-            date_time: format(selectedDate, 'MMMM dd,yyyy hh:mm a'),
-            images,
-            status: 'Published',
-            datePublished: new Date(),
-            monitoredBy: session?.user?.id,
-        };
-
         try {
+            if (images.length === 0) {
+                setOpenSnackbar('danger');
+                setMessage('Please upload at least one image.');
+                return;
+            }
+            
+            const now = new Date();
+            const thirtyDaysAgo = subDays(now, 30);
+            const selectedDate = new Date(foundDate);
+
+            if (isBefore(selectedDate, thirtyDaysAgo)) {
+                setOpenSnackbar('danger');
+                setMessage('The found date should be within the last 30 days.')
+                setLoading(false);
+                return;
+            }
+
+            if (isAfter(selectedDate, now)) {
+                setOpenSnackbar('danger');
+                setMessage('The found date cannot be in the future.')
+                setLoading(false);
+                return;
+            }
+
+            // Create found item data with lost item ID as the owner
+            let foundItemData = {
+                isFoundItem: true,
+                name,
+                color,
+                size,
+                category,
+                material,
+                condition,
+                distinctiveMarks,
+                description,
+                location,
+                date_time: format(selectedDate, 'MMMM dd,yyyy hh:mm a'),
+                images,
+                status: session.user.userType === 'user' ? 'Request' : 'Published',
+            };
+
+            if (foundItemData.status === 'Request') {
+                foundItemData.dateRequest = new Date();
+                foundItemData.monitoredBy = null;
+            } else {
+                foundItemData.datePublished = new Date();
+                foundItemData.monitoredBy = session?.user?.id;
+            }
+
             const response = await fetch('/api/found-items', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(foundItemData),
             });
 
-            if (response.ok) {
-                const foundItemResponse = await response.json();
-
-                const finderData = {
-                    user: finder?._id,
-                    item: foundItemResponse._id,
-                };
-
-                const foundResponse = await fetch('/api/finder', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(finderData),
-                });
-
-                const notificationResponse = await fetch('/api/notification', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        receiver: finder._id,
-                        message: `The found item (${name}) you reported to ${session.user.roleName} has been published!`,
-                        type: 'Found Items',
-                        markAsRead: false,
-                        dateNotified: new Date(),
-                    }),
-                });
-
-                const mailResponse = await fetch('/api/send-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        to: finder.emailAddress,
-                        name: finder.firstname,
-                        link: 'tracify-project.vercel.app',
-                        success: true,
-                        title: 'Found Item Published Successfully!'
-                    }),
-                });
-
-                if (foundResponse.ok && mailResponse.ok && notificationResponse.ok) {
-                    await resetForm(); // Ensure resetForm is defined to clear form inputs
-                    setOpenSnackbar(true);
-                } else {
-                    const data = await foundResponse.json().catch(() => ({ error: "Unexpected response format" }));
-                    alert(`Failed to add finder: ${data.error}`);
-                }
-            } else {
-                const data = await response.json().catch(() => ({ error: "Unexpected response format" }));
-                alert(`Failed to add found item: ${data.error}`);
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Unexpected response format' }));
+                setOpenSnackbar('danger');
+                setMessage(`Failed to add found item: ${errorData.error}`)
             }
+
+            const foundItemResponse = await response.json();
+
+            const finderData = {
+                user: session.user.userType === 'user' ? session?.user?.id : finder?._id,
+                item: foundItemResponse._id,
+            };
+
+            const foundResponse = await fetch('/api/finder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(finderData),
+            });
+
+            if (session?.user?.userType !== 'user') {
+                await Promise.all([
+                    fetch('/api/notification', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            receiver: finder._id,
+                            message: `The found item (${name}) you reported to ${session.user.roleName} has been published!`,
+                            type: 'Found Items',
+                            markAsRead: false,
+                            dateNotified: new Date(),
+                        }),
+                    }),
+                    fetch('/api/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            to: finder.emailAddress,
+                            name: finder.firstname,
+                            link: 'tracify-project.vercel.app',
+                            success: true,
+                            title: 'Found Item Published Successfully!',
+                        }),
+                    }),
+                ]);
+            }
+            resetForm();
+            if (session?.user?.userType === 'user') setActiveTab('requested-item');
+            setOpenSnackbar('success');
+            setMessage(session?.user?.userType === 'user' ? 'Item requested successfully!' : 'Item published successfully!')
         } catch (error) {
-            console.error("Error creating found item:", error);
-            alert('An unexpected error occurred.');
+            setOpenSnackbar('danger');
+            setMessage('An unexpected error occurred.')
         } finally {
             setLoading(false);
         }
@@ -173,7 +180,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
         setFoundDate('');
         setImages([]);
         setFinder(null);
-        if (fetchItems) await fetchItems();
+        await fetchItems();
     };
 
 
@@ -224,7 +231,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                     }}
                 >
                     <ModalClose />
-                    <Typography level="h4" sx={{ mb: 2 }}>Publish a Found Item</Typography>
+                    <Typography level="h4" sx={{ mb: 2 }}>{session?.user?.userType === 'user' ? 'Request' : 'Post'} Found Item</Typography>
                     <DialogContent
                         sx={{
                             overflowX: 'hidden',
@@ -236,21 +243,24 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                     >
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={2}>
-                                <FormControl required>
-                                    <FormLabel>Finder</FormLabel>
-                                    <Autocomplete
-                                        placeholder="Select a finder"
-                                        options={users || []}
-                                        value={finder}
-                                        onChange={(event, value) => {
-                                            setFinder(value);
-                                        }}
-                                        getOptionLabel={(user) => {
-                                            return user ? `${user.firstname} ${user.lastname}` : 'No Options';
-                                        }}
-                                        isOptionEqualToValue={(option, value) => option.id === value?.id}
-                                    />
-                                </FormControl>
+                                {
+                                    session?.user?.userType !== 'user' &&
+                                    <FormControl required>
+                                        <FormLabel>Finder</FormLabel>
+                                        <Autocomplete
+                                            placeholder="Select a finder"
+                                            options={users || []}
+                                            value={finder}
+                                            onChange={(event, value) => {
+                                                setFinder(value);
+                                            }}
+                                            getOptionLabel={(user) => {
+                                                return user ? `${user.firstname} ${user.lastname}` : 'No Options';
+                                            }}
+                                            isOptionEqualToValue={(option, value) => option.id === value?.id}
+                                        />
+                                    </FormControl>
+                                }
                                 <FormControl required>
                                     <FormLabel>Item Name</FormLabel>
                                     <Input type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -403,7 +413,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                         onChange={(e) => setFoundDate(e.target.value)}
                                     />
                                 </FormControl>
-                                <FormControl required>
+                                <FormControl>
                                     <Box
                                         sx={{
                                             display: 'inline-flex',
@@ -477,7 +487,7 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                                                 </Box>
                                             ))}
                                         </Box>
-                                        <input {...getInputProps()} />
+                                        <input {...getInputProps()} multiple style={{ display: 'none' }} />
                                         <p>
                                             {images.length === 0 && "Drag 'n' drop some files here, or click to select files"}
                                         </p>
@@ -489,31 +499,6 @@ const PublishFoundItem = ({ open, onClose, fetchItems = null, inDashboard = null
                     </DialogContent>
                 </ModalDialog>
             </Modal>
-            <Snackbar
-                autoHideDuration={5000}
-                open={openSnackbar}
-                variant="solid"
-                color="success"
-                onClose={(event, reason) => {
-                    if (reason === 'clickaway') {
-                        return;
-                    }
-                    setOpenSnackbar(false);
-                }}
-            >
-                <div>
-                    Item published successfully!{' '}
-                    {inDashboard && (
-                        <Typography>
-                            <Link href="/found-items" style={{ color: 'inherit', textDecoration: 'underline' }}>
-                                Click here
-                            </Link>
-                            to redirect to found items page.
-                        </Typography>
-                    )}
-                </div>
-            </Snackbar>
-
         </>
     )
 }

@@ -55,7 +55,7 @@ const ItemRetrievalList = ({ items, fetchItems }) => {
 
             <Grid container spacing={2}>
                 <Grid item xs={12} lg={12}>
-                    <Paper elevation={2} sx={{ padding: '1rem' }}>
+                    <Paper elevation={2} sx={{ padding: '1rem', borderTop: '3px solid #3f51b5' }}>
                         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             {/* Search Input */}
                             <Input
@@ -63,7 +63,7 @@ const ItemRetrievalList = ({ items, fetchItems }) => {
                                 placeholder="Search name..."
                                 value={searchQuery}
                                 onChange={handleSearchChange} // Update search query on input change
-                                sx={{ flexGrow: 1, marginRight: 2 }}
+                                sx={{marginRight: 2, width: '50%' }}
                             />
 
                             {/* Filter Menu Button */}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button, Select, Option, Input } from '@mui/joy';
+import { Grid, Box, FormControl, FormLabel, Chip, RadioGroup, Radio, Button, Select, Option, Input, Snackbar } from '@mui/joy';
 import { Paper, Badge, useMediaQuery } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ItemsTable from './Table/ItemsTable';
@@ -14,8 +14,10 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
     const [status, setStatus] = useState('Missing');
     const [open, setOpen] = useState(false);
     const isMobile = useMediaQuery('(max-width:600px)');
+    const [openSnackbar, setOpenSnackbar] = useState(null);
+    const [message, setMessage] = useState('');
 
-    const statusOptions = ['Missing', 'Request'];
+    const statusOptions = ['Missing', 'Request', 'Declined', 'Canceled'];
 
     // Calculate counts for each status
     const statusCounts = statusOptions.reduce((acc, currentStatus) => {
@@ -31,7 +33,7 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
 
             <Grid container spacing={2}>
                 <Grid item xs={12}>
-                    <Paper elevation={2} sx={{ padding: '1rem' }}>
+                    <Paper elevation={2} sx={{ padding: '1rem', borderTop: '3px solid #3f51b5' }}>
                         <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <FormControl>
                                 <FormLabel>Filter by Status</FormLabel>
@@ -56,7 +58,7 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
                                                 name="status-selection"
                                                 aria-labelledby="status-selection"
                                                 orientation="horizontal"
-                                                sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1 }}
+                                                sx={{ display: 'flex', gap: 1 }}
                                             >
                                                 {statusOptions.map((name) => {
                                                     const checked = status === name;
@@ -107,13 +109,27 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
                                 </Box>
                             </FormControl>
                             <Button size="small" startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Post Lost Item</Button>
-                            <PublishLostItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} />
+                            <PublishLostItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} />
                         </Box>
                         <Input startDecorator={<Search />} sx={{ mb: 3, width: isMobile ? '100%' : '30%' }} />
                         <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={false} />
                     </Paper>
                 </Grid>
             </Grid>
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color={openSnackbar}
+                onClose={(event, reason) => {
+                    if (reason === 'clickaway') {
+                        return;
+                    }
+                    setOpenSnackbar(null);
+                }}
+            >
+                {message}
+            </Snackbar>
         </>
     );
 }

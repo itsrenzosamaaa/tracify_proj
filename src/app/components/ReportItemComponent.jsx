@@ -336,47 +336,69 @@ const ReportItemComponent = ({ isFoundItem, session }) => {
                                                     </FormControl>
                                                 </Grid>
 
-                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-                                                    {[
-                                                        { label: 'Color', value: color, onChange: setColor, options: ['Black', 'White', 'Blue', 'Red', 'Brown', 'Yellow', 'Green', 'Orange', 'Violet', 'Pink', 'Gray', 'Cyan', 'Beige', 'Gold', 'Silver'] },
-                                                        { label: 'Size', value: size, onChange: setSize, options: ['Small', 'Medium', 'Large'] },
-                                                        { label: 'Category', value: category, onChange: setCategory, options: ['Electronics', 'Clothing', 'Accessories', 'School Supplies', 'Books', 'Tools', 'Sports Equipment'] },
-                                                        { label: 'Material', value: material, onChange: setMaterial, options: ['Leather', 'Metal', 'Plastic', 'Fabric', 'Wood', 'Glass', 'Ceramic', 'Stone', 'Rubber', 'Silicone', 'Paper', 'Wool', 'Cotton', 'Nylon'] },
-                                                        { label: 'Condition', value: condition, onChange: setCondition, options: ['New', 'Damaged', 'Old', 'Used', 'Broken', 'Worn'] },
-                                                        { label: 'Distinctive Marks', value: distinctiveMarks, onChange: setDistinctiveMarks, options: ['None', 'Scratches', 'Stickers', 'Initials', 'Keychain', 'Dents', 'Stains', 'Fading', 'Pen Marks'] },
-                                                    ].map((field, index) => (
-                                                        <Box sx={{ flexBasis: { xs: '100%', sm: '30%' } }} key={index}>
-                                                            <FormControl fullWidth>
-                                                                <FormLabel>{field.label}</FormLabel>
-                                                                <Select
-                                                                    placeholder={`Select ${field.label}`}
-                                                                    value={field.value}
-                                                                    onChange={(e, value) => field.onChange(value)}
-                                                                    required
-                                                                >
-                                                                    <Option value="" disabled>
-                                                                        Select {field.label}
+                                                {[
+                                                    { label: 'Color', value: color, onChange: setColor, options: ['Black', 'White', 'Blue', 'Red', 'Brown', 'Yellow', 'Green', 'Orange', 'Violet', 'Pink', 'Gray', 'Cyan', 'Beige', 'Gold', 'Silver'] },
+                                                    { label: 'Size', value: size, onChange: setSize, options: ['Small', 'Medium', 'Large'] },
+                                                    { label: 'Category', value: category, onChange: setCategory, options: ['Electronics', 'Clothing', 'Accessories', 'School Supplies', 'Books', 'Tools', 'Sports Equipment'] },
+                                                ].map((field, index) => (
+                                                    <Grid item xs={6} md={4} key={index}>
+                                                        <FormControl fullWidth>
+                                                            <FormLabel>{field.label}</FormLabel>
+                                                            <Select
+                                                                placeholder={`Select ${field.label}`}
+                                                                value={field.value}
+                                                                onChange={(e, value) => field.onChange(value)}
+                                                                required
+                                                            >
+                                                                <Option value="" disabled>
+                                                                    Select {field.label}
+                                                                </Option>
+                                                                {field.options.map((option) => (
+                                                                    <Option key={option} value={option}>
+                                                                        {option}
                                                                     </Option>
-                                                                    {field.options.map((option) => (
-                                                                        <Option key={option} value={option}>
-                                                                            {option}
-                                                                        </Option>
-                                                                    ))}
-                                                                </Select>
-                                                            </FormControl>
-                                                        </Box>
-                                                    ))}
-                                                </Box>
+                                                                ))}
+                                                            </Select>
+                                                        </FormControl>
+                                                    </Grid>
+                                                ))}
+                                                {[
+                                                    { label: 'Material', value: material, onChange: setMaterial, options: ['Leather', 'Metal', 'Plastic', 'Fabric', 'Wood', 'Glass', 'Ceramic', 'Stone', 'Rubber', 'Silicone', 'Paper', 'Wool', 'Cotton', 'Nylon'] },
+                                                    { label: 'Condition', value: condition, onChange: setCondition, options: ['New', 'Damaged', 'Old', 'Used', 'Broken', 'Worn'] },
+                                                    { label: 'Distinctive Marks', value: distinctiveMarks, onChange: setDistinctiveMarks, options: ['None', 'Scratches', 'Stickers', 'Initials', 'Keychain', 'Dents', 'Stains', 'Fading', 'Pen Marks'] },
+                                                ].map((field, index) => (
+                                                    <Grid item xs={6} md={4} key={index}>
+                                                        <FormControl fullWidth>
+                                                            <FormLabel>{field.label}</FormLabel>
+                                                            <Select
+                                                                placeholder={`Select ${field.label}`}
+                                                                value={field.value}
+                                                                onChange={(e, value) => field.onChange(value)}
+                                                                required
+                                                            >
+                                                                <Option value="" disabled>
+                                                                    Select {field.label}
+                                                                </Option>
+                                                                {field.options.map((option) => (
+                                                                    <Option key={option} value={option}>
+                                                                        {option}
+                                                                    </Option>
+                                                                ))}
+                                                            </Select>
+                                                        </FormControl>
+                                                    </Grid>
+                                                ))}
 
                                                 {/* Conditional Lost/Found Fields */}
                                                 <Grid item xs={12}>
                                                     {!isFoundItem ? (
                                                         <>
-                                                            <FormControl>
+                                                            <FormControl fullWidth>
                                                                 <Checkbox
                                                                     label="The owner knows the item's whereabouts"
                                                                     checked={itemWhereabouts}
                                                                     onChange={handleCheck}
+                                                                    sx={{ mb: 2 }}
                                                                 />
                                                             </FormControl>
                                                             {itemWhereabouts && (

@@ -25,8 +25,10 @@ import { format, subDays, isBefore, isAfter, isToday } from 'date-fns';
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { useTheme, useMediaQuery } from '@mui/material';
+import { useSession } from 'next-auth/react';
 
-const ItemDetails = ({ row, refreshData, snackBar }) => {
+const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage }) => {
+    const { data: session, status } = useSession();
     const [isEditMode, setIsEditMode] = useState(false);
     const [name, setName] = useState(row.item.name);
     const [color, setColor] = useState(row.item.color);
@@ -80,7 +82,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
     const isSm = useMediaQuery(theme.breakpoints.between('sm', 'md'));
     const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
-    const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court'];
+    const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court', 'Function Hall', 'Library', 'Computer Laboratory'];
 
     const handleCheckbox = (e) => {
         const check = e.target.checked;
@@ -109,12 +111,14 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                 const selectedDate = new Date(foundDate);
 
                 if (isBefore(selectedDate, thirtyDaysAgo)) {
-                    alert('The found date must be within the last 30 days.');
+                    setOpenSnackbar('danger')
+                    setMessage('The found date must be within the last 30 days.')
                     return;
                 }
 
                 if (isAfter(selectedDate, now)) {
-                    alert('The found date cannot be in the future.');
+                    setOpenSnackbar('danger')
+                    setMessage('The found date cannot be in the future.')
                     return;
                 }
             }
@@ -125,7 +129,8 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                 const end = new Date(lostEndDate);
 
                 if (start >= end) {
-                    alert('The start date must be earlier than the end date.');
+                    setOpenSnackbar('danger')
+                    setMessage('The start date must be earlier than the end date.')
                     return;
                 }
             }
@@ -166,10 +171,11 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
             // Refresh and update UI
             await refreshData();
             setIsEditMode(false);
-            snackBar(true)
+            setOpenSnackbar('success')
+            setMessage('Item details updated successfully!')
         } catch (error) {
-            console.error('Error updating item details:', error);
-            alert(error.message || 'An unexpected error occurred.');
+            setOpenSnackbar('danger')
+            setMessage(error.message)
         } finally {
             setLoading(false);
         }
@@ -290,7 +296,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                             >
                                 Item Information
                             </Typography>
-                            {(row.item.status === "Missing" || row.item.status === "Published") && (
+                            {((row.item.status === "Missing" || row.item.status === "Published") || (session?.user?.userType === 'user' && row.item.status === 'Request')) && (
                                 !isEditMode ? (
                                     <Button size={isXs ? 'small' : 'medium'} onClick={() => setIsEditMode(true)}>Edit</Button>
                                 ) : (
@@ -601,7 +607,7 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                 color: 'primary.plainColor',
                             }}
                         >
-                            Item Records
+                            Item Tracking History
                         </Typography>
                         <Box
                             sx={{
@@ -612,87 +618,15 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                             }}
                         >
                             <Stepper orientation="vertical">
-                                {row.item.dateRequest && (
+                                {(row.item.dateResolved || row.item.dateClaimed) && (
                                     <Step>
                                         <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>Request has been sent!</strong>
+                                            <strong>The item has successfully returned to owner!</strong>
                                         </Typography>
                                         <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.item.dateRequest))
-                                                ? `Today, ${format(new Date(row.item.dateRequest), 'hh:mm a')}`
-                                                : format(new Date(row.item.dateRequest), 'MMMM dd, yyyy, hh:mm a')}
-                                        </Typography>
-                                    </Step>
-                                )}
-                                {row.item.dateValidating && (
-                                    <Step>
-                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>The item request has approved!</strong>
-                                        </Typography>
-                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.item.dateValidating))
-                                                ? `Today, ${format(new Date(row.item.dateValidating), 'hh:mm a')}`
-                                                : format(new Date(row.item.dateValidating), 'MMMM dd, yyyy, hh:mm a')}
-                                        </Typography>
-                                    </Step>
-                                )}
-                                {row.item.datePublished && (
-                                    <Step>
-                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>{row.item.dateRequest ? 'The item was approved!' : 'The item has been published!'}</strong>
-                                        </Typography>
-                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.item.datePublished))
-                                                ? `Today, ${format(new Date(row.item.datePublished), 'hh:mm a')}`
-                                                : format(new Date(row.item.datePublished), 'MMMM dd, yyyy, hh:mm a')}
-                                        </Typography>
-                                    </Step>
-                                )}
-                                {row.item.dateMatched && (
-                                    <Step>
-                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>The item has been successfully matched!</strong>
-                                        </Typography>
-                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.item.dateMatched))
-                                                ? `Today, ${format(new Date(row.item.dateMatched), 'hh:mm a')}`
-                                                : format(new Date(row.item.dateMatched), 'MMMM dd, yyyy, hh:mm a')}
-                                        </Typography>
-                                    </Step>
-                                )}
-                                {row.item.dateMissing && (
-                                    <Step>
-                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>The item has been published!</strong>
-                                        </Typography>
-                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.item.dateMissing))
-                                                ? `Today, ${format(new Date(row.item.dateMissing), 'hh:mm a')}`
-                                                : format(new Date(row.item.dateMissing), 'MMMM dd, yyyy, hh:mm a')}
-                                        </Typography>
-                                    </Step>
-                                )}
-                                {row.item.dateUnclaimed && (
-                                    <Step>
-                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>The item has been tracked!</strong>
-                                        </Typography>
-                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.item.dateUnclaimed))
-                                                ? `Today, ${format(new Date(row.item.dateUnclaimed), 'hh:mm a')}`
-                                                : format(new Date(row.item.dateUnclaimed), 'MMMM dd, yyyy, hh:mm a')}
-                                        </Typography>
-                                    </Step>
-                                )}
-                                {row.item.dateCanceled && (
-                                    <Step>
-                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>The item has been canceled.</strong>
-                                        </Typography>
-                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.item.dateCanceled))
-                                                ? `Today, ${format(new Date(row.item.dateCanceled), 'hh:mm a')}`
-                                                : format(new Date(row.item.dateCanceled), 'MMMM dd, yyyy, hh:mm a')}
+                                            {isToday(new Date(row.item.isFoundItem ? row.item.dateResolved : row.item.dateClaimed))
+                                                ? `Today, ${format(new Date(row.item.isFoundItem ? row.item.dateResolved : row.item.dateClaimed), 'hh:mm a')}`
+                                                : format(new Date(row.item.isFoundItem ? row.item.dateResolved : row.item.dateClaimed), 'MMMM dd, yyyy, hh:mm a')}
                                         </Typography>
                                     </Step>
                                 )}
@@ -711,15 +645,87 @@ const ItemDetails = ({ row, refreshData, snackBar }) => {
                                         </Typography>
                                     </Step>
                                 )}
-                                {(row.item.dateResolved || row.item.dateClaimed) && (
+                                {row.item.dateCanceled && (
                                     <Step>
                                         <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>The item has successfully returned to owner!</strong>
+                                            <strong>The item has been canceled.</strong>
                                         </Typography>
                                         <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.item.isFoundItem ? row.item.dateResolved : row.item.dateClaimed))
-                                                ? `Today, ${format(new Date(row.item.isFoundItem ? row.item.dateResolved : row.item.dateClaimed), 'hh:mm a')}`
-                                                : format(new Date(row.item.isFoundItem ? row.item.dateResolved : row.item.dateClaimed), 'MMMM dd, yyyy, hh:mm a')}
+                                            {isToday(new Date(row.item.dateCanceled))
+                                                ? `Today, ${format(new Date(row.item.dateCanceled), 'hh:mm a')}`
+                                                : format(new Date(row.item.dateCanceled), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
+                                {row.item.dateMatched && (
+                                    <Step>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
+                                            <strong>The item has been successfully matched!</strong>
+                                        </Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
+                                            {isToday(new Date(row.item.dateMatched))
+                                                ? `Today, ${format(new Date(row.item.dateMatched), 'hh:mm a')}`
+                                                : format(new Date(row.item.dateMatched), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
+                                {row.item.dateUnclaimed && (
+                                    <Step>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
+                                            <strong>The item has been tracked!</strong>
+                                        </Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
+                                            {isToday(new Date(row.item.dateUnclaimed))
+                                                ? `Today, ${format(new Date(row.item.dateUnclaimed), 'hh:mm a')}`
+                                                : format(new Date(row.item.dateUnclaimed), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
+                                {row.item.dateMissing && (
+                                    <Step>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
+                                            <strong>The item has been published!</strong>
+                                        </Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
+                                            {isToday(new Date(row.item.dateMissing))
+                                                ? `Today, ${format(new Date(row.item.dateMissing), 'hh:mm a')}`
+                                                : format(new Date(row.item.dateMissing), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
+                                {row.item.datePublished && (
+                                    <Step>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
+                                            <strong>{row.item.dateRequest ? 'The item was approved!' : 'The item has been published!'}</strong>
+                                        </Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
+                                            {isToday(new Date(row.item.datePublished))
+                                                ? `Today, ${format(new Date(row.item.datePublished), 'hh:mm a')}`
+                                                : format(new Date(row.item.datePublished), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
+                                {row.item.dateValidating && (
+                                    <Step>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
+                                            <strong>The item request has approved!</strong>
+                                        </Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
+                                            {isToday(new Date(row.item.dateValidating))
+                                                ? `Today, ${format(new Date(row.item.dateValidating), 'hh:mm a')}`
+                                                : format(new Date(row.item.dateValidating), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
+                                {row.item.dateRequest && (
+                                    <Step>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
+                                            <strong>Request has been sent!</strong>
+                                        </Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
+                                            {isToday(new Date(row.item.dateRequest))
+                                                ? `Today, ${format(new Date(row.item.dateRequest), 'hh:mm a')}`
+                                                : format(new Date(row.item.dateRequest), 'MMMM dd, yyyy, hh:mm a')}
                                         </Typography>
                                     </Step>
                                 )}

@@ -21,10 +21,6 @@ const adminSchema = new mongoose.Schema({
   contactNumber: {
     type: String,
   },
-  school_category: {
-    type: String,
-    enum: ["All", "Higher Education", "Basic Education"]
-  },
   role: {
     type: mongoose.Types.ObjectId,
     ref: 'Role',

@@ -1,8 +1,13 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    required: true,
+  },
   username: {
     type: String,
+    required: true,
     unique: true,
   },
   password: {
@@ -41,6 +46,14 @@ const userSchema = new mongoose.Schema({
   date_created: {
     type: Date,
     default: Date.now,
+  },
+  resolvedItemCount: {
+    type: Number,
+    default: 0,
+  },
+  ratingsCount: {
+    type: Number,
+    default: 0,
   },
 });
 

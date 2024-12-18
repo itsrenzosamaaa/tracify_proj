@@ -23,14 +23,17 @@ import { format } from "date-fns";
 
 const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
     const [approveModal, setApproveModal] = useState(null);
+    const [openDeclinedModal, setOpenDeclinedModal] = useState(null);
+    const [openCanceledModal, setOpenCanceledModal] = useState(null);
     const [openValidatingModal, setOpenValidatingModal] = useState(null);
     const [openPublishedModal, setOpenPublishedModal] = useState(null);
     const [openMissingModal, setOpenMissingModal] = useState(null);
     const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
     const [openReservedModal, setOpenReservedModal] = useState(null);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [openSnackbar, setOpenSnackbar] = useState(null);
     const [currentPage, setCurrentPage] = useState(1); // Tracks current page
     const [rowsPerPage, setRowsPerPage] = useState(5); // Tracks rows per page
+    const [message, setMessage] = useState('');
     const isMobile = useMediaQuery('(max-width:600px)');
 
     // Handle changing the page
@@ -49,12 +52,12 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
         currentPage * rowsPerPage
     );
 
-    const ModalButton = ({ status, row, setModal, modalState, ModalComponent, fetchItems }) => {
+    const ModalButton = ({ status, row, setModal, modalState, ModalComponent, isSession, fetchItems, snackbarMessage, isOpenSnackbar }) => {
         return (
             status === row.item.status && (
                 <>
                     <Button onClick={() => setModal(row._id)} size="small">View Details</Button>
-                    <ModalComponent row={row} open={modalState} onClose={() => setModal(null)} refreshData={fetchItems} />
+                    <ModalComponent row={row} open={modalState} onClose={() => setModal(null)} session={isSession} refreshData={fetchItems} setMessage={snackbarMessage} setOpenSnackbar={isOpenSnackbar} />
                 </>
             )
         );
@@ -85,6 +88,8 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                 Published: row.item.datePublished,
                                                                 Request: row.item.dateRequest,
                                                                 "Surrender Pending": row.item.dateValidating,
+                                                                Declined: row.item.dateDeclined,
+                                                                Canceled: row.item.dateCanceled,
                                                             }[row.item.status] ? (
                                                                 format(
                                                                     new Date(
@@ -92,6 +97,8 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                             Published: row.item.datePublished,
                                                                             Request: row.item.dateRequest,
                                                                             "Surrender Pending": row.item.dateValidating,
+                                                                            Declined: row.item.dateDeclined,
+                                                                            Canceled: row.item.dateCanceled,
                                                                         }[row.item.status]
                                                                     ),
                                                                     "MMMM dd, yyyy - hh:mm a"
@@ -104,6 +111,8 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                 Missing: row.item.dateMissing,
                                                                 Request: row.item.dateRequest,
                                                                 Unclaimed: row.item.dateUnclaimed,
+                                                                Declined: row.item.dateDeclined,
+                                                                Canceled: row.item.dateCanceled,
                                                             }[row.item.status] ? (
                                                                 format(
                                                                     new Date(
@@ -111,6 +120,8 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                             Missing: row.item.dateMissing,
                                                                             Request: row.item.dateRequest,
                                                                             Unclaimed: row.item.dateUnclaimed,
+                                                                            Declined: row.item.dateDeclined,
+                                                                            Canceled: row.item.dateCanceled,
                                                                         }[row.item.status]
                                                                     ),
                                                                     "MMMM dd, yyyy - hh:mm a"
@@ -137,7 +148,10 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                         setModal={setApproveModal}
                                                         modalState={approveModal}
                                                         ModalComponent={ItemRequestApproveModal}
+                                                        isSession={session}
                                                         fetchItems={fetchItems}
+                                                        snackbarMessage={setMessage}
+                                                        isOpenSnackbar={setOpenSnackbar}
                                                     />
                                                     <ModalButton
                                                         status="Surrender Pending"
@@ -145,7 +159,10 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                         setModal={setOpenValidatingModal}
                                                         modalState={openValidatingModal}
                                                         ModalComponent={ItemValidatingModal}
+                                                        isSession={session}
                                                         fetchItems={fetchItems}
+                                                        snackbarMessage={setMessage}
+                                                        isOpenSnackbar={setOpenSnackbar}
                                                     />
                                                     <ModalButton
                                                         status="Published"
@@ -153,7 +170,32 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                         setModal={setOpenPublishedModal}
                                                         modalState={openPublishedModal}
                                                         ModalComponent={ItemPublishedModal}
+                                                        isSession={session}
                                                         fetchItems={fetchItems}
+                                                        snackbarMessage={setMessage}
+                                                        isOpenSnackbar={setOpenSnackbar}
+                                                    />
+                                                    <ModalButton
+                                                        status="Declined"
+                                                        row={row}
+                                                        setModal={setOpenDeclinedModal}
+                                                        modalState={openDeclinedModal}
+                                                        ModalComponent={ItemPublishedModal}
+                                                        isSession={session}
+                                                        fetchItems={fetchItems}
+                                                        snackbarMessage={setMessage}
+                                                        isOpenSnackbar={setOpenSnackbar}
+                                                    />
+                                                    <ModalButton
+                                                        status="Canceled"
+                                                        row={row}
+                                                        setModal={setOpenCanceledModal}
+                                                        modalState={openCanceledModal}
+                                                        ModalComponent={ItemPublishedModal}
+                                                        isSession={session}
+                                                        fetchItems={fetchItems}
+                                                        snackbarMessage={setMessage}
+                                                        isOpenSnackbar={setOpenSnackbar}
                                                     />
                                                     <ModalButton
                                                         status="Missing"
@@ -161,7 +203,10 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                         setModal={setOpenMissingModal}
                                                         modalState={openMissingModal}
                                                         ModalComponent={ItemMissingModal}
+                                                        isSession={session}
                                                         fetchItems={fetchItems}
+                                                        snackbarMessage={setMessage}
+                                                        isOpenSnackbar={setOpenSnackbar}
                                                     />
                                                     <ModalButton
                                                         status="Claim Request"
@@ -169,7 +214,10 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                         setModal={setOpenClaimRequestModal}
                                                         modalState={openClaimRequestModal}
                                                         ModalComponent={ItemClaimRequestModal}
+                                                        isSession={session}
                                                         fetchItems={fetchItems}
+                                                        snackbarMessage={setMessage}
+                                                        isOpenSnackbar={setOpenSnackbar}
                                                     />
                                                     <ModalButton
                                                         status="Reserved"
@@ -177,7 +225,10 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                         setModal={setOpenReservedModal}
                                                         modalState={openReservedModal}
                                                         ModalComponent={ItemReservedModal}
+                                                        isSession={session}
                                                         fetchItems={fetchItems}
+                                                        snackbarMessage={setMessage}
+                                                        isOpenSnackbar={setOpenSnackbar}
                                                     />
                                                 </CardActions>
                                             </Card>
@@ -271,6 +322,7 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                             sx={{
                                                 fontWeight: "bold",
                                                 backgroundColor: "#f5f5f5",
+                                                width: '25%',
                                             }}
                                         >
                                             Date
@@ -304,12 +356,14 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                         <TableCell>
                                                             {row.item.name}
                                                         </TableCell>
-                                                        <TableCell>
+                                                        <TableCell sx={{ width: '25%' }}>
                                                             {row.item.isFoundItem ? (
                                                                 {
                                                                     Published: row.item.datePublished,
                                                                     Request: row.item.dateRequest,
                                                                     "Surrender Pending": row.item.dateValidating,
+                                                                    Declined: row.item.dateDeclined,
+                                                                    Canceled: row.item.dateCanceled,
                                                                 }[row.item.status] ? (
                                                                     format(
                                                                         new Date(
@@ -317,6 +371,8 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                                 Published: row.item.datePublished,
                                                                                 Request: row.item.dateRequest,
                                                                                 "Surrender Pending": row.item.dateValidating,
+                                                                                Declined: row.item.dateDeclined,
+                                                                                Canceled: row.item.dateCanceled,
                                                                             }[row.item.status]
                                                                         ),
                                                                         "MMMM dd, yyyy - hh:mm a"
@@ -329,6 +385,8 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                     Missing: row.item.dateMissing,
                                                                     Request: row.item.dateRequest,
                                                                     Unclaimed: row.item.dateUnclaimed,
+                                                                    Declined: row.item.dateDeclined,
+                                                                    Canceled: row.item.dateCanceled,
                                                                 }[row.item.status] ? (
                                                                     format(
                                                                         new Date(
@@ -336,6 +394,8 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                                 Missing: row.item.dateMissing,
                                                                                 Request: row.item.dateRequest,
                                                                                 Unclaimed: row.item.dateUnclaimed,
+                                                                                Declined: row.item.dateDeclined,
+                                                                                Canceled: row.item.dateCanceled,
                                                                             }[row.item.status]
                                                                         ),
                                                                         "MMMM dd, yyyy - hh:mm a"
@@ -345,7 +405,7 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                 )
                                                             )}
                                                         </TableCell>
-                                                        {row.item.isFoundItem && (row.item.status === "Request" || row.item.status === "Surrender Pending") && (
+                                                        {isFoundItem && status === "Request" && (
                                                             <TableCell>
                                                                 <Chip variant="solid" color={row.item.status === "Request" ? 'warning' : 'neutral'}>
                                                                     {row.item.status}
@@ -365,7 +425,10 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                 setModal={setApproveModal}
                                                                 modalState={approveModal}
                                                                 ModalComponent={ItemRequestApproveModal}
+                                                                isSession={session}
                                                                 fetchItems={fetchItems}
+                                                                snackbarMessage={setMessage}
+                                                                isOpenSnackbar={setOpenSnackbar}
                                                             />
                                                             <ModalButton
                                                                 status="Surrender Pending"
@@ -373,7 +436,10 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                 setModal={setOpenValidatingModal}
                                                                 modalState={openValidatingModal}
                                                                 ModalComponent={ItemValidatingModal}
+                                                                isSession={session}
                                                                 fetchItems={fetchItems}
+                                                                snackbarMessage={setMessage}
+                                                                isOpenSnackbar={setOpenSnackbar}
                                                             />
                                                             <ModalButton
                                                                 status="Published"
@@ -381,7 +447,32 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                 setModal={setOpenPublishedModal}
                                                                 modalState={openPublishedModal}
                                                                 ModalComponent={ItemPublishedModal}
+                                                                isSession={session}
                                                                 fetchItems={fetchItems}
+                                                                snackbarMessage={setMessage}
+                                                                isOpenSnackbar={setOpenSnackbar}
+                                                            />
+                                                            <ModalButton
+                                                                status="Declined"
+                                                                row={row}
+                                                                setModal={setOpenDeclinedModal}
+                                                                modalState={openDeclinedModal}
+                                                                ModalComponent={ItemPublishedModal}
+                                                                isSession={session}
+                                                                fetchItems={fetchItems}
+                                                                snackbarMessage={setMessage}
+                                                                isOpenSnackbar={setOpenSnackbar}
+                                                            />
+                                                            <ModalButton
+                                                                status="Canceled"
+                                                                row={row}
+                                                                setModal={setOpenCanceledModal}
+                                                                modalState={openCanceledModal}
+                                                                ModalComponent={ItemPublishedModal}
+                                                                isSession={session}
+                                                                fetchItems={fetchItems}
+                                                                snackbarMessage={setMessage}
+                                                                isOpenSnackbar={setOpenSnackbar}
                                                             />
                                                             <ModalButton
                                                                 status="Missing"
@@ -389,7 +480,10 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                 setModal={setOpenMissingModal}
                                                                 modalState={openMissingModal}
                                                                 ModalComponent={ItemMissingModal}
+                                                                isSession={session}
                                                                 fetchItems={fetchItems}
+                                                                snackbarMessage={setMessage}
+                                                                isOpenSnackbar={setOpenSnackbar}
                                                             />
                                                             <ModalButton
                                                                 status="Claim Request"
@@ -397,7 +491,10 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                 setModal={setOpenClaimRequestModal}
                                                                 modalState={openClaimRequestModal}
                                                                 ModalComponent={ItemClaimRequestModal}
+                                                                isSession={session}
                                                                 fetchItems={fetchItems}
+                                                                snackbarMessage={setMessage}
+                                                                isOpenSnackbar={setOpenSnackbar}
                                                             />
                                                             <ModalButton
                                                                 status="Reserved"
@@ -405,7 +502,10 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                                                                 setModal={setOpenReservedModal}
                                                                 modalState={openReservedModal}
                                                                 ModalComponent={ItemReservedModal}
+                                                                isSession={session}
                                                                 fetchItems={fetchItems}
+                                                                snackbarMessage={setMessage}
+                                                                isOpenSnackbar={setOpenSnackbar}
                                                             />
                                                         </TableCell>
                                                     </TableRow>
@@ -460,17 +560,15 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                 autoHideDuration={5000}
                 open={openSnackbar}
                 variant="solid"
-                color="success"
+                color={openSnackbar}
                 onClose={(event, reason) => {
                     if (reason === 'clickaway') {
                         return;
                     }
-                    setOpenSnackbar(false);
+                    setOpenSnackbar(null);
                 }}
             >
-                <div>
-                    Item details updated successfully!
-                </div>
+                {message}
             </Snackbar>
         </>
     );

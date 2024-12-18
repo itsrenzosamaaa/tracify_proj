@@ -50,7 +50,7 @@ export async function middleware(request) {
         (pathname === '/item-retrieval' && !token.permissions.manageRequestItemRetrieval) ||
         (pathname === '/lost-items' && !token.permissions.manageRequestReportedLostItems) ||
         (pathname === '/roles' && !token.permissions.viewRoles) ||
-        (pathname === '/users' && !token.permissions.viewStudentsList)
+        (pathname === '/users' && !token.permissions.viewUsersList)
       ) {
         return NextResponse.redirect(new URL("/unauthorized", request.url));
       }

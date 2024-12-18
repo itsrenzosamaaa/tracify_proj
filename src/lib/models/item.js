@@ -1,7 +1,10 @@
-import { ColorLens } from "@mui/icons-material";
 import mongoose from "mongoose";
 
 const ItemSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    required: true,
+  },
   isFoundItem: {
     type: Boolean,
   },

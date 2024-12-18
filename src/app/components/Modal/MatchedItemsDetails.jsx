@@ -321,42 +321,15 @@ const MatchedItemsDetails = ({ row }) => {
                             }}
                         >
                             <Stepper orientation="vertical">
-                                {row.datePending && (
+                                {row.dateCompleted &&
                                     <Step>
                                         <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>The retrieval request has been sent!</strong>
+                                            <strong>The item has been resolved!</strong>
                                         </Typography>
                                         <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.datePending))
-                                                ? `Today, ${format(new Date(row.datePending), 'hh:mm a')}`
-                                                : format(new Date(row.datePending), 'MMMM dd, yyyy, hh:mm a')}
-                                        </Typography>
-                                    </Step>
-                                )}
-                                {row.dateApproved && (
-                                    <Step>
-                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>{row.datePending ? 'The item has been approved!' : 'The item has been matched!'}</strong>
-                                        </Typography>
-                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.dateApproved))
-                                                ? `Today, ${format(new Date(row.dateApproved), 'hh:mm a')}`
-                                                : format(new Date(row.dateApproved), 'MMMM dd, yyyy, hh:mm a')}
-                                        </Typography>
-                                    </Step>
-                                )}
-                                {row.dateCanceled &&
-                                    <Step>
-                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>The request has been canceled.</strong>
-                                        </Typography>
-                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>Remarks: </strong>{row.remarks}
-                                        </Typography>
-                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.dateCanceled))
-                                                ? `Today, ${format(new Date(row.dateCanceled), 'hh:mm a')}`
-                                                : format(new Date(row.dateCanceled), 'MMMM dd, yyyy, hh:mm a')}
+                                            {isToday(new Date(row.dateCompleted))
+                                                ? `Today, ${format(new Date(row.dateCompleted), 'hh:mm a')}`
+                                                : format(new Date(row.dateCompleted), 'MMMM dd, yyyy, hh:mm a')}
                                         </Typography>
                                     </Step>
                                 }
@@ -375,18 +348,45 @@ const MatchedItemsDetails = ({ row }) => {
                                         </Typography>
                                     </Step>
                                 }
-                                {row.dateCompleted &&
+                                {row.dateCanceled &&
                                     <Step>
                                         <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
-                                            <strong>The item has been resolved!</strong>
+                                            <strong>The request has been canceled.</strong>
+                                        </Typography>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
+                                            <strong>Remarks: </strong>{row.remarks}
                                         </Typography>
                                         <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
-                                            {isToday(new Date(row.dateCompleted))
-                                                ? `Today, ${format(new Date(row.dateCompleted), 'hh:mm a')}`
-                                                : format(new Date(row.dateCompleted), 'MMMM dd, yyyy, hh:mm a')}
+                                            {isToday(new Date(row.dateCanceled))
+                                                ? `Today, ${format(new Date(row.dateCanceled), 'hh:mm a')}`
+                                                : format(new Date(row.dateCanceled), 'MMMM dd, yyyy, hh:mm a')}
                                         </Typography>
                                     </Step>
                                 }
+                                {row.dateApproved && (
+                                    <Step>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
+                                            <strong>{row.datePending ? 'The item has been approved!' : 'The item has been matched!'}</strong>
+                                        </Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
+                                            {isToday(new Date(row.dateApproved))
+                                                ? `Today, ${format(new Date(row.dateApproved), 'hh:mm a')}`
+                                                : format(new Date(row.dateApproved), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
+                                {row.datePending && (
+                                    <Step>
+                                        <Typography level={isXs ? 'body-sm' : isSm ? 'body-md' : 'body-lg'}>
+                                            <strong>The retrieval request has been sent!</strong>
+                                        </Typography>
+                                        <Typography level={isXs ? 'body-xs' : isSm ? 'body-sm' : 'body-md'}>
+                                            {isToday(new Date(row.datePending))
+                                                ? `Today, ${format(new Date(row.datePending), 'hh:mm a')}`
+                                                : format(new Date(row.datePending), 'MMMM dd, yyyy, hh:mm a')}
+                                        </Typography>
+                                    </Step>
+                                )}
                             </Stepper>
                         </Box>
                     </Box>

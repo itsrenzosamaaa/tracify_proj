@@ -11,7 +11,7 @@ const ViewRetrievalHistory = ({ open, onClose, retrievalItems }) => {
         <Modal open={open} onClose={onClose}>
             <ModalDialog>
                 <ModalClose />
-                <Typography level={isXs ? 'h4' : 'h3'} sx={{ textAlign: 'center', mb: 2 }}>Retrieval History</Typography>
+                <Typography level={isXs ? 'h4' : 'h3'} sx={{ mb: 2 }}>Retrieval History</Typography>
                 <DialogContent
                     sx={{
                         overflowX: 'hidden',

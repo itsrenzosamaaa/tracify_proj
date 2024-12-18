@@ -1,11 +1,10 @@
 'use client'
 
-import { Modal, ModalClose, ModalDialog, Typography, Box, Button, Snackbar } from '@mui/joy'
+import { Modal, ModalClose, ModalDialog, Typography, Box, Button } from '@mui/joy'
 import React, { useState } from 'react'
 
-const CancelRequest = ({ open, onClose, item, api, refreshData }) => {
+const CancelRequest = ({ open, onClose, item, api, refreshData, setMessage, setOpenSnackbar }) => {
     const [loading, setLoading] = useState(false);
-    const [openSnackbar, setOpenSnackbar] = useState(false);
 
     const handleSubmit = async (e, id) => {
         if (e && e.preventDefault) {
@@ -26,9 +25,11 @@ const CancelRequest = ({ open, onClose, item, api, refreshData }) => {
 
             onClose();
             refreshData();
-            setOpenSnackbar(true);
+            setOpenSnackbar('success');
+            setMessage('Request item canceled successfully!')
         } catch (error) {
-            console.error(error)
+            setOpenSnackbar('danger');
+            setMessage('Error occured.')
         } finally {
             setLoading(false)
         }
@@ -46,20 +47,6 @@ const CancelRequest = ({ open, onClose, item, api, refreshData }) => {
                     </Box>
                 </ModalDialog>
             </Modal>
-            <Snackbar
-                autoHideDuration={5000}
-                open={openSnackbar}
-                variant="solid"
-                color="success"
-                onClose={(event, reason) => {
-                    if (reason === 'clickaway') {
-                        return;
-                    }
-                    setOpenSnackbar(false);
-                }}
-            >
-                Request item canceled successfully!
-            </Snackbar>
         </>
     )
 }

@@ -26,7 +26,11 @@ const ViewItemPage = ({ params }) => {
     const isSm = useMediaQuery(theme.breakpoints.between('sm', 'md'));
     const isMd = useMediaQuery(theme.breakpoints.up('md'));
 
-    console.log(lostItem)
+    const formatDate = (date) =>
+        isToday(new Date(date))
+            ? `Today, ${format(new Date(date), 'hh:mm a')}`
+            : format(new Date(date), 'MMMM dd, yyyy, hh:mm a');
+
 
     const fetchLostItem = useCallback(async (foundItemId) => {
         setError(null);
@@ -314,39 +318,13 @@ const ViewItemPage = ({ params }) => {
                                 <Divider />
                                 <Box sx={{ marginBottom: 4 }}>
                                     <Stepper orientation="vertical">
-                                        {foundItem.dateRequest && (
+                                        {(foundItem.dateResolved) && (
                                             <Step>
                                                 <Typography level={isXs ? 'body-sm' : 'body-md'}>
-                                                    <strong>Request has been sent!</strong>
+                                                    <strong>The item has successfully returned to owner!</strong>
                                                 </Typography>
                                                 <Typography level={isXs ? 'body-sm' : 'body-md'}>
-                                                    {isToday(new Date(foundItem.dateRequest))
-                                                        ? `Today, ${format(new Date(foundItem.dateRequest), 'hh:mm a')}`
-                                                        : format(new Date(foundItem.dateRequest), 'MMMM dd, yyyy, hh:mm a')}
-                                                </Typography>
-                                            </Step>
-                                        )}
-                                        {foundItem.dateValidating && (
-                                            <Step>
-                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
-                                                    <strong>Your item has been approved! Please surrender the item to {foundItem.monitoredBy.role.name}</strong>
-                                                </Typography>
-                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
-                                                    {isToday(new Date(foundItem.dateValidating))
-                                                        ? `Today, ${format(new Date(foundItem.dateValidating), 'hh:mm a')}`
-                                                        : format(new Date(foundItem.dateValidating), 'MMMM dd, yyyy, hh:mm a')}
-                                                </Typography>
-                                            </Step>
-                                        )}
-                                        {foundItem.datePublished && (
-                                            <Step>
-                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
-                                                    <strong>Your item has been published!</strong>
-                                                </Typography>
-                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
-                                                    {isToday(new Date(foundItem.datePublished))
-                                                        ? `Today, ${format(new Date(foundItem.datePublished), 'hh:mm a')}`
-                                                        : format(new Date(foundItem.datePublished), 'MMMM dd, yyyy, hh:mm a')}
+                                                    {formatDate(foundItem.dateResolved)}
                                                 </Typography>
                                             </Step>
                                         )}
@@ -356,21 +334,37 @@ const ViewItemPage = ({ params }) => {
                                                     <strong>The item has been successfully matched!</strong>
                                                 </Typography>
                                                 <Typography level={isXs ? 'body-sm' : 'body-md'}>
-                                                    {isToday(new Date(foundItem.dateMatched))
-                                                        ? `Today, ${format(new Date(foundItem.dateMatched), 'hh:mm a')}`
-                                                        : format(new Date(foundItem.dateMatched), 'MMMM dd, yyyy, hh:mm a')}
+                                                    {formatDate(foundItem.dateMatched)}
                                                 </Typography>
                                             </Step>
                                         )}
-                                        {(foundItem.dateResolved) && (
+                                        {foundItem.datePublished && (
                                             <Step>
                                                 <Typography level={isXs ? 'body-sm' : 'body-md'}>
-                                                    <strong>The item has successfully returned to owner!</strong>
+                                                    <strong>Your item has been published!</strong>
                                                 </Typography>
                                                 <Typography level={isXs ? 'body-sm' : 'body-md'}>
-                                                    {isToday(new Date(foundItem.isFoundItem ? foundItem.dateResolved : foundItem.dateClaimed))
-                                                        ? `Today, ${format(new Date(foundItem.isFoundItem ? foundItem.dateResolved : foundItem.dateClaimed), 'hh:mm a')}`
-                                                        : format(new Date(foundItem.isFoundItem ? foundItem.dateResolved : foundItem.dateClaimed), 'MMMM dd, yyyy, hh:mm a')}
+                                                    {formatDate(foundItem.datePublished)}
+                                                </Typography>
+                                            </Step>
+                                        )}
+                                        {foundItem.dateValidating && (
+                                            <Step>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
+                                                    <strong>Your item has been approved! Please surrender the item to {foundItem.monitoredBy.role.name}</strong>
+                                                </Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
+                                                    {formatDate(foundItem.dateValidating)}
+                                                </Typography>
+                                            </Step>
+                                        )}
+                                        {foundItem.dateRequest && (
+                                            <Step>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
+                                                    <strong>Request has been sent!</strong>
+                                                </Typography>
+                                                <Typography level={isXs ? 'body-sm' : 'body-md'}>
+                                                    {formatDate(foundItem.dateRequest)}
                                                 </Typography>
                                             </Step>
                                         )}

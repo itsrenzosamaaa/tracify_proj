@@ -1,15 +1,24 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Box, Typography, Card, CardContent, Button, Modal, ModalDialog, CircularProgress } from '@mui/joy';
-import { Grid, Table, TableHead, TableBody, TableRow, TableCell, TablePagination } from '@mui/material';
+import {
+    Box, Typography, Card, CardContent, Button, Modal, ModalDialog, CircularProgress, Snackbar,
+    Input, Table
+} from '@mui/joy';
+import { Grid, TableContainer, TableHead, TableBody, TableRow, TableCell, TablePagination, useTheme, useMediaQuery } from '@mui/material';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import Papa from 'papaparse';
+import { Search } from '@mui/icons-material';
 
-const ViewUsers = ({ users, refreshData }) => {
+const ViewUsers = ({ users, refreshData, session }) => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [loading, setLoading] = useState(false);
+    const [openSnackbar, setOpenSnackbar] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const theme = useTheme();
+    const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -29,9 +38,7 @@ const ViewUsers = ({ users, refreshData }) => {
                 skipEmptyLines: true, // Skip blank lines
                 complete: async (results) => {
                     try {
-                        console.log("Parsed CSV: ", results.data)
                         setLoading(true);
-                        // Post parsed data to the server
                         const response = await fetch('/api/users', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -44,16 +51,18 @@ const ViewUsers = ({ users, refreshData }) => {
                             throw new Error(result.error || 'Failed to import users');
                         }
 
-                        console.log(`${result.count} users imported successfully!`);
                         refreshData(); // Refresh the list of users
+                        setOpenSnackbar('success');
                     } catch (error) {
-                        console.error('Error importing users:', error.message);
+                        setErrorMessage(error.message || 'An error occurred while importing users.');
+                        setOpenSnackbar('error');
                     } finally {
-                        setLoading(false)
+                        setLoading(false);
                     }
                 },
                 error: (error) => {
-                    console.error('Error parsing CSV:', error);
+                    setErrorMessage('Error parsing CSV file. Please try again.');
+                    setOpenSnackbar('error');
                 },
             });
         }
@@ -64,80 +73,97 @@ const ViewUsers = ({ users, refreshData }) => {
             <TitleBreadcrumbs title="Manage Users" text="Users" />
 
             <Grid container spacing={2}>
-                <Grid item lg={12} xs={12}>
-                    <Box sx={{ mt: 4 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography level='h4' gutterBottom>View Users</Typography>
-                            <Button component="label">
-                                Import Data
-                                <input
-                                    type="file"
-                                    accept=".csv"
-                                    hidden
-                                    onChange={handleFileUpload}
-                                />
-                            </Button>
+                <Grid item xs={12}>
+                    <Card sx={{ mt: 2, borderTop: '3px solid #3f51b5' }}>
+                        <Box sx={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Input startDecorator={<Search />} />
+                            {
+                                session?.user?.roleName === "Super Admin" &&
+                                <Button component="label">
+                                    Import Data
+                                    <input
+                                        type="file"
+                                        accept=".csv"
+                                        hidden
+                                        onChange={handleFileUpload}
+                                    />
+                                </Button>
+                            }
                             <Modal open={loading} onClose={() => { }} disableEscapeKeyDown>
                                 <ModalDialog sx={{ alignItems: 'center', padding: '1rem' }}>
                                     <Typography level="body-lg" fontWeight={700} gutterBottom>
-                                        Importing students data...
+                                        Importing users data...
                                     </Typography>
                                     <CircularProgress />
                                 </ModalDialog>
                             </Modal>
                         </Box>
-                        <Card sx={{ height: '426px' }}>
-                            <CardContent sx={{ padding: 0 }}>
-                                <Box sx={{ height: '380px', overflowY: 'auto' }}>
-                                    <Table
-                                        stickyHeader
-                                        variant="outlined"
-                                        sx={{
-                                            borderRadius: 2,
-                                            overflow: "hidden",
-                                            maxWidth: "100%",
-                                            width: "100%",
-                                        }}
-                                    >
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>Name</TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', lg: 'block' } }}>Email</TableCell>
-                                                <TableCell>Contact No.</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {users.length > 0 ? (
-                                                users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user, index) => (
-                                                    <TableRow key={index}>
-                                                        <TableCell>{user.firstname} {user.lastname}</TableCell>
-                                                        <TableCell sx={{ display: { xs: 'none', lg: 'block' } }}>{user.emailAddress}</TableCell>
-                                                        <TableCell>{user.contactNumber}</TableCell>
-                                                    </TableRow>
-                                                ))
-                                            ) : (
-                                                <TableRow>
-                                                    <TableCell colSpan={3} align="center">No users found...</TableCell>
+                        <CardContent>
+                            <TableContainer
+                                sx={{
+                                    overflowX: 'auto', // Enables horizontal scrolling
+                                    borderRadius: 2,
+                                    '@media (max-width: 600px)': {
+                                        maxWidth: '100vw', // Ensure it doesn't exceed the screen width
+                                    },
+                                }}
+                            >
+                                <Table
+                                    stickyHeader
+                                    variant="outlined"
+                                    sx={{
+                                        borderRadius: 2,
+                                        minWidth: 650,
+                                    }}
+                                >
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell sx={{ width: isXs ? '150px' : '250px' }}>Name</TableCell>
+                                            <TableCell sx={{ width: isXs ? '300px' : '400px' }}>Email</TableCell>
+                                            <TableCell sx={{ width: isXs ? '100px' : '200px' }}>Contact No.</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {users.length > 0 ? (
+                                            users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user, index) => (
+                                                <TableRow key={index}>
+                                                    <TableCell sx={{ width: isXs ? '150px' : '250px' }}>{user.firstname} {user.lastname}</TableCell>
+                                                    <TableCell sx={{ width: isXs ? '300px' : '400px' }}>{user.emailAddress}</TableCell>
+                                                    <TableCell sx={{ width: isXs ? '100px' : '200px' }}>{user.contactNumber}</TableCell>
                                                 </TableRow>
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </Box>
-                                <TablePagination
-                                    component="div"
-                                    count={users.length}
-                                    page={page}
-                                    onPageChange={handleChangePage}
-                                    rowsPerPage={rowsPerPage}
-                                    onRowsPerPageChange={handleChangeRowsPerPage}
-                                />
-                            </CardContent>
-                        </Card>
-                    </Box>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={3} align="center">No users found...</TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                            <TablePagination
+                                rowsPerPageOptions={5}
+                                component="div"
+                                count={users.length}
+                                page={page}
+                                onPageChange={handleChangePage}
+                                rowsPerPage={rowsPerPage}
+                                onRowsPerPageChange={handleChangeRowsPerPage}
+                            />
+                        </CardContent>
+                    </Card>
                 </Grid>
-            </Grid>
+            </Grid >
+            <Snackbar
+                autoHideDuration={5000}
+                open={openSnackbar}
+                variant="solid"
+                color={openSnackbar === 'success' ? 'success' : 'danger'}
+                onClose={() => setOpenSnackbar(null)}
+            >
+                {openSnackbar === 'success' ? "Users imported successfully!" : errorMessage}
+            </Snackbar>
         </>
     );
-}
+};
 
 export default ViewUsers;

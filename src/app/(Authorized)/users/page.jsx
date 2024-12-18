@@ -36,7 +36,7 @@ const UsersPage = () => {
 
     return (
         <>
-            <ViewUsers users={users} refreshData={fetchUsers} />
+            <ViewUsers users={users} refreshData={fetchUsers} session={session} />
         </>
     )
 }

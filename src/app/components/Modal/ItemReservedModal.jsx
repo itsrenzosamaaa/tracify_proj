@@ -5,14 +5,13 @@ import React, { useState } from 'react';
 import { FormControlLabel } from '@mui/material';
 import MatchedItemsDetails from './MatchedItemsDetails';
 
-const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
+const ItemReservedModal = ({ row, open, onClose, refreshData, setMessage, setOpenSnackbar }) => {
     const [declineModal, setDeclineModal] = useState(false);
     const [declineRemarks, setDeclineRemarks] = useState('');
     const [otherReason, setOtherReason] = useState('');
     const [confirmationItemClaimed, setConfirmationItemClaimed] = useState(false);
     const [confirmationItemDecline, setConfirmationItemDecline] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [openSnackbar, setOpenSnackbar] = useState(null);
 
     const handleReasonChange = (event) => {
         setDeclineRemarks(event.target.value);
@@ -21,8 +20,6 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
             setOtherReason('');
         }
     };
-
-    console.log(row)
 
     const handleSubmit = async (e, foundItemId, lostItemId, matchedId) => {
         if (e?.preventDefault) {
@@ -51,13 +48,12 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
             // Update found item status
             await makeRequest(`/api/found-items/${foundItemId}`, 'PUT', { status: 'Resolved' });
 
-            // Update lost item status
+            // // Update lost item status
             await makeRequest(`/api/lost-items/${lostItemId}`, 'PUT', { status: 'Claimed' });
 
             // Award badges if conditions are met
             const badgeData = await makeRequest('/api/badge/found-item', 'GET');
-            const finderData = await makeRequest(`/api/finder/${row.finder.user._id}`, 'GET');
-            const resolvedItemsCount = finderData.filter((finder) => finder.item.status === 'Resolved').length;
+            const userCounter = await makeRequest(`/api/users/${row.finder.user._id}`, 'PUT', { increment: true });
 
             // Update match status
             await makeRequest(`/api/match-items/${matchedId}`, 'PUT', { request_status: 'Completed' });
@@ -104,7 +100,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
             );
 
             for (const badge of badgeData) {
-                if (resolvedItemsCount >= badge.meetConditions) {
+                if (userCounter.updatedUser.resolvedItemCount >= badge.meetConditions) {
                     await makeRequest(`/api/award-badge/user/${row.finder.user._id}`, 'PUT', { badgeId: badge._id });
                     await makeRequest('/api/notification', 'POST', {
                         receiver: row.finder.user._id,
@@ -117,13 +113,14 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
             }
 
             // Close modals, refresh data, and show success notification
-            setConfirmationItemClaimed(null);
+            setConfirmationItemClaimed(false);
             onClose();
             await refreshData();
             setOpenSnackbar('success');
+            setMessage('The item has been returned to the owner!')
         } catch (error) {
-            console.error('Error updating items:', error);
-            setOpenSnackbar('error'); // Display error message
+            setOpenSnackbar('danger'); // Display error message
+            setMessage('Error updating items:', error);
         } finally {
             setLoading(false);
         }
@@ -180,14 +177,15 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
             );
 
             // Close modals and refresh data
-            setConfirmationApproveModal(false);
+            setConfirmationItemDecline(false);
             setDeclineModal(false);
             onClose();
             await refreshData(); // Renamed from fetch to be more descriptive
-            setOpenSnackbar('failed');
+            setOpenSnackbar('success');
+            setMessage('The item has not successfully returned to the owner.')
         } catch (error) {
-            console.error('Error updating items:', error);
-            // You might want to show an error message to the user here
+            setOpenSnackbar('danger'); // Display error message
+            setMessage('Error updating items:', error.message);
         } finally {
             setLoading(false);
         }
@@ -348,20 +346,6 @@ const ItemReservedModal = ({ row, open, onClose, refreshData }) => {
                     </Box>
                 </ModalDialog>
             </Modal>
-            <Snackbar
-                autoHideDuration={5000}
-                open={openSnackbar}
-                variant="solid"
-                color="success"
-                onClose={(event, reason) => {
-                    if (reason === 'clickaway') {
-                        return;
-                    }
-                    setOpenSnackbar(null);
-                }}
-            >
-                The item has been {openSnackbar === 'success' ? 'resolved!' : 'declined.'}
-            </Snackbar>
         </>
     );
 };

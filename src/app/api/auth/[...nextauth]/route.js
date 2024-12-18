@@ -30,7 +30,12 @@ export const authOptions = {
           }
 
           if (account && bcrypt.compareSync(credentials.password, account.password)) {
-            return await getUserDetails(account, userType);
+            const checkAccount = await getUserDetails(account, userType);
+            if (checkAccount.userType === 'admin' && !checkAccount.roleName) {
+              console.error('This admin account still does not have role.');
+              return null;
+            }
+            return checkAccount;
           } else {
             console.error("Invalid username or password");
             return null;
@@ -77,6 +82,10 @@ export const authOptions = {
           user.userType = userType;
           user.roleName = dbAccount.roleName;
           user.permissions = dbAccount.permissions;
+          if (user.userType === 'admin' && !user.roleName) {
+            console.error('This admin account still does not have role.');
+            return null;
+          }
         }
         return true; // For credentials sign-in
       } catch (error) {
@@ -132,9 +141,9 @@ async function getUserDetails(account, userType) {
     lastname: account.lastname,
     email: account.emailAddress,
     contact_number: account.contactNumber,
-    school_category: account.school_category,
     userType: userType,
     roleName: roleData ? roleData.name : null,
+    school_category: roleData ? roleData.school_category : null,
     permissions: roleData ? roleData.permissions : null,
   };
 }

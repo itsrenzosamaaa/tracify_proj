@@ -2,15 +2,15 @@ import mongoose from "mongoose";
 
 const ratingSchema = new mongoose.Schema({
   sender: {
-    type: mongoose.Types.ObjectId,
+    type: String,
     ref: 'User',
   },
   receiver: {
-    type: mongoose.Types.ObjectId,
+    type: String,
     ref: 'User',
   },
   item: {
-    type: mongoose.Types.ObjectId,
+    type: String,
     ref: "Item",
   },
   isFoundItem: {

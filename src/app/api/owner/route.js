@@ -3,6 +3,7 @@ import dbConnect from "@/lib/mongodb";
 import owner from "@/lib/models/owner";
 import user from "@/lib/models/user";
 import item from "@/lib/models/item";
+import { nanoid } from "nanoid";
 
 export async function GET() {
     try {
@@ -24,6 +25,8 @@ export async function POST(req) {
     try {
       await dbConnect();
       const ownerData = await req.json();
+
+      ownerData._id =  `OW_${nanoid(6)}`;
   
       const newOwner = new owner(ownerData);
       await newOwner.save();

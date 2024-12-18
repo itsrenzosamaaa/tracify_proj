@@ -4,6 +4,7 @@ import item from "@/lib/models/item";
 import admin from "@/lib/models/admin";
 import roles from "@/lib/models/roles";
 import { v2 as cloudinary } from 'cloudinary';
+import { nanoid } from 'nanoid';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -46,6 +47,8 @@ export async function POST(req) {
       );
     }
 
+    foundItemData._id = `FI_${nanoid(6)}`;
+
     // Assuming you're sending the image as a URL or base64 from the frontend
     const uploadedImages = [];
     for (const image of foundItemData.images) {
@@ -59,10 +62,6 @@ export async function POST(req) {
         ],
       });
       uploadedImages.push(uploadResponse.secure_url);
-    }
-
-    if (foundItemData.status === 'Reserved') {
-      foundItemData.dateReserved = new Date();
     }
 
     const newFoundItem = new item({
