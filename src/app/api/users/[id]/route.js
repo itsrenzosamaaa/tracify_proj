@@ -29,32 +29,14 @@ export async function PUT(req, { params }) {
   const { id } = params;
 
   try {
-    const body = await req.json();
-    const { increment } = body;
-
-    if (typeof increment !== 'string') {
-      return NextResponse.json(
-        { error: "increment must be a string value" },
-        { status: 400 }
-      );
-    }
+    const updatedFormData = await req.json();
 
     await dbConnect();
-
-    let updatedUser;
-    if (increment === 'found-item') {
-      updatedUser = await user.findOneAndUpdate(
-        { _id: id },
-        { $inc: { resolvedItemCount: increment ? 1 : 0 } },
-        { new: true }
-      );
-    } else {
-      updatedUser = await user.findOneAndUpdate(
-        { _id: id },
-        { $inc: { ratingsCount: increment ? 1 : 0 } },
-        { new: true }
-      );
-    }
+    const updatedUser = await user.findByIdAndUpdate(
+      id,
+      { $set: updatedFormData },
+      { new: true }
+    );
 
     if (!updatedUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

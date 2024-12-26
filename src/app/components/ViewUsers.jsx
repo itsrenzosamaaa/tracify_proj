@@ -3,19 +3,24 @@
 import React, { useState } from 'react';
 import {
     Box, Typography, Card, CardContent, Button, Modal, ModalDialog, CircularProgress, Snackbar,
-    Input, Table
+    Input, Table, IconButton
 } from '@mui/joy';
-import { Grid, TableContainer, TableHead, TableBody, TableRow, TableCell, TablePagination, useTheme, useMediaQuery } from '@mui/material';
+import { Grid, TableContainer, TableHead, TableBody, TableRow, TableCell, TablePagination, useTheme, useMediaQuery, Menu, MenuItem } from '@mui/material';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import Papa from 'papaparse';
+import { MoreHoriz } from '@mui/icons-material';
 import { Search } from '@mui/icons-material';
+import EditUser from './Modal/EditUser';
 
 const ViewUsers = ({ users, refreshData, session }) => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [loading, setLoading] = useState(false);
     const [openSnackbar, setOpenSnackbar] = useState(null);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [message, setMessage] = useState('');
+    const [currentUserId, setCurrentUserId] = useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [openEditModal, setOpenEditModal] = useState(null);
 
     const theme = useTheme();
     const isXs = useMediaQuery(theme.breakpoints.down('sm'));
@@ -27,6 +32,16 @@ const ViewUsers = ({ users, refreshData, session }) => {
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
+    };
+
+    const handleMenuOpen = (event, userId) => {
+        setAnchorEl(event.currentTarget);
+        setCurrentUserId(userId);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        setCurrentUserId(null);
     };
 
     const handleFileUpload = (event) => {
@@ -53,15 +68,16 @@ const ViewUsers = ({ users, refreshData, session }) => {
 
                         refreshData(); // Refresh the list of users
                         setOpenSnackbar('success');
+                        setMessage('Users imported successfully!')
                     } catch (error) {
-                        setErrorMessage(error.message || 'An error occurred while importing users.');
-                        setOpenSnackbar('error');
+                        setMessage(error.message || 'An error occurred while importing users.');
+                        setOpenSnackbar('danger');
                     } finally {
                         setLoading(false);
                     }
                 },
                 error: (error) => {
-                    setErrorMessage('Error parsing CSV file. Please try again.');
+                    setMessage('Error parsing CSV file. Please try again.');
                     setOpenSnackbar('error');
                 },
             });
@@ -121,16 +137,66 @@ const ViewUsers = ({ users, refreshData, session }) => {
                                             <TableCell sx={{ width: isXs ? '150px' : '250px' }}>Name</TableCell>
                                             <TableCell sx={{ width: isXs ? '300px' : '400px' }}>Email</TableCell>
                                             <TableCell sx={{ width: isXs ? '100px' : '200px' }}>Contact No.</TableCell>
+                                            {
+                                                session?.user?.roleName === 'Super Admin' &&
+                                                <TableCell sx={{ width: isXs ? '70px' : '90px' }}>Action</TableCell>
+                                            }
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {users.length > 0 ? (
                                             users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user, index) => (
-                                                <TableRow key={index}>
-                                                    <TableCell sx={{ width: isXs ? '150px' : '250px' }}>{user.firstname} {user.lastname}</TableCell>
-                                                    <TableCell sx={{ width: isXs ? '300px' : '400px' }}>{user.emailAddress}</TableCell>
-                                                    <TableCell sx={{ width: isXs ? '100px' : '200px' }}>{user.contactNumber}</TableCell>
-                                                </TableRow>
+                                                <>
+                                                    <TableRow key={index}>
+                                                        <TableCell sx={{ width: isXs ? '150px' : '250px' }}>{user.firstname} {user.lastname}</TableCell>
+                                                        <TableCell sx={{ width: isXs ? '300px' : '400px' }}>{user.emailAddress}</TableCell>
+                                                        <TableCell sx={{ width: isXs ? '100px' : '200px' }}>{user.contactNumber}</TableCell>
+                                                        {
+                                                            session?.user?.roleName === 'Super Admin' &&
+                                                            <TableCell sx={{ width: isXs ? '70px' : '90px' }}>
+                                                                <IconButton
+                                                                    onClick={(event) => handleMenuOpen(event, user._id)}
+                                                                    aria-controls={currentUserId === user._id ? `menu-${user._id}` : undefined}
+                                                                    aria-haspopup="true"
+                                                                    aria-expanded={currentUserId === user._id ? 'true' : undefined}
+                                                                >
+                                                                    <MoreHoriz />
+                                                                </IconButton>
+                                                                <Menu
+                                                                    id={`menu-${user._id}`}
+                                                                    anchorEl={anchorEl}
+                                                                    open={currentUserId === user._id}
+                                                                    onClose={handleMenuClose}
+                                                                    anchorOrigin={{
+                                                                        vertical: 'bottom',
+                                                                        horizontal: 'right',
+                                                                    }}
+                                                                    transformOrigin={{
+                                                                        vertical: 'top',
+                                                                        horizontal: 'right',
+                                                                    }}
+                                                                >
+                                                                    <MenuItem
+                                                                        onClick={() => {
+                                                                            setOpenEditModal(user._id);
+                                                                            handleMenuClose();
+                                                                        }}
+                                                                    >
+                                                                        Edit
+                                                                    </MenuItem>
+                                                                    <MenuItem
+                                                                        onClick={() => {
+                                                                            handleMenuClose();
+                                                                        }}
+                                                                    >
+                                                                        Delete
+                                                                    </MenuItem>
+                                                                </Menu>
+                                                            </TableCell>
+                                                        }
+                                                    </TableRow>
+                                                    <EditUser user={user} open={openEditModal} onClose={() => setOpenEditModal(null)} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} refreshData={refreshData} />
+                                                </>
                                             ))
                                         ) : (
                                             <TableRow>
@@ -157,10 +223,10 @@ const ViewUsers = ({ users, refreshData, session }) => {
                 autoHideDuration={5000}
                 open={openSnackbar}
                 variant="solid"
-                color={openSnackbar === 'success' ? 'success' : 'danger'}
+                color={openSnackbar}
                 onClose={() => setOpenSnackbar(null)}
             >
-                {openSnackbar === 'success' ? "Users imported successfully!" : errorMessage}
+                {message}
             </Snackbar>
         </>
     );

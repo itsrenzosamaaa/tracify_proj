@@ -11,6 +11,7 @@ const badgeSchema = new mongoose.Schema({
   bgOutline: { type: String },
   condition: { type: String },
   meetConditions: { type: Number },
+  schoolCategory: { type: String },
 });
 
 export default mongoose.models.Badge ||

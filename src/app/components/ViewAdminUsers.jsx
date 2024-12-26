@@ -227,8 +227,8 @@ const ViewAdminUsers = ({ users, roles, refreshData, session }) => {
                                                     <TableCell>
                                                         {session.user.id !== user._id && (
                                                             <Box sx={{ display: 'flex', gap: 1 }}>
-                                                                <Button onClick={() => setOpen(user._id)} disabled={!session?.user?.permissions?.deleteAdmin} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }} color="danger">Delete</Button>
-                                                                <Button onClick={() => setOpen(user._id)} disabled={!session?.user?.permissions?.deleteAdmin} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }} color="danger">
+                                                                <Button onClick={() => setOpen(user._id)} disabled={session?.user?.roleName !== 'Super Admin'} sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }} color="danger">Delete</Button>
+                                                                <Button onClick={() => setOpen(user._id)} disabled={session?.user?.roleName !== 'Super Admin'} size="small" sx={{ display: { xs: 'block', sm: 'block', md: 'none', lg: 'none' } }} color="danger">
                                                                     <DeleteIcon />
                                                                 </Button>
                                                                 <Modal open={open === user._id} onClose={() => setOpen(null)}>

@@ -30,7 +30,7 @@ const roleSchema = new mongoose.Schema({
     manageRequestReportedLostItems: { type: Boolean, default: false },
     // viewMissingItems: { type: Boolean, default: false },
     // Badge Management
-    viewBadges: { type: Boolean, default: false },
+    manageBadges: { type: Boolean, default: false },
     // addBadge: { type: Boolean, default: false },
     // editBadge: { type: Boolean, default: false },
     // deleteBadge: { type: Boolean, default: false },

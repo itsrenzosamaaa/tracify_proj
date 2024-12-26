@@ -19,6 +19,20 @@ export async function POST(req) {
     await dbConnect();
     const roleData = await req.json();
 
+    const existingRole = await Role.findOne({
+      name: { $regex: new RegExp(`^${roleData.name}$`, 'i') } // Case-insensitive search
+    });
+
+    if (existingRole) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `A role with the name "${roleData.name}" already exists`
+        },
+        { status: 409 } // 409 Conflict status code
+      );
+    }
+
     const newRole = new Role(roleData);
     await newRole.save();
 

@@ -79,7 +79,9 @@ const ViewRoles = ({ roles, session, refreshData, admin }) => {
                         <Box sx={{ padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Input startDecorator={<SearchIcon />} />
                             <Button onClick={() => setAddRole(true)} startDecorator={<AddIcon />}>Add Role</Button>
-                            <AddRole open={addRole} onClose={() => setAddRole(false)} refreshData={refreshData} setMessage={setMessage} setOpenSnackbar={setOpenSnackbar} />
+                            {
+                                session?.user?.roleName === 'Super Admin' && <AddRole open={addRole} onClose={() => setAddRole(false)} refreshData={refreshData} setMessage={setMessage} setOpenSnackbar={setOpenSnackbar} />
+                            }
                         </Box>
                         <CardContent>
                             <Table
@@ -136,22 +138,28 @@ const ViewRoles = ({ roles, session, refreshData, admin }) => {
                                                         >
                                                             View Permissions
                                                         </MenuItem>
-                                                        <MenuItem
-                                                            onClick={() => {
-                                                                setOpenEditModal(role._id);
-                                                                handleMenuClose();
-                                                            }}
-                                                        >
-                                                            Edit
-                                                        </MenuItem>
-                                                        <MenuItem
-                                                            onClick={() => {
-                                                                setOpenDeleteModal(role._id);
-                                                                handleMenuClose();
-                                                            }}
-                                                        >
-                                                            Delete
-                                                        </MenuItem>
+                                                        {
+                                                            session?.user?.roleName === 'Super Admin' &&
+                                                            <MenuItem
+                                                                onClick={() => {
+                                                                    setOpenEditModal(role._id);
+                                                                    handleMenuClose();
+                                                                }}
+                                                            >
+                                                                Edit
+                                                            </MenuItem>
+                                                        }
+                                                        {
+                                                            session?.user?.roleName === 'Super Admin' &&
+                                                            <MenuItem
+                                                                onClick={() => {
+                                                                    setOpenDeleteModal(role._id);
+                                                                    handleMenuClose();
+                                                                }}
+                                                            >
+                                                                Delete
+                                                            </MenuItem>
+                                                        }
                                                     </Menu>
                                                     <Modal open={open === role._id} onClose={() => setOpen(null)}>
                                                         <ModalDialog>

@@ -201,7 +201,7 @@ export default function App() {
         if (userPermissions.manageRequestReportedFoundItems) base.push({ icon: <FindInPageIcon />, menu: 'Found Items', url: '/found-items' });
         if (userPermissions.manageRequestItemRetrieval) base.push({ icon: <MoveToInboxIcon />, menu: 'Item Retrieval', url: '/item-retrieval' });
         if (userPermissions.manageRequestReportedLostItems) base.push({ icon: <HelpOutlineIcon />, menu: 'Lost Items', url: '/lost-items' });
-        if (userPermissions.viewBadges) base.push({ icon: <EmojiEventsOutlinedIcon />, menu: 'Badges', url: '/badges' });
+        if (userPermissions.manageBadges) base.push({ icon: <EmojiEventsOutlinedIcon />, menu: 'Badges', url: '/badges' });
         if (userPermissions.viewRoles) base.push({ icon: <SecurityIcon />, menu: 'Roles', url: '/roles' });
         if (userPermissions.viewAdminsList) base.push({ icon: <PeopleOutlineIcon />, menu: 'Admin', url: '/admin' });
         if (userPermissions.viewUsersList) base.push({ icon: <PeopleOutlineIcon />, menu: 'Users', url: '/users' });

@@ -112,7 +112,7 @@ const ViewBadges = ({ session, badges, fetchBadges }) => {
                             <Button startDecorator={<AddIcon />} onClick={() => setModal(true)}>
                                 Add Badge
                             </Button>
-                            <AddBadgeModal open={modal} onClose={() => setModal(false)} refreshData={fetchBadges} />
+                            <AddBadgeModal open={modal} onClose={() => setModal(false)} refreshData={fetchBadges} session={session} />
                         </Box>
                         <CardContent>
                             <Table

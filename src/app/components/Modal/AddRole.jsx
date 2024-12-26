@@ -33,7 +33,7 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
         manageRequestReportedFoundItems: false,
         manageRequestItemRetrieval: false,
         manageRequestReportedLostItems: false,
-        viewBadges: false,
+        manageBadges: false,
     });
 
     const handlePermissionChange = (perm, checked) => {
@@ -98,7 +98,7 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
                     >
                         <form onSubmit={handleSubmit}>
                             {/* Role Name Input */}
-                            <FormControl fullWidth>
+                            <FormControl fullWidth sx={{ mb: 1 }}>
                                 <FormLabel>Role Name</FormLabel>
                                 <Input
                                     type="text"
@@ -108,7 +108,7 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
                                 />
                             </FormControl>
 
-                            <FormControl fullWidth sx={{ mb: 3 }}>
+                            <FormControl fullWidth sx={{ mb: 1 }}>
                                 <FormLabel>Office Location</FormLabel>
                                 <Input
                                     type="text"
@@ -118,10 +118,10 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
                                 />
                             </FormControl>
 
-                            <FormControl fullWidth sx={{ mb: 3 }}>
+                            <FormControl fullWidth sx={{ mb: 1 }}>
                                 <FormLabel>School Category</FormLabel>
                                 <Select
-                                    placeholder="Select a role"
+                                    placeholder="Select school category"
                                     value={schoolCategory} // Bind this to the selected role
                                     onChange={(e, newValue) => setSchoolCategory(newValue)} // Update state on change
                                 >
@@ -136,7 +136,6 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
 
                                 {/* Admin Permissions */}
                                 <FormControl fullWidth>
-                                    <FormLabel>Admin Permissions</FormLabel>
                                     <FormGroup>
                                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                             <Checkbox
@@ -150,7 +149,6 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
 
                                 {/* Student Permissions */}
                                 <FormControl fullWidth>
-                                    <FormLabel>Student Permissions</FormLabel>
                                     <FormGroup>
                                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                             <Checkbox
@@ -164,9 +162,8 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
 
                                 {/* Role Permissions */}
                                 <FormControl fullWidth>
-                                    <FormLabel>Role Permissions</FormLabel>
                                     <FormGroup>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                                 <Checkbox
                                                     checked={permissions.viewRoles}
@@ -178,18 +175,14 @@ const AddRole = ({ open, onClose, refreshData, setOpenSnackbar, setMessage }) =>
                                     </FormGroup>
                                 </FormControl>
 
-                                {/* Badge Permissions */}
                                 <FormControl fullWidth>
-                                    <FormLabel>Badge Permissions</FormLabel>
                                     <FormGroup>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                <Checkbox
-                                                    checked={permissions.viewBadges}
-                                                    onChange={(e) => handlePermissionChange('viewBadges', e.target.checked)}
-                                                />
-                                                <FormLabel sx={{ ml: 1 }}>View Badges</FormLabel>
-                                            </Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <Checkbox
+                                                checked={permissions.manageBadges}
+                                                onChange={(e) => handlePermissionChange('manageBadges', e.target.checked)}
+                                            />
+                                            <FormLabel sx={{ ml: 1 }}>Manage Badges</FormLabel>
                                         </Box>
                                     </FormGroup>
                                 </FormControl>

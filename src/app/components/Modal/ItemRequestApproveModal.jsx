@@ -48,6 +48,23 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session, set
 
             if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
 
+            const mailResponse = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'ItemRequestApproval',
+                    to: row.user.emailAddress,
+                    subject: 'Your Item Request Has Been Approved',
+                    name: row.user.firstname,
+                    link: `tracify-project.vercel.app/my-items#${row.item.isFoundItem ? 'found-item' : 'lost-item'}`,
+                    success: row.item.isFoundItem,
+                    itemName: row.item.name,
+                    location: session?.user?.roleName,
+                }),
+            });
+
+            if (!mailResponse.ok) throw new Error(data.message || 'Failed to send email');
+
             setOpenSnackbar('success');
             setMessage('Item request has been approved!')
             onClose();
@@ -103,6 +120,22 @@ const ItemRequestApproveModal = ({ row, open, onClose, refreshData, session, set
             if (!notificationResponse.ok) {
                 throw new Error(notificationData.message || 'Failed to send notification');
             }
+
+            const mailResponse = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'ItemRequestDecline',
+                    to: row.user.emailAddress,
+                    subject: 'Your Item Request Has Been Declined',
+                    name: row.user.firstname,
+                    link: 'tracify-project.vercel.app/my-items#declined-item',
+                    itemName: row.item.name,
+                    remarks: declineReason,
+                }),
+            });
+
+            if (!mailResponse.ok) throw new Error(data.message || 'Failed to send email');
 
             // Success path
             onClose();

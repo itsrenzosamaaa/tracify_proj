@@ -1,11 +1,23 @@
 import nodemailer from 'nodemailer';
-import EmailTemplate from '@/app/components/Email/EmailTemplate';
+import ItemRequestApproval from '@/app/components/Email/ItemRequestApproval';
+import ItemRequestDecline from '@/app/components/Email/ItemRequestDecline';
+import ItemSurrenderInvalid from '@/app/components/Email/ItemSurrenderInvalid';
+import ItemSurrenderSuccess from '@/app/components/Email/ItemSurrenderSuccess';
 
 export async function POST(req) {
   try {
-    const { to, name, link, success, title } = await req.json();
+    const { type, to, subject, name, link, success, itemName, location, remarks } = await req.json();
 
-    const htmlContent = EmailTemplate({ name, link, success, title });
+    let htmlContent;
+    if (type === 'ItemRequestApproval') {
+      htmlContent = ItemRequestApproval({ name, link, success, itemName, location });
+    } else if (type === 'ItemRequestDecline') {
+      htmlContent = ItemRequestDecline({ name, link, itemName, remarks })
+    } else if (type === 'ItemSurrenderInvalid') {
+      htmlContent = ItemSurrenderInvalid({ name, link, itemName, location })
+    } else if (type === 'ItemSurrenderSuccess') {
+      htmlContent = ItemSurrenderSuccess({ name, link, itemName, location })
+    }
 
     // Configure your transporter
     const transporter = nodemailer.createTransport({
@@ -18,9 +30,9 @@ export async function POST(req) {
 
     // Email options
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: 'Tracify', // Ensure a valid "from" address
       to,
-      subject: 'Item Publication Successful',
+      subject,
       html: htmlContent,
     };
 

@@ -73,17 +73,21 @@ const RatingsModal = ({ item, session, open, onClose, refreshData }) => {
             // Fetch badges and sender data
             const [badgeData, senderData] = await Promise.all([
                 makeRequest('/api/badge/ratings', 'GET'),
-                makeRequest(`/api/users/${session.user.id}`, 'PUT', { increment: 'ratings' }),
+                makeRequest(`/api/users/${session.user.id}/increment`, 'PUT', { increment: 'ratings' }),
             ]);
 
+            const filteredBadge = badgeData.filter(badge => badge.schoolCategory === session?.user?.schoolCategory);
+
             // Award badges if conditions are met
-            await Promise.all(
-                badgeData.map(async (badge) => {
-                    if (senderData.updatedUser.ratingsCount >= badge.meetConditions) {
-                        await makeRequest(`/api/award-badge/user/${session.user.id}`, 'PUT', { badgeId: badge._id });
-                    }
-                })
-            );
+            if (filteredBadge.length === 0) {
+                await Promise.all(
+                    filteredBadge.map(async (badge) => {
+                        if (senderData.updatedUser.ratingsCount >= badge.meetConditions) {
+                            await makeRequest(`/api/award-badge/user/${session.user.id}`, 'PUT', { badgeId: badge._id });
+                        }
+                    })
+                );
+            }
 
             await makeRequest('/api/notification', 'POST', {
                 receiver: item?.receiver?._id,

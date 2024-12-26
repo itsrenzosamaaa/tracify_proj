@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Snackbar, Checkbox, Modal, ModalDialog, ModalClose, DialogContent, Typography, Stack, FormControl, FormLabel, Input, Textarea, Button, Box, Select, Option, Grid } from '@mui/joy';
 import PreviewBadge from '../PreviewBadge';
 
-const AddBadgeModal = ({ open, onClose, refreshData }) => {
+const AddBadgeModal = ({ open, onClose, refreshData, session }) => {
     const [title, setTitle] = useState('Treasure Hunter');
     const [titleShimmer, setTitleShimmer] = useState(false);
     const [shape, setShape] = useState('circle');
@@ -35,6 +35,7 @@ const AddBadgeModal = ({ open, onClose, refreshData }) => {
             bgOutline,
             condition,
             meetConditions,
+            schoolCategory: session?.user?.schoolCategory,
         }
 
         try {

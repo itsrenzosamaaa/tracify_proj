@@ -45,7 +45,7 @@ export async function middleware(request) {
     if (userRole === 'admin') {
       if (
         (pathname === '/admin' && !token.permissions.viewAdminsList) ||
-        (pathname === '/badges' && !token.permissions.viewBadges) ||
+        (pathname === '/badges' && !token.permissions.manageBadges) ||
         (pathname === '/found-items' && !token.permissions.manageRequestReportedFoundItems) ||
         (pathname === '/item-retrieval' && !token.permissions.manageRequestItemRetrieval) ||
         (pathname === '/lost-items' && !token.permissions.manageRequestReportedLostItems) ||

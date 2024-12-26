@@ -48,7 +48,6 @@ const EditBadgeModal = ({ open, onClose, refreshData, badge }) => {
             bgColor,
             bgOutline,
             condition,
-            meetConditions,
         }
 
         try {

@@ -53,7 +53,8 @@ const ItemReservedModal = ({ row, open, onClose, refreshData, setMessage, setOpe
 
             // Award badges if conditions are met
             const badgeData = await makeRequest('/api/badge/found-item', 'GET');
-            const userCounter = await makeRequest(`/api/users/${row.finder.user._id}`, 'PUT', { increment: true });
+            const filteredBadge = badgeData.filter(badge => badge.schoolCategory === row.finder.user.school_category);
+            const userCounter = await makeRequest(`/api/users/${row.finder.user._id}/increment`, 'PUT', { increment: true });
 
             // Update match status
             await makeRequest(`/api/match-items/${matchedId}`, 'PUT', { request_status: 'Completed' });
@@ -99,16 +100,18 @@ const ItemReservedModal = ({ row, open, onClose, refreshData, setMessage, setOpe
                 notificationData.map((notif) => makeRequest('/api/notification', 'POST', notif))
             );
 
-            for (const badge of badgeData) {
-                if (userCounter.updatedUser.resolvedItemCount >= badge.meetConditions) {
-                    await makeRequest(`/api/award-badge/user/${row.finder.user._id}`, 'PUT', { badgeId: badge._id });
-                    await makeRequest('/api/notification', 'POST', {
-                        receiver: row.finder.user._id,
-                        message: `Congratulations, ${row.finder.user.firstname}! You've earned the ${badge.title} award for your amazing contribution in finding lost items. Thank you for making a difference!`,
-                        type: 'Profile',
-                        markAsRead: false,
-                        dateNotified: new Date(),
-                    })
+            if (filteredBadge.length === 0) {
+                for (const badge of filteredBadge) {
+                    if (userCounter.updatedUser.resolvedItemCount >= badge.meetConditions) {
+                        await makeRequest(`/api/award-badge/user/${row.finder.user._id}`, 'PUT', { badgeId: badge._id });
+                        await makeRequest('/api/notification', 'POST', {
+                            receiver: row.finder.user._id,
+                            message: `Congratulations, ${row.finder.user.firstname}! You've earned the ${badge.title} award for your amazing contribution in finding lost items. Thank you for making a difference!`,
+                            type: 'Profile',
+                            markAsRead: false,
+                            dateNotified: new Date(),
+                        })
+                    }
                 }
             }
 

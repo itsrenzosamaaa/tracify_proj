@@ -40,6 +40,22 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData, session, setMess
 
             if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
 
+            const mailResponse = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'ItemSurrenderSuccess',
+                    to: row.user.emailAddress,
+                    subject: 'Item Surrender Success',
+                    name: row.user.firstname,
+                    link: 'tracify-project.vercel.app/my-items#found-item',
+                    itemName: row.item.name,
+                    location: session.user.roleName,
+                }),
+            });
+
+            if (!mailResponse.ok) throw new Error(data.message || 'Failed to send email');
+
             setOpenSnackbar('success');
             setMessage('Item has been published!')
             onClose();
@@ -81,6 +97,22 @@ const ItemValidatingModal = ({ row, open, onClose, refreshData, session, setMess
             });
 
             if (!notificationResponse.ok) throw new Error(data.message || 'Failed to send notification');
+
+            const mailResponse = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'ItemSurrenderInvalid',
+                    to: row.user.emailAddress,
+                    subject: 'You failed to surrender the item',
+                    name: row.user.firstname,
+                    link: 'tracify-project.vercel.app/my-items#declined-item',
+                    itemName: row.item.name,
+                    location: session.user.roleName,
+                }),
+            });
+
+            if (!mailResponse.ok) throw new Error(data.message || 'Failed to send email');
 
             setOpenSnackbar('success');
             setMessage('Item has been invalidated.')
