@@ -296,7 +296,7 @@ const AdminDashboard = ({ session, users }) => {
               <Grid item xs={12} md={3}>
                 <Paper
                   component={Link}
-                  href="/badge"
+                  href="/badges"
                   elevation={3}
                   sx={{
                     backgroundColor: "#fb8c00",
