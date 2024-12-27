@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Menu, MenuButton, Button, Avatar, Box, Typography, Dropdown, Divider } from "@mui/joy";
+import {
+  Menu,
+  MenuButton,
+  Button,
+  Avatar,
+  Box,
+  Typography,
+  Dropdown,
+  Divider,
+} from "@mui/joy";
 import { signOut } from "next-auth/react";
 
 // Styled component for the dropdown container
@@ -27,8 +36,12 @@ const AvatarComponent = ({ profile, session }) => {
           startDecorator={
             profile?.profile_picture ? (
               <Avatar
-                alt={`${profile?.firstname || "Student"} ${profile?.lastname || ""}`}
-                src={profile?.profile_picture || "https://via.placeholder.com/92"}
+                alt={`${profile?.firstname || "Student"} ${
+                  profile?.lastname || ""
+                }`}
+                src={
+                  profile?.profile_picture || "https://via.placeholder.com/92"
+                }
                 sx={{
                   width: { xs: 40, md: 50 },
                   height: { xs: 40, md: 50 },
@@ -88,8 +101,12 @@ const AvatarComponent = ({ profile, session }) => {
           >
             {profile?.profile_picture ? (
               <Avatar
-                alt={`${profile?.firstname || "Student"} ${profile?.lastname || ""}`}
-                src={profile?.profile_picture || "https://via.placeholder.com/92"}
+                alt={`${profile?.firstname || "Student"} ${
+                  profile?.lastname || ""
+                }`}
+                src={
+                  profile?.profile_picture || "https://via.placeholder.com/92"
+                }
                 sx={{
                   width: { xs: 40, md: 50 },
                   height: { xs: 40, md: 50 },
@@ -106,21 +123,28 @@ const AvatarComponent = ({ profile, session }) => {
                 }}
               />
             )}
-            <Typography level="h6" sx={{ fontWeight: "bold", marginBottom: 0.5 }}>
-              {session?.user?.userType === 'user'
+            <Typography
+              level="h6"
+              sx={{ fontWeight: "bold", marginBottom: 0.5 }}
+            >
+              {!session
+                ? "User"
+                : session?.user?.userType === "user"
                 ? `${profile?.firstname} ${profile?.lastname}`
                 : `${session?.user?.firstname} ${session?.user?.lastname}`}
             </Typography>
             <Typography level="body2" sx={{ fontSize: 12, opacity: 0.8 }}>
-              {session?.user?.userType === 'user' ? profile?._id : session?.user?.roleName}
+              {session?.user?.userType === "user"
+                ? profile?._id
+                : session?.user?.roleName}
             </Typography>
           </Box>
 
           <Box
             sx={{
               display: "flex",
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              alignItems: "center",
+              justifyContent: "space-between",
               gap: 1,
               paddingX: 2,
               paddingY: 1,

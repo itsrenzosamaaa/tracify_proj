@@ -28,8 +28,8 @@ export async function PUT(req, { params }) {
 
     try {
         const formData = await req.json();
-        const updatedBadge = await badge.findOneAndUpdate(
-            { _id: id },
+        const updatedBadge = await badge.findByIdAndUpdate(
+            id,
             { $set: formData },
             { new: true }
         );

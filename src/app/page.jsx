@@ -48,8 +48,6 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("Session: ", session)
-    console.log("Status: ", status)
     if (status === "authenticated") {
       router.push('dashboard');
     }
@@ -66,13 +64,7 @@ export default function Home() {
     });
 
     if (result.ok) {
-      const session = await getSession();
-      if (session && session.user.roleName) {
-        router.push(`/dashboard`);
-      } else {
-        setError("Failed to fetch role.");
-        setIsLoading(false);
-      }
+      await getSession();
     } else {
       setError("Invalid Credentials!!");
       setIsLoading(false);

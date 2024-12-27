@@ -198,7 +198,7 @@ const ViewRoles = ({ roles, session, refreshData, admin }) => {
                                                             <ModalClose />
                                                             <Typography level="h4">Delete Role</Typography>
                                                             <Typography level="body-md" sx={{ mt: 1 }}>
-                                                                Are you sure you want to delete this role? If this role is still assigned to users, it cannot be deleted.
+                                                                Are you sure you want to delete this role? If this role is still assigned to admin users, it cannot be deleted.
                                                             </Typography>
                                                             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
                                                                 <Button disabled={loading} variant="plain" onClick={() => setOpenDeleteModal(null)}>Cancel</Button>

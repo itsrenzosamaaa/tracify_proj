@@ -56,11 +56,6 @@ export async function middleware(request) {
       }
     }
 
-    // Prevent authenticated users from accessing the login page
-    if (isLoginPage) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-
     return NextResponse.next();
   }
 

@@ -39,6 +39,8 @@ const EditUser = ({ user, open, onClose, setOpenSnackbar, setMessage, refreshDat
         } catch (error) {
             setOpenSnackbar('danger');
             setMessage(`Error updating user: ${error}`);
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -80,7 +82,7 @@ const EditUser = ({ user, open, onClose, setOpenSnackbar, setMessage, refreshDat
                                 </Grid>
                             </Grid>
                         </DialogContent>
-                        <Button type="submit" sx={{ mt: 2 }} fullWidth>Update Student</Button>
+                        <Button disabled={loading} loading={loading} type="submit" sx={{ mt: 2 }} fullWidth>Update Student</Button>
                     </form>
                 </ModalDialog>
             </Modal>

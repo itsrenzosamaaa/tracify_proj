@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import admin from "@/lib/models/admin";
 import roles from "@/lib/models/roles";
-import bcrypt from 'bcryptjs';
+import bcrypt from "bcryptjs";
 
 export async function GET(req) {
   try {
@@ -25,10 +25,97 @@ export async function POST(request) {
     const data = await request.json();
     await dbConnect();
 
+    // Step 1: Check for duplicates in the incoming CSV data
+    const seenNames = new Set();
+    const duplicatesInCSV = [];
+
+    for (const user of data) {
+      const fullNameKey = `${user.firstname.toLowerCase()}_${user.lastname.toLowerCase()}`;
+
+      if (seenNames.has(fullNameKey)) {
+        duplicatesInCSV.push(user);
+      } else {
+        seenNames.add(fullNameKey);
+      }
+    }
+
+    if (duplicatesInCSV.length > 0) {
+      return NextResponse.json(
+        {
+          error: "Duplicate records found in the uploaded file.",
+          duplicates: duplicatesInCSV,
+        },
+        { status: 400 }
+      );
+    }
+
+    const emailRegex = /^[a-z]+@thelewiscollege\.edu\.ph$/;
+    const invalidEmails = [];
+    const validData = [];
+
+    for (const user of data) {
+      const isValidEmail = emailRegex.test(user.emailAddress);
+
+      if (!isValidEmail) {
+        invalidEmails.push({
+          firstname: user.firstname,
+          lastname: user.lastname,
+          emailAddress: user.emailAddress,
+        });
+      } else {
+        validData.push(user);
+      }
+    }
+
+    if (invalidEmails.length > 0) {
+      return NextResponse.json(
+        {
+          error: "Invalid email addresses found.",
+          invalidEmails,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Step 2: Check for duplicates in the database
+    const existingUsers = await admin.find({
+      $or: data.map(({ firstname, lastname }) => ({
+        firstname: { $regex: `^${firstname}$`, $options: "i" },
+        lastname: { $regex: `^${lastname}$`, $options: "i" },
+      })),
+    });
+
+    if (existingUsers.length > 0) {
+      return NextResponse.json(
+        {
+          error: "Some records already exist in the database.",
+          duplicates: existingUsers.map((u) => ({
+            firstname: u.firstname,
+            lastname: u.lastname,
+          })),
+        },
+        { status: 409 }
+      );
+    }
+
     const processedData = await Promise.all(
       data.map(async (admin) => {
         admin.role = null;
         admin.date_created = Date.now();
+
+        const emailRegex = /^[a-z]+@thelewiscollege\.edu\.ph$/;
+
+        const isValidEmail = emailRegex.test(admin.emailAddress);
+
+        if (!isValidEmail) {
+          return NextResponse.json(
+            {
+              message:
+                "Invalid email address. Please ensure the email uses lowercase letters only and ends with @thelewiscollege.edu.ph.",
+            },
+            { status: 400 } // Status 400 indicates a bad request
+          );
+        }
 
         if (admin.password) {
           const saltRounds = 10;
@@ -39,7 +126,9 @@ export async function POST(request) {
       })
     );
 
-    const insertedAdmin = await admin.insertMany(processedData, { ordered: false });
+    const insertedAdmin = await admin.insertMany(processedData, {
+      ordered: false,
+    });
 
     return NextResponse.json(
       { message: "Admins imported successfully!", count: insertedAdmin.length },
@@ -49,12 +138,21 @@ export async function POST(request) {
     console.error("Error importing admins:", error);
 
     if (error.name === "ValidationError") {
-      return NextResponse.json({ error: "Validation error in some records." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Validation error in some records." },
+        { status: 400 }
+      );
     } else if (error.code === 11000) {
-      return NextResponse.json({ error: "Some records already exist." }, { status: 409 });
+      return NextResponse.json(
+        { error: "Some records already exist." },
+        { status: 409 }
+      );
     }
 
-    return NextResponse.json({ error: "Failed to import admins." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to import admins." },
+      { status: 500 }
+    );
   }
 }
 
