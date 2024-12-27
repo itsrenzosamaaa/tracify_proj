@@ -54,7 +54,7 @@ const ItemReservedModal = ({ row, open, onClose, refreshData, setMessage, setOpe
             // Award badges if conditions are met
             const badgeData = await makeRequest('/api/badge/found-item', 'GET');
             const filteredBadge = badgeData.filter(badge => badge.schoolCategory === row.finder.user.school_category);
-            const userCounter = await makeRequest(`/api/users/${row.finder.user._id}/increment`, 'PUT', { increment: true });
+            const userCounter = await makeRequest(`/api/users/${row.finder.user._id}/increment`, 'PUT', { increment: 'found-item' });
 
             // Update match status
             await makeRequest(`/api/match-items/${matchedId}`, 'PUT', { request_status: 'Completed' });
