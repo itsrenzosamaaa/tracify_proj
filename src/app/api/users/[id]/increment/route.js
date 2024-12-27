@@ -23,13 +23,13 @@ export async function PUT(req, { params }) {
       if (increment === 'found-item') {
         updatedUser = await user.findOneAndUpdate(
           { _id: id },
-          { $inc: { resolvedItemCount: increment ? 1 : 0 } },
+          { $inc: { resolvedItemCount: 1 } },
           { new: true }
         );
       } else {
         updatedUser = await user.findOneAndUpdate(
           { _id: id },
-          { $inc: { ratingsCount: increment ? 1 : 0 } },
+          { $inc: { ratingsCount: 1 } },
           { new: true }
         );
       }
@@ -37,8 +37,6 @@ export async function PUT(req, { params }) {
       if (!updatedUser) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
-  
-      console.log(updatedUser)
   
       return NextResponse.json({ updatedUser }, { status: 200 });
     } catch (error) {

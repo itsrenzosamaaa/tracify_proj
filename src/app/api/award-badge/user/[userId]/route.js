@@ -10,8 +10,6 @@ export async function PUT(req, { params }) {
         const body = await req.json();
         const { badgeId } = body;
 
-        console.log("Awarding badge:", badgeId);
-
         // Connect to the database
         await dbConnect();
 

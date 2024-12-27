@@ -76,9 +76,9 @@ const ViewAdminUsers = ({ users, roles, refreshData, session }) => {
               throw new Error(result.error || "Failed to import admins");
             }
 
-            refreshData(); // Refresh the list of users
             setMessage("Admins imported successfully!");
             setOpenSnackbar("success");
+            refreshData();
           } catch (error) {
             setMessage(
               error.message || "An error occurred while importing admins."
