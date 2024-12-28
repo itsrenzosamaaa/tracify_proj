@@ -44,8 +44,7 @@ const Badges = ({ badges, profile }) => {
                 <Grid
                   item
                   key={badge._id}
-                  xs={12}
-                  sm={6}
+                  xs={3}
                   md={4}
                   sx={{
                     display: "flex",
