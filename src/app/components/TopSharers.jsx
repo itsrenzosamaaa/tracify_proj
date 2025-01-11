@@ -10,14 +10,14 @@ import {
   TableBody,
 } from "@mui/material";
 
-const TopStudentsEarnedBadges = ({ users }) => {
+const TopSharers = ({ users }) => {
   // Sort users by badge count
   const sortedUsers = users
     .map((user) => ({
       ...user,
-      resolvedFoundItemsCount: user.resolvedItemCount,
+      sharerCount: user.shareCount,
     }))
-    .sort((a, b) => b.resolvedFoundItemsCount - a.resolvedFoundItemsCount);
+    .sort((a, b) => b.sharerCount - a.sharerCount);
 
   // Assign ranks using the average rank method for ties
   const rankedUsers = [];
@@ -29,8 +29,7 @@ const TopStudentsEarnedBadges = ({ users }) => {
     // Check for ties
     while (
       i + 1 < sortedUsers.length &&
-      sortedUsers[i].resolvedFoundItemsCount ===
-        sortedUsers[i + 1].resolvedFoundItemsCount
+      sortedUsers[i].sharerCount === sortedUsers[i + 1].sharerCount
     ) {
       i++;
     }
@@ -49,7 +48,7 @@ const TopStudentsEarnedBadges = ({ users }) => {
   return (
     <>
       <Typography level="h3" gutterBottom>
-        Top Finders
+        Top Sharers
       </Typography>
       <Card
         sx={{
@@ -71,21 +70,21 @@ const TopStudentsEarnedBadges = ({ users }) => {
               {" "}
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ width: "60px" }}>
+                  <TableCell sx={{ width: '60px' }}>
                     <strong>Rank</strong>
                   </TableCell>
-                  <TableCell sx={{ width: "200px" }}>
+                  <TableCell sx={{ width: '200px' }}>
                     <strong>Student Name</strong>
                   </TableCell>
                   <TableCell>
-                    <strong>Count</strong>
+                    <strong>Shares</strong>
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {rankedUsers.slice(0, 10).map((user) => {
                   // Determine the color based on rank
-                  const rank = Math.floor(user.rank);
+                  const rank = Math.floor(user.rank); // Floor the rank for styling purposes
                   const color =
                     rank === 1
                       ? "#FFD700" // Gold
@@ -97,33 +96,29 @@ const TopStudentsEarnedBadges = ({ users }) => {
 
                   return (
                     <TableRow key={user._id}>
-                      <TableCell
-                        sx={{ fontWeight: "bold", color: color, width: "60px" }}
-                      >
+                      <TableCell sx={{ fontWeight: "bold", color: color, width: '60px' }}>
                         <Box
                           sx={{
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            width: 25, // Smaller circle
+                            width: 25,
                             height: 25,
                             borderRadius: "50%",
                             border: "1px solid black",
                             backgroundColor:
                               color === "inherit" ? "transparent" : color,
                             color: "#000000",
-                            fontSize: "0.75rem", // Smaller text
+                            fontSize: "0.75rem",
                           }}
                         >
-                          {Number.isInteger(user.rank)
-                            ? user.rank
-                            : user.rank.toFixed(1)}
+                          {user.rank.toFixed(1)}{" "}
                         </Box>
                       </TableCell>
-                      <TableCell sx={{ width: "200px" }}>
+                      <TableCell sx={{ width: '200px' }}>
                         {user.firstname} {user.lastname}
                       </TableCell>
-                      <TableCell>{user.resolvedFoundItemsCount}</TableCell>
+                      <TableCell>{user.sharerCount}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -136,4 +131,4 @@ const TopStudentsEarnedBadges = ({ users }) => {
   );
 };
 
-export default TopStudentsEarnedBadges;
+export default TopSharers;

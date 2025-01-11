@@ -4,7 +4,7 @@ import { Button, DialogContent, Modal, ModalClose, ModalDialog, Typography } fro
 import React from 'react';
 import ItemDetails from './ItemDetails';
 
-const ItemMissingModal = ({ row, open, onClose, refreshData, snackBar }) => {
+const ItemMissingModal = ({ row, open, onClose, refreshData, snackBar, setMessage, setOpenSnackbar }) => {
     return (
         <Modal open={open === row._id} onClose={onClose}>
             <ModalDialog>
@@ -21,7 +21,7 @@ const ItemMissingModal = ({ row, open, onClose, refreshData, snackBar }) => {
                         'scrollbar-width': 'none', // Hides scrollbar in Firefox
                     }}
                 >
-                    <ItemDetails row={row} refreshData={refreshData} snackBar={snackBar} />
+                    <ItemDetails row={row} refreshData={refreshData} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} />
                 </DialogContent>
                 <Button variant="outlined" onClick={onClose}>Close</Button>
             </ModalDialog>

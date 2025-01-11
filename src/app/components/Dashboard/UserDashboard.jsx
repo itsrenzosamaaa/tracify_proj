@@ -1,194 +1,306 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useMemo } from "react";
-import { Box, Typography, Grid, Button, Table, List, ListItem } from "@mui/joy";
-import { Paper, TableBody, TableCell, TableHead, TableRow, TablePagination, Chip, Card, CardContent, TableContainer, ListItemIcon, ListItemText } from "@mui/material";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import {
+  Box,
+  Typography,
+  Grid,
+  Button,
+  Table,
+  List,
+  ListItem,
+  Snackbar,
+  GlobalStyles
+} from "@mui/joy";
+import {
+  Paper,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TablePagination,
+  Chip,
+  Card,
+  CardContent,
+  TableContainer,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material";
 import { useRouter } from "next/navigation";
 import Loading from "../Loading";
 import TopStudentsEarnedBadges from "../TopStudentsEarnedBadges";
 import { Circle } from "@mui/icons-material";
+import TopSharers from "../TopSharers";
+import SharedPost from "../SharedPost";
+import Post from "../Post";
 
 const UserDashboard = ({ session, status, users }) => {
-    const [userItems, setUserItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const router = useRouter();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(null);
+  const [message, setMessage] = useState("");
+  const [hasMore, setHasMore] = useState(true);
+  const observerRef = useRef();
+  const lastPostRef = useRef();
 
-    const fetchItems = async (accountId) => {
-        setLoading(true);
-        try {
-            const response = await fetch(`/api/items/${accountId}`);
-            const data = await response.json();
-            if (response.ok) {
-                setUserItems(data);
-            } else {
-                console.error('Failed to fetch item data:', data.message);
-                setError(data.message);
-            }
-        } catch (error) {
-            console.error('Failed to fetch item data:', error);
-            setError(error.message);
-        } finally {
-            setLoading(false);
+  console.log(posts);
+
+  const fetchPosts = useCallback(async () => {
+    if (loading || !hasMore) return; // Prevent fetch if already loading or no more posts
+    setLoading(true);
+    try {
+      const lastId = posts.length > 0 ? posts[posts.length - 1]._id : "";
+
+      // Construct URL with the proper query parameter
+      const url = new URL("/api/post", window.location.origin);
+      if (lastId) {
+        url.searchParams.append("lastPostId", lastId);
+      }
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if ("error" in data) {
+        setHasMore(false);
+        return;
+      }
+
+      // Check if data is an array, if not, wrap it into an array
+      const postsToAdd = Array.isArray(data) ? data : [data];
+
+      setPosts((prevPosts) => {
+        const newPosts = [...prevPosts];
+
+        // Filter out duplicates based on post ID
+        postsToAdd.forEach((post) => {
+          if (!newPosts.some((existingPost) => existingPost._id === post._id)) {
+            newPosts.push(post);
+          }
+        });
+
+        return newPosts;
+      });
+    } catch (error) {
+      console.error("Failed to fetch post:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    loading,
+    hasMore,
+    posts,
+    setPosts,
+    setLoading,
+    setHasMore,
+    setError,
+  ]);
+
+  const lastPostElementRef = useCallback(
+    (node) => {
+      if (loading) return;
+
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore) {
+            fetchPosts();
+          }
+        },
+        {
+          rootMargin: "100px",
         }
-    };
+      );
 
-    useEffect(() => {
-        if (status === 'authenticated' && session?.user?.id) {
-            fetchItems(session.user.id);
-        }
-    }, [status, session?.user?.id]);
+      if (node) {
+        observerRef.current.observe(node);
+      }
+    },
+    [loading, hasMore, fetchPosts]
+  );
 
-    const PaperOverview = useMemo(() => [
-        { title: 'Total Found Items', quantity: userItems.filter(userItem => userItem.item.isFoundItem).length, description: 'Items reported as found by the user.' },
-        { title: 'Total Lost Items', quantity: userItems.filter(userItem => !userItem.item.isFoundItem).length, description: 'Items reported as lost by the user.' },
-        { title: 'Pending Requests', quantity: userItems.filter(userItem => userItem.item.status === 'Request').length, description: 'Requests currently being processed.' },
-        { title: 'Resolved Cases', quantity: userItems.filter(userItem => userItem.item.status === 'Resolved' || userItem.item.status === 'Claimed').length, description: 'Cases that have been successfully resolved.' },
-    ], [userItems]);
+  useEffect(() => {
+    if (status === "authenticated" && posts.length === 0) {
+      fetchPosts(); // Trigger the first fetch when lastPostId is null
+    }
+  }, [status, posts.length, fetchPosts]); // Trigger effect if status or lastPostId changes
 
-    if (loading) return <Loading />;
+  if (loading && posts.length === 0) return <Loading />;
 
-    if (error) return <Typography color="error">Error: {error}</Typography>;
+  if (error) return <Typography color="error">Error: {error}</Typography>;
 
-    return (
-        <>
-            <Box sx={{ marginBottom: '20px', maxWidth: '100%' }}>
-                <Typography level="h4" gutterBottom sx={{ display: { xs: "block", sm: 'none', md: 'none', lg: 'none' } }}>
-                    Welcome back, {session.user.firstname}!
+  return (
+    <>
+      <GlobalStyles
+        styles={{
+          "@keyframes fadeIn": {
+            from: {
+              opacity: 0,
+            },
+            to: {
+              opacity: 1,
+            },
+          },
+        }}
+      />
+      <Grid container spacing={2} sx={{ height: "85.5vh" }}>
+        <Grid item lg={8}>
+          <Box
+            sx={{
+              paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+              paddingX: "7rem",
+              maxHeight: "85.5vh",
+              height: "100%",
+              overflowX: "hidden",
+              overflowY: "scroll", // Always reserve space for scrollbar
+              // Default scrollbar styles (invisible)
+              "&::-webkit-scrollbar": {
+                width: "8px", // Always reserve 8px width
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "transparent", // Invisible by default
+                borderRadius: "4px",
+              },
+              // Show scrollbar on hover
+              "&:hover": {
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                },
+              },
+              // Firefox
+              scrollbarWidth: "thin",
+              scrollbarColor: "transparent transparent", // Both track and thumb transparent
+              "&:hover": {
+                scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+              },
+              // IE and Edge
+              msOverflowStyle: "-ms-autohiding-scrollbar",
+            }}
+          >
+            {posts.map((post, index) => {
+              const isLastElement = index === posts.length - 1;
+
+              return (
+                <div
+                  key={post._id}
+                  ref={isLastElement ? lastPostElementRef : null}
+                >
+                  {post.isShared ? (
+                    <SharedPost
+                      setOpenSnackbar={setOpenSnackbar}
+                      setMessage={setMessage}
+                      session={session}
+                      post={post}
+                      sharedBy={post.sharedBy}
+                      originalPost={post.originalPost}
+                      caption={post.caption}
+                      sharedAt={post.sharedAt}
+                    />
+                  ) : (
+                    <Post
+                      setOpenSnackbar={setOpenSnackbar}
+                      setMessage={setMessage}
+                      session={session}
+                      post={post}
+                      author={post.author}
+                      caption={post.caption}
+                      item={post.item}
+                      createdAt={post.createdAt}
+                    />
+                  )}
+                </div>
+              );
+            })}
+            {loading && <Loading />}
+            {!hasMore && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: "100px",
+                  backgroundColor: "rgba(0, 0, 0, 0.05)",
+                  borderRadius: "md",
+                  p: 2,
+                  boxShadow: 1,
+                  animation: "fadeIn 0.5s ease-out",
+                }}
+              >
+                <Typography
+                  level="h6"
+                  color="text.secondary"
+                  sx={{
+                    fontWeight: 600,
+                    letterSpacing: "0.5px",
+                    fontSize: "16px",
+                    textAlign: "center",
+                  }}
+                >
+                  No more posts...
                 </Typography>
-                <Typography level="h3" gutterBottom sx={{ display: { xs: "none", sm: 'block', md: 'block', lg: 'none' } }}>
-                    Welcome back, {session.user.firstname}!
-                </Typography>
-                <Typography level="h2" gutterBottom sx={{ display: { xs: "none", sm: 'none', md: 'none', lg: 'block' } }}>
-                    Welcome back, {session.user.firstname}!
-                </Typography>
-                <Typography gutterBottom>
-                    Dashboard Overview
-                </Typography>
+              </Box>
+            )}
+          </Box>
+        </Grid>
+        <Grid item lg={4}>
+          <Box
+            sx={{
+              paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+              maxHeight: "85.5vh",
+              height: "100%",
+              overflowX: "hidden",
+              overflowY: "scroll", // Always reserve space for scrollbar
+              // Default scrollbar styles (invisible)
+              "&::-webkit-scrollbar": {
+                width: "8px", // Always reserve 8px width
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "transparent", // Invisible by default
+                borderRadius: "4px",
+              },
+              // Show scrollbar on hover
+              "&:hover": {
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                },
+              },
+              // Firefox
+              scrollbarWidth: "thin",
+              scrollbarColor: "transparent transparent", // Both track and thumb transparent
+              "&:hover": {
+                scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+              },
+              // IE and Edge
+              msOverflowStyle: "-ms-autohiding-scrollbar",
+            }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <TopStudentsEarnedBadges users={users} />
+              <TopSharers users={users} />
             </Box>
-
-            {/* Grid Section */}
-            <Grid container spacing={2}>
-                {PaperOverview.map((item, index) => (
-                    <Grid item xs={12} sm={6} lg={3} key={index}>
-                        <Paper
-                            elevation={3}
-                            sx={{
-                                padding: '1rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between',
-                                alignItems: 'flex-start',
-                                borderRadius: '8px',
-                                height: '120px', // Set shorter height
-                                '&:hover': {
-                                    backgroundColor: '#f7f7f7',
-                                    transform: 'translateY(-2px)',
-                                    transition: '0.2s ease-in-out',
-                                },
-                            }}
-                        >
-                            <Typography
-                                sx={{
-                                    fontSize: '1rem',
-                                    fontWeight: '500',
-                                    color: '#555',
-                                    marginBottom: '0.3rem',
-                                    whiteSpace: 'nowrap', // Prevent wrapping
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                }}
-                            >
-                                {item.title}
-                            </Typography>
-                            <Typography
-                                sx={{
-                                    fontSize: '1.8rem',
-                                    fontWeight: '700',
-                                    color: '#1976d2',
-                                    lineHeight: '1.2',
-                                }}
-                            >
-                                {item.quantity}
-                            </Typography>
-                            <Typography
-                                sx={{
-                                    fontSize: '0.85rem',
-                                    fontWeight: '400',
-                                    color: '#888',
-                                    marginTop: '0.5rem',
-                                    lineHeight: '1.2',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 2, // Clamp description to 2 lines
-                                    WebkitBoxOrient: 'vertical',
-                                }}
-                            >
-                                {item.description}
-                            </Typography>
-                        </Paper>
-                    </Grid>
-                ))}
-                <Grid item xs={12} md={6}>
-                    <Typography level="h3" gutterBottom>
-                        Our Mission
-                    </Typography>
-                    <Paper sx={{ padding: '1rem', height: '250px', borderTop: '3px solid #3f51b5' }}>
-                        <Box>
-                            <Typography level="title-md">
-                                The Lewis College is committed to:
-                            </Typography>
-                            <List sx={{ paddingLeft: '1.5rem' }}> {/* Adjust padding to position bullets correctly */}
-                                <ListItem sx={{ display: 'flex', alignItems: 'flex-start' }}> {/* Align text and bullet */}
-                                    <ListItemIcon sx={{ minWidth: 'auto', marginTop: 1.5 }}> {/* Adjust position of icon */}
-                                        <Circle sx={{ fontSize: '8px' }} /> {/* Bullet size and color */}
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary="Serving the people of God through a value-focused educational environment."
-                                    />
-                                </ListItem>
-                                <ListItem sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                                    <ListItemIcon sx={{ minWidth: 'auto', marginTop: 1.5 }}>
-                                        <Circle sx={{ fontSize: '8px' }} />
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary="Developing entrepreneurial leadership and information technology competencies."
-                                    />
-                                </ListItem>
-                                <ListItem sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                                    <ListItemIcon sx={{ minWidth: 'auto', marginTop: 1.5 }}>
-                                        <Circle sx={{ fontSize: '8px' }} />
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary="Forming students to be well-rounded, skilled, and professional men and women."
-                                    />
-                                </ListItem>
-                            </List>
-                        </Box>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <Typography level="h3" gutterBottom>
-                        Our Vision
-                    </Typography>
-                    <Paper sx={{ padding: '1rem', height: '250px', borderTop: '3px solid #3f51b5' }}>
-                        <Box sx={{ textAlign: 'justify' }}>
-                            <Typography level="body-lg" fontWeight={400} sx={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-                                The Lewis College is an education community and a Center of Excellence founded on the Christian Values of Faith, Service, and Personhood.
-                            </Typography>
-                            <Typography level="body-lg" fontWeight={400} sx={{ lineHeight: 1.6 }}>
-                                It exists to provide the Bicol Region with high quality and low-cost education that is accessible to all students aspiring to be productive members of society, propelling them as catalysts for progress in the region.
-                            </Typography>
-                        </Box>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12}>
-                    <TopStudentsEarnedBadges users={users} />
-                </Grid>
-            </Grid>
-        </>
-    );
+          </Box>
+        </Grid>
+      </Grid>
+      <Snackbar
+        autoHideDuration={5000}
+        open={openSnackbar}
+        variant="solid"
+        color={openSnackbar}
+        onClose={(event, reason) => {
+          if (reason === "clickaway") {
+            return;
+          }
+          setOpenSnackbar(null);
+        }}
+      >
+        {message}
+      </Snackbar>
+    </>
+  );
 };
 
 export default UserDashboard;

@@ -1,506 +1,840 @@
-'use client'
+"use client";
 
-import { Grid, Snackbar, Textarea, DialogContent, Modal, ModalDialog, Stack, Typography, ModalClose, FormControl, FormLabel, Input, Autocomplete, Button, Box, Checkbox, Select, Option } from '@mui/joy'
-import React, { useEffect, useState, useCallback } from 'react'
-import { useDropzone } from 'react-dropzone';
+import {
+  Grid,
+  List,
+  ListItem,
+  ListItemDecorator,
+  Textarea,
+  DialogContent,
+  Modal,
+  ModalDialog,
+  Stack,
+  Typography,
+  ModalClose,
+  FormControl,
+  FormLabel,
+  Input,
+  Autocomplete,
+  Button,
+  Box,
+  Checkbox,
+  Select,
+  Option,
+  Chip,
+  ListDivider,
+} from "@mui/joy";
+import React, { useEffect, useState, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
 import Image from "next/image";
-import { useSession } from 'next-auth/react';
-import { format, subDays, isBefore, isAfter } from 'date-fns';
-import Link from 'next/link';
+import { useSession } from "next-auth/react";
+import { format, subDays, isBefore, isAfter } from "date-fns";
+import { Check } from "@mui/icons-material";
+import Link from "next/link";
 
-const PublishFoundItem = ({ open, onClose, fetchItems, setOpenSnackbar, setMessage, setActiveTab }) => {
-    const [users, setUsers] = useState([]);
-    const [name, setName] = useState('');
-    const [color, setColor] = useState();
-    const [size, setSize] = useState();
-    const [category, setCategory] = useState();
-    const [material, setMaterial] = useState();
-    const [condition, setCondition] = useState();
-    const [distinctiveMarks, setDistinctiveMarks] = useState();
-    const [description, setDescription] = useState('');
-    const [location, setLocation] = useState(null);
-    const [foundDate, setFoundDate] = useState('');
-    const [images, setImages] = useState([]);
-    const [finder, setFinder] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const { data: session, status } = useSession();
+const PublishFoundItem = ({
+  open,
+  onClose,
+  fetchItems,
+  setOpenSnackbar,
+  setMessage,
+  setActiveTab,
+}) => {
+  const [users, setUsers] = useState([]);
+  const [name, setName] = useState("");
+  const [color, setColor] = useState([]);
+  const [size, setSize] = useState({ value: "", unit: "cm" });
+  const [sizeNotDetermined, setSizeNotDetermined] = useState(false);
+  const [category, setCategory] = useState();
+  const [material, setMaterial] = useState();
+  const [condition, setCondition] = useState();
+  const [distinctiveMarks, setDistinctiveMarks] = useState();
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState(null);
+  const [foundDate, setFoundDate] = useState("");
+  const [images, setImages] = useState([]);
+  const [finder, setFinder] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
 
-    const fetchUsers = useCallback(async () => {
-        try {
-            const response = await fetch('/api/users');
-            const data = await response.json();
-            const filteredUsers = data.filter(user => user.school_category === session?.user?.schoolCategory);
-            setUsers(filteredUsers);
-        } catch (error) {
-            console.error(error);
-        }
-    }, [session?.user?.schoolCategory]);
+  const fetchUsers = useCallback(async () => {
+    try {
+      const response = await fetch("/api/users");
+      const data = await response.json();
+      const filteredUsers = data.filter(
+        (user) => user.school_category === session?.user?.schoolCategory
+      );
+      setUsers(filteredUsers);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [session?.user?.schoolCategory]);
 
-    useEffect(() => {
-        if (status === 'authenticated' && session?.user?.schoolCategory && session?.user?.userType !== 'user') {
-            fetchUsers();
-        }
-    }, [status, session?.user?.schoolCategory, session?.user?.userType, fetchUsers]);
+  useEffect(() => {
+    if (
+      status === "authenticated" &&
+      session?.user?.schoolCategory &&
+      session?.user?.userType !== "user"
+    ) {
+      fetchUsers();
+    }
+  }, [
+    status,
+    session?.user?.schoolCategory,
+    session?.user?.userType,
+    fetchUsers,
+  ]);
 
-    const locationOptions = ["RLO Building", "FJN Building", "MMN Building", 'Canteen', 'TLC Court', 'Function Hall', 'Library', 'Computer Laboratory'];
+  const handleCheck = (e) => {
+    const check = e.target.checked;
+    setSizeNotDetermined(check);
 
-    // const floorBuilding = ['1st Floor', '2nd Floor', '3rd Floor'];
+    if (check) {
+      setSize({ value: "", unit: "cm" });
+    }
+  };
 
-    // const specificBuildingLocations = ['Hallway', 'Inside the Room', 'Restroom'];
+  const locationOptions = {
+    "RLO Building": ["RLO101", "RLO102", "RLO201", "RLO202", "RLO Restroom"],
+    "FJN Building": [
+      "FJN101",
+      "FJN102",
+      "FJN201",
+      "FJN202",
+      "FJN301",
+      "FJN302",
+      "FJN Restroom (1st Floor)",
+      "FJN Restroom (2nd Floor)",
+      "FJN Restroom (3rd Floor)",
+    ],
+    "MMN Building": [
+      "MMN101",
+      "MMN102",
+      "MMN103",
+      "MMN201",
+      "MMN202",
+      "MMN203",
+      "MMN301",
+      "MMN302",
+      "MMN303",
+      "MMN Restroom (2nd Floor)",
+      "MMN Restroom (3rd Floor)",
+    ],
+    Others: [
+      "Canteen",
+      "TLC Court",
+      "Function Hall",
+      "Library",
+      "COMLAB A",
+      "COMLAB B",
+      "COMLAB C",
+    ],
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+  const colors = {
+    "RLO Building": "primary",
+    "FJN Building": "success",
+    "MMN Building": "warning",
+    Others: "danger",
+  };
 
-        try {
-            if (images.length === 0) {
-                setOpenSnackbar('danger');
-                setMessage('Please upload at least one image.');
-                return;
-            }
-            
-            const now = new Date();
-            const thirtyDaysAgo = subDays(now, 30);
-            const selectedDate = new Date(foundDate);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-            if (isBefore(selectedDate, thirtyDaysAgo)) {
-                setOpenSnackbar('danger');
-                setMessage('The found date should be within the last 30 days.')
-                setLoading(false);
-                return;
-            }
+    try {
+      if (images.length === 0) {
+        setOpenSnackbar("danger");
+        setMessage("Please upload at least one image.");
+        return;
+      }
 
-            if (isAfter(selectedDate, now)) {
-                setOpenSnackbar('danger');
-                setMessage('The found date cannot be in the future.')
-                setLoading(false);
-                return;
-            }
+      const now = new Date();
+      const thirtyDaysAgo = subDays(now, 30);
+      const selectedDate = new Date(foundDate);
 
-            // Create found item data with lost item ID as the owner
-            let foundItemData = {
-                isFoundItem: true,
-                name,
-                color,
-                size,
-                category,
-                material,
-                condition,
-                distinctiveMarks,
-                description,
-                location,
-                date_time: format(selectedDate, 'MMMM dd,yyyy hh:mm a'),
-                images,
-                status: session.user.userType === 'user' ? 'Request' : 'Published',
-            };
+      if (isBefore(selectedDate, thirtyDaysAgo)) {
+        setOpenSnackbar("danger");
+        setMessage("The found date should be within the last 30 days.");
+        setLoading(false);
+        return;
+      }
 
-            if (foundItemData.status === 'Request') {
-                foundItemData.dateRequest = new Date();
-                foundItemData.monitoredBy = null;
-            } else {
-                foundItemData.datePublished = new Date();
-                foundItemData.monitoredBy = session?.user?.id;
-            }
+      if (isAfter(selectedDate, now)) {
+        setOpenSnackbar("danger");
+        setMessage("The found date cannot be in the future.");
+        setLoading(false);
+        return;
+      }
 
-            const response = await fetch('/api/found-items', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(foundItemData),
-            });
+      // Create found item data with lost item ID as the owner
+      let foundItemData = {
+        isFoundItem: true,
+        name,
+        color,
+        size: sizeNotDetermined ? "N/A" : `${size.value} ${size.unit}`,
+        category,
+        material,
+        condition,
+        distinctiveMarks,
+        description,
+        location,
+        date_time: format(selectedDate, "MMMM dd,yyyy hh:mm a"),
+        images,
+        status: session.user.userType === "user" ? "Request" : "Published",
+      };
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Unexpected response format' }));
-                setOpenSnackbar('danger');
-                setMessage(`Failed to add found item: ${errorData.error}`)
-            }
+      if (foundItemData.status === "Request") {
+        foundItemData.dateRequest = new Date();
+        foundItemData.monitoredBy = null;
+      } else {
+        foundItemData.datePublished = new Date();
+        foundItemData.monitoredBy = session?.user?.id;
+      }
 
-            const foundItemResponse = await response.json();
+      const response = await fetch("/api/found-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(foundItemData),
+      });
 
-            const finderData = {
-                user: session.user.userType === 'user' ? session?.user?.id : finder?._id,
-                item: foundItemResponse._id,
-            };
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unexpected response format" }));
+        setOpenSnackbar("danger");
+        setMessage(`Failed to add found item: ${errorData.error}`);
+      }
 
-            const foundResponse = await fetch('/api/finder', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(finderData),
-            });
+      const foundItemResponse = await response.json();
 
-            if (session?.user?.userType !== 'user') {
-                await Promise.all([
-                    fetch('/api/notification', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            receiver: finder._id,
-                            message: `The found item (${name}) you reported to ${session.user.roleName} has been published!`,
-                            type: 'Found Items',
-                            markAsRead: false,
-                            dateNotified: new Date(),
-                        }),
-                    }),
-                    fetch('/api/send-email', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            to: finder.emailAddress,
-                            name: finder.firstname,
-                            link: 'tracify-project.vercel.app',
-                            success: true,
-                            title: 'Found Item Published Successfully!',
-                        }),
-                    }),
-                ]);
-            }
-            resetForm();
-            if (session?.user?.userType === 'user') setActiveTab('requested-item');
-            setOpenSnackbar('success');
-            setMessage(session?.user?.userType === 'user' ? 'Item requested successfully!' : 'Item published successfully!')
-        } catch (error) {
-            setOpenSnackbar('danger');
-            setMessage('An unexpected error occurred.')
-        } finally {
-            setLoading(false);
-        }
-    };
+      const finderData = {
+        user:
+          session.user.userType === "user" ? session?.user?.id : finder?._id,
+        item: foundItemResponse._id,
+      };
 
-    // Helper function to reset form fields and close the modal
-    const resetForm = async () => {
-        await onClose();
-        setName('');
-        setColor();
-        setSize();
-        setCategory();
-        setMaterial();
-        setCondition();
-        setDistinctiveMarks();
-        setDescription('');
-        setLocation(null);
-        setFoundDate('');
-        setImages([]);
-        setFinder(null);
-        await fetchItems();
-    };
+      const foundResponse = await fetch("/api/finder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(finderData),
+      });
 
+      if (session?.user?.userType !== "user") {
+        await Promise.all([
+          fetch("/api/post", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              author: finder?._id,
+              caption: `Check this item I found in ${location}!`,
+              item: foundItemResponse._id,
+              createdAt: new Date(),
+            }),
+          }),
+          fetch("/api/notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              receiver: finder._id,
+              message: `The found item (${name}) you reported to ${session.user.roleName} has been published!`,
+              type: "Found Items",
+              markAsRead: false,
+              dateNotified: new Date(),
+            }),
+          }),
+          fetch("/api/send-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to: finder.emailAddress,
+              name: finder.firstname,
+              link: "tracify-project.vercel.app",
+              success: true,
+              title: "Found Item Published Successfully!",
+            }),
+          }),
+        ]);
+      }
+      resetForm();
+      if (session?.user?.userType === "user") setActiveTab("requested-item");
+      setOpenSnackbar("success");
+      setMessage(
+        session?.user?.userType === "user"
+          ? "Item requested successfully!"
+          : "Item published successfully!"
+      );
+    } catch (error) {
+      setOpenSnackbar("danger");
+      setMessage("An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const onDrop = (acceptedFiles) => {
-        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif']; // Valid image types
+  // Helper function to reset form fields and close the modal
+  const resetForm = async () => {
+    await onClose();
+    setName("");
+    setColor([]);
+    setSize({ value: "", unit: "cm" });
+    setSizeNotDetermined(false);
+    setCategory();
+    setMaterial();
+    setCondition();
+    setDistinctiveMarks();
+    setDescription("");
+    setLocation(null);
+    setFoundDate("");
+    setImages([]);
+    setFinder(null);
+    await fetchItems();
+  };
 
-        const newImages = acceptedFiles
-            .filter((file) => validImageTypes.includes(file.type)) // Filter valid image files
-            .map((file) => {
-                const reader = new FileReader();
-                return new Promise((resolve) => {
-                    reader.onloadend = () => {
-                        resolve(reader.result); // Resolve the base64 URL
-                    };
-                    reader.readAsDataURL(file); // Convert file to base64 URL
-                });
-            });
+  const onDrop = (acceptedFiles) => {
+    const validImageTypes = ["image/jpeg", "image/png", "image/gif"]; // Valid image types
 
-        Promise.all(newImages).then((base64Images) => {
-            setImages((prev) => [...prev, ...base64Images]); // Add new images to the state
+    const newImages = acceptedFiles
+      .filter((file) => validImageTypes.includes(file.type)) // Filter valid image files
+      .map((file) => {
+        const reader = new FileReader();
+        return new Promise((resolve) => {
+          reader.onloadend = () => {
+            resolve(reader.result); // Resolve the base64 URL
+          };
+          reader.readAsDataURL(file); // Convert file to base64 URL
         });
-    };
+      });
 
-    const { getRootProps, getInputProps } = useDropzone({
-        onDrop,
-        accept: {
-            'image/jpeg': [],
-            'image/png': [],
-            'image/gif': [],
-        },
-        multiple: true,
-        required: true,
+    Promise.all(newImages).then((base64Images) => {
+      setImages((prev) => [...prev, ...base64Images]); // Add new images to the state
     });
+  };
 
-    const removeImage = (index) => {
-        setImages((prev) => prev.filter((_, i) => i !== index)); // Remove image by index
-    };
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: {
+      "image/jpeg": [],
+      "image/png": [],
+      "image/gif": [],
+    },
+    multiple: true,
+    required: true,
+  });
 
-    if (status === 'loading') return null;
+  const removeImage = (index) => {
+    setImages((prev) => prev.filter((_, i) => i !== index)); // Remove image by index
+  };
 
-    return (
-        <>
-            <Modal open={open} onClose={onClose}>
-                <ModalDialog
-                    sx={{
-                        maxWidth: '600px', // Adjust to your desired width
-                        width: '90%', // Ensures responsiveness on smaller screens
-                    }}
-                >
-                    <ModalClose />
-                    <Typography level="h4" sx={{ mb: 2 }}>{session?.user?.userType === 'user' ? 'Request' : 'Post'} Found Item</Typography>
-                    <DialogContent
+  if (status === "loading") return null;
+
+  return (
+    <>
+      <Modal open={open} onClose={onClose}>
+        <ModalDialog
+          sx={{
+            maxWidth: "600px", // Adjust to your desired width
+            width: "90%", // Ensures responsiveness on smaller screens
+          }}
+        >
+          <ModalClose />
+          <Typography level="h4" sx={{ mb: 2 }}>
+            {session?.user?.userType === "user" ? "Request" : "Post"} Found Item
+          </Typography>
+          <DialogContent
+            sx={{
+              overflowX: "hidden",
+              overflowY: "auto", // Allows vertical scrolling
+              "&::-webkit-scrollbar": { display: "none" }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+              "-ms-overflow-style": "none", // Hides scrollbar in IE and Edge
+              "scrollbar-width": "none", // Hides scrollbar in Firefox
+            }}
+          >
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={2}>
+                {session?.user?.userType !== "user" && (
+                  <FormControl required>
+                    <FormLabel>Finder</FormLabel>
+                    <Autocomplete
+                      placeholder="Select a finder"
+                      options={users || []}
+                      value={finder}
+                      onChange={(event, value) => {
+                        setFinder(value);
+                      }}
+                      getOptionLabel={(user) => {
+                        return user
+                          ? `${user.firstname} ${user.lastname}`
+                          : "No Options";
+                      }}
+                      isOptionEqualToValue={(option, value) =>
+                        option.id === value?.id
+                      }
+                    />
+                  </FormControl>
+                )}
+                <FormControl required>
+                  <FormLabel>Item Name</FormLabel>
+                  <Input
+                    type="text"
+                    name="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </FormControl>
+                <Grid container spacing={1}>
+                  <Grid item xs={12}>
+                    <FormControl>
+                      <Box
                         sx={{
-                            overflowX: 'hidden',
-                            overflowY: 'auto', // Allows vertical scrolling
-                            '&::-webkit-scrollbar': { display: 'none' }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
-                            '-ms-overflow-style': 'none', // Hides scrollbar in IE and Edge
-                            'scrollbar-width': 'none', // Hides scrollbar in Firefox
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
                         }}
+                      >
+                        <FormLabel>Color</FormLabel>
+                        {color.length > 0 && (
+                          <Button
+                            color="danger"
+                            size="small"
+                            onClick={() => setColor([])}
+                          >
+                            Discard All
+                          </Button>
+                        )}
+                      </Box>
+                      <Select
+                        multiple
+                        fullWidth
+                        required
+                        value={color}
+                        renderValue={(selected) => (
+                          <Box sx={{ display: "flex", gap: "0.25rem" }}>
+                            {selected.map((selectedOption, index) => (
+                              <Chip key={index} variant="soft" color="primary">
+                                {selectedOption.label}
+                              </Chip>
+                            ))}
+                          </Box>
+                        )}
+                        onChange={(e, value) => setColor(value)}
+                      >
+                        <Option value="" disabled>
+                          Select Color
+                        </Option>
+                        {[
+                          "Black",
+                          "White",
+                          "Blue",
+                          "Red",
+                          "Brown",
+                          "Yellow",
+                          "Green",
+                          "Orange",
+                          "Violet",
+                          "Pink",
+                          "Gray",
+                          "Cyan",
+                          "Beige",
+                          "Gold",
+                          "Silver",
+                        ].map((name) => (
+                          <Option key={name} value={name}>
+                            {name}
+                          </Option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        mb: 0.7,
+                      }}
                     >
-                        <form onSubmit={handleSubmit}>
-                            <Stack spacing={2}>
-                                {
-                                    session?.user?.userType !== 'user' &&
-                                    <FormControl required>
-                                        <FormLabel>Finder</FormLabel>
-                                        <Autocomplete
-                                            placeholder="Select a finder"
-                                            options={users || []}
-                                            value={finder}
-                                            onChange={(event, value) => {
-                                                setFinder(value);
-                                            }}
-                                            getOptionLabel={(user) => {
-                                                return user ? `${user.firstname} ${user.lastname}` : 'No Options';
-                                            }}
-                                            isOptionEqualToValue={(option, value) => option.id === value?.id}
-                                        />
-                                    </FormControl>
+                      <FormLabel>Size</FormLabel>
+                      <Checkbox
+                        size="sm"
+                        label="If N/A, check this"
+                        checked={sizeNotDetermined}
+                        onChange={handleCheck}
+                      />
+                    </Box>
+                    <Input
+                      disabled={sizeNotDetermined}
+                      type="number"
+                      required
+                      value={size.value}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        setSize({ ...size, value });
+                      }}
+                      onKeyDown={(e) => {
+                        if (
+                          ["e", "E", "-", "+"].includes(e.key) ||
+                          (!/^\d$/.test(e.key) &&
+                            e.key !== "Backspace" &&
+                            e.key !== "Delete" &&
+                            e.key !== "ArrowLeft" &&
+                            e.key !== "ArrowRight")
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
+                      placeholder="Enter size"
+                      sx={{
+                        "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
+                          {
+                            display: "none",
+                          },
+                        "& input[type=number]": {
+                          MozAppearance: "textfield",
+                        },
+                      }}
+                      endDecorator={
+                        <Select
+                          disabled={sizeNotDetermined}
+                          variant="soft"
+                          size="small"
+                          value={size.unit}
+                          onChange={(e, newValue) =>
+                            setSize({ ...size, unit: newValue })
+                          }
+                          placeholder="Unit"
+                          sx={{
+                            width: "40px",
+                            ml: 0.5,
+                            "& .MuiSelect-indicator": {
+                              display: "none",
+                            },
+                            "& .MuiSelect-button": {
+                              minHeight: "28px",
+                              textAlign: "center",
+                            },
+                            "& .MuiInputBase-input": {
+                              textAlign: "center",
+                            },
+                            "& .MuiOption-root": {
+                              textAlign: "center",
+                            },
+                          }}
+                        >
+                          {["cm", "inch", "m", "ft"].map((unit) => (
+                            <Option key={unit} value={unit}>
+                              {unit}
+                            </Option>
+                          ))}
+                        </Select>
+                      }
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <FormControl>
+                      <FormLabel>Category</FormLabel>
+                      <Select
+                        required
+                        value={category}
+                        onChange={(e, value) => setCategory(value)}
+                      >
+                        <Option value="" disabled>
+                          Select Category
+                        </Option>
+                        {[
+                          "Electronics",
+                          "Clothing",
+                          "Accessories",
+                          "School Supplies",
+                          "Books",
+                          "Tools",
+                          "Sports Equipment",
+                        ].map((name) => (
+                          <Option key={name} value={name}>
+                            {name}
+                          </Option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <FormControl>
+                      <FormLabel>Material</FormLabel>
+                      <Select
+                        required
+                        value={material}
+                        onChange={(e, value) => setMaterial(value)}
+                      >
+                        <Option value="" disabled>
+                          Select Material
+                        </Option>
+                        {[
+                          "Leather",
+                          "Metal",
+                          "Plastic",
+                          "Fabric",
+                          "Wood",
+                          "Glass",
+                          "Ceramic",
+                          "Stone",
+                          "Rubber",
+                          "Silicone",
+                          "Paper",
+                          "Wool",
+                          "Cotton",
+                          "Nylon",
+                        ].map((name) => (
+                          <Option key={name} value={name}>
+                            {name}
+                          </Option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <FormControl>
+                      <FormLabel>Condition</FormLabel>
+                      <Select
+                        required
+                        value={condition}
+                        onChange={(e, value) => setCondition(value)}
+                      >
+                        <Option value="" disabled>
+                          Select Condition
+                        </Option>
+                        {[
+                          "New",
+                          "Damaged",
+                          "Old",
+                          "Used",
+                          "Broken",
+                          "Worn",
+                        ].map((name) => (
+                          <Option key={name} value={name}>
+                            {name}
+                          </Option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <FormControl>
+                      <FormLabel>Distinctive Marks</FormLabel>
+                      <Select
+                        required
+                        value={distinctiveMarks}
+                        onChange={(e, value) => setDistinctiveMarks(value)}
+                      >
+                        <Option value="" disabled>
+                          Select Distinctive Marks
+                        </Option>
+                        {[
+                          "None",
+                          "Scratches",
+                          "Stickers",
+                          "Initials",
+                          "Keychain",
+                          "Dents",
+                          "Stains",
+                          "Fading",
+                          "Pen Marks",
+                        ].map((name) => (
+                          <Option key={name} value={name}>
+                            {name}
+                          </Option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+                <FormControl required>
+                  <FormLabel>Item Description</FormLabel>
+                  <Textarea
+                    type="text"
+                    name="description"
+                    minRows={4}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl required>
+                  <FormLabel>Found Location</FormLabel>
+                  <Select
+                    fullWidth
+                    placeholder="Select Found Location"
+                    value={location}
+                    onChange={(e, value) => setLocation(value)}
+                    slotProps={{
+                      listbox: {
+                        component: "div",
+                        sx: {
+                          maxHeight: 240,
+                          overflow: "auto",
+                          "--List-padding": "0px",
+                          "--ListItem-radius": "0px",
+                        },
+                      },
+                    }}
+                  >
+                    {Object.entries(locationOptions).map(
+                      ([building, rooms], index) => (
+                        <React.Fragment key={building}>
+                          {/* Optional divider between groups */}
+                          {index !== 0 && <ListDivider role="none" />}
+
+                          {/* Group List for Building */}
+                          <List
+                            aria-labelledby={`select-group-${building}`}
+                            sx={{ "--ListItemDecorator-size": "28px" }}
+                          >
+                            {/* Group Header */}
+                            <ListItem id={`select-group-${building}`} sticky>
+                              <Typography
+                                level="body-xs"
+                                sx={{ textTransform: "uppercase" }}
+                              >
+                                {building} ({rooms.length})
+                              </Typography>
+                            </ListItem>
+
+                            {/* Location Options */}
+                            {rooms.map((room) => (
+                              <Option
+                                key={room}
+                                value={room}
+                                label={
+                                  <React.Fragment>
+                                    {/* Displaying the building name with a color tag */}
+                                    <Chip
+                                      size="sm"
+                                      color={colors[building]}
+                                      sx={{ borderRadius: "xs", mr: 1 }}
+                                    >
+                                      {building}
+                                    </Chip>{" "}
+                                    {room}
+                                  </React.Fragment>
                                 }
-                                <FormControl required>
-                                    <FormLabel>Item Name</FormLabel>
-                                    <Input type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} />
-                                </FormControl>
-                                <Grid container spacing={1}>
-                                    <Grid item xs={12} sm={4}>
-                                        <FormControl>
-                                            <FormLabel>Color</FormLabel>
-                                            <Select
-                                                fullWidth
-                                                required
-                                                value={color}
-                                                onChange={(e, value) => setColor(value)}
-                                            >
-                                                <Option value="" disabled>
-                                                    Select Color
-                                                </Option>
-                                                {['Black', 'White', 'Blue', 'Red', 'Brown', 'Yellow', 'Green', 'Orange', 'Violet', 'Pink', 'Gray', 'Cyan', 'Beige', 'Gold', 'Silver'].map((name) => (
-                                                    <Option key={name} value={name}>
-                                                        {name}
-                                                    </Option>
-                                                ))}
+                              >
+                                <ListItemDecorator sx={{ opacity: 0 }}>
+                                  <Check />
+                                </ListItemDecorator>
+                                {room}
+                              </Option>
+                            ))}
+                          </List>
+                        </React.Fragment>
+                      )
+                    )}
+                  </Select>
+                </FormControl>
+                <FormControl required>
+                  <FormLabel>Found Date and Time</FormLabel>
+                  <Input
+                    type="datetime-local"
+                    name="foundDate"
+                    value={foundDate}
+                    onChange={(e) => setFoundDate(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl>
+                  <Box
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <FormLabel>Upload Images</FormLabel>
+                    {images?.length > 0 && (
+                      <Button
+                        size="sm"
+                        color="danger"
+                        onClick={() => setImages([])} // Clear all images
+                      >
+                        Discard All
+                      </Button>
+                    )}
+                  </Box>
+                  <Box
+                    {...getRootProps({ className: "dropzone" })}
+                    sx={{
+                      border: "2px dashed #888",
+                      borderRadius: "4px",
+                      padding: "20px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                      backgroundColor: "#f9f9f9",
+                      mb: 2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fill, minmax(100px, 1fr))",
+                        gap: "10px",
+                      }}
+                    >
+                      {images.map((image, index) => (
+                        <Box key={index} sx={{ position: "relative" }}>
+                          <Image
+                            src={image}
+                            width={0}
+                            height={0}
+                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            style={{
+                              width: "100%",
+                              height: "auto",
+                              objectFit: "cover",
+                              borderRadius: "4px",
+                            }}
+                            alt={`Preview ${index + 1}`}
+                          />
+                          <Button
+                            size="sm"
+                            color="danger"
+                            sx={{
+                              position: "absolute",
+                              top: "5px",
+                              right: "5px",
+                              minWidth: "unset",
+                              padding: "2px",
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeImage(index);
+                            }}
+                          >
+                            ✕
+                          </Button>
+                        </Box>
+                      ))}
+                    </Box>
+                    <input
+                      {...getInputProps()}
+                      multiple
+                      style={{ display: "none" }}
+                    />
+                    <p>
+                      {images.length === 0 &&
+                        "Drag 'n' drop some files here, or click to select files"}
+                    </p>
+                  </Box>
+                </FormControl>
+                <Button loading={loading} disabled={loading} type="submit">
+                  Publish
+                </Button>
+              </Stack>
+            </form>
+          </DialogContent>
+        </ModalDialog>
+      </Modal>
+    </>
+  );
+};
 
-                                            </Select>
-                                        </FormControl>
-                                    </Grid>
-
-                                    <Grid item xs={12} sm={4}>
-                                        <FormControl>
-                                            <FormLabel>Size</FormLabel>
-                                            <Select
-                                                required
-                                                value={size}
-                                                onChange={(e, value) => setSize(value)}
-                                            >
-                                                <Option value="" disabled>
-                                                    Select Size
-                                                </Option>
-                                                {['Small', 'Medium', 'Large'].map((name) => (
-                                                    <Option key={name} value={name}>
-                                                        {name}
-                                                    </Option>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-                                    </Grid>
-
-                                    <Grid item xs={12} sm={4}>
-                                        <FormControl>
-                                            <FormLabel>Category</FormLabel>
-                                            <Select
-                                                required
-                                                value={category}
-                                                onChange={(e, value) => setCategory(value)}
-                                            >
-                                                <Option value="" disabled>
-                                                    Select Category
-                                                </Option>
-                                                {['Electronics', 'Clothing', 'Accessories', 'School Supplies', 'Books', 'Tools', 'Sports Equipment'].map((name) => (
-                                                    <Option key={name} value={name}>
-                                                        {name}
-                                                    </Option>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-                                    </Grid>
-                                </Grid>
-
-                                <Grid container spacing={1}>
-                                    <Grid item xs={12} sm={4}>
-                                        <FormControl>
-                                            <FormLabel>Material</FormLabel>
-                                            <Select
-                                                required
-                                                value={material}
-                                                onChange={(e, value) => setMaterial(value)}
-                                            >
-                                                <Option value="" disabled>
-                                                    Select Material
-                                                </Option>
-                                                {['Leather', 'Metal', 'Plastic', 'Fabric', 'Wood', 'Glass', 'Ceramic', 'Stone', 'Rubber', 'Silicone', 'Paper', 'Wool', 'Cotton', 'Nylon'].map((name) => (
-                                                    <Option key={name} value={name}>
-                                                        {name}
-                                                    </Option>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-                                    </Grid>
-                                    <Grid item xs={12} sm={4}>
-                                        <FormControl>
-                                            <FormLabel>Condition</FormLabel>
-                                            <Select
-                                                required
-                                                value={condition}
-                                                onChange={(e, value) => setCondition(value)}
-                                            >
-                                                <Option value="" disabled>
-                                                    Select Condition
-                                                </Option>
-                                                {['New', 'Damaged', 'Old', 'Used', 'Broken', 'Worn'].map((name) => (
-                                                    <Option key={name} value={name}>
-                                                        {name}
-                                                    </Option>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-                                    </Grid>
-                                    <Grid item xs={12} sm={4}>
-                                        <FormControl>
-                                            <FormLabel>Distinctive Marks</FormLabel>
-                                            <Select
-                                                required
-                                                value={distinctiveMarks}
-                                                onChange={(e, value) => setDistinctiveMarks(value)}
-                                            >
-                                                <Option value="" disabled>
-                                                    Select Distinctive Marks
-                                                </Option>
-                                                {['None', 'Scratches', 'Stickers', 'Initials', 'Keychain', 'Dents', 'Stains', 'Fading', 'Pen Marks'].map((name) => (
-                                                    <Option key={name} value={name}>
-                                                        {name}
-                                                    </Option>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-                                    </Grid>
-                                </Grid>
-                                <FormControl required>
-                                    <FormLabel>Item Description</FormLabel>
-                                    <Textarea type="text" name="description" minRows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
-                                </FormControl>
-                                <FormControl required>
-                                    <FormLabel>Found Location</FormLabel>
-                                    <Autocomplete
-                                        placeholder="Select a location"
-                                        options={locationOptions}
-                                        value={location}
-                                        onChange={(event, value) => {
-                                            setLocation(value);
-                                        }}
-                                        getOptionLabel={(option) => option}
-                                    />
-                                </FormControl>
-                                <FormControl required>
-                                    <FormLabel>Found Date and Time</FormLabel>
-                                    <Input
-                                        type="datetime-local"
-                                        name="foundDate"
-                                        value={foundDate}
-                                        onChange={(e) => setFoundDate(e.target.value)}
-                                    />
-                                </FormControl>
-                                <FormControl>
-                                    <Box
-                                        sx={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            mb: 1,
-                                        }}
-                                    >
-                                        <FormLabel>Upload Images</FormLabel>
-                                        {images?.length > 0 && (
-                                            <Button
-                                                size="sm"
-                                                color="danger"
-                                                onClick={() => setImages([])} // Clear all images
-                                            >
-                                                Discard All
-                                            </Button>
-                                        )}
-                                    </Box>
-                                    <Box
-                                        {...getRootProps({ className: 'dropzone' })}
-                                        sx={{
-                                            border: '2px dashed #888',
-                                            borderRadius: '4px',
-                                            padding: '20px',
-                                            textAlign: 'center',
-                                            cursor: 'pointer',
-                                            backgroundColor: '#f9f9f9',
-                                            mb: 2,
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                display: 'grid',
-                                                gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                                                gap: '10px',
-                                            }}
-                                        >
-                                            {images.map((image, index) => (
-                                                <Box key={index} sx={{ position: 'relative' }}>
-                                                    <Image
-                                                        src={image}
-                                                        width={0}
-                                                        height={0}
-                                                        sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                        style={{
-                                                            width: '100%',
-                                                            height: 'auto',
-                                                            objectFit: 'cover',
-                                                            borderRadius: '4px',
-                                                        }}
-                                                        alt={`Preview ${index + 1}`}
-                                                    />
-                                                    <Button
-                                                        size="sm"
-                                                        color="danger"
-                                                        sx={{
-                                                            position: 'absolute',
-                                                            top: '5px',
-                                                            right: '5px',
-                                                            minWidth: 'unset',
-                                                            padding: '2px',
-                                                        }}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            removeImage(index);
-                                                        }}
-                                                    >
-                                                        ✕
-                                                    </Button>
-                                                </Box>
-                                            ))}
-                                        </Box>
-                                        <input {...getInputProps()} multiple style={{ display: 'none' }} />
-                                        <p>
-                                            {images.length === 0 && "Drag 'n' drop some files here, or click to select files"}
-                                        </p>
-                                    </Box>
-                                </FormControl>
-                                <Button loading={loading} disabled={loading} type="submit">Publish</Button>
-                            </Stack>
-                        </form>
-                    </DialogContent>
-                </ModalDialog>
-            </Modal>
-        </>
-    )
-}
-
-export default PublishFoundItem
+export default PublishFoundItem;

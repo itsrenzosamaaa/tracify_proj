@@ -23,8 +23,6 @@ const NotificationComponent = ({ status, session }) => {
     const [error, setError] = useState(null);
     const router = useRouter();
 
-    console.log(notifications)
-
     // Fetch notifications from the server
     const fetchNotifications = useCallback(async () => {
         // Only proceed if we have a valid session and user ID

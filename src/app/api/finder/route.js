@@ -15,9 +15,7 @@ export async function GET() {
     const findFinders = await finder.find()
       .populate({
         path: 'user',
-        populate: {
-          path: 'selectedBadge'
-        }
+        model: 'User',
       })
       .populate({
         path: 'item',

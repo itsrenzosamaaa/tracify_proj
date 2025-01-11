@@ -12,7 +12,7 @@ const ItemSchema = new mongoose.Schema({
     type: String,
   },
   color: {
-    type: String,
+    type: [String],
   },
   size: {
     type: String,

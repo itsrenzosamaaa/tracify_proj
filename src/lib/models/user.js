@@ -13,6 +13,11 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
   },
+  role: {
+    type: String,
+    enum: ["Student", "Faculty", "Parent", "Security Guard"],
+    required: true,
+  },
   profile_picture: {
     type: String,
   },
@@ -29,16 +34,6 @@ const userSchema = new mongoose.Schema({
   contactNumber: {
     type: String,
   },
-  badges: [{
-    type: mongoose.Types.ObjectId,
-    ref: 'Badge',
-    default: [],
-  }],
-  selectedBadge: { 
-    type: mongoose.Types.ObjectId,
-    ref: 'Badge',
-    default: null,
-  },
   school_category: {
     type: String,
     enum: ["Higher Education", "Basic Education"]
@@ -51,7 +46,7 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  ratingsCount: {
+  shareCount: {
     type: Number,
     default: 0,
   },

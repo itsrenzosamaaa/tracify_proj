@@ -17,6 +17,7 @@ import TopStudentsEarnedBadges from "../TopStudentsEarnedBadges";
 import PublishFoundItem from "../Modal/PublishFoundItem";
 import PublishLostItem from "../Modal/PublishLostItems";
 import { MoreHoriz } from "@mui/icons-material";
+import TopSharers from "../TopSharers";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -566,32 +567,6 @@ const AdminDashboard = ({ session, users }) => {
             )}
           </Grid>
         </Grid>
-
-        {/* Item Reports Over Time */}
-        <Grid
-          item
-          xs={12}
-          lg={6}
-          sx={{ display: "flex", flexDirection: "column" }}
-        >
-          <Typography level="h3" gutterBottom>
-            Item Reports Over Time
-          </Typography>
-          <Card sx={{ flex: 1, borderTop: "3px solid #3f51b5" }}>
-            <CardContent>
-              {isClient && (
-                <Chart
-                  options={chartData.options}
-                  series={chartData.series}
-                  type="line"
-                  height={335}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Top Students */}
         <Grid
           item
           xs={12}
@@ -599,6 +574,14 @@ const AdminDashboard = ({ session, users }) => {
           sx={{ display: "flex", flexDirection: "column" }}
         >
           <TopStudentsEarnedBadges users={users} />
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          lg={6}
+          sx={{ display: "flex", flexDirection: "column" }}
+        >
+          <TopSharers users={users} />
         </Grid>
       </Grid>
     </>

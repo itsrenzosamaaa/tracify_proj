@@ -77,6 +77,7 @@ export const authOptions = {
           user.id = dbAccount._id.toString();
           user.firstname = dbAccount.firstname;
           user.lastname = dbAccount.lastname;
+          user.profile_picture = dbAccount.profile_picture;
           user.contact_number = dbAccount.contactNumber;
           user.school_category = dbAccount.school_category;
           user.userType = userType;
@@ -99,6 +100,7 @@ export const authOptions = {
         token.id = user.id;
         token.firstname = user.firstname;
         token.lastname = user.lastname;
+        token.profile_picture = user.profile_picture;
         token.contactNumber = user.contact_number;
         token.email = user.email;
         token.schoolCategory = user.school_category;
@@ -114,6 +116,7 @@ export const authOptions = {
         session.user.id = token.id;
         session.user.firstname = token.firstname;
         session.user.lastname = token.lastname;
+        session.user.profile_picture = token.profile_picture;
         session.user.contactNumber = token.contactNumber;
         session.user.email = token.email;
         session.user.schoolCategory = token.schoolCategory;
@@ -139,6 +142,7 @@ async function getUserDetails(account, userType) {
     id: account._id.toString(),
     firstname: account.firstname,
     lastname: account.lastname,
+    profile_picture: userType === "admin" ? null : account.profile_picture,
     email: account.emailAddress,
     contact_number: account.contactNumber,
     userType: userType,
