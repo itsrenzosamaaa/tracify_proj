@@ -33,19 +33,19 @@ export async function PUT(req, { params }) {
 
     await dbConnect();
 
-    const emailRegex = /^[a-z]+@thelewiscollege\.edu\.ph$/;
+    // const emailRegex = /^[a-z]+@thelewiscollege\.edu\.ph$/;
 
-    const isValidEmail = emailRegex.test(updatedFormData.emailAddress);
+    // const isValidEmail = emailRegex.test(updatedFormData.emailAddress);
 
-    if (!isValidEmail) {
-      return NextResponse.json(
-        {
-          message:
-            "Invalid email address. Please ensure the email uses lowercase letters only and ends with @thelewiscollege.edu.ph.",
-        },
-        { status: 400 } // Status 400 indicates a bad request
-      );
-    }
+    // if (!isValidEmail) {
+    //   return NextResponse.json(
+    //     {
+    //       message:
+    //         "Invalid email address. Please ensure the email uses lowercase letters only and ends with @thelewiscollege.edu.ph.",
+    //     },
+    //     { status: 400 } // Status 400 indicates a bad request
+    //   );
+    // }
 
     const existingUsers = await user.find({
       $or: [

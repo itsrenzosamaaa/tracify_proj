@@ -288,7 +288,7 @@ const ViewItemPage = ({ params }) => {
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Box>
                                         <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
-                                            <strong>Color:</strong> {lostItem.color}
+                                            <strong>Color:</strong> {lostItem.color.join(', ')}
                                         </Typography>
                                         <Typography level={isXs ? 'body-sm' : 'body-md'} color="neutral">
                                             <strong>Size:</strong> {lostItem.size}

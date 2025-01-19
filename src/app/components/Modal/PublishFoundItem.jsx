@@ -61,29 +61,17 @@ const PublishFoundItem = ({
     try {
       const response = await fetch("/api/users");
       const data = await response.json();
-      const filteredUsers = data.filter(
-        (user) => user.school_category === session?.user?.schoolCategory
-      );
-      setUsers(filteredUsers);
+      setUsers(data);
     } catch (error) {
       console.error(error);
     }
-  }, [session?.user?.schoolCategory]);
+  }, []);
 
   useEffect(() => {
-    if (
-      status === "authenticated" &&
-      session?.user?.schoolCategory &&
-      session?.user?.userType !== "user"
-    ) {
+    if (status === "authenticated" && session?.user?.userType !== "user") {
       fetchUsers();
     }
-  }, [
-    status,
-    session?.user?.schoolCategory,
-    session?.user?.userType,
-    fetchUsers,
-  ]);
+  }, [status, session?.user?.userType, fetchUsers]);
 
   const handleCheck = (e) => {
     const check = e.target.checked;
@@ -343,11 +331,33 @@ const PublishFoundItem = ({
           </Typography>
           <DialogContent
             sx={{
+              paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+              maxHeight: "85.5vh",
+              height: "100%",
               overflowX: "hidden",
-              overflowY: "auto", // Allows vertical scrolling
-              "&::-webkit-scrollbar": { display: "none" }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
-              "-ms-overflow-style": "none", // Hides scrollbar in IE and Edge
-              "scrollbar-width": "none", // Hides scrollbar in Firefox
+              overflowY: "scroll", // Always reserve space for scrollbar
+              // Default scrollbar styles (invisible)
+              "&::-webkit-scrollbar": {
+                width: "8px", // Always reserve 8px width
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "transparent", // Invisible by default
+                borderRadius: "4px",
+              },
+              // Show scrollbar on hover
+              "&:hover": {
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                },
+              },
+              // Firefox
+              scrollbarWidth: "thin",
+              scrollbarColor: "transparent transparent", // Both track and thumb transparent
+              "&:hover": {
+                scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+              },
+              // IE and Edge
+              msOverflowStyle: "-ms-autohiding-scrollbar",
             }}
           >
             <form onSubmit={handleSubmit}>

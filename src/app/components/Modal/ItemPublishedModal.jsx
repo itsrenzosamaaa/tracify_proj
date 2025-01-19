@@ -33,27 +33,33 @@ const ItemPublishedModal = ({
         </Typography>
         <DialogContent
           sx={{
+            paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+            maxHeight: "85.5vh",
+            height: "100%",
             overflowX: "hidden",
-            overflowY: "auto", // Allows vertical scrolling
+            overflowY: "scroll", // Always reserve space for scrollbar
+            // Default scrollbar styles (invisible)
             "&::-webkit-scrollbar": {
-              width: "8px", // Width of the scrollbar
-              opacity: 0, // Hidden by default
-              transition: "opacity 0.3s ease", // Smooth transition
+              width: "8px", // Always reserve 8px width
             },
             "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "rgba(0, 0, 0, 0.4)", // Visible thumb
-              borderRadius: "4px", // Rounded edges
+              backgroundColor: "transparent", // Invisible by default
+              borderRadius: "4px",
             },
+            // Show scrollbar on hover
             "&:hover": {
-              "&::-webkit-scrollbar": {
-                opacity: 1, // Make scrollbar visible on hover
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
               },
             },
-            "-ms-overflow-style": "none", // Hides scrollbar in IE and Edge
-            "scrollbar-width": "none", // Hides scrollbar in Firefox by default
+            // Firefox
+            scrollbarWidth: "thin",
+            scrollbarColor: "transparent transparent", // Both track and thumb transparent
             "&:hover": {
-              "scrollbar-width": "thin", // Visible scrollbar on hover in Firefox
+              scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
             },
+            // IE and Edge
+            msOverflowStyle: "-ms-autohiding-scrollbar",
           }}
         >
           <ItemDetails

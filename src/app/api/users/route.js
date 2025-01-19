@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import user from "@/lib/models/user";
 import bcrypt from "bcryptjs";
+import { nanoid } from "nanoid";
 
 export async function GET() {
   try {
@@ -48,34 +49,6 @@ export async function POST(request) {
       );
     }
 
-    const emailRegex = /^[a-z]+@thelewiscollege\.edu\.ph$/;
-    const invalidEmails = [];
-    const validData = [];
-
-    for (const user of data) {
-      const isValidEmail = emailRegex.test(user.emailAddress);
-
-      if (!isValidEmail) {
-        invalidEmails.push({
-          firstname: user.firstname,
-          lastname: user.lastname,
-          emailAddress: user.emailAddress,
-        });
-      } else {
-        validData.push(user);
-      }
-    }
-
-    if (invalidEmails.length > 0) {
-      return NextResponse.json(
-        {
-          error: "Invalid email addresses found.",
-          invalidEmails,
-        },
-        { status: 400 }
-      );
-    }
-
     // Step 2: Check for duplicates in the database
     const existingUsers = await user.find({
       $or: data.map(({ firstname, lastname }) => ({
@@ -100,13 +73,13 @@ export async function POST(request) {
     // Step 3: Process and insert users
     const processedData = await Promise.all(
       data.map(async (user) => {
-        user._id = user.username;
-        user.badges = [];
+        user._id =  `user_${nanoid(6)}`;
         user.profile_picture = null;
-        user.selectedBadge = null;
         user.date_created = Date.now();
         user.resolvedItemCount = 0;
-        user.ratingsCount = 0;
+        user.shareCount = 0;
+        user.role = user.role;
+        user.birthday = null;
 
         if (user.password) {
           const saltRounds = 10;

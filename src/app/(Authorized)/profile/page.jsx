@@ -17,15 +17,13 @@ const ProfilePage = () => {
     const [openSnackbar, setOpenSnackbar] = useState(null);
     const [message, setMessage] = useState('');
 
-    console.log(items)
-
     useEffect(() => {
         // Fetch student data if authenticated and session contains user id
         if (status === 'authenticated' && session?.user?.id) {
             fetchData(session.user.id);
-            fetchItems(session.user.id);
-            fetchRatings(session?.user?.id)
-            fetchBadges();
+            // fetchItems(session.user.id);
+            // fetchRatings(session?.user?.id)
+            // fetchBadges();
         }
     }, [session?.user?.id, status]);
 
@@ -47,52 +45,52 @@ const ProfilePage = () => {
         }
     };
 
-    const fetchItems = async (accountId) => {
-        try {
-            const response = await fetch(`/api/items/${accountId}`);
-            const data = await response.json();
-            if (response.ok) {
-                setItems(data)
-            } else {
-                console.error('Failed to fetch item data:', data.message);
-            }
-        } catch (error) {
-            console.error('Failed to fetch item data:', error);
-        }
-    };
+    // const fetchItems = async (accountId) => {
+    //     try {
+    //         const response = await fetch(`/api/items/${accountId}`);
+    //         const data = await response.json();
+    //         if (response.ok) {
+    //             setItems(data)
+    //         } else {
+    //             console.error('Failed to fetch item data:', data.message);
+    //         }
+    //     } catch (error) {
+    //         console.error('Failed to fetch item data:', error);
+    //     }
+    // };
 
-    const fetchBadges = async () => {
-        try {
-            const response = await fetch('/api/badge');
-            const data = await response.json();
-            if (response.ok) {
-                setBadges(data)
-            } else {
-                console.error('Failed to fetch item data:', data.message);
-            }
-        } catch (error) {
-            console.error('Failed to fetch item data:', error);
-        }
-    };
+    // const fetchBadges = async () => {
+    //     try {
+    //         const response = await fetch('/api/badge');
+    //         const data = await response.json();
+    //         if (response.ok) {
+    //             setBadges(data)
+    //         } else {
+    //             console.error('Failed to fetch item data:', data.message);
+    //         }
+    //     } catch (error) {
+    //         console.error('Failed to fetch item data:', error);
+    //     }
+    // };
 
-    const fetchRatings = async (accountId) => {
-        try {
-            const receivedResponse = await fetch(`/api/ratings/receiver/${accountId}`)
-            const receivedData = await receivedResponse.json();
-            const sentResponse = await fetch(`/api/ratings/sender/${accountId}`)
-            const sentData = await sentResponse.json();
-            if (receivedResponse.ok && sentResponse.ok) {
-                const filteredReceivedRatings = receivedData.filter(rating => rating?.done_review)
-                const filteredSentRatings = sentData.filter(rating => rating?.done_review)
-                setReceivedRatings(filteredReceivedRatings);
-                setSentRatings(filteredSentRatings)
-            } else {
-                console.error('Failed to fetch ratings:', data.message)
-            }
-        } catch (error) {
-            console.error('Failed to fetch ratings:', error);
-        }
-    }
+    // const fetchRatings = async (accountId) => {
+    //     try {
+    //         const receivedResponse = await fetch(`/api/ratings/receiver/${accountId}`)
+    //         const receivedData = await receivedResponse.json();
+    //         const sentResponse = await fetch(`/api/ratings/sender/${accountId}`)
+    //         const sentData = await sentResponse.json();
+    //         if (receivedResponse.ok && sentResponse.ok) {
+    //             const filteredReceivedRatings = receivedData.filter(rating => rating?.done_review)
+    //             const filteredSentRatings = sentData.filter(rating => rating?.done_review)
+    //             setReceivedRatings(filteredReceivedRatings);
+    //             setSentRatings(filteredSentRatings)
+    //         } else {
+    //             console.error('Failed to fetch ratings:', data.message)
+    //         }
+    //     } catch (error) {
+    //         console.error('Failed to fetch ratings:', error);
+    //     }
+    // }
 
     // Fetch role after profile is loaded
 

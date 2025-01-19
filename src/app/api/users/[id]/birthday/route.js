@@ -6,23 +6,23 @@ export async function PUT(req, { params }) {
     const { id } = params;
 
     try {
-        const { username } = await req.json();
+        const { birthday } = await req.json();
 
-        if (!username) {
+        if (!birthday) {
             return NextResponse.json(
-                { error: "Username is required" },
+                { error: "Birthday is required" },
                 { status: 400 }
             );
         }
 
         await dbConnect();
 
-        const updateUsername = await User.findByIdAndUpdate(
+        const updateBirthday = await User.findByIdAndUpdate(
             id,
-            { $set: { username } },
+            { $set: { birthday } },
             { new: true }
         );
-        if (!updateUsername) {
+        if (!updateBirthday) {
             return NextResponse.json(
                 { error: "User not found" },
                 { status: 404 }
@@ -30,13 +30,13 @@ export async function PUT(req, { params }) {
         }
 
         return NextResponse.json({
-            message: "Username updated successfully",
+            message: "Birthday updated successfully",
         }, { status: 200 });
 
     } catch (error) {
-        console.error("Error updating username:", error);
+        console.error("Error updating birthday:", error);
         return NextResponse.json(
-            { error: "Failed to update username" },
+            { error: "Failed to update birthday" },
             { status: 500 }
         );
     }

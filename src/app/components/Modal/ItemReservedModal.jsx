@@ -13,6 +13,11 @@ import {
   RadioGroup,
   Stack,
   Radio,
+  FormControl,
+  FormLabel,
+  Select,
+  Option,
+  Chip,
 } from "@mui/joy";
 import React, { useState } from "react";
 import { FormControlLabel } from "@mui/material";
@@ -25,13 +30,22 @@ const ItemReservedModal = ({
   refreshData,
   setMessage,
   setOpenSnackbar,
+  users,
 }) => {
   const [declineModal, setDeclineModal] = useState(false);
   const [declineRemarks, setDeclineRemarks] = useState("");
   const [otherReason, setOtherReason] = useState("");
+  const [seePost, setSeePost] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [confirmationItemClaimed, setConfirmationItemClaimed] = useState(false);
+  const [itemClaimed, setItemClaimed] = useState(false);
   const [confirmationItemDecline, setConfirmationItemDecline] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const filteredUsers = users.filter(
+    (user) =>
+      user._id !== row.finder.user._id && user._id !== row.owner.user._id
+  );
 
   const handleReasonChange = (event) => {
     setDeclineRemarks(event.target.value);
@@ -78,40 +92,14 @@ const ItemReservedModal = ({
       });
 
       // Award badges if conditions are met
-      const badgeData = await makeRequest("/api/badge/found-item", "GET");
-      const filteredBadge = badgeData.filter(
-        (badge) => badge.schoolCategory === row.finder.user.school_category
-      );
-      const userCounter = await makeRequest(
-        `/api/users/${row.finder.user._id}/increment`,
-        "PUT",
-        { increment: "found-item" }
-      );
+      await makeRequest(`/api/users/${row.finder.user._id}/increment`, "PUT", {
+        increment: "found-item",
+      });
 
       // Update match status
       await makeRequest(`/api/match-items/${matchedId}`, "PUT", {
         request_status: "Completed",
       });
-
-      // Add rating records
-      const ratingData = [
-        {
-          sender: row.finder.user._id,
-          receiver: row.owner.user._id,
-          item: row.finder.item._id,
-          done_review: false,
-        },
-        {
-          sender: row.owner.user._id,
-          receiver: row.finder.user._id,
-          item: row.owner.item._id,
-          done_review: false,
-        },
-      ];
-
-      await Promise.all(
-        ratingData.map((rate) => makeRequest("/api/ratings", "POST", rate))
-      );
 
       const notificationData = [
         {
@@ -136,25 +124,19 @@ const ItemReservedModal = ({
         )
       );
 
-      for (const badge of filteredBadge) {
-        if (userCounter.updatedUser.resolvedItemCount >= badge.meetConditions) {
-          await makeRequest(
-            `/api/award-badge/user/${row.finder.user._id}`,
-            "PUT",
-            { badgeId: badge._id }
-          );
-          await makeRequest("/api/notification", "POST", {
-            receiver: row.finder.user._id,
-            message: `Congratulations, ${row.finder.user.firstname}! You've earned the ${badge.title} award for your amazing contribution in finding lost items. Thank you for making a difference!`,
-            type: "Profile",
-            markAsRead: false,
-            dateNotified: new Date(),
-          });
-        }
+      if (seePost === "It was shared by another user") {
+        await makeRequest(
+          `/api/users/${selectedUser}/increment`,
+          "PUT",
+          {
+            increment: "share",
+          }
+        );
       }
 
       // Close modals, refresh data, and show success notification
       setConfirmationItemClaimed(false);
+      setItemClaimed(false);
       onClose();
       await refreshData();
       setOpenSnackbar("success");
@@ -253,11 +235,33 @@ const ItemReservedModal = ({
           </Typography>
           <DialogContent
             sx={{
+              paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+              maxHeight: "85.5vh",
+              height: "100%",
               overflowX: "hidden",
-              overflowY: "auto", // Allows vertical scrolling
-              "&::-webkit-scrollbar": { display: "none" }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
-              "-ms-overflow-style": "none", // Hides scrollbar in IE and Edge
-              "scrollbar-width": "none", // Hides scrollbar in Firefox
+              overflowY: "scroll", // Always reserve space for scrollbar
+              // Default scrollbar styles (invisible)
+              "&::-webkit-scrollbar": {
+                width: "8px", // Always reserve 8px width
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "transparent", // Invisible by default
+                borderRadius: "4px",
+              },
+              // Show scrollbar on hover
+              "&:hover": {
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                },
+              },
+              // Firefox
+              scrollbarWidth: "thin",
+              scrollbarColor: "transparent transparent", // Both track and thumb transparent
+              "&:hover": {
+                scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+              },
+              // IE and Edge
+              msOverflowStyle: "-ms-autohiding-scrollbar",
             }}
           >
             <MatchedItemsDetails row={row} />
@@ -416,11 +420,68 @@ const ItemReservedModal = ({
             </Modal>
             <Button
               color="success"
-              onClick={() => setConfirmationItemClaimed(true)}
+              onClick={() => setItemClaimed(true)}
               fullWidth
             >
               Item Resolved
             </Button>
+            <Modal open={itemClaimed} onClose={() => setItemClaimed(false)}>
+              <ModalDialog>
+                <ModalClose />
+                <Typography level="h4" gutterBottom>
+                  Resolved Item
+                </Typography>
+                <FormControl>
+                  <FormLabel>How did you know this item is yours?</FormLabel>
+                  <RadioGroup
+                    value={seePost}
+                    onChange={(e) => setSeePost(e.target.value)}
+                    sx={{ my: 2 }}
+                  >
+                    <Stack spacing={2}>
+                      <FormControlLabel
+                        value="The finder posted it"
+                        control={<Radio />}
+                        label="The finder posted it"
+                      />
+                      <FormControlLabel
+                        value="It was shared by another user"
+                        control={<Radio />}
+                        label="It was shared by another user"
+                      />
+                    </Stack>
+                  </RadioGroup>
+                </FormControl>
+                {seePost === "It was shared by another user" && (
+                  <FormControl>
+                    <FormLabel>Who is the user who shared the post?</FormLabel>
+                    <Select
+                      fullWidth
+                      required
+                      value={selectedUser}
+                      onChange={(e, value) => setSelectedUser(value)}
+                    >
+                      <Option value="" disabled>
+                        Select User
+                      </Option>
+                      {filteredUsers.map((user) => (
+                        <Option key={user._id} value={user._id}>
+                          {user.firstname} {user.lastname}
+                        </Option>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+                <Button
+                  sx={{ mt: 2 }}
+                  onClick={() => setConfirmationItemClaimed(true)}
+                  disabled={seePost === 2 && !selectedUser} // Disable if user not selected
+                >
+                  Submit
+                </Button>
+              </ModalDialog>
+            </Modal>
+
             <Modal
               open={confirmationItemClaimed}
               onClose={() => setConfirmationItemClaimed(false)}

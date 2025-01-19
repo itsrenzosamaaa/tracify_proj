@@ -9,9 +9,9 @@ const postSchema = new mongoose.Schema(
     caption: {
       type: String,
     },
-    item: {
+    finder: {
       type: String,
-      ref: "Item",
+      ref: "Finder",
     },
     createdAt: {
       type: Date,

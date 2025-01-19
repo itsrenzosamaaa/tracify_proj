@@ -3,24 +3,34 @@ import dbConnect from "@/lib/mongodb";
 import post from "@/lib/models/post";
 import user from "@/lib/models/user";
 import item from "@/lib/models/item";
-import finder from "@/lib/models/finder";
+import roles from "@/lib/models/roles";
 
-export async function GET(req) {
+export async function GET(req, { params }) {
   try {
     await dbConnect();
 
     // Get the lastPostId from URL search params
+    const { userId } = params;
     const url = new URL(req.url);
     const lastPostId = url.searchParams.get("lastPostId");
 
     // Build the query based on lastPostId
-    const query = lastPostId ? { _id: { $lt: lastPostId } } : {}; // Changed from $gt to $lt for reverse chronological order
+    const query = {
+      $or: [
+        { author: userId }, // Posts created by the user
+        { sharedBy: userId }, // Posts shared by the user
+      ],
+      ...(lastPostId && { _id: { $lt: lastPostId } }), // Pagination
+    }; // Changed from $gt to $lt for reverse chronological order
 
     const nextPosts = await post
       .find(query)
       .sort({ createdAt: -1 }) // Reverse chronological order
       .limit(10)
-      .populate("author", "firstname lastname profile_picture resolvedItemCount shareCount role birthday")
+      .populate(
+        "author",
+        "firstname lastname profile_picture resolvedItemCount shareCount role birthday"
+      )
       .populate("finder", "item")
       .populate({
         path: "finder",
@@ -41,7 +51,11 @@ export async function GET(req) {
       .populate({
         path: "originalPost",
         populate: [
-          { path: "author", select: "firstname lastname profile_picture resolvedItemCount shareCount role birthday" },
+          {
+            path: "author",
+            select:
+              "firstname lastname profile_picture resolvedItemCount shareCount role birthday",
+          },
           {
             path: "finder",
             populate: {
@@ -71,34 +85,5 @@ export async function GET(req) {
       { error: "Failed to fetch posts" },
       { status: 500 }
     );
-  }
-}
-
-export async function POST(req) {
-  try {
-    await dbConnect();
-    const postData = await req.json();
-
-    const newPostData = new post(postData);
-    await newPostData.save();
-
-    // Populate the new post data before returning
-    const populatedPost = await post
-      .findById(newPostData._id)
-      .populate("author", "firstname lastname profile_picture")
-      .populate("item", "name category images")
-      .populate("sharedBy", "firstname lastname profile_picture")
-      .populate({
-        path: "originalPost",
-        populate: [
-          { path: "author", select: "firstname lastname" },
-          { path: "item", select: "name images" },
-        ],
-      });
-
-    return NextResponse.json(populatedPost, { status: 201 });
-  } catch (error) {
-    console.error("Error adding post:", error);
-    return NextResponse.json({ error: "Failed to add post" }, { status: 500 });
   }
 }

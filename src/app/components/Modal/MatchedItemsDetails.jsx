@@ -316,7 +316,7 @@ const MatchedItemsDetails = ({ row }) => {
                 color: "primary.plainColor",
               }}
             >
-              Item Records
+              Item Tracking History
             </Typography>
             <Box
               sx={{

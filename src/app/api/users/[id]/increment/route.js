@@ -29,7 +29,7 @@ export async function PUT(req, { params }) {
       } else {
         updatedUser = await user.findOneAndUpdate(
           { _id: id },
-          { $inc: { ratingsCount: 1 } },
+          { $inc: { shareCount: 1 } },
           { new: true }
         );
       }

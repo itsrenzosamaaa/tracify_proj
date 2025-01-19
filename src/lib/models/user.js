@@ -36,11 +36,14 @@ const userSchema = new mongoose.Schema({
   },
   school_category: {
     type: String,
-    enum: ["Higher Education", "Basic Education"]
+    enum: ["Higher Education", "Basic Education"],
   },
   date_created: {
     type: Date,
     default: Date.now,
+  },
+  birthday: {
+    type: Date,
   },
   resolvedItemCount: {
     type: Number,
@@ -52,5 +55,4 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.models.User ||
-  mongoose.model("User", userSchema);
+export default mongoose.models.User || mongoose.model("User", userSchema);

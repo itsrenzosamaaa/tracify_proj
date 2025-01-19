@@ -15,15 +15,24 @@ import {
   ModalClose,
   Textarea,
   Chip,
+  DialogContent,
+  FormControl,
+  FormLabel,
+  Select,
+  Option,
 } from "@mui/joy";
 import { ImageList, ImageListItem, Paper } from "@mui/material";
-import { Share, ThumbUp, Comment } from "@mui/icons-material";
+import { Share, Send } from "@mui/icons-material";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { CldImage } from "next-cloudinary";
 import { format, isToday } from "date-fns";
+import PreviewBadge from "./PreviewBadge";
+import ConfirmationRetrievalRequest from "./Modal/ConfirmationRetrievalRequest";
 
 const SharedPost = ({
+  refreshData,
+  matches,
   setOpenSnackbar,
   setMessage,
   post,
@@ -32,10 +41,18 @@ const SharedPost = ({
   originalPost,
   caption,
   sharedAt,
+  isXs,
+  lostItems = null,
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);
+  const [claimModal, setClaimModal] = useState(null);
+  const [selectedLostItem, setSelectedLostItem] = useState(null);
+  const [confirmationRetrievalRequest, setConfirmationRetrievalRequest] =
+    useState(null);
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
+
+  console.log(originalPost);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,10 +97,21 @@ const SharedPost = ({
               style={{ cursor: "pointer" }}
             />
             <Box>
-              <Typography level="body-md" fontWeight={700}>
-                {sharedBy.firstname} {sharedBy.lastname}
-              </Typography>
-              <Typography level="body-sm" fontWeight={300}>
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <Typography
+                  level={isXs ? "body-sm" : "body-md"}
+                  fontWeight={700}
+                >
+                  {sharedBy.firstname} {sharedBy.lastname}
+                </Typography>
+                <PreviewBadge
+                  resolvedItemCount={sharedBy.resolvedItemCount}
+                  shareCount={sharedBy.shareCount}
+                  role={sharedBy.role}
+                  birthday={sharedBy.birthday}
+                />
+              </Box>
+              <Typography level={isXs ? "body-xs" : "body-sm"} fontWeight={300}>
                 {isToday(new Date(sharedAt))
                   ? `Today, ${format(new Date(sharedAt), "hh:mm a")}`
                   : format(new Date(sharedAt), "MMMM dd, yyyy - hh:mm a")}
@@ -93,7 +121,16 @@ const SharedPost = ({
 
           {/* Post Caption */}
           {caption !== "" && (
-            <Typography level="body2" sx={{ color: "text.secondary", mb: 2 }}>
+            <Typography
+              level={isXs ? "body-sm" : "body-md"}
+              sx={{
+                color: "text.secondary",
+                mb: 2,
+                wordBreak: "break-word", // Ensures long words wrap to the next line
+                overflowWrap: "break-word", // Additional support for wrapping long text
+                whiteSpace: "pre-wrap", // Preserves line breaks in the original text
+              }}
+            >
               {caption}
             </Typography>
           )}
@@ -116,7 +153,7 @@ const SharedPost = ({
           {/* Item Images */}
           <Box sx={{ border: "1px solid #B0BEC5", borderRadius: "5px" }}>
             <Carousel showThumbs={false} useKeyboardArrows>
-              {originalPost.item.images?.map((image, index) => (
+              {originalPost.finder.item.images?.map((image, index) => (
                 <Box
                   key={index}
                   sx={{
@@ -128,9 +165,9 @@ const SharedPost = ({
                 >
                   <CldImage
                     src={image}
-                    width={300}
-                    height={300}
-                    alt={originalPost.item?.name || "Item Image"}
+                    width={isXs ? 200 : 300}
+                    height={isXs ? 200 : 300}
+                    alt={originalPost.finder.item?.name || "Item Image"}
                     sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
                   />
                 </Box>
@@ -145,11 +182,25 @@ const SharedPost = ({
                   style={{ cursor: "pointer" }}
                 />
                 <Box>
-                  <Typography level="body-md" fontWeight={700}>
-                    {originalPost.author.firstname}{" "}
-                    {originalPost.author.lastname}
-                  </Typography>
-                  <Typography level="body-sm" fontWeight={300}>
+                  <Box sx={{ display: "flex", gap: 2 }}>
+                    <Typography
+                      level={isXs ? "body-sm" : "body-md"}
+                      fontWeight={700}
+                    >
+                      {originalPost.author.firstname}{" "}
+                      {originalPost.author.lastname}
+                    </Typography>
+                    <PreviewBadge
+                      resolvedItemCount={originalPost.author.resolvedItemCount}
+                      shareCount={originalPost.author.shareCount}
+                      role={originalPost.author.role}
+                      birthday={originalPost.author.birthday}
+                    />
+                  </Box>
+                  <Typography
+                    level={isXs ? "body-xs" : "body-sm"}
+                    fontWeight={300}
+                  >
                     {isToday(new Date(originalPost.createdAt))
                       ? `Today, ${format(
                           new Date(originalPost.createdAt),
@@ -162,49 +213,280 @@ const SharedPost = ({
                   </Typography>
                 </Box>
               </Box>
-              <Typography level="body2" sx={{ color: "text.secondary", mb: 2 }}>
+              <Typography
+                level={isXs ? "body-sm" : "body-md"}
+                sx={{ color: "text.secondary", mb: 2 }}
+              >
                 {originalPost.caption}
               </Typography>
+              {(() => {
+                const matchedItem = matches.find(
+                  (match) =>
+                    match.finder._id === originalPost.finder._id &&
+                    (match.finder.item.status === "Resolved" ||
+                      match.finder.item.status === "Matched")
+                );
+
+                if (matchedItem) {
+                  return (
+                    <Typography
+                      level={isXs ? "body-sm" : "body-md"}
+                      color={
+                        matchedItem.finder.item.status === "Resolved"
+                          ? "success"
+                          : "warning"
+                      }
+                    >
+                      {matchedItem.finder.item.status === "Resolved"
+                        ? "The owner has successfully claimed the item!"
+                        : "Someone sent a claim request for this item!"}
+                    </Typography>
+                  );
+                }
+              })()}
             </Box>
           </Box>
 
           <Divider sx={{ mb: 1 }} />
 
           <Box
-            onClick={() => setSharePostModal(originalPost._id)}
             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 1,
-              cursor: "pointer",
-              padding: "8px", // Padding for a clickable area
-              borderRadius: "8px", // Rounded corners
-              backgroundColor: "transparent", // Default background
-              color: "text.secondary", // Default text color
-              transition: "all 0.3s ease", // Smooth transition for all properties
-              "&:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.1)", // Subtle contrast background on hover
-                color: "primary.main", // Text/icon color on hover
-              },
-              "& svg": {
-                transition: "color 0.3s ease", // Smooth transition for the icon color
-              },
+              gap: 2,
+              padding: "8px",
+              borderRadius: "8px",
+              backgroundColor: "transparent",
+              color: "text.secondary",
             }}
           >
-            <Share />
-            <Typography
-              level="body2"
+            {/* Claim Section */}
+            {session?.user?.id !== originalPost.author._id &&
+              !matches.some(
+                (match) => match?.finder?._id === originalPost.finder._id
+              ) && (
+                <>
+                  <Box
+                    onClick={() => setClaimModal(originalPost._id)} // Replace with your actual handler function
+                    sx={{
+                      cursor: "pointer",
+                      justifyContent: "center",
+                      width: "200px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      padding: "8px", // Add padding for better interaction area
+                      borderRadius: "8px",
+                      transition: "all 0.3s ease", // Smooth transition for all properties
+                      "&:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.05)", // Subtle background change
+                        color: "primary.main", // Change text/icon color
+                        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)", // Add hover shadow
+                        transform: "scale(1.05)", // Slightly enlarge on hover
+                      },
+                    }}
+                  >
+                    <Send fontSize={isXs ? "small" : "medium"} />
+                    <Typography
+                      level={isXs ? "body-sm" : "body-md"}
+                      sx={{
+                        color: "inherit",
+                        transition: "color 0.3s ease",
+                      }}
+                    >
+                      Claim
+                    </Typography>
+                  </Box>
+
+                  <Divider orientation="vertical" flexItem />
+                </>
+              )}
+
+            {/* Share Section */}
+            <Box
+              onClick={() => setSharePostModal(originalPost._id)}
               sx={{
-                color: "inherit", // Inherit color from the parent Box
-                transition: "color 0.3s ease",
+                cursor: "pointer",
+                justifyContent: "center",
+                width: "200px",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                padding: "8px", // Add padding for better interaction area
+                borderRadius: "8px",
+                transition: "all 0.3s ease", // Smooth transition for all properties
+                "&:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.05)", // Subtle background change
+                  color: "primary.main", // Change text/icon color
+                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)", // Add hover shadow
+                  transform: "scale(1.05)", // Slightly enlarge on hover
+                },
               }}
             >
-              Share
-            </Typography>
+              <Share fontSize={isXs ? "small" : "medium"} />
+              <Typography
+                level={isXs ? "body-sm" : "body-md"}
+                sx={{
+                  color: "inherit",
+                  transition: "color 0.3s ease",
+                }}
+              >
+                Share
+              </Typography>
+            </Box>
           </Box>
         </CardContent>
       </Card>
+      <Modal
+        open={claimModal === originalPost._id}
+        onClose={() => setClaimModal(null)}
+      >
+        <ModalDialog>
+          <ModalClose />
+          <DialogContent>
+            <Typography level="h4" gutterBottom>
+              {lostItems.length === 0
+                ? "Claim Request Canceled"
+                : "Send Claim Request"}
+            </Typography>
+            {lostItems.length !== 0 ? (
+              <>
+                <FormControl>
+                  <FormLabel>Your Lost Item</FormLabel>
+                  <Select
+                    required
+                    placeholder="Select your missing lost item"
+                    value={selectedLostItem}
+                    onChange={(e, value) => setSelectedLostItem(value)}
+                  >
+                    {lostItems.map((lostItem) => (
+                      <Option key={lostItem?._id} value={lostItem?._id}>
+                        {lostItem?.item?.name || "Unnamed Item"}
+                      </Option>
+                    ))}
+                  </Select>
+                  {selectedLostItem && (
+                    <Box sx={{ marginTop: 2 }}>
+                      <Typography level="body-md">
+                        <strong>Color:</strong>{" "}
+                        {lostItems
+                          .find(
+                            (lostItem) => lostItem?._id === selectedLostItem
+                          )
+                          ?.item?.color?.join(", ") || "N/A"}
+                      </Typography>
+                      <Typography level="body-md">
+                        <strong>Size:</strong>{" "}
+                        {lostItems.find(
+                          (lostItem) => lostItem?._id === selectedLostItem
+                        )?.item?.size || "N/A"}
+                      </Typography>
+                      <Typography level="body-md">
+                        <strong>Category:</strong>{" "}
+                        {lostItems.find(
+                          (lostItem) => lostItem?._id === selectedLostItem
+                        )?.item?.category || "N/A"}
+                      </Typography>
+                      <Typography level="body-md">
+                        <strong>Material:</strong>{" "}
+                        {lostItems.find(
+                          (lostItem) => lostItem?._id === selectedLostItem
+                        )?.item?.material || "N/A"}
+                      </Typography>
+                      <Typography level="body-md">
+                        <strong>Condition:</strong>{" "}
+                        {lostItems.find(
+                          (lostItem) => lostItem?._id === selectedLostItem
+                        )?.item?.condition || "N/A"}
+                      </Typography>
+                      <Typography level="body-md">
+                        <strong>Distinctive Marks:</strong>{" "}
+                        {lostItems.find(
+                          (lostItem) => lostItem?._id === selectedLostItem
+                        )?.item?.distinctiveMarks || "N/A"}
+                      </Typography>
+                      <Typography level="body-md">
+                        <strong>Location:</strong>{" "}
+                        {lostItems.find(
+                          (lostItem) => lostItem?._id === selectedLostItem
+                        )?.item?.location || "N/A"}
+                      </Typography>
+                      <Typography level="body-md">
+                        <strong>Lost Start Date:</strong>{" "}
+                        {(() => {
+                          const selectedItem = lostItems.find(
+                            (lostItem) => lostItem?._id === selectedLostItem
+                          )?.item;
+
+                          if (!selectedItem) {
+                            return "N/A"; // No item selected
+                          }
+
+                          if (selectedItem.date_time === "Unidentified") {
+                            return "Unidentified"; // Explicit unidentified case
+                          }
+
+                          const dateTimeParts =
+                            selectedItem.date_time?.split(" to ");
+                          return dateTimeParts && dateTimeParts[0]
+                            ? dateTimeParts[0]
+                            : "N/A"; // Extract or fallback
+                        })()}
+                      </Typography>
+                      <Typography level="body-md">
+                        <strong>Lost End Date:</strong>{" "}
+                        {(() => {
+                          const selectedItem = lostItems.find(
+                            (lostItem) => lostItem?._id === selectedLostItem
+                          )?.item;
+
+                          if (!selectedItem) {
+                            return "N/A"; // No item selected
+                          }
+
+                          if (selectedItem.date_time === "Unidentified") {
+                            return "Unidentified"; // Explicit unidentified case
+                          }
+
+                          const dateTimeParts =
+                            selectedItem.date_time?.split(" to ");
+                          return dateTimeParts && dateTimeParts[1]
+                            ? dateTimeParts[1]
+                            : "N/A"; // Extract or fallback
+                        })()}
+                      </Typography>
+                    </Box>
+                  )}
+                </FormControl>
+                <Button
+                  type="submit"
+                  disabled={!selectedLostItem}
+                  onClick={() =>
+                    setConfirmationRetrievalRequest(originalPost._id)
+                  }
+                >
+                  Next
+                </Button>
+              </>
+            ) : (
+              <Typography>
+                It requires a recorded lost item in order to be reviewed by
+                SASO.
+              </Typography>
+            )}
+          </DialogContent>
+        </ModalDialog>
+      </Modal>
+      <ConfirmationRetrievalRequest
+        open={confirmationRetrievalRequest === originalPost._id}
+        onClose={() => setConfirmationRetrievalRequest(null)}
+        closeModal={() => setClaimModal(null)}
+        foundItem={originalPost?.finder}
+        lostItem={selectedLostItem}
+        finder={originalPost?.finder?._id}
+        refreshData={refreshData}
+      />
       <Modal
         open={sharePostModal === originalPost._id}
         onClose={() => setSharePostModal(null)}

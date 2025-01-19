@@ -29,10 +29,13 @@ export const authOptions = {
             userType = "user";
           }
 
-          if (account && bcrypt.compareSync(credentials.password, account.password)) {
+          if (
+            account &&
+            bcrypt.compareSync(credentials.password, account.password)
+          ) {
             const checkAccount = await getUserDetails(account, userType);
-            if (checkAccount.userType === 'admin' && !checkAccount.roleName) {
-              console.error('This admin account still does not have role.');
+            if (checkAccount.userType === "admin" && !checkAccount.roleName) {
+              console.error("This admin account still does not have role.");
               return null;
             }
             return checkAccount;
@@ -79,12 +82,11 @@ export const authOptions = {
           user.lastname = dbAccount.lastname;
           user.profile_picture = dbAccount.profile_picture;
           user.contact_number = dbAccount.contactNumber;
-          user.school_category = dbAccount.school_category;
           user.userType = userType;
-          user.roleName = dbAccount.roleName;
+          user.roleName = userType === "admin" ? dbAccount.roleName : dbAccount.role;
           user.permissions = dbAccount.permissions;
-          if (user.userType === 'admin' && !user.roleName) {
-            console.error('This admin account still does not have role.');
+          if (user.userType === "admin" && !user.roleName) {
+            console.error("This admin account still does not have role.");
             return null;
           }
         }
@@ -103,7 +105,6 @@ export const authOptions = {
         token.profile_picture = user.profile_picture;
         token.contactNumber = user.contact_number;
         token.email = user.email;
-        token.schoolCategory = user.school_category;
         token.userType = user.userType;
         token.roleName = user.roleName;
         token.permissions = user.permissions;
@@ -119,13 +120,12 @@ export const authOptions = {
         session.user.profile_picture = token.profile_picture;
         session.user.contactNumber = token.contactNumber;
         session.user.email = token.email;
-        session.user.schoolCategory = token.schoolCategory;
         session.user.userType = token.userType;
         session.user.roleName = token.roleName;
         session.user.permissions = token.permissions;
       }
       return session;
-    }
+    },
   },
 };
 
@@ -146,8 +146,7 @@ async function getUserDetails(account, userType) {
     email: account.emailAddress,
     contact_number: account.contactNumber,
     userType: userType,
-    roleName: roleData ? roleData.name : null,
-    school_category: roleData ? roleData.school_category : null,
+    roleName: roleData ? roleData.name : account.role,
     permissions: roleData ? roleData.permissions : null,
   };
 }

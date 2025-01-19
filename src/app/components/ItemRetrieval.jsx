@@ -10,7 +10,7 @@ import ItemRetrievalTable from './Table/ItemRetrievalTable';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
 
-const ItemRetrievalList = ({ items, fetchItems }) => {
+const ItemRetrievalList = ({ items, fetchItems, users }) => {
     const [anchorEl, setAnchorEl] = useState(null); // For the Menu
     const [selectedStatus, setSelectedStatus] = useState('All'); // Default status
     const [searchQuery, setSearchQuery] = useState(''); // Track search input
@@ -94,6 +94,7 @@ const ItemRetrievalList = ({ items, fetchItems }) => {
                             items={filteredItems}
                             fetchItems={fetchItems}
                             selectedStatus={selectedStatus}
+                            users={users}
                         />
                     </Paper>
                 </Grid>

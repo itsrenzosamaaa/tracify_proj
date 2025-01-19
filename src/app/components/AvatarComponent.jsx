@@ -134,9 +134,7 @@ const AvatarComponent = ({ profile, session }) => {
                 : `${session?.user?.firstname} ${session?.user?.lastname}`}
             </Typography>
             <Typography level="body2" sx={{ fontSize: 12, opacity: 0.8 }}>
-              {session?.user?.userType === "user"
-                ? profile?._id
-                : session?.user?.roleName}
+              {session?.user?.roleName}
             </Typography>
           </Box>
 

@@ -1,8 +1,8 @@
 import { Modal, ModalClose, ModalDialog, Box, FormLabel, FormControl, Input, Typography, Button } from '@mui/joy'
 import React, { useState } from 'react'
 
-const ChangeUsername = ({ profile, openUsernameModal, setOpenUsernameModal, refreshData, setOpenSnackbar, session, setMessage }) => {
-  const [username, setUsername] = useState(profile.username);
+const ChangeContactNumber = ({ profile, openUsernameModal, setOpenUsernameModal, refreshData, setOpenSnackbar, session, setMessage }) => {
+  const [contactNumber, setContactNumber] = useState(profile.contactNumber);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -11,20 +11,20 @@ const ChangeUsername = ({ profile, openUsernameModal, setOpenUsernameModal, refr
 
     try {
       // Check if the new username is the same as the current one
-      if (username === profile.username) {
+      if (contactNumber === profile.contactNumber) {
         setLoading(false);
         setOpenSnackbar('danger'); // Assuming 'danger' sets the snackbar type
-        setMessage('Your new username should not be your current username.');
+        setMessage('Your new contact number should not be your current username.');
         return;
       }
 
       // Make API request to change the username
-      const response = await fetch(`/api/users/${session.user.id}/change-username`, {
+      const response = await fetch(`/api/users/${session.user.id}/contact-number`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ contactNumber }),
       });
 
       if (response.ok) {
@@ -32,17 +32,17 @@ const ChangeUsername = ({ profile, openUsernameModal, setOpenUsernameModal, refr
         setOpenUsernameModal(false);
         await refreshData(session.user.id);
         setOpenSnackbar('success'); // Assuming 'success' sets the snackbar type
-        setMessage('Username updated successfully!');
+        setMessage('Contact number updated successfully!');
       } else {
         const errorData = await response.json();
         console.error('Error:', errorData.error);
         setOpenSnackbar('danger');
-        setMessage('Failed to update username. Please try again.');
+        setMessage('Failed to update contact number. Please try again.');
       }
     } catch (error) {
       console.error('Error during save:', error);
       setOpenSnackbar('danger');
-      setMessage('An error occurred while updating the username.');
+      setMessage('An error occurred while updating the contact number.');
     } finally {
       setLoading(false);
     }
@@ -53,14 +53,14 @@ const ChangeUsername = ({ profile, openUsernameModal, setOpenUsernameModal, refr
       <ModalDialog>
         <ModalClose />
         <Typography level="h4" gutterBottom>
-          Change Username
+          Change Contact Number
         </Typography>
         <form onSubmit={handleSubmit}>
           <FormControl>
-            <FormLabel>Username</FormLabel>
+            <FormLabel>Contact Number</FormLabel>
             <Input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={contactNumber}
+              onChange={(e) => setContactNumber(e.target.value)}
             />
           </FormControl>
           <Button
@@ -78,4 +78,4 @@ const ChangeUsername = ({ profile, openUsernameModal, setOpenUsernameModal, refr
   );
 };
 
-export default ChangeUsername;
+export default ChangeContactNumber;
