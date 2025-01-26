@@ -4,6 +4,8 @@ import post from "@/lib/models/post";
 import user from "@/lib/models/user";
 import item from "@/lib/models/item";
 import roles from "@/lib/models/roles";
+import owner from "@/lib/models/owner";
+import finder from "@/lib/models/finder";
 
 export async function GET(req, { params }) {
   try {
@@ -32,6 +34,7 @@ export async function GET(req, { params }) {
         "firstname lastname profile_picture resolvedItemCount shareCount role birthday"
       )
       .populate("finder", "item")
+      .populate("owner", "item")
       .populate({
         path: "finder",
         populate: {
@@ -47,7 +50,17 @@ export async function GET(req, { params }) {
           },
         },
       })
-      .populate("sharedBy", "firstname lastname profile_picture resolvedItemCount shareCount role birthday")
+      .populate({
+        path: "owner",
+        populate: {
+          path: "item",
+          select: "name category images status",
+        },
+      })
+      .populate(
+        "sharedBy",
+        "firstname lastname profile_picture resolvedItemCount shareCount role birthday"
+      )
       .populate({
         path: "originalPost",
         populate: [
@@ -71,6 +84,13 @@ export async function GET(req, { params }) {
               },
             },
           },
+          {
+            path: "owner",
+            populate: {
+              path: "item",
+              select: "name category images status",
+            },
+          }
         ],
       });
 

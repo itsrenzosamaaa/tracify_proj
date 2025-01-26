@@ -117,6 +117,10 @@ const Post = ({
             </Box>
           </Box>
 
+          <Chip variant="solid" color={post?.isFinder ? "success" : "danger"}>
+            {post?.isFinder ? "Found Item" : "Lost Item"}
+          </Chip>
+
           {/* Post Caption */}
           <Typography
             level={isXs ? "body-sm" : "body-md"}
@@ -126,28 +130,52 @@ const Post = ({
           </Typography>
 
           {(() => {
-            const matchedItem = matches.find(
-              (match) =>
-                match.finder._id === item._id &&
-                (match.finder.item.status === "Resolved" ||
-                  match.finder.item.status === "Matched")
-            );
+            let matchedItem;
 
-            if (matchedItem) {
-              return (
+            if (post.isFinder) {
+              // Check for matches where the finder matches the item ID
+              matchedItem = matches.find(
+                (match) =>
+                  match?.finder?._id === item?._id &&
+                  ["Resolved", "Matched"].includes(match?.finder?.item?.status)
+              );
+
+              return matchedItem ? (
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
                   color={
-                    matchedItem.finder.item.status === "Resolved"
+                    matchedItem?.finder?.item?.status === "Resolved"
                       ? "success"
                       : "warning"
                   }
                 >
-                  {matchedItem.finder.item.status === "Resolved"
+                  {matchedItem?.finder?.item?.status === "Resolved"
                     ? "The owner has successfully claimed the item!"
                     : "Someone sent a claim request for this item!"}
                 </Typography>
+              ) : null; // Return null if no match is found
+            } else {
+              // Check for matches where the owner matches the item ID
+              matchedItem = matches.find(
+                (match) =>
+                  match?.owner?._id === item?._id &&
+                  ["Claimed", "Unclaimed"].includes(match?.owner?.item?.status)
               );
+
+              return matchedItem ? (
+                <Typography
+                  level={isXs ? "body-sm" : "body-md"}
+                  color={
+                    matchedItem?.owner?.item?.status === "Claimed"
+                      ? "success"
+                      : "warning"
+                  }
+                >
+                  {matchedItem?.owner?.item?.status === "Claimed"
+                    ? "The owner has successfully claimed the item!"
+                    : "The item has been found by the finder."}
+                </Typography>
+              ) : null; // Return null if no match is found
             }
           })()}
 
@@ -206,7 +234,8 @@ const Post = ({
           >
             {/* Claim Section */}
             {session?.user?.id !== author._id &&
-              !matches.some((match) => match?.finder?._id === item._id) && ( // Ensure item is not already matched
+              !matches.some((match) => match?.finder?._id === item._id) &&
+              post?.isFinder && ( // Ensure item is not already matched
                 <>
                   <Box
                     onClick={() => setClaimModal(post._id)} // Replace with your actual handler function

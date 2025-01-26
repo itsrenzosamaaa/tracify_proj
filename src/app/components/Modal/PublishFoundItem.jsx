@@ -29,16 +29,14 @@ import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { format, subDays, isBefore, isAfter } from "date-fns";
-import { Check } from "@mui/icons-material";
+import { Check, Description } from "@mui/icons-material";
 import Link from "next/link";
 
 const PublishFoundItem = ({
   open,
   onClose,
-  fetchItems,
   setOpenSnackbar,
   setMessage,
-  setActiveTab,
 }) => {
   const [users, setUsers] = useState([]);
   const [name, setName] = useState("");
@@ -196,17 +194,19 @@ const PublishFoundItem = ({
 
       const foundItemResponse = await response.json();
 
-      const finderData = {
+      const finderFormData = {
         user:
           session.user.userType === "user" ? session?.user?.id : finder?._id,
         item: foundItemResponse._id,
       };
 
-      const foundResponse = await fetch("/api/finder", {
+      const finderResponse = await fetch("/api/finder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(finderData),
+        body: JSON.stringify(finderFormData),
       });
+
+      const finderData = await finderResponse.json();
 
       if (session?.user?.userType !== "user") {
         await Promise.all([
@@ -215,8 +215,9 @@ const PublishFoundItem = ({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               author: finder?._id,
-              caption: `Check this item I found in ${location}!`,
-              item: foundItemResponse._id,
+              isFinder: true,
+              caption: description,
+              finder: finderData._id,
               createdAt: new Date(),
             }),
           }),
@@ -245,7 +246,6 @@ const PublishFoundItem = ({
         ]);
       }
       resetForm();
-      if (session?.user?.userType === "user") setActiveTab("requested-item");
       setOpenSnackbar("success");
       setMessage(
         session?.user?.userType === "user"
@@ -276,7 +276,6 @@ const PublishFoundItem = ({
     setFoundDate("");
     setImages([]);
     setFinder(null);
-    await fetchItems();
   };
 
   const onDrop = (acceptedFiles) => {
@@ -660,7 +659,7 @@ const PublishFoundItem = ({
                   </Grid>
                 </Grid>
                 <FormControl required>
-                  <FormLabel>Item Description</FormLabel>
+                  <FormLabel>Caption</FormLabel>
                   <Textarea
                     type="text"
                     name="description"

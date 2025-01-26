@@ -34,7 +34,6 @@ import { format } from "date-fns";
 const PublishLostItem = ({
   open,
   onClose,
-  fetchItems,
   setOpenSnackbar,
   setMessage,
   setActiveTab,
@@ -57,9 +56,6 @@ const PublishLostItem = ({
   const [loading, setLoading] = useState(false);
   const [itemWhereabouts, setItemWhereabouts] = useState(false);
   const { data: session, status } = useSession();
-
-  console.log(color);
-  console.log(size);
 
   const handleCheck = (e) => {
     const check = e.target.checked;
@@ -158,7 +154,7 @@ const PublishLostItem = ({
       const selectedLostStartDate = new Date(lostDateStart);
       const selectedLostEndDate = new Date(lostDateEnd);
 
-      if (selectedLostStartDate >= selectedLostStartDate) {
+      if (selectedLostStartDate >= selectedLostEndDate) {
         setOpenSnackbar("danger");
         setMessage("The start date must be earlier than the end date.");
         return;
@@ -209,30 +205,33 @@ const PublishLostItem = ({
 
       const lostItemResponse = await response.json();
 
-      const ownerData = {
+      const ownerFormData = {
         user:
           session?.user?.userType === "user" ? session?.user?.id : owner?._id,
         item: lostItemResponse._id,
       };
 
-      const lostResponse = await fetch("/api/owner", {
+      const ownerResponse = await fetch("/api/owner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ownerData),
+        body: JSON.stringify(ownerFormData),
       });
+
+      const ownerData = await ownerResponse.json();
 
       if (session?.user?.userType !== "user") {
         await Promise.all([
-          // fetch("/api/post", {
-          //   method: "POST",
-          //   headers: { "Content-Type": "application/json" },
-          //   body: JSON.stringify({
-          //     author: owner?._id,
-          //     caption: `I lost this item. The location is ${itemWhereabouts ? location : 'still unknown'}.`,
-          //     item: lostItemResponse._id,
-          //     createdAt: new Date(),
-          //   }),
-          // }),
+          fetch("/api/post", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              author: owner?._id,
+              caption: description,
+              isFinder: false,
+              owner: ownerData._id,
+              createdAt: new Date(),
+            }),
+          }),
           fetch("/api/notification", {
             method: "POST",
             headers: {
@@ -263,7 +262,6 @@ const PublishLostItem = ({
       }
 
       resetForm();
-      if (session?.user?.userType === "user") setActiveTab("requested-item");
       setOpenSnackbar("success");
       setMessage(
         session?.user?.userType === "user"
@@ -295,7 +293,6 @@ const PublishLostItem = ({
     setLostDateEnd("");
     setImages([]);
     setOwner(null);
-    await fetchItems();
   };
 
   const handleStartDateChange = (e) => {
@@ -305,8 +302,18 @@ const PublishLostItem = ({
     // Automatically set end date to the same day as the start date
     if (newStartDate) {
       const sameDayEndDate = new Date(newStartDate);
-      sameDayEndDate.setHours(7, 59, 59); // Set to the end of the day
-      setLostDateEnd(sameDayEndDate.toISOString().slice(0, 16)); // Format the date to match input type="datetime-local"
+
+      // Add 1 hour to the start date
+      sameDayEndDate.setHours(sameDayEndDate.getHours() + 1);
+
+      // Convert to Philippine time (UTC+8)
+      const offset = 8 * 60 * 60 * 1000; // UTC+8 offset in milliseconds
+      const phTime = new Date(sameDayEndDate.getTime() + offset);
+
+      // Format the date for input type="datetime-local"
+      const formattedDate = phTime.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm format
+
+      setLostDateEnd(formattedDate);
     }
   };
 
@@ -700,7 +707,7 @@ const PublishLostItem = ({
                   </Grid>
                 </Grid>
                 <FormControl>
-                  <FormLabel>Item Description</FormLabel>
+                  <FormLabel>Caption</FormLabel>
                   <Textarea
                     required
                     type="text"

@@ -21,10 +21,7 @@ export async function GET() {
         path: 'item',
         populate: {
           path: 'monitoredBy',
-          populate: {
-            path: 'role',
-            model: 'Role',
-          },
+          model: 'Admin',
         },
       }
     );

@@ -13,10 +13,7 @@ export async function GET(req, { params }) {
           path: 'item',
           populate: {
             path: 'monitoredBy',
-            populate: {
-              path: 'role',
-              model: 'Role',
-            },
+            model: 'Admin',
           },
         })
         .lean();

@@ -173,7 +173,7 @@ const ViewItemPage = ({ params }) => {
                                                                 Visit the Office
                                                             </Typography>
                                                             <Typography level={isXs ? 'body-sm' : 'body-md'} sx={{ color: 'text.secondary' }}>
-                                                                Go to the <strong>{foundItem.finder.item.monitoredBy.role.name}</strong> office at <strong>{foundItem.finder.item.monitoredBy.role.office_location}</strong>. Make sure to bring any required documents or proof of ownership.
+                                                                Please go to <strong>SASO</strong> for claiming an item. Make sure to bring any required documents or proof of ownership.
                                                             </Typography>
                                                         </Box>
                                                     </Step>

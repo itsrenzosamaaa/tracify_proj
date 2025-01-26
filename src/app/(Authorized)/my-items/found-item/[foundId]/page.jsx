@@ -117,21 +117,21 @@ const ViewItemPage = ({ params }) => {
                                                 {/* Introduction */}
                                                 <Typography level={isXs ? 'body-sm' : 'body-md'} sx={{ mb: 2 }}>
                                                     Please surrender the item to{' '}
-                                                    <strong>{foundItem.monitoredBy?.role.name}</strong>{' '}
+                                                    <strong>SASO</strong>{' '}
                                                     located at the{' '}
-                                                    <strong>{foundItem.monitoredBy.role.office_location}</strong>
+                                                    <strong>1st Floor of FJN Building</strong>
                                                     . For more information, you may contact{' '}
-                                                    <strong>{foundItem.monitoredBy.role.name}</strong> at:
+                                                    <strong>SASO</strong> at:
                                                 </Typography>
 
                                                 <ul>
                                                     <li>
                                                         <strong>Email: </strong>
-                                                        {foundItem.monitoredBy.emailAddress}
+                                                        saso@thelewiscollege.edu.ph
                                                     </li>
                                                     <li>
                                                         <strong>Contact Number: </strong>
-                                                        {foundItem.monitoredBy.contactNumber}
+                                                        09123456789
                                                     </li>
                                                 </ul>
                                             </Box>
@@ -351,7 +351,7 @@ const ViewItemPage = ({ params }) => {
                                         {foundItem.dateValidating && (
                                             <Step>
                                                 <Typography level={isXs ? 'body-sm' : 'body-md'}>
-                                                    <strong>Your item has been approved! Please surrender the item to {foundItem.monitoredBy.role.name}</strong>
+                                                    <strong>Your item has been approved! Please surrender the item to SASO.</strong>
                                                 </Typography>
                                                 <Typography level={isXs ? 'body-sm' : 'body-md'}>
                                                     {formatDate(foundItem.dateValidating)}

@@ -42,20 +42,6 @@ export async function middleware(request) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
 
-    if (userRole === 'admin') {
-      if (
-        (pathname === '/admin' && !token.permissions.viewAdminsList) ||
-        (pathname === '/badges' && !token.permissions.manageBadges) ||
-        (pathname === '/found-items' && !token.permissions.manageRequestReportedFoundItems) ||
-        (pathname === '/item-retrieval' && !token.permissions.manageRequestItemRetrieval) ||
-        (pathname === '/lost-items' && !token.permissions.manageRequestReportedLostItems) ||
-        (pathname === '/roles' && !token.permissions.viewRoles) ||
-        (pathname === '/users' && !token.permissions.viewUsersList)
-      ) {
-        return NextResponse.redirect(new URL("/unauthorized", request.url));
-      }
-    }
-
     return NextResponse.next();
   }
 

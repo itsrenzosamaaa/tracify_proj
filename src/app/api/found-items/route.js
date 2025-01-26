@@ -19,10 +19,7 @@ export async function GET() {
     const findFoundItems = await item.find({ isFoundItem: true })
       .populate({
         path: 'monitoredBy',
-        populate: {
-          path: 'role',
-          model: 'Role',
-        }
+        model: 'Admin',
       });
 
     return NextResponse.json(findFoundItems, { status: 200 });

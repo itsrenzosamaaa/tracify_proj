@@ -18,24 +18,24 @@ import AvatarComponent from "./AvatarComponent";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Typography, Input, Button } from "@mui/joy";
-import KeyboardTabIcon from '@mui/icons-material/KeyboardTab';
+import KeyboardTabIcon from "@mui/icons-material/KeyboardTab";
 import { LinearProgress } from "@mui/material";
 import { useSession } from "next-auth/react";
 import Loading from "./Loading";
 import Image from "next/image";
-import HomeIcon from '@mui/icons-material/Home';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import LuggageIcon from '@mui/icons-material/Luggage';
-import SearchIcon from '@mui/icons-material/Search';
-import HistoryIcon from '@mui/icons-material/History';
-import LinkIcon from '@mui/icons-material/Link';
-import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
-import StarRateIcon from '@mui/icons-material/StarRate';
-import SecurityIcon from '@mui/icons-material/Security';
-import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
-import FindInPageIcon from '@mui/icons-material/FindInPage';
-import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import HomeIcon from "@mui/icons-material/Home";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LuggageIcon from "@mui/icons-material/Luggage";
+import SearchIcon from "@mui/icons-material/Search";
+import HistoryIcon from "@mui/icons-material/History";
+import LinkIcon from "@mui/icons-material/Link";
+import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
+import StarRateIcon from "@mui/icons-material/StarRate";
+import SecurityIcon from "@mui/icons-material/Security";
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
+import FindInPageIcon from "@mui/icons-material/FindInPage";
+import MoveToInboxIcon from "@mui/icons-material/MoveToInbox";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import NotificationComponent from "./NotificationComponent";
 
 // Updated Styled Link
@@ -50,29 +50,28 @@ const StyledLink = styled(Link)`
 
 // Sidebar Container with dynamic width for desktop
 const SidebarContainer = styled(Box)(({ collapsed }) => ({
-  width: collapsed ? '60px' : '250px',
-  height: '100vh',
-  backgroundColor: '#fff',
-  position: 'fixed',
+  width: collapsed ? "60px" : "250px",
+  height: "100vh",
+  backgroundColor: "#fff",
+  position: "fixed",
   top: 0,
   left: 0,
-  boxShadow: '2px 0 5px rgba(0, 0, 0, 0.2)',
-  display: 'none',
-  transition: 'width 0.3s ease',
-  '@media (min-width: 1200px)': {
-    display: 'block',
+  boxShadow: "2px 0 5px rgba(0, 0, 0, 0.2)",
+  display: "none",
+  transition: "width 0.3s ease",
+  "@media (min-width: 1200px)": {
+    display: "block",
   },
-  '@media (max-width: 600px)': {
+  "@media (max-width: 600px)": {
     width: collapsed ? "0px" : "250px", // Fully hide sidebar when collapsed on mobile
   },
 }));
-
 
 // Sidebar Header
 const SidebarHeader = styled(Box)`
   height: 50px;
   padding: 16px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   color: #fff;
@@ -85,7 +84,7 @@ const SidebarItem = styled(ListItem)`
   &.Mui-selected {
     background-color: #3d5afe; /* Background color when selected */
     color: #fff; /* Text color when selected */
-    
+
     & .MuiListItemText-primary {
       color: #fff; /* Text color when selected */
     }
@@ -94,14 +93,14 @@ const SidebarItem = styled(ListItem)`
       color: #fff; /* Icon color when selected */
     }
   }
-  
+
   &:hover {
     background-color: #3d5afe; /* Change background color on hover */
     transform: scale(1.05); /* Scale effect on hover */
     transition: transform 0.2s ease, background-color 0.2s ease;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     color: #fff;
-    
+
     & .MuiListItemText-primary {
       color: #fff;
     }
@@ -110,7 +109,7 @@ const SidebarItem = styled(ListItem)`
       color: #fff;
     }
   }
-  
+
   border-radius: 8px;
   margin-bottom: 0.5rem;
 `;
@@ -128,30 +127,28 @@ const IconItem = styled(ListItemIcon)`
   }
 `;
 
-
 // Header styles
 const Header = styled(Box)(({ collapsed }) => ({
-  height: '60px',
-  backgroundColor: '#3d5afe',
-  color: '#fff',
-  display: 'flex',
-  alignItems: 'center',
-  position: 'fixed',
+  height: "60px",
+  backgroundColor: "#3d5afe",
+  color: "#fff",
+  display: "flex",
+  alignItems: "center",
+  position: "fixed",
   top: 0,
   right: 0,
   zIndex: 1200,
-  width: '100%',
-  transition: 'left 0.3s ease',
-  '@media (min-width: 1200px)': {
-    left: collapsed ? '60px' : '250px',
-    width: collapsed ? 'calc(100% - 60px)' : 'calc(100% - 250px)',
+  width: "100%",
+  transition: "left 0.3s ease",
+  "@media (min-width: 1200px)": {
+    left: collapsed ? "60px" : "250px",
+    width: collapsed ? "calc(100% - 60px)" : "calc(100% - 250px)",
   },
-  '@media (max-width: 600px)': {
-    height: '48px', // Shorter height for mobile devices
+  "@media (max-width: 600px)": {
+    height: "48px", // Shorter height for mobile devices
     left: 0,
   },
 }));
-
 
 // Main App Component
 export default function App() {
@@ -170,106 +167,147 @@ export default function App() {
       const response = await fetch(`/api/users/${accountId}`);
       const data = await response.json();
       if (response.ok) setProfile(data);
-      else console.error('Failed to fetch user data:', data.message);
+      else console.error("Failed to fetch user data:", data.message);
     } catch (error) {
-      console.error('Failed to fetch user data:', error);
+      console.error("Failed to fetch user data:", error);
     }
   }, []);
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push('/');
+      router.push("/");
     }
   }, [status, router]);
 
   useEffect(() => {
-    if (status === 'authenticated' && session?.user?.id && session?.user?.userType === 'user') {
+    if (
+      status === "authenticated" &&
+      session?.user?.id &&
+      session?.user?.userType === "user"
+    ) {
       fetchProfile(session.user.id);
     }
   }, [status, session?.user?.id, session?.user?.userType, fetchProfile]);
 
-  const userType = session?.user?.userType || '';
-  const userPermissions = useMemo(() => session?.user?.permissions || {}, [session?.user?.permissions]);
+  const userType = session?.user?.userType || "";
+  const userPermissions = useMemo(
+    () => session?.user?.permissions || {},
+    [session?.user?.permissions]
+  );
 
   const navigation = useMemo(() => {
-    const base = [{ icon: <HomeIcon />, menu: 'Home', url: '/dashboard' }];
+    const base = [{ icon: <HomeIcon />, menu: "Home", url: "/dashboard" }];
     if (status === "authenticated") {
-      if (userType === 'user') {
-        base.push({ icon: <AccountCircleIcon />, menu: 'Profile', url: '/profile' });
-        base.push({ icon: <LuggageIcon />, menu: 'My Items', url: '/my-items' });
+      if (userType === "user") {
+        base.push({
+          icon: <AccountCircleIcon />,
+          menu: "Profile",
+          url: "/profile",
+        });
+        base.push({
+          icon: <LuggageIcon />,
+          menu: "My Items",
+          url: "/my-items",
+        });
       } else {
-        if (userPermissions.manageRequestReportedFoundItems) base.push({ icon: <FindInPageIcon />, menu: 'Found Items', url: '/found-items' });
-        if (userPermissions.manageRequestItemRetrieval) base.push({ icon: <MoveToInboxIcon />, menu: 'Item Retrieval', url: '/item-retrieval' });
-        if (userPermissions.manageRequestReportedLostItems) base.push({ icon: <HelpOutlineIcon />, menu: 'Lost Items', url: '/lost-items' });
-        if (userPermissions.viewRoles) base.push({ icon: <SecurityIcon />, menu: 'Roles', url: '/roles' });
-        if (userPermissions.viewAdminsList) base.push({ icon: <PeopleOutlineIcon />, menu: 'Admin', url: '/admin' });
-        if (userPermissions.viewUsersList) base.push({ icon: <PeopleOutlineIcon />, menu: 'Users', url: '/users' });
+        base.push({
+          icon: <FindInPageIcon />,
+          menu: "Found Items",
+          url: "/found-items",
+        });
+        base.push({
+          icon: <MoveToInboxIcon />,
+          menu: "Item Retrieval",
+          url: "/item-retrieval",
+        });
+        base.push({
+          icon: <HelpOutlineIcon />,
+          menu: "Lost Items",
+          url: "/lost-items",
+        });
+        base.push({
+          icon: <PeopleOutlineIcon />,
+          menu: "Admin",
+          url: "/admin",
+        });
+        base.push({
+          icon: <PeopleOutlineIcon />,
+          menu: "Users",
+          url: "/users",
+        });
       }
     }
     return base;
-  }, [status, userType, userPermissions]);
+  }, [status, userType]);
 
   const toggleMobileDrawer = () => setMobileOpen(!mobileOpen);
 
   useEffect(() => {
-    setLoading(false)
+    setLoading(false);
   }, [pathname]);
 
-  const handleNavigation = useCallback((url) => {
-    try {
-      setLoading(true)
-      router.push(url);
-    } catch (error) {
-      console.error('Navigation failed:', error);
-      setLoading(false);
-    }
-  }, [router]);
+  const handleNavigation = useCallback(
+    (url) => {
+      try {
+        setLoading(true);
+        router.push(url);
+      } catch (error) {
+        console.error("Navigation failed:", error);
+        setLoading(false);
+      }
+    },
+    [router]
+  );
 
   const DrawerContent = ({ navigation, toggleMobileDrawer, collapsed }) => (
     <Box role="presentation">
-      {
-        status === 'loading' ? (
-          <Loading />
-        ) : (
-          <>
-            <SidebarHeader>
-              {!collapsed && (
-                <Image priority width={150} height={150} src="/tracify.png" alt="tracify" />
-              )}
-              <IconButton
-                sx={{ display: { xs: "block", lg: "none" } }}
+      {status === "loading" ? (
+        <Loading />
+      ) : (
+        <>
+          <SidebarHeader>
+            {!collapsed && (
+              <Image
+                priority
+                width={150}
+                height={150}
+                src="/tracify.png"
+                alt="tracify"
+              />
+            )}
+            <IconButton
+              sx={{ display: { xs: "block", lg: "none" } }}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleMobileDrawer();
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </SidebarHeader>
+          <Divider />
+          <List>
+            {navigation.map((item, index) => (
+              <StyledLink
+                href={item.url}
+                key={index}
                 onClick={(e) => {
-                  e.stopPropagation();
-                  toggleMobileDrawer();
+                  e.preventDefault();
+                  handleNavigation(item.url);
+                  if (isMobile) toggleMobileDrawer();
                 }}
               >
-                <CloseIcon />
-              </IconButton>
-            </SidebarHeader>
-            <Divider />
-            <List>
-              {navigation.map((item, index) => (
-                <StyledLink
-                  href={item.url}
-                  key={index}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleNavigation(item.url);
-                    if (isMobile) toggleMobileDrawer();
-                  }}
-                >
-                  <SidebarItem selected={pathname === item.url} disablePadding>
-                    <ListItemButton>
-                      <IconItem>{item.icon}</IconItem>
-                      {!collapsed && <ListItemText primary={item.menu} />}
-                    </ListItemButton>
-                  </SidebarItem>
-                </StyledLink>
-              ))}
-            </List>
-          </>
-        )
-      }
+                <SidebarItem selected={pathname === item.url} disablePadding>
+                  <ListItemButton>
+                    <IconItem>{item.icon}</IconItem>
+                    {!collapsed && <ListItemText primary={item.menu} />}
+                  </ListItemButton>
+                </SidebarItem>
+              </StyledLink>
+            ))}
+          </List>
+        </>
+      )}
     </Box>
   );
 
@@ -279,7 +317,7 @@ export default function App() {
         <LinearProgress
           color="info"
           sx={{
-            height: '4px',
+            height: "4px",
             position: "fixed",
             top: 0,
             left: 0,
@@ -307,17 +345,17 @@ export default function App() {
 
         <Box
           sx={{
-            marginLeft: { xs: '48px', lg: '0' }, // Leave space for menu icon on mobile
+            marginLeft: { xs: "48px", lg: "0" }, // Leave space for menu icon on mobile
             flex: 1,
-            height: '100%',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
+            height: "100%",
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
             gap: 2,
           }}
         >
           {/* Notification for Users */}
-          {userType === 'user' && (
+          {userType === "user" && (
             <NotificationComponent session={session} status={status} />
           )}
 

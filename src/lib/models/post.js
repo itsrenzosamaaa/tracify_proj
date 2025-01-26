@@ -9,9 +9,16 @@ const postSchema = new mongoose.Schema(
     caption: {
       type: String,
     },
+    isFinder : {
+      type: Boolean,
+    },
     finder: {
       type: String,
       ref: "Finder",
+    },
+    owner: {
+      type: String,
+      ref: "Owner",
     },
     createdAt: {
       type: Date,

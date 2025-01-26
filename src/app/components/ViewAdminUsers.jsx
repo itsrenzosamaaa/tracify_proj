@@ -38,14 +38,12 @@ import TitleBreadcrumbs from "./Title/TitleBreadcrumbs";
 import Papa from "papaparse";
 import { Search } from "@mui/icons-material";
 
-const ViewAdminUsers = ({ users, roles, refreshData, session }) => {
+const ViewAdminUsers = ({ users, refreshData, session }) => {
   const [open, setOpen] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(null);
   const [message, setMessage] = useState("");
-  const [roleModal, setRoleModal] = useState(null);
-  const [selectedRole, setSelectedRole] = useState("");
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -128,34 +126,6 @@ const ViewAdminUsers = ({ users, roles, refreshData, session }) => {
     }
   };
 
-  const handleAssignRole = async (e, adminId) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/admin/${adminId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: selectedRole }),
-      });
-      const result = await response.json();
-
-      if (response.ok) {
-        setRoleModal(null); // Close modal
-        refreshData(); // Refresh the data
-        setOpenSnackbar("success");
-        setMessage("Role assigned successfully!");
-      } else {
-        setOpenSnackbar("danger");
-        setMessage("Failed to assign role.");
-      }
-    } catch (error) {
-      setOpenSnackbar("danger");
-      setMessage("An error occurred while assigning the role.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <>
       <TitleBreadcrumbs title="Manage Admin Users" text="Admin Users" />
@@ -172,17 +142,15 @@ const ViewAdminUsers = ({ users, roles, refreshData, session }) => {
               }}
             >
               <Input startDecorator={<Search />} />
-              {session?.user?.roleName === "Super Admin" && (
-                <Button component="label">
-                  Import Data
-                  <input
-                    type="file"
-                    accept=".csv"
-                    hidden
-                    onChange={handleFileUpload}
-                  />
-                </Button>
-              )}
+              <Button component="label">
+                Import Data
+                <input
+                  type="file"
+                  accept=".csv"
+                  hidden
+                  onChange={handleFileUpload}
+                />
+              </Button>
               <Modal open={loading} onClose={() => {}} disableEscapeKeyDown>
                 <ModalDialog sx={{ alignItems: "center", padding: "1rem" }}>
                   <Typography level="body-lg" fontWeight={700} gutterBottom>
@@ -218,9 +186,6 @@ const ViewAdminUsers = ({ users, roles, refreshData, session }) => {
                       <TableCell sx={{ width: isXs ? "300px" : "400px" }}>
                         Email Address
                       </TableCell>
-                      <TableCell sx={{ width: isXs ? "100px" : "200px" }}>
-                        Role
-                      </TableCell>
                       <TableCell>Action</TableCell>
                     </TableRow>
                   </TableHead>
@@ -239,87 +204,11 @@ const ViewAdminUsers = ({ users, roles, refreshData, session }) => {
                             <TableCell sx={{ width: isXs ? "300px" : "400px" }}>
                               {user.emailAddress}
                             </TableCell>
-                            <TableCell sx={{ width: isXs ? "100px" : "200px" }}>
-                              <Chip
-                                color={user.role ? "primary" : "warning"}
-                                variant="outlined"
-                                onClick={() => {
-                                  setSelectedRole(
-                                    user.role ? user.role._id : ""
-                                  );
-                                  setRoleModal(user._id);
-                                }}
-                              >
-                                {user.role ? user.role.name : "Assign Role"}
-                              </Chip>
-                              <Modal
-                                open={roleModal === user._id}
-                                onClose={() => setRoleModal(null)}
-                              >
-                                <ModalDialog>
-                                  <ModalClose />
-                                  <Typography level="h4" sx={{ mb: 2 }}>
-                                    {user.role ? "Change" : "Assign"} Role
-                                  </Typography>
-                                  <form
-                                    onSubmit={(e) =>
-                                      handleAssignRole(e, user._id)
-                                    }
-                                  >
-                                    <FormControl required sx={{ mb: 2 }}>
-                                      <FormLabel>Role</FormLabel>
-                                      <Select
-                                        placeholder="Select a role"
-                                        value={selectedRole} // Bind this to the selected role
-                                        onChange={(e, newValue) =>
-                                          setSelectedRole(newValue)
-                                        } // Update state on change
-                                      >
-                                        {roles.map((role) => (
-                                          <Option
-                                            key={role._id}
-                                            value={role._id}
-                                          >
-                                            {role.name}
-                                          </Option>
-                                        ))}
-                                      </Select>
-                                    </FormControl>
-                                    {selectedRole === user.role?._id && (
-                                      <Typography
-                                        level="body2"
-                                        color="warning"
-                                        sx={{ mb: 2 }}
-                                      >
-                                        You selected the current role. Please
-                                        select a different role to update.
-                                      </Typography>
-                                    )}
-                                    <Button
-                                      disabled={
-                                        !selectedRole ||
-                                        selectedRole === user.role?._id ||
-                                        isLoading
-                                      }
-                                      loading={isLoading}
-                                      type="submit"
-                                      color="primary"
-                                      fullWidth
-                                    >
-                                      Assign
-                                    </Button>
-                                  </form>
-                                </ModalDialog>
-                              </Modal>
-                            </TableCell>
                             <TableCell>
                               {session.user.id !== user._id && (
                                 <Box sx={{ display: "flex", gap: 1 }}>
                                   <Button
                                     onClick={() => setOpen(user._id)}
-                                    disabled={
-                                      session?.user?.roleName !== "Super Admin"
-                                    }
                                     sx={{
                                       display: {
                                         xs: "none",
@@ -334,9 +223,6 @@ const ViewAdminUsers = ({ users, roles, refreshData, session }) => {
                                   </Button>
                                   <Button
                                     onClick={() => setOpen(user._id)}
-                                    disabled={
-                                      session?.user?.roleName !== "Super Admin"
-                                    }
                                     size="small"
                                     sx={{
                                       display: {

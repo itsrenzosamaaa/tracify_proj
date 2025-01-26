@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   Box,
   Typography,
@@ -16,6 +22,7 @@ import {
   DialogContent,
   ModalClose,
   GlobalStyles,
+  Input,
 } from "@mui/joy";
 import {
   Paper,
@@ -36,11 +43,14 @@ import {
 import { useRouter } from "next/navigation";
 import Loading from "../Loading";
 import TopStudentsEarnedBadges from "../TopStudentsEarnedBadges";
-import { Circle } from "@mui/icons-material";
 import TopSharers from "../TopSharers";
 import SharedPost from "../SharedPost";
 import Post from "../Post";
 import dayjs from "dayjs";
+import { Search } from "@mui/icons-material";
+import PublishLostItem from "../Modal/PublishLostItems";
+import PublishFoundItem from "../Modal/PublishFoundItem";
+import debounce from "lodash/debounce";
 
 const UserDashboard = ({ session, status, users }) => {
   const [posts, setPosts] = useState([]);
@@ -52,6 +62,9 @@ const UserDashboard = ({ session, status, users }) => {
   const [message, setMessage] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [openDrawer, setOpenDrawer] = useState(null);
+  const [openLostRequestModal, setOpenLostRequestModal] = useState(false);
+  const [openFoundRequestModal, setOpenFoundRequestModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const observerRef = useRef();
   const lastPostRef = useRef();
   const theme = useTheme();
@@ -63,7 +76,9 @@ const UserDashboard = ({ session, status, users }) => {
       const response = await fetch(`/api/match-items`);
       const data = await response.json();
       const filteredMatches = data.filter(
-        (match) => match?.finder?.item?.status === "Matched" || match?.finder?.item?.status === "Resolved"
+        (match) =>
+          match?.finder?.item?.status === "Matched" ||
+          match?.finder?.item?.status === "Resolved"
       );
       setMatches(filteredMatches);
     } catch (error) {
@@ -85,48 +100,56 @@ const UserDashboard = ({ session, status, users }) => {
     }
   }, [session?.user?.id]);
 
-  const fetchPosts = useCallback(async () => {
-    if (loading || !hasMore) return; // Prevent fetch if already loading or no more posts
-    setLoading(true);
-    try {
-      const lastId = posts.length > 0 ? posts[posts.length - 1]._id : "";
+  const fetchPosts = useCallback(
+    async (searchQuery = "") => {
+      if (loading || !hasMore) return;
+      setLoading(true);
+      try {
+        const lastId = posts.length > 0 ? posts[posts.length - 1]._id : "";
 
-      // Construct URL with the proper query parameter
-      const url = new URL("/api/post", window.location.origin);
-      if (lastId) {
-        url.searchParams.append("lastPostId", lastId);
+        // Construct URL with search and pagination parameters
+        const url = new URL("/api/post", window.location.origin);
+        if (lastId) url.searchParams.append("lastPostId", lastId);
+        if (searchQuery) url.searchParams.append("search", searchQuery); // No encodeURIComponent here
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if ("error" in data) {
+          setHasMore(false);
+          return;
+        }
+
+        const postsToAdd = Array.isArray(data) ? data : [data];
+
+        setPosts(postsToAdd);
+      } catch (error) {
+        console.error("Failed to fetch post:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
+    },
+    [loading, hasMore, posts, setPosts, setLoading, setHasMore, setError]
+  );
 
-      const response = await fetch(url);
-      const data = await response.json();
+  const debouncedFetchPosts = useMemo(() => {
+    return debounce((query) => {
+      fetchPosts(query);
+    }, 300);
+  }, [fetchPosts]);
 
-      if ("error" in data) {
-        setHasMore(false);
-        return;
-      }
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    debouncedFetchPosts(value);
+  };
 
-      // Check if data is an array, if not, wrap it into an array
-      const postsToAdd = Array.isArray(data) ? data : [data];
-
-      setPosts((prevPosts) => {
-        const newPosts = [...prevPosts];
-
-        // Filter out duplicates based on post ID
-        postsToAdd.forEach((post) => {
-          if (!newPosts.some((existingPost) => existingPost._id === post._id)) {
-            newPosts.push(post);
-          }
-        });
-
-        return newPosts;
-      });
-    } catch (error) {
-      console.error("Failed to fetch post:", error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [loading, hasMore, posts, setPosts, setLoading, setHasMore, setError]);
+  useEffect(() => {
+    return () => {
+      debouncedFetchPosts.cancel();
+    };
+  }, [debouncedFetchPosts]);
 
   const lastPostElementRef = useCallback(
     (node) => {
@@ -136,16 +159,11 @@ const UserDashboard = ({ session, status, users }) => {
         observerRef.current.disconnect();
       }
 
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && hasMore) {
-            fetchPosts();
-          }
-        },
-        {
-          rootMargin: "100px",
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchPosts();
         }
-      );
+      });
 
       if (node) {
         observerRef.current.observe(node);
@@ -224,25 +242,64 @@ const UserDashboard = ({ session, status, users }) => {
             <Box
               sx={{
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
+                flexDirection: "column",
               }}
             >
-              <Typography level={isXs ? "h4" : "h3"} sx={{ mb: 2 }}>
-                News Feed
-              </Typography>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                {isMd && (
-                  <>
-                    <Button onClick={() => setOpenDrawer("finders")}>
-                      Top Finders
-                    </Button>
-                    <Button onClick={() => setOpenDrawer("sharers")}>
-                      Top Sharers
-                    </Button>
-                  </>
-                )}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography level={isXs ? "h4" : "h3"} sx={{ mb: 2 }}>
+                  News Feed
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {isMd && (
+                    <>
+                      <Button
+                        size="small"
+                        onClick={() => setOpenDrawer("finders")}
+                      >
+                        Top Finders
+                      </Button>
+                      <Button
+                        size="small"
+                        onClick={() => setOpenDrawer("sharers")}
+                      >
+                        Top Sharers
+                      </Button>
+                    </>
+                  )}
+                </Box>
               </Box>
+              <Input
+                value={searchQuery}
+                onChange={handleInputChange} // Use debounced input handler
+                fullWidth
+                sx={{ my: 2 }}
+                startDecorator={<Search />}
+                placeholder="Search caption..."
+              />
+
+              {isMd && (
+                <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                  <Button
+                    fullWidth
+                    onClick={() => setOpenFoundRequestModal(true)}
+                  >
+                    Report Found Item
+                  </Button>
+                  <Button
+                    color="danger"
+                    fullWidth
+                    onClick={() => setOpenLostRequestModal(true)}
+                  >
+                    Report Lost Item
+                  </Button>
+                </Box>
+              )}
             </Box>
 
             <Modal
@@ -303,7 +360,7 @@ const UserDashboard = ({ session, status, users }) => {
                       post={post}
                       author={post.author}
                       caption={post.caption}
-                      item={post.finder}
+                      item={post.isFinder ? post.finder : post.owner}
                       createdAt={post.createdAt}
                       isXs={isXs}
                       lostItems={lostItems}
@@ -376,6 +433,21 @@ const UserDashboard = ({ session, status, users }) => {
                 msOverflowStyle: "-ms-autohiding-scrollbar",
               }}
             >
+              <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                <Button
+                  fullWidth
+                  onClick={() => setOpenFoundRequestModal(true)}
+                >
+                  Report Found Item
+                </Button>
+                <Button
+                  color="danger"
+                  fullWidth
+                  onClick={() => setOpenLostRequestModal(true)}
+                >
+                  Report Lost Item
+                </Button>
+              </Box>
               {birthdayToday.length !== 0 && (
                 <Box sx={{ marginBottom: "16px" }}>
                   <Typography level="h3" gutterBottom>
@@ -439,6 +511,18 @@ const UserDashboard = ({ session, status, users }) => {
           </Grid>
         )}
       </Grid>
+      <PublishLostItem
+        open={openLostRequestModal}
+        onClose={() => setOpenLostRequestModal(false)}
+        setOpenSnackbar={setOpenSnackbar}
+        setMessage={setMessage}
+      />
+      <PublishFoundItem
+        open={openFoundRequestModal}
+        onClose={() => setOpenFoundRequestModal(false)}
+        setOpenSnackbar={setOpenSnackbar}
+        setMessage={setMessage}
+      />
       <Snackbar
         autoHideDuration={5000}
         open={openSnackbar}

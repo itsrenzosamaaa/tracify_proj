@@ -9,7 +9,7 @@ const Authenticated = ({ session }) => {
                 <Paper elevation={3} sx={{ padding: '2rem', textAlign: 'center' }}>
                     <Typography level="body-lg" fontWeight="700">Welcome back, {session.user.firstname}</Typography>
                     <Typography>Redirecting you to the dashboard...</Typography>
-                    <CircularProgress />
+                    <CircularProgress sx={{ mt: 2 }} />
                 </Paper>
             </Grid>
         </Grid>

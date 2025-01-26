@@ -26,6 +26,8 @@ const ItemValidatingModal = ({
   const [itemInvalidate, setItemInvalidate] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  console.log(row)
+
   const handleSubmit = async (e, id) => {
     if (e && e.preventDefault) {
       e.preventDefault();
@@ -40,6 +42,18 @@ const ItemValidatingModal = ({
       });
 
       if (!response.ok) throw new Error("Failed to update status");
+
+      await fetch("/api/post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          author: row?.user?._id,
+          isFinder: true,
+          caption: row?.item?.description,
+          finder: row._id,
+          createdAt: new Date(),
+        }),
+      });
 
       const notificationResponse = await fetch("/api/notification", {
         method: "POST",

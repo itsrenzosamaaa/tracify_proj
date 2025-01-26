@@ -8,7 +8,7 @@ export async function GET(req) {
   try {
     await dbConnect();
 
-    const findAdmin = await admin.find().populate("role");
+    const findAdmin = await admin.find();
 
     return NextResponse.json(findAdmin, { status: 200 });
   } catch (error) {
@@ -100,7 +100,6 @@ export async function POST(request) {
 
     const processedData = await Promise.all(
       data.map(async (admin) => {
-        admin.role = null;
         admin.date_created = Date.now();
 
         const emailRegex = /^[a-z]+@thelewiscollege\.edu\.ph$/;

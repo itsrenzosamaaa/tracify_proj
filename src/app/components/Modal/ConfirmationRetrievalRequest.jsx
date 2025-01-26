@@ -9,7 +9,6 @@ import {
   Button,
   Snackbar,
 } from "@mui/joy";
-import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const ConfirmationRetrievalRequest = ({
@@ -23,12 +22,6 @@ const ConfirmationRetrievalRequest = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
-
-  console.log(foundItem)
-  console.log(lostItem)
-  console.log(finder)
 
   const handleSubmit = async (e, foundItemId, finderId, ownerId) => {
     if (e && e.preventDefault) {
@@ -93,7 +86,7 @@ const ConfirmationRetrievalRequest = ({
             Confirmation
           </Typography>
           <Typography>
-            Send a retrieval request to {foundItem?.item?.monitoredBy?.role?.name}?
+            Send a retrieval request to SASO?
           </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button

@@ -32,8 +32,6 @@ import RatingsModal from "./Modal/Ratings";
 import ItemDetails from "./Modal/ItemDetails";
 import { useTheme, useMediaQuery } from "@mui/material";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
-import PublishFoundItem from "./Modal/PublishFoundItem";
-import PublishLostItem from "./Modal/PublishLostItems";
 
 const validTabs = [
   "found-item",
@@ -334,33 +332,9 @@ const MyItemsComponent = ({ session, status }) => {
       <Box sx={{ paddingY: "1rem" }}>
         {activeTab === "lost-item" && (
           <>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                mb: 5,
-              }}
-            >
-              <Typography level="h4" gutterBottom>
-                Lost Items
-              </Typography>
-              <Button
-                size="small"
-                startDecorator={<AddIcon />}
-                onClick={() => setOpenLostRequestModal(true)}
-              >
-                Report Lost Item
-              </Button>
-              <PublishLostItem
-                open={openLostRequestModal}
-                onClose={() => setOpenLostRequestModal(false)}
-                fetchItems={fetchItems}
-                setOpenSnackbar={setOpenSnackbar}
-                setMessage={setMessage}
-                setActiveTab={setActiveTab}
-              />
-            </Box>
+            <Typography level="h4" gutterBottom>
+              Lost Items
+            </Typography>
 
             {/* Grid layout for the Lost Items */}
             <Grid container spacing={2}>
@@ -490,33 +464,9 @@ const MyItemsComponent = ({ session, status }) => {
 
         {activeTab === "found-item" && (
           <>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                mb: 5,
-              }}
-            >
-              <Typography level="h4" gutterBottom>
-                Found Items
-              </Typography>
-              <Button
-                size="small"
-                startDecorator={<AddIcon />}
-                onClick={() => setOpenFoundRequestModal(true)}
-              >
-                Report Found Item
-              </Button>
-              <PublishFoundItem
-                open={openFoundRequestModal}
-                onClose={() => setOpenFoundRequestModal(false)}
-                fetchItems={fetchItems}
-                setOpenSnackbar={setOpenSnackbar}
-                setMessage={setMessage}
-                setActiveTab={setActiveTab}
-              />
-            </Box>
+            <Typography level="h4" gutterBottom>
+              Found Items
+            </Typography>
 
             <Grid container spacing={2}>
               {foundItems.length > 0 ? (

@@ -52,8 +52,6 @@ const SharedPost = ({
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
 
-  console.log(originalPost);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -80,6 +78,10 @@ const SharedPost = ({
       setLoading(false);
     }
   };
+
+  const filteredOriginalPost = originalPost.isFinder
+    ? originalPost.finder
+    : originalPost.owner;
 
   return (
     <>
@@ -153,7 +155,7 @@ const SharedPost = ({
           {/* Item Images */}
           <Box sx={{ border: "1px solid #B0BEC5", borderRadius: "5px" }}>
             <Carousel showThumbs={false} useKeyboardArrows>
-              {originalPost.finder.item.images?.map((image, index) => (
+              {filteredOriginalPost.item.images?.map((image, index) => (
                 <Box
                   key={index}
                   sx={{
@@ -167,7 +169,7 @@ const SharedPost = ({
                     src={image}
                     width={isXs ? 200 : 300}
                     height={isXs ? 200 : 300}
-                    alt={originalPost.finder.item?.name || "Item Image"}
+                    alt={filteredOriginalPost.item?.name || "Item Image"}
                     sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
                   />
                 </Box>
@@ -213,6 +215,7 @@ const SharedPost = ({
                   </Typography>
                 </Box>
               </Box>
+              <Chip variant="solid" color={originalPost?.isFinder ? 'success' : 'danger'}>{originalPost?.isFinder ? 'Found Item' : 'Lost Item'}</Chip>
               <Typography
                 level={isXs ? "body-sm" : "body-md"}
                 sx={{ color: "text.secondary", mb: 2 }}
@@ -220,28 +223,56 @@ const SharedPost = ({
                 {originalPost.caption}
               </Typography>
               {(() => {
-                const matchedItem = matches.find(
-                  (match) =>
-                    match.finder._id === originalPost.finder._id &&
-                    (match.finder.item.status === "Resolved" ||
-                      match.finder.item.status === "Matched")
-                );
+                let matchedItem;
 
-                if (matchedItem) {
-                  return (
+                if (originalPost?.isFinder) {
+                  // Search for matches where the finder matches the originalPost's finder ID
+                  matchedItem = matches.find(
+                    (match) =>
+                      match?.finder?._id === originalPost?.finder?._id &&
+                      ["Resolved", "Matched"].includes(
+                        match?.finder?.item?.status
+                      )
+                  );
+
+                  return matchedItem ? (
                     <Typography
                       level={isXs ? "body-sm" : "body-md"}
                       color={
-                        matchedItem.finder.item.status === "Resolved"
+                        matchedItem?.finder?.item?.status === "Resolved"
                           ? "success"
                           : "warning"
                       }
                     >
-                      {matchedItem.finder.item.status === "Resolved"
+                      {matchedItem?.finder?.item?.status === "Resolved"
                         ? "The owner has successfully claimed the item!"
                         : "Someone sent a claim request for this item!"}
                     </Typography>
+                  ) : null; // Return null if no match is found
+                } else {
+                  // Search for matches where the owner matches the originalPost's owner ID
+                  matchedItem = matches.find(
+                    (match) =>
+                      match?.owner?._id === originalPost?.owner?._id &&
+                      ["Claimed", "Unclaimed"].includes(
+                        match?.owner?.item?.status
+                      )
                   );
+
+                  return matchedItem ? (
+                    <Typography
+                      level={isXs ? "body-sm" : "body-md"}
+                      color={
+                        matchedItem?.owner?.item?.status === "Claimed"
+                          ? "success"
+                          : "warning"
+                      }
+                    >
+                      {matchedItem?.owner?.item?.status === "Claimed"
+                        ? "The owner has successfully claimed the item!"
+                        : "The item has been found by the finder."}
+                    </Typography>
+                  ) : null; // Return null if no match is found
                 }
               })()}
             </Box>

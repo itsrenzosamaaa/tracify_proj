@@ -2,7 +2,6 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "@/lib/mongodb";
-import Roles from "@/lib/models/roles";
 import Admin from "@/lib/models/admin";
 import User from "@/lib/models/user";
 import bcrypt from "bcryptjs";
@@ -34,10 +33,6 @@ export const authOptions = {
             bcrypt.compareSync(credentials.password, account.password)
           ) {
             const checkAccount = await getUserDetails(account, userType);
-            if (checkAccount.userType === "admin" && !checkAccount.roleName) {
-              console.error("This admin account still does not have role.");
-              return null;
-            }
             return checkAccount;
           } else {
             console.error("Invalid username or password");
@@ -83,12 +78,7 @@ export const authOptions = {
           user.profile_picture = dbAccount.profile_picture;
           user.contact_number = dbAccount.contactNumber;
           user.userType = userType;
-          user.roleName = userType === "admin" ? dbAccount.roleName : dbAccount.role;
-          user.permissions = dbAccount.permissions;
-          if (user.userType === "admin" && !user.roleName) {
-            console.error("This admin account still does not have role.");
-            return null;
-          }
+          user.roleName = userType === "admin" ? "SASO" : dbAccount.role;
         }
         return true; // For credentials sign-in
       } catch (error) {
@@ -107,7 +97,6 @@ export const authOptions = {
         token.email = user.email;
         token.userType = user.userType;
         token.roleName = user.roleName;
-        token.permissions = user.permissions;
       }
       return token;
     },
@@ -122,7 +111,6 @@ export const authOptions = {
         session.user.email = token.email;
         session.user.userType = token.userType;
         session.user.roleName = token.roleName;
-        session.user.permissions = token.permissions;
       }
       return session;
     },
@@ -131,13 +119,6 @@ export const authOptions = {
 
 // Helper function to get user details based on account data and user type
 async function getUserDetails(account, userType) {
-  let roleData = null;
-
-  // Admin details
-  if (userType === "admin") {
-    roleData = await Roles.findOne({ _id: account.role });
-  }
-
   return {
     id: account._id.toString(),
     firstname: account.firstname,
@@ -146,8 +127,7 @@ async function getUserDetails(account, userType) {
     email: account.emailAddress,
     contact_number: account.contactNumber,
     userType: userType,
-    roleName: roleData ? roleData.name : account.role,
-    permissions: roleData ? roleData.permissions : null,
+    roleName: userType === 'admin' ? "SASO" : account.role,
   };
 }
 

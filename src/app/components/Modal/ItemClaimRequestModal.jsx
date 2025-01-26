@@ -74,7 +74,7 @@ const ItemClaimRequestModal = ({
         },
         {
           receiver: row.owner.user._id,
-          message: `Your claim request of ${row.finder.item.name} has been approved. Please come to ${row.finder.item.monitoredBy.role.name} office for claiming an item.`,
+          message: `Your claim request of ${row.finder.item.name} has been approved. Please come to SASO for claiming an item.`,
           type: "Lost Items",
           markAsRead: false,
           dateNotified: new Date(),

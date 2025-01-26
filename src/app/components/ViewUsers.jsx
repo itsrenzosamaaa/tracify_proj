@@ -14,6 +14,7 @@ import {
   Input,
   Table,
   IconButton,
+  Chip,
 } from "@mui/joy";
 import {
   Grid,
@@ -212,7 +213,20 @@ const ViewUsers = ({ users, refreshData, session }) => {
                               <TableCell
                                 sx={{ width: isXs ? "100px" : "200px" }}
                               >
-                                {user.role}
+                                <Chip
+                                  color={
+                                    user.role === "Student"
+                                      ? "success"
+                                      : user.role === "Parent"
+                                      ? "primary"
+                                      : user.role === "Faculty"
+                                      ? "warning"
+                                      : "neutral"
+                                  }
+                                  variant="solid"
+                                >
+                                  {user.role}
+                                </Chip>
                               </TableCell>
                               {session?.user?.roleName === "SASO" && (
                                 <TableCell
@@ -283,7 +297,7 @@ const ViewUsers = ({ users, refreshData, session }) => {
               </TableContainer>
               {openEditModal && (
                 <EditUser
-                  user={users.find(user => user._id === openEditModal)}
+                  user={users.find((user) => user._id === openEditModal)}
                   open={openEditModal}
                   onClose={() => setOpenEditModal(null)}
                   setOpenSnackbar={setOpenSnackbar}

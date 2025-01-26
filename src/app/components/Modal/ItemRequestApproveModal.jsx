@@ -96,6 +96,23 @@ const ItemRequestApproveModal = ({
       if (!mailResponse.ok)
         throw new Error(data.message || "Failed to send email");
 
+      if (!row?.item?.isFoundItem) {
+        const postResponse = await fetch("/api/post", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            author: row?.user?._id,
+            isFinder: false,
+            caption: row?.item?.description,
+            owner: row._id,
+            createdAt: new Date(),
+          }),
+        });
+
+        if (!postResponse.ok)
+          throw new Error(data.message || "Failed to create post");
+      }
+
       setOpenSnackbar("success");
       setMessage("Item request has been approved!");
       onClose();

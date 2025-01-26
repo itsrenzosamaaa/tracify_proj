@@ -14,13 +14,8 @@ const ItemRetrievalPage = () => {
     try {
       const response = await fetch("/api/match-items");
       const data = await response.json();
-      console.log(data);
       if (response.ok) {
-        const matchedItems = data.filter(
-          (matchedItem) =>
-            matchedItem?.finder?.item?.monitoredBy?._id === session?.user?.id
-        );
-        setItems(matchedItems);
+        setItems(data);
       } else {
         console.error(data);
       }
