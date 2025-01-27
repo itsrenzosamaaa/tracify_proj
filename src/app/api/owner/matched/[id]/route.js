@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import owner from "@/lib/models/owner";
-import item from "@lib/models/item";
-import user from "@lib/models/user";
+import item from "@/lib/models/item";
+import user from "@/lib/models/user";
 
 export async function GET(req, { params }) {
     const { id } = params;
