@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Table, Box } from "@mui/joy";
+import { Typography, Table, Box, CircularProgress } from "@mui/joy";
 import {
   Card,
   CardContent,
@@ -222,9 +222,7 @@ const TopSharers = ({ users, session }) => {
                   textAlign: "center",
                 }}
               >
-                <Typography level="h6" color="text.secondary">
-                  No data available yet!
-                </Typography>
+                <CircularProgress />
               </Box>
             )}
           </TableContainer>

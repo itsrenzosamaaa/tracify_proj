@@ -164,7 +164,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, role, birthday }) => {
   if (!resolvedBadge && !shareBadge && !verifiedBadge) return null;
 
   return (
-    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+    <Box sx={{ display: "flex", gap: 1, alignItems: "center", backgroundColor: '#e0e0e0', px: 1, borderRadius: '5px' }}>
       {verifiedBadge && (
         <Tooltip title={`Verified ${role}`} arrow placement="top">
           <Box

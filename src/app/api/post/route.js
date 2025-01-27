@@ -16,23 +16,42 @@ export async function GET(req) {
     const lastPostId = url.searchParams.get("lastPostId");
     const searchQuery = url.searchParams.get("search");
 
+    console.log(searchQuery)
+
     // Build the query based on lastPostId and search
-    let query = lastPostId ? { _id: { $lt: lastPostId } } : {};
+    let query = {};
+
+    // Add pagination condition if lastPostId exists
+    if (lastPostId) {
+      query._id = { $lt: lastPostId };
+    }
 
     // Add search conditions if search query exists
-    if (searchQuery) {
-      const searchRegex = new RegExp(searchQuery, "i");
+    if (searchQuery && searchQuery.trim()) {
+      // Escape special regex characters and trim whitespace
+      const sanitizedSearch = searchQuery
+        .trim()
+        .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+      
+      // Create a case-insensitive regex
+      const searchRegex = new RegExp(sanitizedSearch, "i");
+
+      // Expand search to include partial matches
       query.$or = [
         { caption: searchRegex },
-        { "finder.name": searchRegex }, // Direct dot notation for nested fields
-        { "owner.name": searchRegex }, // Direct dot notation for nested fields
+        { "finder.item.name": searchRegex },
+        { "owner.item.name": searchRegex },
+        // Add exact match conditions for better results
+        { caption: { $regex: `\\b${sanitizedSearch}\\b`, $options: "i" } },
+        { "finder.item.name": { $regex: `\\b${sanitizedSearch}\\b`, $options: "i" } },
+        { "owner.item.name": { $regex: `\\b${sanitizedSearch}\\b`, $options: "i" } }
       ];
     }
 
     const nextPosts = await post
       .find(query)
       .sort({ createdAt: -1 }) // Reverse chronological order
-      .limit(10)
+      .limit(2)
       .populate({
         path: "author",
         select:

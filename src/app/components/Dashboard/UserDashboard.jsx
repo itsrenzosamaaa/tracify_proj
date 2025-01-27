@@ -33,12 +33,15 @@ import {
   TablePagination,
   Chip,
   Card,
+  CardHeader,
   CardContent,
+  CardActions,
   TableContainer,
   ListItemIcon,
   ListItemText,
   useTheme,
   useMediaQuery,
+  Skeleton,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import Loading from "../Loading";
@@ -56,7 +59,8 @@ const UserDashboard = ({ session, status, users }) => {
   const [posts, setPosts] = useState([]);
   const [lostItems, setLostItems] = useState([]);
   const [matches, setMatches] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(null);
   const [message, setMessage] = useState("");
@@ -102,15 +106,14 @@ const UserDashboard = ({ session, status, users }) => {
 
   const fetchPosts = useCallback(
     async (searchQuery = "") => {
-      if (loading || !hasMore) return;
-      setLoading(true);
+      if (loadingMore || !hasMore) return;
+      setLoadingMore(true);
       try {
         const lastId = posts.length > 0 ? posts[posts.length - 1]._id : "";
 
-        // Construct URL with search and pagination parameters
         const url = new URL("/api/post", window.location.origin);
         if (lastId) url.searchParams.append("lastPostId", lastId);
-        if (searchQuery) url.searchParams.append("search", searchQuery); // No encodeURIComponent here
+        if (searchQuery) url.searchParams.append("search", searchQuery);
 
         const response = await fetch(url);
         const data = await response.json();
@@ -122,22 +125,23 @@ const UserDashboard = ({ session, status, users }) => {
 
         const postsToAdd = Array.isArray(data) ? data : [data];
 
-        setPosts(postsToAdd);
+        setPosts((prevPosts) => [...prevPosts, ...postsToAdd]);
       } catch (error) {
         console.error("Failed to fetch post:", error);
         setError(error.message);
       } finally {
-        setLoading(false);
+        setLoadingMore(false);
+        setInitialLoading(false);
       }
     },
-    [loading, hasMore, posts, setPosts, setLoading, setHasMore, setError]
+    [loadingMore, hasMore, posts, setPosts, setHasMore, setError]
   );
 
-  const debouncedFetchPosts = useMemo(() => {
-    return debounce((query) => {
-      fetchPosts(query);
-    }, 300);
-  }, [fetchPosts]);
+  // Create a stable, memoized version of the debounced function
+  const debouncedFetchPosts = useMemo(
+    () => debounce(fetchPosts, 300),
+    [fetchPosts] // Only depends on `fetchPosts`
+  );
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -146,14 +150,12 @@ const UserDashboard = ({ session, status, users }) => {
   };
 
   useEffect(() => {
-    return () => {
-      debouncedFetchPosts.cancel();
-    };
+    return () => debouncedFetchPosts.cancel();
   }, [debouncedFetchPosts]);
 
   const lastPostElementRef = useCallback(
     (node) => {
-      if (loading) return;
+      if (loadingMore) return;
 
       if (observerRef.current) {
         observerRef.current.disconnect();
@@ -169,16 +171,14 @@ const UserDashboard = ({ session, status, users }) => {
         observerRef.current.observe(node);
       }
     },
-    [loading, hasMore, fetchPosts]
+    [loadingMore, hasMore, fetchPosts]
   );
 
   useEffect(() => {
     if (status === "authenticated" && posts.length === 0) {
-      setLoading(true);
       fetchPosts(); // Trigger the first fetch when lastPostId is null
       fetchLostItems();
       fetchMatches();
-      setLoading(false);
     }
   }, [status, posts.length, fetchPosts, fetchLostItems, fetchMatches]); // Trigger effect if status or lastPostId changes
 
@@ -186,8 +186,6 @@ const UserDashboard = ({ session, status, users }) => {
     (user) =>
       dayjs(user.birthday).format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD")
   );
-
-  if (loading && posts.length === 0) return <Loading />;
 
   if (error) return <Typography color="error">Error: {error}</Typography>;
 
@@ -326,50 +324,133 @@ const UserDashboard = ({ session, status, users }) => {
                 </DialogContent>
               </ModalDialog>
             </Modal>
-
-            {posts.map((post, index) => {
-              const isLastElement = index === posts.length - 1;
-
-              return (
-                <div
-                  key={post._id}
-                  ref={isLastElement ? lastPostElementRef : null}
-                >
-                  {post.isShared ? (
-                    <SharedPost
-                      refreshData={fetchMatches}
-                      matches={matches}
-                      setOpenSnackbar={setOpenSnackbar}
-                      setMessage={setMessage}
-                      session={session}
-                      post={post}
-                      sharedBy={post.sharedBy}
-                      originalPost={post.originalPost}
-                      caption={post.caption}
-                      sharedAt={post.sharedAt}
-                      isXs={isXs}
-                      lostItems={lostItems}
+            {initialLoading ? (
+              // Show full page loading skeletons
+              Array(5)
+                .fill(0)
+                .map((_, index) => (
+                  <Card key={index} sx={{ width: "100%", mb: 2 }}>
+                    <CardHeader
+                      avatar={
+                        <Skeleton
+                          animation="wave"
+                          variant="circular"
+                          width={40}
+                          height={40}
+                        />
+                      }
+                      title={
+                        <Skeleton animation="wave" height={10} width="80%" />
+                      }
+                      subheader={
+                        <Skeleton animation="wave" height={10} width="40%" />
+                      }
                     />
-                  ) : (
-                    <Post
-                      refreshData={fetchMatches}
-                      matches={matches}
-                      setOpenSnackbar={setOpenSnackbar}
-                      setMessage={setMessage}
-                      session={session}
-                      post={post}
-                      author={post.author}
-                      caption={post.caption}
-                      item={post.isFinder ? post.finder : post.owner}
-                      createdAt={post.createdAt}
-                      isXs={isXs}
-                      lostItems={lostItems}
+                    <CardContent>
+                      <Box sx={{ mb: 2 }}>
+                        <Skeleton animation="wave" height={10} sx={{ mb: 1 }} />
+                        <Skeleton animation="wave" height={10} width="80%" />
+                      </Box>
+                      <Skeleton
+                        animation="wave"
+                        variant="rectangular"
+                        height={300}
+                      />
+                    </CardContent>
+                    <CardActions sx={{ px: 2 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Skeleton animation="wave" height={36} width={150} />
+                      </Box>
+                    </CardActions>
+                  </Card>
+                ))
+            ) : (
+              <>
+                {posts.map((post, index) => {
+                  const isLastElement = index === posts.length - 1;
+                  return (
+                    <div
+                      key={post._id}
+                      ref={isLastElement ? lastPostElementRef : null}
+                    >
+                      {post.isShared ? (
+                        <SharedPost
+                          refreshData={fetchMatches}
+                          matches={matches}
+                          setOpenSnackbar={setOpenSnackbar}
+                          setMessage={setMessage}
+                          session={session}
+                          post={post}
+                          sharedBy={post.sharedBy}
+                          originalPost={post.originalPost}
+                          caption={post.caption}
+                          sharedAt={post.sharedAt}
+                          isXs={isXs}
+                          lostItems={lostItems}
+                        />
+                      ) : (
+                        <Post
+                          refreshData={fetchMatches}
+                          matches={matches}
+                          setOpenSnackbar={setOpenSnackbar}
+                          setMessage={setMessage}
+                          session={session}
+                          post={post}
+                          author={post.author}
+                          caption={post.caption}
+                          item={post.isFinder ? post.finder : post.owner}
+                          createdAt={post.createdAt}
+                          isXs={isXs}
+                          lostItems={lostItems}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+                {loadingMore && (
+                  <Card sx={{ width: "100%", mb: 2 }}>
+                    <CardHeader
+                      avatar={
+                        <Skeleton
+                          animation="wave"
+                          variant="circular"
+                          width={40}
+                          height={40}
+                        />
+                      }
+                      title={
+                        <Skeleton animation="wave" height={10} width="80%" />
+                      }
+                      subheader={
+                        <Skeleton animation="wave" height={10} width="40%" />
+                      }
                     />
-                  )}
-                </div>
-              );
-            })}
-            {loading && <Loading />}
+                    <CardContent>
+                      <Box sx={{ mb: 2 }}>
+                        <Skeleton animation="wave" height={10} sx={{ mb: 1 }} />
+                        <Skeleton animation="wave" height={10} width="80%" />
+                      </Box>
+                      <Skeleton
+                        animation="wave"
+                        variant="rectangular"
+                        height={300}
+                      />
+                    </CardContent>
+                    <CardActions sx={{ px: 2 }}>
+                      <Box sx={{ display: "flex", gap: 2 }}>
+                        <Skeleton animation="wave" height={36} width={100} />
+                      </Box>
+                    </CardActions>
+                  </Card>
+                )}
+              </>
+            )}
             {!hasMore && (
               <Box
                 sx={{
