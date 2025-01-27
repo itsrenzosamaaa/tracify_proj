@@ -3,9 +3,9 @@ import dbConnect from "@/lib/mongodb";
 import post from "@/lib/models/post";
 import user from "@/lib/models/user";
 import item from "@/lib/models/item";
-import roles from "@/lib/models/roles";
 import owner from "@/lib/models/owner";
 import finder from "@/lib/models/finder";
+import admin from "@/lib/models/admin";
 
 export async function GET(req, { params }) {
   try {
@@ -42,11 +42,7 @@ export async function GET(req, { params }) {
           select: "name category images monitoredBy status",
           populate: {
             path: "monitoredBy",
-            select: "firstname lastname role",
-            populate: {
-              path: "role",
-              select: "name",
-            },
+            select: "firstname lastname",
           },
         },
       })
@@ -76,11 +72,7 @@ export async function GET(req, { params }) {
               select: "name images monitoredBy status",
               populate: {
                 path: "monitoredBy",
-                select: "firstname lastname role",
-                populate: {
-                  path: "role",
-                  select: "name",
-                },
+                select: "firstname lastname",
               },
             },
           },
@@ -90,7 +82,7 @@ export async function GET(req, { params }) {
               path: "item",
               select: "name category images status",
             },
-          }
+          },
         ],
       });
 

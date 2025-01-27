@@ -5,6 +5,7 @@ import user from "@/lib/models/user";
 import item from "@/lib/models/item";
 import finder from "@/lib/models/finder";
 import owner from "@/lib/models/owner";
+import admin from "@/lib/models/admin";
 
 export async function GET(req) {
   try {
@@ -46,11 +47,7 @@ export async function GET(req) {
           select: "name category images monitoredBy status",
           populate: {
             path: "monitoredBy",
-            select: "firstname lastname role",
-            populate: {
-              path: "role",
-              select: "name",
-            },
+            select: "firstname lastname",
           },
         },
       })
@@ -80,11 +77,7 @@ export async function GET(req) {
               select: "name images monitoredBy status",
               populate: {
                 path: "monitoredBy",
-                select: "firstname lastname role",
-                populate: {
-                  path: "role",
-                  select: "name",
-                },
+                select: "firstname lastname",
               },
             },
           },
