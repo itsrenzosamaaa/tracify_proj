@@ -215,7 +215,12 @@ const SharedPost = ({
                   </Typography>
                 </Box>
               </Box>
-              <Chip variant="solid" color={originalPost?.isFinder ? 'success' : 'danger'}>{originalPost?.isFinder ? 'Found Item' : 'Lost Item'}</Chip>
+              <Chip
+                variant="solid"
+                color={originalPost?.isFinder ? "success" : "danger"}
+              >
+                {originalPost?.isFinder ? "Found Item" : "Lost Item"}
+              </Chip>
               <Typography
                 level={isXs ? "body-sm" : "body-md"}
                 sx={{ color: "text.secondary", mb: 2 }}
@@ -293,10 +298,12 @@ const SharedPost = ({
             }}
           >
             {/* Claim Section */}
-            {session?.user?.id !== originalPost.author._id &&
+            {session?.user?.id !== originalPost?.author?._id &&
               !matches.some(
-                (match) => match?.finder?._id === originalPost.finder._id
-              ) && (
+                (match) =>
+                  match?.finder?._id === originalPost?.finder?.item?._id
+              ) &&
+              originalPost?.isFinder && (
                 <>
                   <Box
                     onClick={() => setClaimModal(originalPost._id)} // Replace with your actual handler function

@@ -117,7 +117,11 @@ const Post = ({
             </Box>
           </Box>
 
-          <Chip variant="solid" size={isXs ? "sm" : "md"} color={post?.isFinder ? "success" : "danger"}>
+          <Chip
+            variant="solid"
+            size={isXs ? "sm" : "md"}
+            color={post?.isFinder ? "success" : "danger"}
+          >
             {post?.isFinder ? "Found Item" : "Lost Item"}
           </Chip>
 

@@ -126,7 +126,7 @@ const AdminDashboard = ({ session, users }) => {
         <Grid item xs={12}>
           <Grid container spacing={2}>
             {session.user.roleName !== "Super Admin" && (
-              <Grid item xs={12} md={3}>
+              <Grid item xs={12} md={4}>
                 <Paper
                   component={Link}
                   href="/found-items"
@@ -182,7 +182,7 @@ const AdminDashboard = ({ session, users }) => {
               </Grid>
             )}
             {session.user.roleName !== "Super Admin" && (
-              <Grid item xs={12} md={3}>
+              <Grid item xs={12} md={4}>
                 <Paper
                   component={Link}
                   href="/lost-items"
@@ -238,7 +238,7 @@ const AdminDashboard = ({ session, users }) => {
               </Grid>
             )}
             {session.user.roleName !== "Super Admin" && (
-              <Grid item xs={12} md={3}>
+              <Grid item xs={12} md={4}>
                 <Paper
                   component={Link}
                   href="/item-retrieval"
@@ -285,62 +285,6 @@ const AdminDashboard = ({ session, users }) => {
                         fontSize: "0.9rem",
                         fontWeight: "500",
                         color: "#a5d6a7",
-                      }}
-                    >
-                      More info &rarr;
-                    </Typography>
-                  </Box>
-                </Paper>
-              </Grid>
-            )}
-            {session.user.roleName !== "Super Admin" && (
-              <Grid item xs={12} md={3}>
-                <Paper
-                  component={Link}
-                  href="/badges"
-                  elevation={3}
-                  sx={{
-                    backgroundColor: "#fb8c00",
-                    color: "#fff",
-                    textDecoration: "none",
-                    padding: "1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    borderRadius: "8px",
-                    "&:hover": {
-                      backgroundColor: "#ef6c00",
-                      transform: "translateY(-4px)",
-                      transition: "0.3s ease-in-out",
-                    },
-                  }}
-                >
-                  <Typography
-                    level={isXs ? "title-md" : "title-lg"}
-                    sx={{ color: "#fff", paddingTop: 2 }}
-                  >
-                    Badges
-                  </Typography>
-                  <Typography
-                    level="body-xs"
-                    sx={{ color: "#fff", paddingBottom: 2 }}
-                  >
-                    View your created badges here
-                  </Typography>
-                  <Box
-                    sx={{
-                      marginTop: "auto",
-                      display: "flex",
-                      justifyContent: "center",
-                      width: "100%",
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: "0.9rem",
-                        fontWeight: "500",
-                        color: "#ffcc80",
                       }}
                     >
                       More info &rarr;

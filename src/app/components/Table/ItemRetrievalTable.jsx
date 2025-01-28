@@ -50,7 +50,13 @@ const ItemRetrievalTable = ({ items, fetchItems, users }) => {
     setCurrentPage(1); // Reset to the first page
   };
 
-  const paginatedItems = items.slice(
+  const sortedData = [...items].sort((a, b) => {
+    const getLatestDate = (item) => new Date(item.datePending || 0); // Fallback to 0 if undefined
+
+    return getLatestDate(b) - getLatestDate(a);
+  });
+
+  const paginatedItems = sortedData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
