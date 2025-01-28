@@ -432,7 +432,7 @@ const ItemReservedModal = ({
                   Resolved Item
                 </Typography>
                 <FormControl>
-                  <FormLabel>How did you know this item is yours?</FormLabel>
+                  <FormLabel>How was the item found?</FormLabel>
                   <RadioGroup
                     value={seePost}
                     onChange={(e) => setSeePost(e.target.value)}
@@ -454,7 +454,7 @@ const ItemReservedModal = ({
                 </FormControl>
                 {seePost === "It was shared by another user" && (
                   <FormControl>
-                    <FormLabel>Who is the user who shared the post?</FormLabel>
+                    <FormLabel>Who shared the post?</FormLabel>
                     <Select
                       fullWidth
                       required
