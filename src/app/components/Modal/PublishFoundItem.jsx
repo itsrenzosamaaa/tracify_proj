@@ -81,48 +81,43 @@ const PublishFoundItem = ({
     }
   };
 
-  const locationOptions = {
-    "RLO Building": ["RLO101", "RLO102", "RLO201", "RLO202", "RLO Restroom"],
-    "FJN Building": [
-      "FJN101",
-      "FJN102",
-      "FJN201",
-      "FJN202",
-      "FJN301",
-      "FJN302",
-      "FJN Restroom (1st Floor)",
-      "FJN Restroom (2nd Floor)",
-      "FJN Restroom (3rd Floor)",
-    ],
-    "MMN Building": [
-      "MMN101",
-      "MMN102",
-      "MMN103",
-      "MMN201",
-      "MMN202",
-      "MMN203",
-      "MMN301",
-      "MMN302",
-      "MMN303",
-      "MMN Restroom (2nd Floor)",
-      "MMN Restroom (3rd Floor)",
-    ],
-    Others: [
-      "Canteen",
-      "TLC Court",
-      "Function Hall",
-      "Library",
-      "COMLAB A",
-      "COMLAB B",
-      "COMLAB C",
-    ],
-  };
+  const locationOptions = [
+    "RLO101",
+    "RLO102",
+    "RLO201",
+    "RLO202",
+    "RLO Restroom",
+    "FJN101",
+    "FJN102",
+    "FJN201",
+    "FJN202",
+    "FJN301",
+    "FJN302",
+    "FJN Restroom (1st Floor)",
+    "FJN Restroom (2nd Floor)",
+    "FJN Restroom (3rd Floor)",
+    "MMN101",
+    "MMN102",
+    "MMN103",
+    "MMN201",
+    "MMN202",
+    "MMN203",
+    "MMN301",
+    "MMN302",
+    "MMN303",
+    "MMN Restroom (2nd Floor)",
+    "MMN Restroom (3rd Floor)",
+    "Canteen",
+    "TLC Court",
+    "Function Hall",
+    "Library",
+    "COMLAB A",
+    "COMLAB B",
+    "COMLAB C",
+  ];
 
-  const colors = {
-    "RLO Building": "primary",
-    "FJN Building": "success",
-    "MMN Building": "warning",
-    Others: "danger",
+  const handleChange = (event, newValue) => {
+    setLocation(newValue);
   };
 
   const handleSubmit = async (e) => {
@@ -218,7 +213,7 @@ const PublishFoundItem = ({
               author: finder?._id,
               isFinder: true,
               caption: description,
-              finder: finderData._id,
+              finder: finderData?._id,
               createdAt: new Date(),
             }),
           }),
@@ -459,7 +454,7 @@ const PublishFoundItem = ({
                       </Select>
                     </FormControl>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={6} sm={4}>
                     <Box
                       sx={{
                         display: "flex",
@@ -471,7 +466,7 @@ const PublishFoundItem = ({
                       <FormLabel>Size</FormLabel>
                       <Checkbox
                         size="sm"
-                        label="If N/A, check this"
+                        label="N/A"
                         checked={sizeNotDetermined}
                         onChange={handleCheck}
                       />
@@ -507,45 +502,30 @@ const PublishFoundItem = ({
                           MozAppearance: "textfield",
                         },
                       }}
-                      endDecorator={
-                        <Select
-                          disabled={sizeNotDetermined}
-                          variant="soft"
-                          size="small"
-                          value={size.unit}
-                          onChange={(e, newValue) =>
-                            setSize({ ...size, unit: newValue })
-                          }
-                          placeholder="Unit"
-                          sx={{
-                            width: "40px",
-                            ml: 0.5,
-                            "& .MuiSelect-indicator": {
-                              display: "none",
-                            },
-                            "& .MuiSelect-button": {
-                              minHeight: "28px",
-                              textAlign: "center",
-                            },
-                            "& .MuiInputBase-input": {
-                              textAlign: "center",
-                            },
-                            "& .MuiOption-root": {
-                              textAlign: "center",
-                            },
-                          }}
-                        >
-                          {["cm", "inch", "m", "ft"].map((unit) => (
-                            <Option key={unit} value={unit}>
-                              {unit}
-                            </Option>
-                          ))}
-                        </Select>
-                      }
                     />
                   </Grid>
 
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={6} sm={4}>
+                    <FormControl>
+                      <FormLabel>Unit</FormLabel>
+                      <Select
+                        disabled={sizeNotDetermined}
+                        value={size.unit}
+                        onChange={(e, newValue) =>
+                          setSize({ ...size, unit: newValue })
+                        }
+                        placeholder="Unit"
+                      >
+                        {["cm", "inch", "m", "ft"].map((unit) => (
+                          <Option key={unit} value={unit}>
+                            {unit}
+                          </Option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
                     <FormControl>
                       <FormLabel>Category</FormLabel>
                       <Select
@@ -674,74 +654,14 @@ const PublishFoundItem = ({
                 </FormControl>
                 <FormControl required>
                   <FormLabel>Found Location</FormLabel>
-                  <Select
-                    fullWidth
-                    placeholder="Select Found Location"
+                  <Autocomplete
+                    options={locationOptions}
                     value={location}
-                    onChange={(e, value) => setLocation(value)}
-                    slotProps={{
-                      listbox: {
-                        component: "div",
-                        sx: {
-                          maxHeight: 240,
-                          overflow: "auto",
-                          "--List-padding": "0px",
-                          "--ListItem-radius": "0px",
-                        },
-                      },
-                    }}
-                  >
-                    {Object.entries(locationOptions).map(
-                      ([building, rooms], index) => (
-                        <React.Fragment key={building}>
-                          {/* Optional divider between groups */}
-                          {index !== 0 && <ListDivider role="none" />}
-
-                          {/* Group List for Building */}
-                          <List
-                            aria-labelledby={`select-group-${building}`}
-                            sx={{ "--ListItemDecorator-size": "28px" }}
-                          >
-                            {/* Group Header */}
-                            <ListItem id={`select-group-${building}`} sticky>
-                              <Typography
-                                level="body-xs"
-                                sx={{ textTransform: "uppercase" }}
-                              >
-                                {building} ({rooms.length})
-                              </Typography>
-                            </ListItem>
-
-                            {/* Location Options */}
-                            {rooms.map((room) => (
-                              <Option
-                                key={room}
-                                value={room}
-                                label={
-                                  <React.Fragment>
-                                    {/* Displaying the building name with a color tag */}
-                                    <Chip
-                                      size="sm"
-                                      color={colors[building]}
-                                      sx={{ borderRadius: "xs", mr: 1 }}
-                                    >
-                                      {building}
-                                    </Chip>{" "}
-                                    {room}
-                                  </React.Fragment>
-                                }
-                              >
-                                <ListItemDecorator sx={{ opacity: 0 }}>
-                                  <Check />
-                                </ListItemDecorator>
-                                {room}
-                              </Option>
-                            ))}
-                          </List>
-                        </React.Fragment>
-                      )
+                    onChange={handleChange}
+                    renderInput={(params) => (
+                      <Input {...params} placeholder="Select location..." />
                     )}
-                  </Select>
+                  />
                 </FormControl>
                 <FormControl required>
                   <FormLabel>Found Date and Time</FormLabel>

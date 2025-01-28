@@ -20,6 +20,7 @@ const TopSharers = ({ users, session }) => {
       ...user,
       sharedCount: user.shareCount,
     }))
+    .filter((user) => user.sharedCount >= 3)
     .sort((a, b) => b.sharedCount - a.sharedCount);
 
   // Assign ranks using the average rank method for ties
@@ -60,7 +61,7 @@ const TopSharers = ({ users, session }) => {
       </Typography>
       <Card
         sx={{
-          height: "400px",
+          height: "425px",
           borderTop: "3px solid #3f51b5",
           fontSize: "0.875rem",
         }}
@@ -77,7 +78,7 @@ const TopSharers = ({ users, session }) => {
             sx={{
               flex: 1,
               overflowY: "auto",
-              maxHeight: 350,
+              maxHeight: 425,
               position: "relative",
             }}
           >
@@ -88,7 +89,7 @@ const TopSharers = ({ users, session }) => {
                     <TableCell sx={{ width: "60px" }}>
                       <strong>Rank</strong>
                     </TableCell>
-                    <TableCell sx={{ width: "200px" }}>
+                    <TableCell sx={{ width: "150px" }}>
                       <strong>Student Name</strong>
                     </TableCell>
                     <TableCell>
@@ -109,7 +110,7 @@ const TopSharers = ({ users, session }) => {
                         : "inherit";
 
                     return (
-                      <TableRow key={user._id}>
+                      <TableRow key={user._id} sx={{ height: "35px" }}>
                         <TableCell
                           sx={{
                             fontWeight: "bold",
@@ -137,7 +138,7 @@ const TopSharers = ({ users, session }) => {
                               : user.rank.toFixed(1)}
                           </Box>
                         </TableCell>
-                        <TableCell sx={{ width: "200px" }}>
+                        <TableCell sx={{ width: "150px" }}>
                           {user.firstname} {user.lastname}
                         </TableCell>
                         <TableCell>{user.sharedCount}</TableCell>
@@ -151,65 +152,73 @@ const TopSharers = ({ users, session }) => {
                   }).map((_, index) => (
                     <TableRow
                       key={`empty-row-${index}`}
-                      sx={{ height: "30px" }}
+                      sx={{ height: "35px" }}
                     >
                       <TableCell colSpan={3}></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
                 <TableFooter>
-                  {loggedInUser && session?.user?.userType === "user" && (
-                    <TableRow
-                      sx={{
-                        position: "sticky",
-                        bottom: 0,
-                        backgroundColor: "white",
-                        borderTop: "1px solid #e0e0e0",
-                      }}
-                    >
-                      {/* Display the user's rank */}
-                      <TableCell
-                        sx={{
-                          fontWeight: "bold",
-                          width: "60px",
-                        }}
-                      >
-                        <Box
+                  <TableRow>
+                    {loggedInUser && session?.user?.userType === "user" ? (
+                      <>
+                        <TableCell
                           sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: 25,
-                            height: 25,
-                            borderRadius: "50%",
-                            border: "1px solid black",
-                            backgroundColor:
-                              Math.floor(loggedInUser.rank) === 1
-                                ? "#FFD700"
-                                : Math.floor(loggedInUser.rank) === 2
-                                ? "#C0C0C0"
-                                : Math.floor(loggedInUser.rank) === 3
-                                ? "#CD7F32"
-                                : "inherit",
-                            color: "#000000",
-                            fontSize: "0.75rem",
+                            fontWeight: "bold",
+                            width: "60px",
                           }}
                         >
-                          {Number.isInteger(loggedInUser.rank)
-                            ? loggedInUser.rank
-                            : loggedInUser.rank.toFixed(1)}
-                        </Box>
-                      </TableCell>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: 25,
+                              height: 25,
+                              borderRadius: "50%",
+                              border: "1px solid black",
+                              backgroundColor:
+                                Math.floor(loggedInUser.rank) === 1
+                                  ? "#FFD700"
+                                  : Math.floor(loggedInUser.rank) === 2
+                                  ? "#C0C0C0"
+                                  : Math.floor(loggedInUser.rank) === 3
+                                  ? "#CD7F32"
+                                  : "inherit",
+                              color: "#000000",
+                              fontSize: "0.75rem",
+                            }}
+                          >
+                            {Number.isInteger(loggedInUser.rank)
+                              ? loggedInUser.rank
+                              : loggedInUser.rank.toFixed(1)}
+                          </Box>
+                        </TableCell>
 
-                      {/* Display the user's name */}
-                      <TableCell sx={{ width: "200px" }}>
-                        {loggedInUser.firstname} {loggedInUser.lastname}
-                      </TableCell>
+                        {/* Display the user's name */}
+                        <TableCell sx={{ width: "200px" }}>
+                          {loggedInUser.firstname} {loggedInUser.lastname}
+                        </TableCell>
 
-                      {/* Display the user's resolved found items count */}
-                      <TableCell>{loggedInUser.sharedCount}</TableCell>
-                    </TableRow>
-                  )}
+                        {/* Display the user's resolved found items count */}
+                        <TableCell>{loggedInUser.sharedCount}</TableCell>
+                      </>
+                    ) : (
+                      <TableCell
+                        colSpan={3}
+                        sx={{ textAlign: "center", py: 2 }}
+                      >
+                        <Typography
+                          level="body2"
+                          color="textSecondary"
+                          sx={{ fontStyle: "italic" }}
+                        >
+                          Not ranked yet – Keep sharing items to earn your rank!
+                          🚀
+                        </Typography>
+                      </TableCell>
+                    )}
+                  </TableRow>
                 </TableFooter>
               </Table>
             ) : (
@@ -222,7 +231,13 @@ const TopSharers = ({ users, session }) => {
                   textAlign: "center",
                 }}
               >
-                <CircularProgress />
+                <Typography
+                  level="body2"
+                  color="textSecondary"
+                  sx={{ fontStyle: "italic" }}
+                >
+                  No data available!
+                </Typography>
               </Box>
             )}
           </TableContainer>

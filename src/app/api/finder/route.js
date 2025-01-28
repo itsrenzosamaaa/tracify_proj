@@ -47,6 +47,7 @@ export async function POST(req) {
     await newFinder.save();
 
     return NextResponse.json(
+      newFinder,
       { success: true, message: "Finder Created" },
       { status: 201 }
     );

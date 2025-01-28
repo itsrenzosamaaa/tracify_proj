@@ -75,6 +75,13 @@ const UserDashboard = ({ session, status, users }) => {
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isMd = useMediaQuery(theme.breakpoints.down("md"));
 
+  const roleColors = {
+    Student: "#4CAF50", // Green
+    Parent: "#2196F3", // Blue
+    Faculty: "#FFC107", // Amber
+    "Security Guard": "#FF5722", // Deep Orange
+  };
+
   const fetchMatches = useCallback(async () => {
     try {
       const response = await fetch(`/api/match-items`);
@@ -204,7 +211,7 @@ const UserDashboard = ({ session, status, users }) => {
         }}
       />
       <Grid container spacing={2} sx={{ height: "85.5vh" }}>
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={7.8}>
           <Box
             sx={{
               paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
@@ -393,6 +400,9 @@ const UserDashboard = ({ session, status, users }) => {
                           sharedAt={post.sharedAt}
                           isXs={isXs}
                           lostItems={lostItems}
+                          roleColors={roleColors}
+                          fetchPosts={fetchPosts}
+                          setPosts={setPosts}
                         />
                       ) : (
                         <Post
@@ -408,6 +418,9 @@ const UserDashboard = ({ session, status, users }) => {
                           createdAt={post.createdAt}
                           isXs={isXs}
                           lostItems={lostItems}
+                          roleColors={roleColors}
+                          fetchPosts={fetchPosts}
+                          setPosts={setPosts}
                         />
                       )}
                     </div>
@@ -482,7 +495,7 @@ const UserDashboard = ({ session, status, users }) => {
           </Box>
         </Grid>
         {!isMd && (
-          <Grid item md={4}>
+          <Grid item md={4.2}>
             <Box
               sx={{
                 paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
@@ -584,7 +597,7 @@ const UserDashboard = ({ session, status, users }) => {
                   </Card>
                 </Box>
               )}
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 3 }}>
                 <TopStudentsEarnedBadges users={users} session={session} />
                 <TopSharers users={users} session={session} />
               </Box>

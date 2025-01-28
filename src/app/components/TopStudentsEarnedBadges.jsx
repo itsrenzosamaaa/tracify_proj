@@ -18,8 +18,9 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
   const rankedUsers = users
     .map((user) => ({
       ...user,
-      resolvedFoundItemsCount: user.resolvedItemCount,
+      resolvedFoundItemsCount: user.resolvedItemCount, // Keep original count
     }))
+    .filter((user) => user.resolvedFoundItemsCount >= 2) // Exclude users with count < 2
     .sort((a, b) => b.resolvedFoundItemsCount - a.resolvedFoundItemsCount);
 
   // Assign ranks using the average rank method for ties
@@ -61,7 +62,7 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
       </Typography>
       <Card
         sx={{
-          height: "400px",
+          height: "425px",
           borderTop: "3px solid #3f51b5",
           fontSize: "0.875rem",
         }}
@@ -78,7 +79,7 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
             sx={{
               flex: 1,
               overflowY: "auto",
-              maxHeight: 350,
+              maxHeight: 425,
               position: "relative",
             }}
           >
@@ -89,7 +90,7 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                     <TableCell sx={{ width: "60px" }}>
                       <strong>Rank</strong>
                     </TableCell>
-                    <TableCell sx={{ width: "200px" }}>
+                    <TableCell sx={{ width: "150px" }}>
                       <strong>Student Name</strong>
                     </TableCell>
                     <TableCell>
@@ -110,7 +111,7 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                         : "inherit";
 
                     return (
-                      <TableRow key={user._id}>
+                      <TableRow key={user._id} sx={{ height: "35px" }}>
                         <TableCell
                           sx={{
                             fontWeight: "bold",
@@ -138,7 +139,7 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                               : user.rank.toFixed(1)}
                           </Box>
                         </TableCell>
-                        <TableCell sx={{ width: "200px" }}>
+                        <TableCell sx={{ width: "150px" }}>
                           {user.firstname} {user.lastname}
                         </TableCell>
                         <TableCell>{user.resolvedFoundItemsCount}</TableCell>
@@ -152,14 +153,14 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                   }).map((_, index) => (
                     <TableRow
                       key={`empty-row-${index}`}
-                      sx={{ height: "30px" }}
+                      sx={{ height: "35px" }}
                     >
                       <TableCell colSpan={3}></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
                 <TableFooter>
-                  {loggedInUser && session?.user?.userType === "user" && (
+                  {loggedInUser && session?.user?.userType === "user" ? (
                     <TableRow
                       sx={{
                         position: "sticky",
@@ -212,6 +213,17 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                         {loggedInUser.resolvedFoundItemsCount}
                       </TableCell>
                     </TableRow>
+                  ) : (
+                    <TableCell colSpan={3} sx={{ textAlign: "center", py: 2 }}>
+                      <Typography
+                        level="p"
+                        color="textSecondary"
+                        sx={{ fontStyle: "italic" }}
+                      >
+                        Not ranked yet – Keep resolving items to earn your rank!
+                        🚀
+                      </Typography>
+                    </TableCell>
                   )}
                 </TableFooter>
               </Table>
@@ -225,7 +237,13 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                   textAlign: "center",
                 }}
               >
-                <CircularProgress />
+                <Typography
+                  level="body2"
+                  color="textSecondary"
+                  sx={{ fontStyle: "italic" }}
+                >
+                  No data available!
+                </Typography>
               </Box>
             )}
           </TableContainer>

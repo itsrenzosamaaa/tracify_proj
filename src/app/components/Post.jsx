@@ -43,6 +43,9 @@ const Post = ({
   caption,
   isXs,
   lostItems = null,
+  roleColors,
+  fetchPosts,
+  setPosts
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);
   const [claimModal, setClaimModal] = useState(null);
@@ -68,9 +71,25 @@ const Post = ({
           originalPost: post?._id,
         }),
       });
-      setSharePostModal(false);
+      if(session?.user?.id !== post?.author?._id) {
+        await fetch("/api/notification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            receiver: post?.author?._id,
+            message: `${session?.user?.firstname} ${session?.user?.lastname} shared your post.`,
+            type: "Shared Post",
+            markAsRead: false,
+            dateNotified: new Date(),
+          }),
+        })
+      };
+      setSharedCaption("");
+      setSharePostModal(null);
       setOpenSnackbar("success");
       setMessage("Post shared successfully!");
+      setPosts([]);
+      fetchPosts();
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage("An unexpected error occurred.");
@@ -78,6 +97,9 @@ const Post = ({
       setLoading(false);
     }
   };
+
+  console.log(session?.user?.id)
+  console.log(post?.author?._id)
 
   return (
     <>
@@ -99,13 +121,13 @@ const Post = ({
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
                   fontWeight={700}
+                  sx={{ color: roleColors[author?.role] || "inherit" }}
                 >
                   {author?.firstname} {author?.lastname}
                 </Typography>
                 <PreviewBadge
                   resolvedItemCount={author?.resolvedItemCount}
                   shareCount={author?.shareCount}
-                  role={author?.role}
                   birthday={author?.birthday}
                 />
               </Box>

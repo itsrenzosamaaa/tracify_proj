@@ -3,7 +3,7 @@ import { Tooltip, Box } from "@mui/joy";
 import { useTheme, useMediaQuery } from "@mui/material";
 import dayjs from "dayjs";
 
-const PreviewBadge = ({ resolvedItemCount, shareCount, role, birthday }) => {
+const PreviewBadge = ({ resolvedItemCount, shareCount, birthday }) => {
   const theme = useTheme();
 
   const birthdayBadge = { shape: "birthdayCake", color: "#F44336" };
@@ -148,51 +148,38 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, role, birthday }) => {
     }
   };
 
-  const roleColors = {
-    Student: "#4CAF50", // Green
-    Parent: "#2196F3", // Blue
-    Faculty: "#FFC107", // Amber
-    "Security Guard": "#FF5722", // Deep Orange
-  };
-
   const resolvedBadge = getResolvedBadge();
   const shareBadge = getShareBadge();
-  const verifiedBadge = role
-    ? { shape: "checkmark", color: roleColors[role] || "#9E9E9E" } // Default to Grey if role is unknown
-    : null;
 
-  if (!resolvedBadge && !shareBadge && !verifiedBadge) return null;
+  const isBirthdayToday =
+    dayjs(birthday).format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD");
+  const noBadges = !resolvedBadge && !shareBadge && !isBirthdayToday;
+
+  if (noBadges) return null;
 
   return (
-    <Box sx={{ display: "flex", gap: 1, alignItems: "center", backgroundColor: '#e0e0e0', px: 1, borderRadius: '5px' }}>
-      {verifiedBadge && (
-        <Tooltip title={`Verified ${role}`} arrow placement="top">
+    <Box
+      sx={{
+        display: "flex",
+        gap: 1,
+        alignItems: "center",
+        backgroundColor: noBadges ? "transparent" : "#e0e0e0", // Remove background if no badges
+        px: noBadges ? 0 : 1, // Remove padding if no badges
+        borderRadius: "5px",
+      }}
+    >
+      {birthdayBadge && isBirthdayToday && (
+        <Tooltip title="Happy Birthday!" arrow placement="top">
           <Box
             sx={{
-              ...createShape(verifiedBadge.shape, verifiedBadge.color),
+              ...createBirthdayGiftBadge(20, "#FF4081", "#FFC107"), // Box: Pink, Ribbon: Yellow
               display: "inline-block",
-              transition: "transform 0.2s ease-in-out",
-              "&:hover": {
-                transform: "scale(1.1)",
-              },
             }}
-          />
+          >
+            <Box className="bow" />
+          </Box>
         </Tooltip>
       )}
-      {birthdayBadge &&
-        dayjs(birthday).format("YYYY-MM-DD") ===
-          dayjs().format("YYYY-MM-DD") && (
-          <Tooltip title="Happy Birthday!" arrow placement="top">
-            <Box
-              sx={{
-                ...createBirthdayGiftBadge(20, "#FF4081", "#FFC107"), // Box: Pink, Ribbon: Yellow
-                display: "inline-block",
-              }}
-            >
-              <Box className="bow" />
-            </Box>
-          </Tooltip>
-        )}
 
       {resolvedBadge && (
         <Tooltip

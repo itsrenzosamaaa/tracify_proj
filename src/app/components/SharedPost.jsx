@@ -43,6 +43,9 @@ const SharedPost = ({
   sharedAt,
   isXs,
   lostItems = null,
+  roleColors,
+  fetchPosts,
+  setPosts
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);
   const [claimModal, setClaimModal] = useState(null);
@@ -68,9 +71,25 @@ const SharedPost = ({
           originalPost: originalPost._id,
         }),
       });
-      setSharePostModal(false);
+      if (session?.user?.id !== originalPost?.author?._id) {
+        await fetch("/api/notification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            receiver: originalPost?.author?._id,
+            message: `${session?.user?.firstname} ${session?.user?.lastname} shared your post.`,
+            type: "Shared Post",
+            markAsRead: false,
+            dateNotified: new Date(),
+          }),
+        })
+      };
+      setSharePostModal(null);
+      setSharedCaption("");
       setOpenSnackbar("success");
       setMessage("Post shared successfully!");
+      setPosts([]);
+      fetchPosts();
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage("An unexpected error occurred.");
@@ -103,13 +122,13 @@ const SharedPost = ({
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
                   fontWeight={700}
+                  sx={{ color: roleColors[sharedBy?.role] || "inherit" }}
                 >
                   {sharedBy.firstname} {sharedBy.lastname}
                 </Typography>
                 <PreviewBadge
                   resolvedItemCount={sharedBy.resolvedItemCount}
                   shareCount={sharedBy.shareCount}
-                  role={sharedBy.role}
                   birthday={sharedBy.birthday}
                 />
               </Box>
@@ -188,6 +207,7 @@ const SharedPost = ({
                     <Typography
                       level={isXs ? "body-sm" : "body-md"}
                       fontWeight={700}
+                      sx={{ color: roleColors[originalPost?.author?.role] || "inherit" }}
                     >
                       {originalPost.author.firstname}{" "}
                       {originalPost.author.lastname}
@@ -195,7 +215,6 @@ const SharedPost = ({
                     <PreviewBadge
                       resolvedItemCount={originalPost.author.resolvedItemCount}
                       shareCount={originalPost.author.shareCount}
-                      role={originalPost.author.role}
                       birthday={originalPost.author.birthday}
                     />
                   </Box>
