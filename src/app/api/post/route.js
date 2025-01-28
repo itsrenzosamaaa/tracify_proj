@@ -57,8 +57,6 @@ export async function GET(req) {
         select:
           "firstname lastname profile_picture resolvedItemCount shareCount role birthday",
       })
-      .populate("finder", "item")
-      .populate("owner", "item")
       .populate({
         path: "finder",
         populate: {

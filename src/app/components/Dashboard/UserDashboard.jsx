@@ -404,7 +404,7 @@ const UserDashboard = ({ session, status, users }) => {
                           post={post}
                           author={post.author}
                           caption={post.caption}
-                          item={post.isFinder ? post.finder : post.owner}
+                          item={post?.isFinder ? post?.finder : post?.owner}
                           createdAt={post.createdAt}
                           isXs={isXs}
                           lostItems={lostItems}

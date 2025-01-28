@@ -63,9 +63,9 @@ const Post = ({
         body: JSON.stringify({
           isShared: true,
           caption: sharedCaption,
-          sharedBy: session.user.id,
+          sharedBy: session?.user?.id,
           sharedAt: new Date(),
-          originalPost: post._id,
+          originalPost: post?._id,
         }),
       });
       setSharePostModal(false);
@@ -90,8 +90,8 @@ const Post = ({
           <Box display="flex" alignItems="center" mb={2}>
             <Avatar
               sx={{ mr: 2 }}
-              src={author.profile_picture}
-              alt={author.firstname}
+              src={author?.profile_picture}
+              alt={author?.firstname}
               style={{ cursor: "pointer" }}
             />
             <Box>
@@ -100,13 +100,13 @@ const Post = ({
                   level={isXs ? "body-sm" : "body-md"}
                   fontWeight={700}
                 >
-                  {author.firstname} {author.lastname}
+                  {author?.firstname} {author?.lastname}
                 </Typography>
                 <PreviewBadge
-                  resolvedItemCount={author.resolvedItemCount}
-                  shareCount={author.shareCount}
-                  role={author.role}
-                  birthday={author.birthday}
+                  resolvedItemCount={author?.resolvedItemCount}
+                  shareCount={author?.shareCount}
+                  role={author?.role}
+                  birthday={author?.birthday}
                 />
               </Box>
               <Typography level={isXs ? "body-xs" : "body-sm"} fontWeight={300}>
@@ -136,7 +136,7 @@ const Post = ({
           {(() => {
             let matchedItem;
 
-            if (post.isFinder) {
+            if (post?.isFinder) {
               // Check for matches where the finder matches the item ID
               matchedItem = matches.find(
                 (match) =>
@@ -200,7 +200,7 @@ const Post = ({
 
           {/* Item Images */}
           <Carousel showThumbs={false} useKeyboardArrows>
-            {item.item.images?.map((image, index) => (
+            {item?.item?.images?.map((image, index) => (
               <Box
                 key={index}
                 sx={{
@@ -237,8 +237,8 @@ const Post = ({
             }}
           >
             {/* Claim Section */}
-            {session?.user?.id !== author._id &&
-              !matches.some((match) => match?.finder?._id === item._id) &&
+            {session?.user?.id !== author?._id &&
+              !matches.some((match) => match?.finder?._id === item?._id) &&
               post?.isFinder && ( // Ensure item is not already matched
                 <>
                   <Box
@@ -398,12 +398,12 @@ const Post = ({
                             return "N/A"; // No item selected
                           }
 
-                          if (selectedItem.date_time === "Unidentified") {
+                          if (selectedItem?.date_time === "Unidentified") {
                             return "Unidentified"; // Explicit unidentified case
                           }
 
                           const dateTimeParts =
-                            selectedItem.date_time?.split(" to ");
+                            selectedItem?.date_time?.split(" to ");
                           return dateTimeParts && dateTimeParts[0]
                             ? dateTimeParts[0]
                             : "N/A"; // Extract or fallback
@@ -420,12 +420,12 @@ const Post = ({
                             return "N/A"; // No item selected
                           }
 
-                          if (selectedItem.date_time === "Unidentified") {
+                          if (selectedItem?.date_time === "Unidentified") {
                             return "Unidentified"; // Explicit unidentified case
                           }
 
                           const dateTimeParts =
-                            selectedItem.date_time?.split(" to ");
+                            selectedItem?.date_time?.split(" to ");
                           return dateTimeParts && dateTimeParts[1]
                             ? dateTimeParts[1]
                             : "N/A"; // Extract or fallback
@@ -457,7 +457,7 @@ const Post = ({
         closeModal={() => setClaimModal(null)}
         foundItem={item}
         lostItem={selectedLostItem}
-        finder={item._id}
+        finder={item?._id}
         refreshData={refreshData}
       />
       <Modal
@@ -474,15 +474,15 @@ const Post = ({
             <Box display="flex" alignItems="center" mb={2}>
               <Avatar
                 sx={{ mr: 2 }}
-                src={session.user.profile_picture}
-                alt={session.user.firstname}
+                src={session?.user?.profile_picture}
+                alt={session?.user?.firstname}
               />
               <Box>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
                   fontWeight={700}
                 >
-                  {session.user.firstname} {session.user.lastname}
+                  {session?.user?.firstname} {session?.user?.lastname}
                 </Typography>
                 <Chip size="sm" variant="solid">
                   Feed
