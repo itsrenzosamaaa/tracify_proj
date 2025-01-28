@@ -36,7 +36,7 @@ const PublishLostItem = ({
   onClose,
   setOpenSnackbar,
   setMessage,
-  setActiveTab,
+  fetchItems = null,
 }) => {
   const [users, setUsers] = useState([]);
   const [name, setName] = useState("");
@@ -263,6 +263,9 @@ const PublishLostItem = ({
 
       resetForm();
       setOpenSnackbar("success");
+      if (fetchItems) {
+        fetchItems();
+      }
       setMessage(
         session?.user?.userType === "user"
           ? "Item requested successfully!"
