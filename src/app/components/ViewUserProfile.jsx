@@ -34,6 +34,13 @@ const ViewUserProfile = ({
   const isMd = useMediaQuery(theme.breakpoints.down("md"));
   const observerRef = useRef();
 
+  const roleColors = {
+    Student: "#4CAF50", // Green
+    Parent: "#2196F3", // Blue
+    Faculty: "#FFC107", // Amber
+    "Security Guard": "#FF5722", // Deep Orange
+  };
+
   const fetchLostItems = useCallback(async () => {
     try {
       const response = await fetch(`/api/owner/${session?.user?.id}`);
@@ -180,6 +187,7 @@ const ViewUserProfile = ({
                     sharedAt={post.sharedAt}
                     isXs={isXs}
                     lostItems={lostItems}
+                    roleColors={roleColors}
                   />
                 ) : (
                   <Post
@@ -195,6 +203,7 @@ const ViewUserProfile = ({
                     createdAt={post.createdAt}
                     isXs={isXs}
                     lostItems={lostItems}
+                    roleColors={roleColors}
                   />
                 )}
               </div>
