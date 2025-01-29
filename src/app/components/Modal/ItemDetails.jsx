@@ -103,14 +103,20 @@ const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage }) => {
   const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isMd = useMediaQuery(theme.breakpoints.up("md"));
 
-  console.log(color);
-
   const locationOptions = [
     "RLO101",
     "RLO102",
     "RLO201",
     "RLO202",
     "RLO Restroom",
+    "RFL101",
+    "RFL102",
+    "RFL201",
+    "RFL202",
+    "RFL301",
+    "RFL302",
+    "RFL Restroom (2nd Floor)",
+    "RFL Restroom (3rd Floor)",
     "FJN101",
     "FJN102",
     "FJN201",
