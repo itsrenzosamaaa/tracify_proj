@@ -135,6 +135,11 @@ const AvatarWithName = ({
           <Typography level="body-lg" fontWeight="500">
             {profile.firstname} {profile.lastname}
           </Typography>
+          <PreviewBadge
+            resolvedItemCount={profile?.resolvedItemCount}
+            shareCount={profile?.shareCount}
+            birthday={profile?.birthday}
+          />
           <Typography level="body-sm" fontWeight="400">
             {profile.role}
           </Typography>

@@ -160,7 +160,7 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                   ))}
                 </TableBody>
                 <TableFooter>
-                  {loggedInUser && session?.user?.userType === "user" ? (
+                  {loggedInUser && session?.user?.userType === "user" && (
                     <TableRow
                       sx={{
                         position: "sticky",
@@ -213,8 +213,12 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                         {loggedInUser.resolvedFoundItemsCount}
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    <TableCell colSpan={3} sx={{ textAlign: "center", py: 2 }}>
+                  )}
+                  {session?.user?.userType === "user" && (
+                    <TableCell
+                      colSpan={3}
+                      sx={{ textAlign: "center", py: 2, height: "35px" }}
+                    >
                       <Typography
                         level="p"
                         color="textSecondary"

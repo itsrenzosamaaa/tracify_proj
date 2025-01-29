@@ -44,8 +44,6 @@ const Post = ({
   isXs,
   lostItems = null,
   roleColors,
-  fetchPosts,
-  setPosts
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);
   const [claimModal, setClaimModal] = useState(null);
@@ -60,7 +58,7 @@ const Post = ({
     setLoading(true);
 
     try {
-      await fetch("/api/post", {
+      const response = await fetch("/api/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -71,6 +69,8 @@ const Post = ({
           originalPost: post?._id,
         }),
       });
+
+      const data = await response.json();
       if(session?.user?.id !== post?.author?._id) {
         await fetch("/api/notification", {
           method: "POST",
@@ -81,6 +81,7 @@ const Post = ({
             type: "Shared Post",
             markAsRead: false,
             dateNotified: new Date(),
+            post: session?.user?.id !== post?.author?._id ? data._id : null,
           }),
         })
       };
@@ -88,8 +89,6 @@ const Post = ({
       setSharePostModal(null);
       setOpenSnackbar("success");
       setMessage("Post shared successfully!");
-      setPosts([]);
-      fetchPosts();
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage("An unexpected error occurred.");
@@ -97,9 +96,6 @@ const Post = ({
       setLoading(false);
     }
   };
-
-  console.log(session?.user?.id)
-  console.log(post?.author?._id)
 
   return (
     <>
@@ -153,6 +149,12 @@ const Post = ({
             sx={{ color: "text.secondary", mb: 2 }}
           >
             {caption}
+          </Typography>
+          <Typography
+            level={isXs ? "body-sm" : "body-md"}
+            sx={{ color: "text.secondary", mb: 2 }}
+          >
+            <strong>Location:</strong> {item?.item?.location}
           </Typography>
 
           {(() => {

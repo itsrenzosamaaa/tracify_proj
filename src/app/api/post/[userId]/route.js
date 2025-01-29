@@ -39,7 +39,7 @@ export async function GET(req, { params }) {
         path: "finder",
         populate: {
           path: "item",
-          select: "name category images monitoredBy status",
+          select: "name category images monitoredBy status location date_time",
           populate: {
             path: "monitoredBy",
             select: "firstname lastname",
@@ -50,7 +50,7 @@ export async function GET(req, { params }) {
         path: "owner",
         populate: {
           path: "item",
-          select: "name category images status",
+          select: "name category images status location date_time",
         },
       })
       .populate(
@@ -69,7 +69,7 @@ export async function GET(req, { params }) {
             path: "finder",
             populate: {
               path: "item",
-              select: "name images monitoredBy status",
+              select: "name images monitoredBy status location date_time",
               populate: {
                 path: "monitoredBy",
                 select: "firstname lastname",
@@ -80,7 +80,7 @@ export async function GET(req, { params }) {
             path: "owner",
             populate: {
               path: "item",
-              select: "name category images status",
+              select: "name category images status location date_time",
             },
           },
         ],

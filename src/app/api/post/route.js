@@ -11,47 +11,25 @@ export async function GET(req) {
   try {
     await dbConnect();
 
-    // Get the lastPostId and search query from URL search params
     const url = new URL(req.url);
     const lastPostId = url.searchParams.get("lastPostId");
     const searchQuery = url.searchParams.get("search");
 
-    console.log(searchQuery)
+    // Base query (can filter by `isShared`, `_id` but not populated fields yet)
+    let queryBuilder = post.find({
+      isShared: { $in: [true, false] }, // Include both shared and non-shared posts
+    });
 
-    // Build the query based on lastPostId and search
-    let query = {};
-
-    // Add pagination condition if lastPostId exists
+    // Add pagination
     if (lastPostId) {
-      query._id = { $lt: lastPostId };
+      queryBuilder = queryBuilder.where("_id").lt(lastPostId);
     }
 
-    // Add search conditions if search query exists
-    if (searchQuery && searchQuery.trim()) {
-      // Escape special regex characters and trim whitespace
-      const sanitizedSearch = searchQuery
-        .trim()
-        .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-      
-      // Create a case-insensitive regex
-      const searchRegex = new RegExp(sanitizedSearch, "i");
+    // Add sorting and limit
+    queryBuilder = queryBuilder.sort({ createdAt: -1 }).limit(3);
 
-      // Expand search to include partial matches
-      query.$or = [
-        { caption: searchRegex },
-        { "finder.item.name": searchRegex },
-        { "owner.item.name": searchRegex },
-        // Add exact match conditions for better results
-        { caption: { $regex: `\\b${sanitizedSearch}\\b`, $options: "i" } },
-        { "finder.item.name": { $regex: `\\b${sanitizedSearch}\\b`, $options: "i" } },
-        { "owner.item.name": { $regex: `\\b${sanitizedSearch}\\b`, $options: "i" } }
-      ];
-    }
-
-    const nextPosts = await post
-      .find(query)
-      .sort({ createdAt: -1 }) // Reverse chronological order
-      .limit(2)
+    // Add population
+    queryBuilder = queryBuilder
       .populate({
         path: "author",
         select:
@@ -61,7 +39,7 @@ export async function GET(req) {
         path: "finder",
         populate: {
           path: "item",
-          select: "name category images monitoredBy status",
+          select: "name category images monitoredBy status location date_time",
           populate: {
             path: "monitoredBy",
             select: "firstname lastname",
@@ -72,13 +50,14 @@ export async function GET(req) {
         path: "owner",
         populate: {
           path: "item",
-          select: "name category images status",
+          select: "name category images status location date_time",
         },
       })
-      .populate(
-        "sharedBy",
-        "firstname lastname profile_picture resolvedItemCount shareCount role birthday"
-      )
+      .populate({
+        path: "sharedBy",
+        select:
+          "firstname lastname profile_picture resolvedItemCount shareCount role birthday",
+      })
       .populate({
         path: "originalPost",
         populate: [
@@ -91,7 +70,7 @@ export async function GET(req) {
             path: "finder",
             populate: {
               path: "item",
-              select: "name images monitoredBy status",
+              select: "name images monitoredBy status location date_time",
               populate: {
                 path: "monitoredBy",
                 select: "firstname lastname",
@@ -102,13 +81,54 @@ export async function GET(req) {
             path: "owner",
             populate: {
               path: "item",
-              select: "name category images status",
+              select: "name category images status location date_time",
             },
           },
         ],
       });
 
-    if (nextPosts.length === 0) {
+    // Execute the query
+    let nextPosts = await queryBuilder.exec();
+    if (searchQuery?.trim()) {
+      nextPosts = nextPosts.filter(
+        (post) =>
+          post.caption.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          post?.finder?.item?.name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          post?.owner?.item?.name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          post?.originalPost?.finder?.item?.name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          post?.originalPost?.owner?.item?.name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase())
+      );
+    }
+    // 🔥 Manual filtering (since MongoDB can't filter populated fields)
+    nextPosts = nextPosts.filter((post) => {
+      // For regular posts
+      if (!post.isShared) {
+        return (
+          post?.finder?.item?.status !== "Resolved" &&
+          post?.owner?.item?.status !== "Claimed"
+        );
+      }
+
+      // For shared posts
+      if (post.isShared) {
+        return (
+          post?.originalPost?.finder?.item?.status !== "Resolved" &&
+          post?.originalPost?.owner?.item?.status !== "Claimed"
+        );
+      }
+
+      return true;
+    });
+
+    if (!nextPosts.length) {
       return NextResponse.json({ error: "No more posts" }, { status: 404 });
     }
 
@@ -131,6 +151,7 @@ export async function POST(req) {
     await newPostData.save();
 
     return NextResponse.json(
+      newPostData,
       { message: "Post added successfully!" },
       { status: 201 }
     );

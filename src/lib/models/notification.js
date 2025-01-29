@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const notificationSchema = new mongoose.Schema({
   receiver: {
     type: String,
-    ref: 'User',
+    ref: "User",
   },
   message: {
     type: String,
@@ -16,6 +16,11 @@ const notificationSchema = new mongoose.Schema({
   },
   dateNotified: {
     type: Date,
+  },
+  post: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Post",
+    default: null,
   },
 });
 

@@ -160,7 +160,7 @@ const TopSharers = ({ users, session }) => {
                 </TableBody>
                 <TableFooter>
                   <TableRow>
-                    {loggedInUser && session?.user?.userType === "user" ? (
+                    {loggedInUser && session?.user?.userType === "user" && (
                       <>
                         <TableCell
                           sx={{
@@ -203,10 +203,11 @@ const TopSharers = ({ users, session }) => {
                         {/* Display the user's resolved found items count */}
                         <TableCell>{loggedInUser.sharedCount}</TableCell>
                       </>
-                    ) : (
+                    )}
+                    {session?.user?.userType === "user" && (
                       <TableCell
                         colSpan={3}
-                        sx={{ textAlign: "center", py: 2 }}
+                        sx={{ textAlign: "center", py: 2, height: "35px" }}
                       >
                         <Typography
                           level="body2"

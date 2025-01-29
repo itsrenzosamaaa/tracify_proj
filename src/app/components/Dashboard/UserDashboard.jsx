@@ -59,6 +59,7 @@ const UserDashboard = ({ session, status, users }) => {
   const [posts, setPosts] = useState([]);
   const [lostItems, setLostItems] = useState([]);
   const [matches, setMatches] = useState([]);
+  const [lastId, setLastId] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
@@ -116,7 +117,8 @@ const UserDashboard = ({ session, status, users }) => {
       if (loadingMore || !hasMore) return;
       setLoadingMore(true);
       try {
-        const lastId = posts.length > 0 ? posts[posts.length - 1]._id : "";
+        const newLastId = posts.length > 0 ? posts[posts.length - 1]._id : "";
+        setLastId(newLastId);
 
         const url = new URL("/api/post", window.location.origin);
         if (lastId) url.searchParams.append("lastPostId", lastId);
@@ -125,14 +127,19 @@ const UserDashboard = ({ session, status, users }) => {
         const response = await fetch(url);
         const data = await response.json();
 
-        if ("error" in data) {
+        if ("error" in data || data.length === 0) {
           setHasMore(false);
           return;
         }
 
         const postsToAdd = Array.isArray(data) ? data : [data];
 
-        setPosts((prevPosts) => [...prevPosts, ...postsToAdd]);
+        setPosts((prevPosts) => [
+          ...prevPosts,
+          ...postsToAdd.filter(
+            (post) => !prevPosts.some((p) => p._id === post._id)
+          ),
+        ]);
       } catch (error) {
         console.error("Failed to fetch post:", error);
         setError(error.message);
@@ -141,24 +148,21 @@ const UserDashboard = ({ session, status, users }) => {
         setInitialLoading(false);
       }
     },
-    [loadingMore, hasMore, posts, setPosts, setHasMore, setError]
+    [loadingMore, hasMore, lastId, posts]
   );
 
-  // Create a stable, memoized version of the debounced function
-  const debouncedFetchPosts = useMemo(
-    () => debounce(fetchPosts, 300),
-    [fetchPosts] // Only depends on `fetchPosts`
-  );
-
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    debouncedFetchPosts(value);
+  const handleSearch = () => {
+    setPosts([]); // Clear previous posts before searching
+    setHasMore(true); // Reset to allow new searches
+    fetchPosts(searchQuery);
   };
 
-  useEffect(() => {
-    return () => debouncedFetchPosts.cancel();
-  }, [debouncedFetchPosts]);
+  const handleRefresh = () => {
+    setLastId("");
+    setPosts([]); // Clear previous posts before refreshing
+    setHasMore(true); // Reset to allow fetching new posts
+    fetchPosts();
+  };
 
   const lastPostElementRef = useCallback(
     (node) => {
@@ -279,14 +283,32 @@ const UserDashboard = ({ session, status, users }) => {
                   )}
                 </Box>
               </Box>
-              <Input
-                value={searchQuery}
-                onChange={handleInputChange} // Use debounced input handler
-                fullWidth
-                sx={{ my: 2 }}
-                startDecorator={<Search />}
-                placeholder="Search caption..."
-              />
+              <form
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 1,
+                }}
+                onSubmit={(e) => {
+                  e.preventDefault(); // Prevent page reload
+                  searchQuery.trim() === "" ? handleRefresh() : handleSearch();
+                }}
+              >
+                <Box display="flex" gap={2} alignItems="center">
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    fullWidth
+                    sx={{ my: 2 }}
+                    startDecorator={<Search />}
+                    placeholder="Search caption..."
+                  />
+                  <Button type="submit">
+                    {searchQuery.trim() === "" ? "Refresh" : "Enter"}
+                  </Button>
+                </Box>
+              </form>
 
               {isMd && (
                 <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
@@ -401,8 +423,6 @@ const UserDashboard = ({ session, status, users }) => {
                           isXs={isXs}
                           lostItems={lostItems}
                           roleColors={roleColors}
-                          fetchPosts={fetchPosts}
-                          setPosts={setPosts}
                         />
                       ) : (
                         <Post
@@ -419,8 +439,6 @@ const UserDashboard = ({ session, status, users }) => {
                           isXs={isXs}
                           lostItems={lostItems}
                           roleColors={roleColors}
-                          fetchPosts={fetchPosts}
-                          setPosts={setPosts}
                         />
                       )}
                     </div>
@@ -597,7 +615,9 @@ const UserDashboard = ({ session, status, users }) => {
                   </Card>
                 </Box>
               )}
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 3 }}>
+              <Box
+                sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 3 }}
+              >
                 <TopStudentsEarnedBadges users={users} session={session} />
                 <TopSharers users={users} session={session} />
               </Box>

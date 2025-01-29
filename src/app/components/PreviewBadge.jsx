@@ -163,6 +163,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday }) => {
         display: "flex",
         gap: 1,
         alignItems: "center",
+        justifyContent: 'center',
         backgroundColor: noBadges ? "transparent" : "#e0e0e0", // Remove background if no badges
         px: noBadges ? 0 : 1, // Remove padding if no badges
         borderRadius: "5px",

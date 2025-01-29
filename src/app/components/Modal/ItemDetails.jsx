@@ -23,6 +23,7 @@ import {
   Chip,
   FormControl,
   FormLabel,
+  Autocomplete,
 } from "@mui/joy";
 import { CldImage } from "next-cloudinary";
 import { format, subDays, isBefore, isAfter, isToday } from "date-fns";
@@ -104,49 +105,40 @@ const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage }) => {
 
   console.log(color);
 
-  const locationOptions = {
-    "RLO Building": ["RLO101", "RLO102", "RLO201", "RLO202", "RLO Restroom"],
-    "FJN Building": [
-      "FJN101",
-      "FJN102",
-      "FJN201",
-      "FJN202",
-      "FJN301",
-      "FJN302",
-      "FJN Restroom (1st Floor)",
-      "FJN Restroom (2nd Floor)",
-      "FJN Restroom (3rd Floor)",
-    ],
-    "MMN Building": [
-      "MMN101",
-      "MMN102",
-      "MMN103",
-      "MMN201",
-      "MMN202",
-      "MMN203",
-      "MMN301",
-      "MMN302",
-      "MMN303",
-      "MMN Restroom (2nd Floor)",
-      "MMN Restroom (3rd Floor)",
-    ],
-    Others: [
-      "Canteen",
-      "TLC Court",
-      "Function Hall",
-      "Library",
-      "COMLAB A",
-      "COMLAB B",
-      "COMLAB C",
-    ],
-  };
-
-  const colors = {
-    "RLO Building": "primary",
-    "FJN Building": "success",
-    "MMN Building": "warning",
-    Others: "danger",
-  };
+  const locationOptions = [
+    "RLO101",
+    "RLO102",
+    "RLO201",
+    "RLO202",
+    "RLO Restroom",
+    "FJN101",
+    "FJN102",
+    "FJN201",
+    "FJN202",
+    "FJN301",
+    "FJN302",
+    "FJN Restroom (1st Floor)",
+    "FJN Restroom (2nd Floor)",
+    "FJN Restroom (3rd Floor)",
+    "MMN101",
+    "MMN102",
+    "MMN103",
+    "MMN201",
+    "MMN202",
+    "MMN203",
+    "MMN301",
+    "MMN302",
+    "MMN303",
+    "MMN Restroom (2nd Floor)",
+    "MMN Restroom (3rd Floor)",
+    "Canteen",
+    "TLC Court",
+    "Function Hall",
+    "Library",
+    "COMLAB A",
+    "COMLAB B",
+    "COMLAB C",
+  ];
 
   const handleCheck = (e) => {
     const check = e.target.checked;
@@ -585,8 +577,8 @@ const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage }) => {
                           required
                           value={size.value}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, ""); 
-                            setSize({ ...size, value })
+                            const value = e.target.value.replace(/\D/g, "");
+                            setSize({ ...size, value });
                           }}
                           onKeyDown={(e) => {
                             if (
@@ -693,79 +685,18 @@ const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage }) => {
                     {isEditMode ? (
                       <FormControl>
                         <FormLabel>Location</FormLabel>
-                        <Select
-                          required
-                          fullWidth
+                        <Autocomplete
                           disabled={!itemWhereabouts}
-                          placeholder="Select Found Location"
+                          options={locationOptions}
                           value={location}
-                          onChange={(e, value) => setLocation(value)}
-                          slotProps={{
-                            listbox: {
-                              component: "div",
-                              sx: {
-                                maxHeight: 240,
-                                overflow: "auto",
-                                "--List-padding": "0px",
-                                "--ListItem-radius": "0px",
-                              },
-                            },
-                          }}
-                        >
-                          {Object.entries(locationOptions).map(
-                            ([building, rooms], index) => (
-                              <React.Fragment key={building}>
-                                {/* Optional divider between groups */}
-                                {index !== 0 && <ListDivider role="none" />}
-
-                                {/* Group List for Building */}
-                                <List
-                                  aria-labelledby={`select-group-${building}`}
-                                  sx={{ "--ListItemDecorator-size": "28px" }}
-                                >
-                                  {/* Group Header */}
-                                  <ListItem
-                                    id={`select-group-${building}`}
-                                    sticky
-                                  >
-                                    <Typography
-                                      level="body-xs"
-                                      sx={{ textTransform: "uppercase" }}
-                                    >
-                                      {building} ({rooms.length})
-                                    </Typography>
-                                  </ListItem>
-
-                                  {/* Location Options */}
-                                  {rooms.map((room) => (
-                                    <Option
-                                      key={room}
-                                      value={room}
-                                      label={
-                                        <React.Fragment>
-                                          {/* Displaying the building name with a color tag */}
-                                          <Chip
-                                            size="sm"
-                                            color={colors[building]}
-                                            sx={{ borderRadius: "xs", mr: 1 }}
-                                          >
-                                            {building}
-                                          </Chip>{" "}
-                                          {room}
-                                        </React.Fragment>
-                                      }
-                                    >
-                                      <ListItemDecorator sx={{ opacity: 0 }}>
-                                        <Check />
-                                      </ListItemDecorator>
-                                      {room}
-                                    </Option>
-                                  ))}
-                                </List>
-                              </React.Fragment>
-                            )
+                          onChange={(e, newValue) => setLocation(newValue)}
+                          renderInput={(params) => (
+                            <Input
+                              {...params}
+                              placeholder="Select location..."
+                            />
                           )}
-                        </Select>
+                        />
                       </FormControl>
                     ) : (
                       <Typography level={isXs ? "body-sm" : "body-md"}>
@@ -889,7 +820,7 @@ const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage }) => {
                     <Divider sx={{ marginY: 2 }} />
                     {isEditMode ? (
                       <FormControl>
-                        <FormLabel>Description</FormLabel>
+                        <FormLabel>Caption</FormLabel>
                         <Textarea
                           type="text"
                           name="description"
@@ -901,7 +832,7 @@ const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage }) => {
                       </FormControl>
                     ) : (
                       <Typography level={isXs ? "body-sm" : "body-md"}>
-                        <strong>Description:</strong>{" "}
+                        <strong>Caption:</strong>{" "}
                         {row.item.description || "N/A"}
                       </Typography>
                     )}
