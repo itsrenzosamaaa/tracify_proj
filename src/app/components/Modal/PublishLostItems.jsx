@@ -118,6 +118,8 @@ const PublishLostItem = ({
     "TLC Court",
     "Function Hall",
     "Library",
+    "Student Lounge",
+    "Audio Visual Room",
     "COMLAB A",
     "COMLAB B",
     "COMLAB C",
