@@ -37,6 +37,7 @@ import FindInPageIcon from "@mui/icons-material/FindInPage";
 import MoveToInboxIcon from "@mui/icons-material/MoveToInbox";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import NotificationComponent from "./NotificationComponent";
+import { LocationOnOutlined } from "@mui/icons-material";
 
 // Updated Styled Link
 const StyledLink = styled(Link)`
@@ -224,6 +225,11 @@ export default function App() {
           icon: <HelpOutlineIcon />,
           menu: "Lost Items",
           url: "/lost-items",
+        });
+        base.push({
+          icon: <LocationOnOutlined />,
+          menu: "Locations",
+          url: "/locations",
         });
         base.push({
           icon: <PeopleOutlineIcon />,

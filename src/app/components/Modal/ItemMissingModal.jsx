@@ -19,6 +19,7 @@ const ItemMissingModal = ({
   snackBar,
   setMessage,
   setOpenSnackbar,
+  locationOptions,
 }) => {
   return (
     <Modal open={open === row._id} onClose={onClose}>
@@ -62,6 +63,7 @@ const ItemMissingModal = ({
           }}
         >
           <ItemDetails
+            locationOptions={locationOptions}
             row={row}
             refreshData={refreshData}
             setOpenSnackbar={setOpenSnackbar}

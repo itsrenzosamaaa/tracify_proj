@@ -5,7 +5,7 @@ import item from "@/lib/models/item";
 import badge from "@/lib/models/badge";
 import user from "@/lib/models/user";
 import admin from "@/lib/models/admin";
-import roles from "@/lib/models/roles";
+import roles from "@/lib/models/location";
 import { nanoid } from "nanoid";
 
 export async function GET() {

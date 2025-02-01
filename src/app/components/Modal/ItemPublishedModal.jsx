@@ -20,6 +20,7 @@ const ItemPublishedModal = ({
   session,
   setMessage,
   setOpenSnackbar,
+  locationOptions,
 }) => {
   return (
     <Modal open={open === row._id} onClose={onClose}>
@@ -63,6 +64,7 @@ const ItemPublishedModal = ({
           }}
         >
           <ItemDetails
+            locationOptions={locationOptions}
             row={row}
             refreshData={refreshData}
             setOpenSnackbar={setOpenSnackbar}

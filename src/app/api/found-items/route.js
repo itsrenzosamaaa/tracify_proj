@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import item from "@/lib/models/item";
 import admin from "@/lib/models/admin";
-import roles from "@/lib/models/roles";
+import roles from "@/lib/models/location";
 import { v2 as cloudinary } from 'cloudinary';
 import { nanoid } from 'nanoid';
 

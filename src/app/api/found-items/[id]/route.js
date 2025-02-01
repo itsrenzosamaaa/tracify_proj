@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import item from "@/lib/models/item";
 import admin from "@/lib/models/admin";
-import Role from "@/lib/models/roles";
+import Role from "@/lib/models/location";
 
 export async function GET(req, { params }) {
     const { id } = params;

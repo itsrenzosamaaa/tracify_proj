@@ -32,7 +32,7 @@ import ItemClaimRequestModal from "../Modal/ItemClaimRequestModal";
 import ItemReservedModal from "../Modal/ItemReservedModal";
 import { format } from "date-fns";
 
-const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
+const ItemsTable = ({ items, fetchItems, session, isFoundItem, status, locationOptions }) => {
   const [approveModal, setApproveModal] = useState(null);
   const [openDeclinedModal, setOpenDeclinedModal] = useState(null);
   const [openCanceledModal, setOpenCanceledModal] = useState(null);
@@ -74,8 +74,6 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
     return getLatestDate(b) - getLatestDate(a);
   });
 
-  console.log(sortedData)
-
   const paginatedItems = sortedData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
@@ -91,6 +89,7 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
     fetchItems,
     snackbarMessage,
     isOpenSnackbar,
+    locationOptions,
   }) => {
     return (
       status === row.item.status && (
@@ -106,6 +105,7 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
             refreshData={fetchItems}
             setMessage={snackbarMessage}
             setOpenSnackbar={isOpenSnackbar}
+            locationOptions={locationOptions}
           />
         </>
       )
@@ -211,6 +211,7 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                         fetchItems={fetchItems}
                         snackbarMessage={setMessage}
                         isOpenSnackbar={setOpenSnackbar}
+                        locationOptions={locationOptions}
                       />
                       <ModalButton
                         status="Declined"
@@ -244,6 +245,7 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                         fetchItems={fetchItems}
                         snackbarMessage={setMessage}
                         isOpenSnackbar={setOpenSnackbar}
+                        locationOptions={locationOptions}
                       />
                       <ModalButton
                         status="Claim Request"
@@ -502,6 +504,7 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                             fetchItems={fetchItems}
                             snackbarMessage={setMessage}
                             isOpenSnackbar={setOpenSnackbar}
+                            locationOptions={locationOptions}
                           />
                           <ModalButton
                             status="Declined"
@@ -535,6 +538,7 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status }) => {
                             fetchItems={fetchItems}
                             snackbarMessage={setMessage}
                             isOpenSnackbar={setOpenSnackbar}
+                            locationOptions={locationOptions}
                           />
                           <ModalButton
                             status="Claim Request"

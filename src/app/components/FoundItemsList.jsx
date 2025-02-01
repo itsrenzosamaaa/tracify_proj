@@ -7,7 +7,7 @@ import PublishFoundItem from './Modal/PublishFoundItem';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import { Search } from '@mui/icons-material';
 
-const FoundItemsList = ({ finders, fetchItems, session }) => {
+const FoundItemsList = ({ finders, fetchItems, session, locationOptions }) => {
     const [status, setStatus] = useState('Published');
     const [open, setOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState(''); // Track search input
@@ -68,6 +68,8 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
         </Badge>
     );
 
+    console.log(locationOptions)
+
     return (
         <>
             <TitleBreadcrumbs title="List of Found Items" text="Found Items" />
@@ -114,7 +116,7 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
                             <Button size="small" sx={{ width: isMobile ? '50%' : '170px' }} startDecorator={<AddIcon />} onClick={() => setOpen(true)}>
                                 Post Found Item
                             </Button>
-                            <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} />
+                            <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} locationOptions={locationOptions} />
                         </Box>
                         {/* Search Input */}
                         <Input
@@ -124,7 +126,7 @@ const FoundItemsList = ({ finders, fetchItems, session }) => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)} // Update search query
                         />
-                        <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={true} status={status} />
+                        <ItemsTable locationOptions={locationOptions} session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={true} status={status} />
                     </Paper>
                 </Grid>
             </Grid>

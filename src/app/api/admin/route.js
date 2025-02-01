@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import admin from "@/lib/models/admin";
-import roles from "@/lib/models/roles";
+import roles from "@/lib/models/location";
 import bcrypt from "bcryptjs";
 
 export async function GET(req) {

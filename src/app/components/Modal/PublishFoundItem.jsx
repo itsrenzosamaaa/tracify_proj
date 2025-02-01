@@ -38,6 +38,7 @@ const PublishFoundItem = ({
   setOpenSnackbar,
   setMessage,
   fetchItems = null,
+  locationOptions,
 }) => {
   const [users, setUsers] = useState([]);
   const [name, setName] = useState("");
@@ -80,51 +81,6 @@ const PublishFoundItem = ({
       setSize({ value: "", unit: "cm" });
     }
   };
-
-  const locationOptions = [
-    "RLO101",
-    "RLO102",
-    "RLO201",
-    "RLO202",
-    "RLO Restroom",
-    "RFL101",
-    "RFL102",
-    "RFL201",
-    "RFL202",
-    "RFL301",
-    "RFL302",
-    "RFL Restroom (2nd Floor)",
-    "RFL Restroom (3rd Floor)",
-    "FJN101",
-    "FJN102",
-    "FJN201",
-    "FJN202",
-    "FJN301",
-    "FJN302",
-    "FJN Restroom (1st Floor)",
-    "FJN Restroom (2nd Floor)",
-    "FJN Restroom (3rd Floor)",
-    "MMN101",
-    "MMN102",
-    "MMN103",
-    "MMN201",
-    "MMN202",
-    "MMN203",
-    "MMN301",
-    "MMN302",
-    "MMN303",
-    "MMN Restroom (2nd Floor)",
-    "MMN Restroom (3rd Floor)",
-    "Canteen",
-    "TLC Court",
-    "Function Hall",
-    "Library",
-    "Student Lounge",
-    "Audio Visual Room",
-    "COMLAB A",
-    "COMLAB B",
-    "COMLAB C",
-  ];
 
   const handleChange = (event, newValue) => {
     setLocation(newValue);

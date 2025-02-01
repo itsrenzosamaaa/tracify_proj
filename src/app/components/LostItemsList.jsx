@@ -10,7 +10,7 @@ import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { Search } from '@mui/icons-material';
 
-const LostItemsList = ({ owners, fetchItems, session }) => {
+const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
     const [status, setStatus] = useState('Missing');
     const [open, setOpen] = useState(false);
     const isMobile = useMediaQuery('(max-width:600px)');
@@ -109,10 +109,10 @@ const LostItemsList = ({ owners, fetchItems, session }) => {
                                 </Box>
                             </FormControl>
                             <Button size="small" startDecorator={<AddIcon />} onClick={() => setOpen(true)}>Post Lost Item</Button>
-                            <PublishLostItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} />
+                            <PublishLostItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} locationOptions={locationOptions} />
                         </Box>
                         <Input startDecorator={<Search />} sx={{ mb: 3, width: isMobile ? '100%' : '30%' }} />
-                        <ItemsTable session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={false} />
+                        <ItemsTable locationOptions={locationOptions} session={session} items={filteredItems} fetchItems={fetchItems} isFoundItem={false} />
                     </Paper>
                 </Grid>
             </Grid>

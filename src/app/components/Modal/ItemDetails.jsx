@@ -33,7 +33,7 @@ import { useTheme, useMediaQuery } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { Check } from "@mui/icons-material";
 
-const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage }) => {
+const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage, locationOptions }) => {
   const { data: session, status } = useSession();
   const [isEditMode, setIsEditMode] = useState(false);
   const [name, setName] = useState(row.item.name);
@@ -102,51 +102,6 @@ const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage }) => {
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isMd = useMediaQuery(theme.breakpoints.up("md"));
-
-  const locationOptions = [
-    "RLO101",
-    "RLO102",
-    "RLO201",
-    "RLO202",
-    "RLO Restroom",
-    "RFL101",
-    "RFL102",
-    "RFL201",
-    "RFL202",
-    "RFL301",
-    "RFL302",
-    "RFL Restroom (2nd Floor)",
-    "RFL Restroom (3rd Floor)",
-    "FJN101",
-    "FJN102",
-    "FJN201",
-    "FJN202",
-    "FJN301",
-    "FJN302",
-    "FJN Restroom (1st Floor)",
-    "FJN Restroom (2nd Floor)",
-    "FJN Restroom (3rd Floor)",
-    "MMN101",
-    "MMN102",
-    "MMN103",
-    "MMN201",
-    "MMN202",
-    "MMN203",
-    "MMN301",
-    "MMN302",
-    "MMN303",
-    "MMN Restroom (2nd Floor)",
-    "MMN Restroom (3rd Floor)",
-    "Canteen",
-    "TLC Court",
-    "Function Hall",
-    "Library",
-    "Student Lounge",
-    "Audio Visual Room",
-    "COMLAB A",
-    "COMLAB B",
-    "COMLAB C",
-  ];
 
   const handleCheck = (e) => {
     const check = e.target.checked;
@@ -882,7 +837,7 @@ const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage }) => {
                           <>
                             <Checkbox
                               sx={{ my: 2 }}
-                              label="The owner knows the item's location"
+                              label="The owner knows the item's whereabouts"
                               checked={itemWhereabouts}
                               onChange={handleCheckbox}
                             />
