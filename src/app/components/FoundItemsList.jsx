@@ -68,8 +68,6 @@ const FoundItemsList = ({ finders, fetchItems, session, locationOptions }) => {
         </Badge>
     );
 
-    console.log(locationOptions)
-
     return (
         <>
             <TitleBreadcrumbs title="List of Found Items" text="Found Items" />

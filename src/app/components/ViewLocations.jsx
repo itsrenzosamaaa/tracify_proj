@@ -156,9 +156,11 @@ const ViewLocations = ({ locations, session, refreshData }) => {
                                 }}
                               >
                                 {location.areas.map((area, index) => {
-                                  <Typography level="body-md" key={index}>
-                                    {area}
-                                  </Typography>;
+                                  return (
+                                    <Typography level="body-md" key={index}>
+                                      {area}
+                                    </Typography>
+                                  );
                                 })}
                               </DialogContent>
                             </ModalDialog>
@@ -228,7 +230,9 @@ const ViewLocations = ({ locations, session, refreshData }) => {
                           >
                             <ModalDialog>
                               <ModalClose />
-                              <Typography level="h4">Delete Location</Typography>
+                              <Typography level="h4">
+                                Delete Location
+                              </Typography>
                               <Typography level="body-md" sx={{ mt: 1 }}>
                                 Are you sure you want to delete this location?
                               </Typography>
