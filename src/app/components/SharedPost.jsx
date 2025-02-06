@@ -53,6 +53,10 @@ const SharedPost = ({
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const filteredOriginalPost = originalPost?.isFinder
+    ? originalPost?.finder
+    : originalPost?.owner;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -65,6 +69,7 @@ const SharedPost = ({
           isShared: true,
           caption: sharedCaption,
           sharedBy: session.user.id,
+          item_name: filteredOriginalPost?.item?.name,
           sharedAt: new Date(),
           originalPost: originalPost._id,
         }),
@@ -97,10 +102,6 @@ const SharedPost = ({
       setLoading(false);
     }
   };
-
-  const filteredOriginalPost = originalPost?.isFinder
-    ? originalPost?.finder
-    : originalPost?.owner;
 
   return (
     <>
@@ -174,7 +175,7 @@ const SharedPost = ({
           {/* Item Images */}
           <Box sx={{ border: "1px solid #B0BEC5", borderRadius: "5px" }}>
             <Carousel showThumbs={false} useKeyboardArrows>
-              {filteredOriginalPost.item.images?.map((image, index) => (
+              {filteredOriginalPost?.item?.images?.map((image, index) => (
                 <Box
                   key={index}
                   sx={{
@@ -188,7 +189,7 @@ const SharedPost = ({
                     src={image}
                     width={isXs ? 200 : 300}
                     height={isXs ? 200 : 300}
-                    alt={filteredOriginalPost.item?.name || "Item Image"}
+                    alt={filteredOriginalPost?.item?.name || "Item Image"}
                     sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
                   />
                 </Box>
@@ -253,7 +254,8 @@ const SharedPost = ({
                 level={isXs ? "body-sm" : "body-md"}
                 sx={{ color: "text.secondary", mb: 2 }}
               >
-                <strong>Location:</strong> {filteredOriginalPost?.item?.location}
+                <strong>Location:</strong>{" "}
+                {filteredOriginalPost?.item?.location}
               </Typography>
               {matches !== null &&
                 (() => {

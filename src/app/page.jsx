@@ -49,7 +49,7 @@ export default function Home() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push('dashboard');
+      router.push("dashboard");
     }
   }, [status, router, session]);
 
@@ -76,13 +76,9 @@ export default function Home() {
   };
 
   if (status === "loading") {
-    return (
-      <Loading />
-    )
+    return <Loading />;
   } else if (status === "authenticated") {
-    return (
-      <Authenticated session={session} />
-    )
+    return <Authenticated session={session} />;
   }
 
   return (
@@ -90,15 +86,21 @@ export default function Home() {
       <Grid
         container
         spacing={2}
-        sx={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: '100vh', padding: 2 }}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          padding: 2,
+        }}
       >
         <Grid item lg={4} md={6} sm={10} xs={12}>
           <Paper elevation={2}>
             <Box
               sx={{
-                position: 'relative',
-                width: '100%',
-                height: '200px', // Set the height based on your design needs
+                position: "relative",
+                width: "100%",
+                height: "200px", // Set the height based on your design needs
               }}
             >
               <Image
@@ -107,8 +109,8 @@ export default function Home() {
                 alt="tracify"
                 fill
                 style={{
-                  objectFit: 'cover',
-                  borderRadius: '4px',
+                  objectFit: "cover",
+                  borderRadius: "4px",
                 }}
               />
             </Box>
@@ -132,6 +134,7 @@ export default function Home() {
                       type={togglePassword}
                       disabled={isLoading}
                       onChange={(e) => setPassword(e.target.value)}
+                      sx={{ mb: 2 }}
                       endDecorator={
                         password !== "" && (
                           <IconButton
@@ -154,20 +157,6 @@ export default function Home() {
                     />
                   </FormControl>
 
-                  <Typography
-                    level="p"
-                    sx={{
-                      fontSize: { xs: '0.8rem', md: "0.9rem" },
-                      textAlign: "right",
-                      marginTop: "0.5rem",
-                      marginBottom: "5rem",
-                    }}
-                  >
-                    <StyledLink href="#forgot-password">
-                      Forgot your password?
-                    </StyledLink>
-                  </Typography>
-
                   <Button
                     type="submit"
                     disabled={isLoading}
@@ -185,13 +174,11 @@ export default function Home() {
                   >
                     Sign in using Google
                   </Button>
-                  {error &&
+                  {error && (
                     <>
-                      <Typography color="danger">
-                        {error}
-                      </Typography>
+                      <Typography color="danger">{error}</Typography>
                     </>
-                  }
+                  )}
                 </Stack>
               </Box>
             </form>

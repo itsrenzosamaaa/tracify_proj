@@ -22,22 +22,14 @@ export async function GET({ params }) {
 
 export async function PUT(req, { params }) {
     const { id } = params;
+    const formData = await req.json();
 
     try {
-        const { role } = await req.json();
-
-        if (!role) {
-            return NextResponse.json(
-                { error: "Role is required" },
-                { status: 400 }
-            );
-        }
-
         await dbConnect();
 
         const setRole = await admin.findByIdAndUpdate(
             id,
-            { $set: { role } },
+            { $set: formData },
             { new: true }
         );
         if (!setRole) {

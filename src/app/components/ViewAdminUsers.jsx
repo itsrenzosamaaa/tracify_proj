@@ -20,6 +20,7 @@ import {
   ModalClose,
   Snackbar,
   CircularProgress,
+  DialogContent,
 } from "@mui/joy";
 import {
   Grid,
@@ -37,9 +38,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import TitleBreadcrumbs from "./Title/TitleBreadcrumbs";
 import Papa from "papaparse";
 import { Search } from "@mui/icons-material";
+import EditAdminInfo from "./Modal/EditAdminInfo";
 
 const ViewAdminUsers = ({ users, refreshData, session }) => {
   const [open, setOpen] = useState(null);
+  const [openInfo, setOpenInfo] = useState(null);
+  const [openCredentials, setOpenCredentials] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(null);
@@ -205,10 +209,11 @@ const ViewAdminUsers = ({ users, refreshData, session }) => {
                               {user.emailAddress}
                             </TableCell>
                             <TableCell>
-                              {session.user.id !== user._id && (
+                              {session.user.id !== user._id ? (
                                 <Box sx={{ display: "flex", gap: 1 }}>
                                   <Button
                                     onClick={() => setOpen(user._id)}
+                                    size="small"
                                     sx={{
                                       display: {
                                         xs: "none",
@@ -287,6 +292,23 @@ const ViewAdminUsers = ({ users, refreshData, session }) => {
                                     </ModalDialog>
                                   </Modal>
                                 </Box>
+                              ) : (
+                                <>
+                                  <Button
+                                    size="small"
+                                    onClick={() => setOpenInfo(user._id)}
+                                  >
+                                    Info
+                                  </Button>
+                                  <EditAdminInfo
+                                    user={user}
+                                    openInfo={openInfo}
+                                    setOpenInfo={setOpenInfo}
+                                    setMessage={setMessage}
+                                    setOpenSnackbar={setOpenSnackbar}
+                                    refreshData={refreshData}
+                                  />
+                                </>
                               )}
                             </TableCell>
                           </TableRow>

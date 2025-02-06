@@ -120,3 +120,39 @@ export async function POST(request) {
     );
   }
 }
+
+export async function DELETE(request) {
+  const { searchParams } = new URL(request.url);
+  const accountId = searchParams.get("account"); // Extract accountId from query params
+
+  if (!accountId) {
+    return NextResponse.json(
+      { success: false, message: "Account ID is required" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    await dbConnect();
+
+    // Delete the user by accountId
+    const deletedUser = await user.findByIdAndDelete(accountId);
+
+    if (!deletedUser) {
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, message: "Error deleting user", error: error.message },
+      { status: 500 }
+    );
+  }
+}

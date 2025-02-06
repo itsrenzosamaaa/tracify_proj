@@ -15,6 +15,7 @@ import {
   Table,
   IconButton,
   Chip,
+  ModalClose,
 } from "@mui/joy";
 import {
   Grid,
@@ -45,6 +46,8 @@ const ViewUsers = ({ users, refreshData, session }) => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openEditModal, setOpenEditModal] = useState(null);
+  const [openDeleteModal, setOpenDeleteModal] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
@@ -66,6 +69,29 @@ const ViewUsers = ({ users, refreshData, session }) => {
   const handleMenuClose = () => {
     setAnchorEl(null);
     setCurrentUserId(null);
+  };
+
+  const handleDelete = async (e, userId) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(`/api/users?account=${userId}`, {
+        method: "DELETE",
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        setOpenSnackbar("danger");
+        setMessage(result.message);
+        refreshData();
+      } else {
+        setOpenSnackbar("danger");
+        setMessage(`Error: ${result.message}`);
+      }
+    } catch (error) {
+      setOpenSnackbar("danger");
+      setMessage(error);
+    }
   };
 
   const handleFileUpload = (event) => {
@@ -274,6 +300,7 @@ const ViewUsers = ({ users, refreshData, session }) => {
                                     </MenuItem>
                                     <MenuItem
                                       onClick={() => {
+                                        setOpenDeleteModal(user._id);
                                         handleMenuClose();
                                       }}
                                     >
@@ -283,6 +310,55 @@ const ViewUsers = ({ users, refreshData, session }) => {
                                 </TableCell>
                               )}
                             </TableRow>
+                            <Modal
+                              open={openDeleteModal === user._id}
+                              onClose={() => setOpenDeleteModal(null)}
+                            >
+                              <ModalDialog>
+                                <ModalClose
+                                  aria-label="Close"
+                                  sx={{ top: "16px", right: "16px" }}
+                                />
+                                <Typography
+                                  level="h3"
+                                  fontWeight="700"
+                                  sx={{ mb: 2 }}
+                                >
+                                  Delete User
+                                </Typography>
+                                <Typography align="center" sx={{ mb: 3 }}>
+                                  Are you sure you want to delete this user?
+                                  This action cannot be undone.
+                                </Typography>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    gap: 2,
+                                  }}
+                                >
+                                  <Button
+                                    disabled={isLoading}
+                                    loading={isLoading}
+                                    fullWidth
+                                    onClick={(e) => handleDelete(e, user._id)}
+                                    color="danger"
+                                    aria-label="Confirm delete"
+                                  >
+                                    Confirm
+                                  </Button>
+                                  <Button
+                                    disabled={isLoading}
+                                    fullWidth
+                                    onClick={() => setOpen(null)}
+                                    variant="outlined"
+                                    aria-label="Cancel delete"
+                                  >
+                                    Cancel
+                                  </Button>
+                                </Box>
+                              </ModalDialog>
+                            </Modal>
                           </>
                         ))
                     ) : (

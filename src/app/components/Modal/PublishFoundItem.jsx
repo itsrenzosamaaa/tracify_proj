@@ -178,6 +178,7 @@ const PublishFoundItem = ({
             body: JSON.stringify({
               author: finder?._id,
               isFinder: true,
+              item_name: name,
               caption: description,
               finder: finderData?._id,
               createdAt: new Date(),

@@ -49,6 +49,7 @@ const ItemValidatingModal = ({
         body: JSON.stringify({
           author: row?.user?._id,
           isFinder: true,
+          item_name: row?.item?.name,
           caption: row?.item?.description,
           finder: row._id,
           createdAt: new Date(),

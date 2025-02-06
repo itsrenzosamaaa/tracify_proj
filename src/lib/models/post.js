@@ -9,6 +9,9 @@ const postSchema = new mongoose.Schema(
     caption: {
       type: String,
     },
+    item_name: {
+      type: String,
+    },
     isFinder : {
       type: Boolean,
     },

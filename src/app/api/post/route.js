@@ -12,120 +12,65 @@ export async function GET(req) {
     await dbConnect();
 
     const url = new URL(req.url);
-    const lastPostId = url.searchParams.get("lastPostId");
-    const searchQuery = url.searchParams.get("search");
+    const searchQuery = url.searchParams.get("search")?.trim()?.toLowerCase();
+    const page = parseInt(url.searchParams.get("page")) || 1; // Get current page, default to 1
+    const limit = 3; // Number of posts per fetch
+    const skip = (page - 1) * limit; // Calculate how many posts to skip
 
-    // Base query (can filter by `isShared`, `_id` but not populated fields yet)
-    let queryBuilder = post.find({
-      isShared: { $in: [true, false] }, // Include both shared and non-shared posts
-    });
+    let matchStage = {
+      isShared: { $in: [true, false] },
+    };
 
-    // Add pagination
-    if (lastPostId) {
-      queryBuilder = queryBuilder.where("_id").lt(lastPostId);
+    // ✅ Apply search filtering if `searchQuery` exists
+    if (searchQuery) {
+      matchStage.$or = [
+        { caption: { $regex: searchQuery, $options: "i" } },
+        { item_name: { $regex: searchQuery, $options: "i" } },
+      ];
     }
 
-    // Add sorting and limit
-    queryBuilder = queryBuilder.sort({ createdAt: -1 }).limit(3);
+    // ✅ Aggregation Pipeline with Randomization & Pagination
+    let nextPosts = await post.aggregate([
+      { $match: matchStage }, // Apply search filters
+      { $sample: { size: 50 } }, // Randomize from a larger pool (adjust size if needed)
+      { $skip: skip }, // Apply pagination offset
+      { $limit: limit }, // Fetch only `limit` number of posts
+    ]);
 
-    // Add population
-    queryBuilder = queryBuilder
-      .populate({
-        path: "author",
-        select:
-          "firstname lastname profile_picture resolvedItemCount shareCount role birthday",
-      })
-      .populate({
+    // ✅ Populate fields
+    nextPosts = await post.populate(nextPosts, [
+      { path: "author", select: "firstname lastname profile_picture resolvedItemCount shareCount role birthday" },
+      {
         path: "finder",
         populate: {
           path: "item",
-          select: "name category images monitoredBy status location date_time",
-          populate: {
-            path: "monitoredBy",
-            select: "firstname lastname",
-          },
+          select: "category images status location",
         },
-      })
-      .populate({
-        path: "owner",
-        populate: {
-          path: "item",
-          select: "name category images status location date_time",
-        },
-      })
-      .populate({
-        path: "sharedBy",
-        select:
-          "firstname lastname profile_picture resolvedItemCount shareCount role birthday",
-      })
-      .populate({
+      },
+      { path: "owner", populate: { path: "item", select: "category images status location" } },
+      { path: "sharedBy", select: "firstname lastname profile_picture resolvedItemCount shareCount role birthday" },
+      {
         path: "originalPost",
         populate: [
           {
             path: "author",
-            select:
-              "firstname lastname profile_picture resolvedItemCount shareCount role birthday",
+            select: "firstname lastname profile_picture resolvedItemCount shareCount role birthday",
           },
           {
             path: "finder",
-            populate: {
-              path: "item",
-              select: "name images monitoredBy status location date_time",
-              populate: {
-                path: "monitoredBy",
-                select: "firstname lastname",
-              },
-            },
+            populate: { path: "item", select: "images status location" },
           },
-          {
-            path: "owner",
-            populate: {
-              path: "item",
-              select: "name category images status location date_time",
-            },
-          },
+          { path: "owner", populate: { path: "item", select: "category images status location" } },
         ],
-      });
+      },
+    ]);
 
-    // Execute the query
-    let nextPosts = await queryBuilder.exec();
-    if (searchQuery?.trim()) {
-      nextPosts = nextPosts.filter(
-        (post) =>
-          post.caption.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post?.finder?.item?.name
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          post?.owner?.item?.name
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          post?.originalPost?.finder?.item?.name
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          post?.originalPost?.owner?.item?.name
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase())
-      );
-    }
-    // 🔥 Manual filtering (since MongoDB can't filter populated fields)
+    // ✅ Remove resolved/claimed posts
     nextPosts = nextPosts.filter((post) => {
-      // For regular posts
       if (!post.isShared) {
-        return (
-          post?.finder?.item?.status !== "Resolved" &&
-          post?.owner?.item?.status !== "Claimed"
-        );
+        return post?.finder?.item?.status !== "Resolved" && post?.owner?.item?.status !== "Claimed";
       }
-
-      // For shared posts
-      if (post.isShared) {
-        return (
-          post?.originalPost?.finder?.item?.status !== "Resolved" &&
-          post?.originalPost?.owner?.item?.status !== "Claimed"
-        );
-      }
-
-      return true;
+      return post?.originalPost?.finder?.item?.status !== "Resolved" && post?.originalPost?.owner?.item?.status !== "Claimed";
     });
 
     if (!nextPosts.length) {
@@ -135,10 +80,7 @@ export async function GET(req) {
     return NextResponse.json(nextPosts, { status: 200 });
   } catch (error) {
     console.error("Error fetching posts:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch posts" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
   }
 }
 

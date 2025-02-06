@@ -188,6 +188,7 @@ const PublishLostItem = ({
             body: JSON.stringify({
               author: owner?._id,
               caption: description,
+              item_name: name,
               isFinder: false,
               owner: ownerData?._id,
               createdAt: new Date(),

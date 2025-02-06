@@ -64,6 +64,7 @@ const Post = ({
         body: JSON.stringify({
           isShared: true,
           caption: sharedCaption,
+          item_name: item?.item?.name,
           sharedBy: session?.user?.id,
           sharedAt: new Date(),
           originalPost: post?._id,

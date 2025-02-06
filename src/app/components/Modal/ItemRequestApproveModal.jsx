@@ -102,6 +102,7 @@ const ItemRequestApproveModal = ({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             author: row?.user?._id,
+            item_name: row?.item?.name,
             isFinder: false,
             caption: row?.item?.description,
             owner: row._id,

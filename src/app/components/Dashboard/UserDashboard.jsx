@@ -53,14 +53,13 @@ import dayjs from "dayjs";
 import { Search } from "@mui/icons-material";
 import PublishLostItem from "../Modal/PublishLostItems";
 import PublishFoundItem from "../Modal/PublishFoundItem";
-import debounce from "lodash/debounce";
 
 const UserDashboard = ({ session, status, users }) => {
   const [posts, setPosts] = useState([]);
   const [lostItems, setLostItems] = useState([]);
   const [matches, setMatches] = useState([]);
-  const [lastId, setLastId] = useState("");
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [initialLoading, setInitialLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(null);
@@ -70,6 +69,8 @@ const UserDashboard = ({ session, status, users }) => {
   const [openLostRequestModal, setOpenLostRequestModal] = useState(false);
   const [openFoundRequestModal, setOpenFoundRequestModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [tempSearchQuery, setTempSearchQuery] = useState("");
+  const [locationOptions, setLocationOptions] = useState([]);
   const observerRef = useRef();
   const lastPostRef = useRef();
   const theme = useTheme();
@@ -112,58 +113,80 @@ const UserDashboard = ({ session, status, users }) => {
     }
   }, [session?.user?.id]);
 
+  const fetchLocations = useCallback(async () => {
+    try {
+      const response = await fetch("/api/location");
+      const data = await response.json();
+
+      const allRooms = data.reduce((acc, location) => {
+        return [...acc, ...location.areas];
+      }, []);
+
+      setLocationOptions(allRooms);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
   const fetchPosts = useCallback(
-    async (searchQuery = "") => {
+    async (query = "", reset = false) => {
       if (loadingMore || !hasMore) return;
       setLoadingMore(true);
-      try {
-        const newLastId = posts.length > 0 ? posts[posts.length - 1]._id : "";
-        setLastId(newLastId);
 
+      try {
+        const newPage = reset ? 1 : page; // If reset (new search), start from page 1
         const url = new URL("/api/post", window.location.origin);
-        if (lastId) url.searchParams.append("lastPostId", lastId);
-        if (searchQuery) url.searchParams.append("search", searchQuery);
+        url.searchParams.append("page", newPage);
+        if (query.trim()) url.searchParams.append("search", query);
 
         const response = await fetch(url);
-        const data = await response.json();
+        if (!response.ok) throw new Error("Failed to fetch posts");
 
-        if ("error" in data || data.length === 0) {
+        const data = await response.json();
+        if (!data || "error" in data || data.length === 0) {
           setHasMore(false);
           return;
         }
 
-        const postsToAdd = Array.isArray(data) ? data : [data];
-
-        setPosts((prevPosts) => [
-          ...prevPosts,
-          ...postsToAdd.filter(
-            (post) => !prevPosts.some((p) => p._id === post._id)
-          ),
-        ]);
+        setPosts((prevPosts) => (reset ? data : [...prevPosts, ...data])); // Reset on search, append on scroll
+        setPage((prevPage) => prevPage + 1);
       } catch (error) {
         console.error("Failed to fetch post:", error);
-        setError(error.message);
       } finally {
         setLoadingMore(false);
-        setInitialLoading(false);
       }
     },
-    [loadingMore, hasMore, lastId, posts]
+    [loadingMore, hasMore, page]
   );
 
-  const handleSearch = () => {
-    setPosts([]); // Clear previous posts before searching
-    setHasMore(true); // Reset to allow new searches
-    fetchPosts(searchQuery);
+  /**
+   * ✅ Handles search submit by resetting posts and refetching
+   */
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setSearchQuery(tempSearchQuery);
+    setHasMore(true);
+    setPosts([]);
+    setPage(1);
+    fetchPosts(tempSearchQuery, true); // Reset pagination on new search
   };
 
-  const handleRefresh = () => {
-    setLastId("");
-    setPosts([]); // Clear previous posts before refreshing
-    setHasMore(true); // Reset to allow fetching new posts
-    fetchPosts();
-  };
+  /**
+   * ✅ Implements search debouncing (500ms delay before fetching)
+   */
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchQuery.trim()) {
+        fetchPosts(searchQuery, true);
+      }
+    }, 500);
 
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery, fetchPosts]);
+
+  /**
+   * ✅ Handles infinite scrolling with Intersection Observer
+   */
   const lastPostElementRef = useCallback(
     (node) => {
       if (loadingMore) return;
@@ -172,17 +195,18 @@ const UserDashboard = ({ session, status, users }) => {
         observerRef.current.disconnect();
       }
 
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          fetchPosts();
-        }
-      });
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore && !loadingMore) {
+            fetchPosts(searchQuery);
+          }
+        },
+        { threshold: 1.0 }
+      );
 
-      if (node) {
-        observerRef.current.observe(node);
-      }
+      if (node) observerRef.current.observe(node);
     },
-    [loadingMore, hasMore, fetchPosts]
+    [loadingMore, hasMore, fetchPosts, searchQuery]
   );
 
   useEffect(() => {
@@ -190,8 +214,16 @@ const UserDashboard = ({ session, status, users }) => {
       fetchPosts(); // Trigger the first fetch when lastPostId is null
       fetchLostItems();
       fetchMatches();
+      fetchLocations();
     }
-  }, [status, posts.length, fetchPosts, fetchLostItems, fetchMatches]); // Trigger effect if status or lastPostId changes
+  }, [
+    status,
+    posts.length,
+    fetchPosts,
+    fetchLostItems,
+    fetchMatches,
+    fetchLocations,
+  ]); // Trigger effect if status or lastPostId changes
 
   const birthdayToday = users.filter(
     (user) =>
@@ -290,22 +322,19 @@ const UserDashboard = ({ session, status, users }) => {
                   justifyContent: "center",
                   gap: 1,
                 }}
-                onSubmit={(e) => {
-                  e.preventDefault(); // Prevent page reload
-                  searchQuery.trim() === "" ? handleRefresh() : handleSearch();
-                }}
+                onSubmit={handleSearchSubmit} // ✅ No handleRefresh() needed
               >
                 <Box display="flex" gap={2} alignItems="center">
                   <Input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={tempSearchQuery} // ✅ Used for typing
+                    onChange={(e) => setTempSearchQuery(e.target.value)}
                     fullWidth
                     sx={{ my: 2 }}
                     startDecorator={<Search />}
-                    placeholder="Search caption..."
+                    placeholder="Search lost & found items..."
                   />
-                  <Button type="submit">
-                    {searchQuery.trim() === "" ? "Refresh" : "Enter"}
+                  <Button type="submit" disabled={!tempSearchQuery.trim()}>
+                    Search
                   </Button>
                 </Box>
               </form>
@@ -353,134 +382,83 @@ const UserDashboard = ({ session, status, users }) => {
                 </DialogContent>
               </ModalDialog>
             </Modal>
-            {initialLoading ? (
-              // Show full page loading skeletons
-              Array(5)
-                .fill(0)
-                .map((_, index) => (
-                  <Card key={index} sx={{ width: "100%", mb: 2 }}>
-                    <CardHeader
-                      avatar={
-                        <Skeleton
-                          animation="wave"
-                          variant="circular"
-                          width={40}
-                          height={40}
-                        />
-                      }
-                      title={
-                        <Skeleton animation="wave" height={10} width="80%" />
-                      }
-                      subheader={
-                        <Skeleton animation="wave" height={10} width="40%" />
-                      }
+            {posts.map((post, index) => {
+              const isLastElement = index === posts.length - 1;
+              return (
+                <div
+                  key={post._id}
+                  ref={isLastElement ? lastPostElementRef : null}
+                >
+                  {post.isShared ? (
+                    <SharedPost
+                      refreshData={fetchMatches}
+                      matches={matches}
+                      setOpenSnackbar={setOpenSnackbar}
+                      setMessage={setMessage}
+                      session={session}
+                      post={post}
+                      sharedBy={post.sharedBy}
+                      originalPost={post.originalPost}
+                      caption={post.caption}
+                      sharedAt={post.sharedAt}
+                      isXs={isXs}
+                      lostItems={lostItems}
+                      roleColors={roleColors}
                     />
-                    <CardContent>
-                      <Box sx={{ mb: 2 }}>
-                        <Skeleton animation="wave" height={10} sx={{ mb: 1 }} />
-                        <Skeleton animation="wave" height={10} width="80%" />
-                      </Box>
-                      <Skeleton
-                        animation="wave"
-                        variant="rectangular"
-                        height={300}
-                      />
-                    </CardContent>
-                    <CardActions sx={{ px: 2 }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Skeleton animation="wave" height={36} width={150} />
-                      </Box>
-                    </CardActions>
-                  </Card>
-                ))
-            ) : (
-              <>
-                {posts.map((post, index) => {
-                  const isLastElement = index === posts.length - 1;
-                  return (
-                    <div
-                      key={post._id}
-                      ref={isLastElement ? lastPostElementRef : null}
-                    >
-                      {post.isShared ? (
-                        <SharedPost
-                          refreshData={fetchMatches}
-                          matches={matches}
-                          setOpenSnackbar={setOpenSnackbar}
-                          setMessage={setMessage}
-                          session={session}
-                          post={post}
-                          sharedBy={post.sharedBy}
-                          originalPost={post.originalPost}
-                          caption={post.caption}
-                          sharedAt={post.sharedAt}
-                          isXs={isXs}
-                          lostItems={lostItems}
-                          roleColors={roleColors}
-                        />
-                      ) : (
-                        <Post
-                          refreshData={fetchMatches}
-                          matches={matches}
-                          setOpenSnackbar={setOpenSnackbar}
-                          setMessage={setMessage}
-                          session={session}
-                          post={post}
-                          author={post.author}
-                          caption={post.caption}
-                          item={post?.isFinder ? post?.finder : post?.owner}
-                          createdAt={post.createdAt}
-                          isXs={isXs}
-                          lostItems={lostItems}
-                          roleColors={roleColors}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-                {loadingMore && (
-                  <Card sx={{ width: "100%", mb: 2 }}>
-                    <CardHeader
-                      avatar={
-                        <Skeleton
-                          animation="wave"
-                          variant="circular"
-                          width={40}
-                          height={40}
-                        />
-                      }
-                      title={
-                        <Skeleton animation="wave" height={10} width="80%" />
-                      }
-                      subheader={
-                        <Skeleton animation="wave" height={10} width="40%" />
-                      }
+                  ) : (
+                    <Post
+                      refreshData={fetchMatches}
+                      matches={matches}
+                      setOpenSnackbar={setOpenSnackbar}
+                      setMessage={setMessage}
+                      session={session}
+                      post={post}
+                      author={post.author}
+                      caption={post.caption}
+                      item={post?.isFinder ? post?.finder : post?.owner}
+                      createdAt={post.createdAt}
+                      isXs={isXs}
+                      lostItems={lostItems}
+                      roleColors={roleColors}
                     />
-                    <CardContent>
-                      <Box sx={{ mb: 2 }}>
-                        <Skeleton animation="wave" height={10} sx={{ mb: 1 }} />
-                        <Skeleton animation="wave" height={10} width="80%" />
-                      </Box>
-                      <Skeleton
-                        animation="wave"
-                        variant="rectangular"
-                        height={300}
-                      />
-                    </CardContent>
-                    <CardActions sx={{ px: 2 }}>
-                      <Box sx={{ display: "flex", gap: 2 }}>
-                        <Skeleton animation="wave" height={36} width={100} />
-                      </Box>
-                    </CardActions>
-                  </Card>
-                )}
-              </>
+                  )}
+                </div>
+              );
+            })}
+
+            {loadingMore && (
+              <Card sx={{ width: "100%", mb: 2 }}>
+                <CardHeader
+                  avatar={
+                    <Skeleton
+                      animation="wave"
+                      variant="circular"
+                      width={40}
+                      height={40}
+                    />
+                  }
+                  title={<Skeleton animation="wave" height={10} width="80%" />}
+                  subheader={
+                    <Skeleton animation="wave" height={10} width="40%" />
+                  }
+                />
+                <CardContent>
+                  <Box sx={{ mb: 2 }}>
+                    <Skeleton animation="wave" height={10} sx={{ mb: 1 }} />
+                    <Skeleton animation="wave" height={10} width="80%" />
+                  </Box>
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    height={300}
+                  />
+                </CardContent>
+                <CardActions sx={{ px: 2 }}>
+                  <Box sx={{ display: "flex", gap: 2 }}>
+                    <Skeleton animation="wave" height={36} width={100} />
+                  </Box>
+                </CardActions>
+              </Card>
             )}
             {!hasMore && (
               <Box
@@ -508,6 +486,13 @@ const UserDashboard = ({ session, status, users }) => {
                 >
                   No more posts...
                 </Typography>
+              </Box>
+            )}
+            {hasMore && !loadingMore && posts.length > 0 && (
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                <Button onClick={() => fetchPosts(searchQuery)}>
+                  Load More
+                </Button>
               </Box>
             )}
           </Box>
@@ -626,12 +611,14 @@ const UserDashboard = ({ session, status, users }) => {
         )}
       </Grid>
       <PublishLostItem
+        locationOptions={locationOptions}
         open={openLostRequestModal}
         onClose={() => setOpenLostRequestModal(false)}
         setOpenSnackbar={setOpenSnackbar}
         setMessage={setMessage}
       />
       <PublishFoundItem
+        locationOptions={locationOptions}
         open={openFoundRequestModal}
         onClose={() => setOpenFoundRequestModal(false)}
         setOpenSnackbar={setOpenSnackbar}
