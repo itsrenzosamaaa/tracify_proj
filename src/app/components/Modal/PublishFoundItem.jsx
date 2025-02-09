@@ -359,7 +359,7 @@ const PublishFoundItem = ({
                 </FormControl>
                 <Grid container spacing={1}>
                   <Grid item xs={12}>
-                    <FormControl>
+                    <FormControl required>
                       <Box
                         sx={{
                           display: "flex",

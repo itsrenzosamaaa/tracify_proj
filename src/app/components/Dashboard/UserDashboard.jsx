@@ -23,6 +23,7 @@ import {
   ModalClose,
   GlobalStyles,
   Input,
+  IconButton,
 } from "@mui/joy";
 import {
   Paper,
@@ -50,7 +51,7 @@ import TopSharers from "../TopSharers";
 import SharedPost from "../SharedPost";
 import Post from "../Post";
 import dayjs from "dayjs";
-import { Search } from "@mui/icons-material";
+import { Search, Refresh } from "@mui/icons-material";
 import PublishLostItem from "../Modal/PublishLostItems";
 import PublishFoundItem from "../Modal/PublishFoundItem";
 
@@ -72,7 +73,8 @@ const UserDashboard = ({ session, status, users }) => {
   const [tempSearchQuery, setTempSearchQuery] = useState("");
   const [locationOptions, setLocationOptions] = useState([]);
   const observerRef = useRef();
-  const lastPostRef = useRef();
+  const abortControllerRef = useRef(null);
+  const isFetchingRef = useRef(false);
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isMd = useMediaQuery(theme.breakpoints.down("md"));
@@ -130,59 +132,79 @@ const UserDashboard = ({ session, status, users }) => {
 
   const fetchPosts = useCallback(
     async (query = "", reset = false) => {
-      if (loadingMore || !hasMore) return;
+      // Prevent multiple simultaneous fetches
+      if (loadingMore || isFetchingRef.current) return;
+
+      isFetchingRef.current = true; // Lock fetching
+
+      // Abort previous fetch if exists
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
       setLoadingMore(true);
 
       try {
-        const newPage = reset ? 1 : page; // If reset (new search), start from page 1
+        const newPage = reset ? 1 : page;
         const url = new URL("/api/post", window.location.origin);
         url.searchParams.append("page", newPage);
         if (query.trim()) url.searchParams.append("search", query);
 
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: controller.signal });
         if (!response.ok) throw new Error("Failed to fetch posts");
 
         const data = await response.json();
-        if (!data || "error" in data || data.length === 0) {
+        if (!data || data.length === 0) {
           setHasMore(false);
-          return;
-        }
+        } else {
+          setPosts((prevPosts) => {
+            const uniquePosts = new Map();
 
-        setPosts((prevPosts) => (reset ? data : [...prevPosts, ...data])); // Reset on search, append on scroll
-        setPage((prevPage) => prevPage + 1);
+            // ✅ Add previous posts first
+            prevPosts.forEach((post) => uniquePosts.set(post._id, post));
+
+            // ✅ Add new posts, avoiding duplicates
+            data.forEach((post) => uniquePosts.set(post._id, post));
+
+            return reset ? data : Array.from(uniquePosts.values());
+          });
+          setPage((prevPage) => prevPage + 1);
+        }
       } catch (error) {
-        console.error("Failed to fetch post:", error);
+        if (error.name !== "AbortError") {
+          console.error("Failed to fetch posts:", error);
+        }
       } finally {
         setLoadingMore(false);
+        isFetchingRef.current = false; // Unlock fetching
       }
     },
-    [loadingMore, hasMore, page]
+    [loadingMore, page]
   );
 
-  /**
-   * ✅ Handles search submit by resetting posts and refetching
-   */
+  /** ✅ Handles Search Submit */
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setSearchQuery(tempSearchQuery);
     setHasMore(true);
-    setPosts([]);
-    setPage(1);
-    fetchPosts(tempSearchQuery, true); // Reset pagination on new search
+    setPosts([]); // Reset posts
+    setPage(1); // Reset pagination
+    fetchPosts(tempSearchQuery, true);
   };
 
-  /**
-   * ✅ Implements search debouncing (500ms delay before fetching)
-   */
-  useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      if (searchQuery.trim()) {
-        fetchPosts(searchQuery, true);
-      }
-    }, 500);
+  /** ✅ Handles Refresh */
+  const handleRefresh = async (e) => {
+    e.preventDefault();
+    setSearchQuery("");
+    setTempSearchQuery("");
+    setPosts([]); // Clear existing posts
+    setPage(1); // Reset pagination
+    setHasMore(true); // Enable fetching more posts
 
-    return () => clearTimeout(delayDebounce);
-  }, [searchQuery, fetchPosts]);
+    await fetchPosts("", true); // Fetch posts and reset state
+  };
 
   /**
    * ✅ Handles infinite scrolling with Intersection Observer
@@ -293,9 +315,12 @@ const UserDashboard = ({ session, status, users }) => {
                   justifyContent: "space-between",
                 }}
               >
-                <Typography level={isXs ? "h4" : "h3"} sx={{ mb: 2 }}>
-                  News Feed
-                </Typography>
+                <Box sx={{ display: "flex", gap: 3, alignItems: "center" }}>
+                  <Typography level="h3">News Feed</Typography>
+                  <IconButton onClick={handleRefresh}>
+                    <Refresh />
+                  </IconButton>
+                </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   {isMd && (
                     <>
