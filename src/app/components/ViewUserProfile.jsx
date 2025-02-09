@@ -30,7 +30,6 @@ const ViewUserProfile = ({
   session,
   setOpenSnackbar,
   setMessage,
-  badges,
 }) => {
   const [posts, setPosts] = useState([]);
   const [matches, setMatches] = useState([]);

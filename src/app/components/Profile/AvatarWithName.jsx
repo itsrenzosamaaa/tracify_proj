@@ -257,6 +257,7 @@ const AvatarWithName = ({
         refreshData={refreshData}
         session={session}
         setOpenSnackbar={setOpenSnackbar}
+        setMessage={setMessage}
         setOpenModal={setOpenModal}
         openModal={openModal}
       />
