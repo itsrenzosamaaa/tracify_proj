@@ -239,6 +239,7 @@ const SharedPost = ({
                 </Box>
               </Box>
               <Chip
+                size={isXs ? "sm" : "md"}
                 variant="solid"
                 color={originalPost?.isFinder ? "success" : "danger"}
               >

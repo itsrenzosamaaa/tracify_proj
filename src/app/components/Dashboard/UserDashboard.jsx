@@ -266,6 +266,13 @@ const UserDashboard = ({ session, status, users }) => {
               opacity: 1,
             },
           },
+          "*": {
+            pointerEvents: "auto !important", // Ensure all elements receive pointer events
+            cursor: "auto !important", // Reset cursor to normal behavior
+          },
+          "button, a, .clickable": {
+            cursor: "pointer !important", // Ensure buttons and links use pointer cursor
+          },
         }}
       />
       <Grid container spacing={2} sx={{ height: "85.5vh" }}>
@@ -315,7 +322,13 @@ const UserDashboard = ({ session, status, users }) => {
                   justifyContent: "space-between",
                 }}
               >
-                <Box sx={{ display: "flex", gap: 3, alignItems: "center" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: isXs ? 3 : 1,
+                    alignItems: "center",
+                  }}
+                >
                   <Typography level="h3">News Feed</Typography>
                   <IconButton onClick={handleRefresh}>
                     <Refresh />

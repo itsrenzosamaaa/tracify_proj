@@ -42,6 +42,7 @@ const ViewLocations = ({ locations, session, refreshData }) => {
   const [openSnackbar, setOpenSnackbar] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleMenuOpen = (event, roleId) => {
     setAnchorEl(event.currentTarget);
@@ -79,6 +80,10 @@ const ViewLocations = ({ locations, session, refreshData }) => {
     }
   };
 
+  const filteredLocations = locations.filter((location) => {
+    return location.name.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
   return (
     <>
       <TitleBreadcrumbs title="Manage Locations" text="Location" />
@@ -93,7 +98,11 @@ const ViewLocations = ({ locations, session, refreshData }) => {
                 justifyContent: "space-between",
               }}
             >
-              <Input startDecorator={<SearchIcon />} />
+              <Input
+                startDecorator={<SearchIcon />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
               <Button
                 onClick={() => setAddLocation(true)}
                 startDecorator={<AddIcon />}
@@ -127,8 +136,8 @@ const ViewLocations = ({ locations, session, refreshData }) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {locations ? (
-                    locations.map((location) => (
+                  {filteredLocations ? (
+                    filteredLocations.map((location) => (
                       <TableRow key={location._id}>
                         <TableCell>{location.name}</TableCell>
                         <TableCell>

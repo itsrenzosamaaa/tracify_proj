@@ -48,6 +48,7 @@ const ViewAdminUsers = ({ users, refreshData, session }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(null);
   const [message, setMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -55,6 +56,13 @@ const ViewAdminUsers = ({ users, refreshData, session }) => {
 
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const filteredAdminUsers = users.filter((user) => {
+    return (
+      user.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.lastname.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -145,7 +153,11 @@ const ViewAdminUsers = ({ users, refreshData, session }) => {
                 justifyContent: "space-between",
               }}
             >
-              <Input startDecorator={<Search />} />
+              <Input
+                startDecorator={<Search />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
               <Button component="label">
                 Import Data
                 <input
@@ -194,8 +206,8 @@ const ViewAdminUsers = ({ users, refreshData, session }) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {users.length > 0 ? (
-                      users
+                    {filteredAdminUsers.length > 0 ? (
+                      filteredAdminUsers
                         .slice(
                           page * rowsPerPage,
                           page * rowsPerPage + rowsPerPage
@@ -326,7 +338,7 @@ const ViewAdminUsers = ({ users, refreshData, session }) => {
               <TablePagination
                 rowsPerPageOptions={5}
                 component="div"
-                count={users.length}
+                count={filteredAdminUsers.length}
                 page={page}
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}

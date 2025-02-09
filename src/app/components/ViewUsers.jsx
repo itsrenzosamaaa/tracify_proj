@@ -48,6 +48,7 @@ const ViewUsers = ({ users, refreshData, session }) => {
   const [openEditModal, setOpenEditModal] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
@@ -70,6 +71,13 @@ const ViewUsers = ({ users, refreshData, session }) => {
     setAnchorEl(null);
     setCurrentUserId(null);
   };
+
+  const filteredUsers = users.filter((user) => {
+    return (
+      user.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.lastname.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   const handleDelete = async (e, userId) => {
     e.preventDefault();
@@ -151,18 +159,20 @@ const ViewUsers = ({ users, refreshData, session }) => {
                 justifyContent: "space-between",
               }}
             >
-              <Input startDecorator={<Search />} />
-              {session?.user?.roleName === "SASO" && (
-                <Button component="label">
-                  Import Data
-                  <input
-                    type="file"
-                    accept=".csv"
-                    hidden
-                    onChange={handleFileUpload}
-                  />
-                </Button>
-              )}
+              <Input
+                startDecorator={<Search />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Button component="label">
+                Import Data
+                <input
+                  type="file"
+                  accept=".csv"
+                  hidden
+                  onChange={handleFileUpload}
+                />
+              </Button>
               <Modal open={loading} onClose={() => {}} disableEscapeKeyDown>
                 <ModalDialog sx={{ alignItems: "center", padding: "1rem" }}>
                   <Typography level="body-lg" fontWeight={700} gutterBottom>
@@ -212,8 +222,8 @@ const ViewUsers = ({ users, refreshData, session }) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {users.length > 0 ? (
-                      users
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers
                         .slice(
                           page * rowsPerPage,
                           page * rowsPerPage + rowsPerPage
@@ -373,7 +383,7 @@ const ViewUsers = ({ users, refreshData, session }) => {
               </TableContainer>
               {openEditModal && (
                 <EditUser
-                  user={users.find((user) => user._id === openEditModal)}
+                  user={filteredUsers.find((user) => user._id === openEditModal)}
                   open={openEditModal}
                   onClose={() => setOpenEditModal(null)}
                   setOpenSnackbar={setOpenSnackbar}
@@ -384,7 +394,7 @@ const ViewUsers = ({ users, refreshData, session }) => {
               <TablePagination
                 rowsPerPageOptions={4}
                 component="div"
-                count={users.length}
+                count={filteredUsers.length}
                 page={page}
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}
