@@ -30,6 +30,7 @@ const AvatarWithName = ({
   refreshData,
   setOpenSnackbar,
   setMessage,
+  update,
 }) => {
   const [image, setImage] = useState(profile.profile_picture || null);
   const [openModal, setOpenModal] = useState(false);
@@ -73,7 +74,7 @@ const AvatarWithName = ({
         sx={{
           borderTop: "3px solid #3f51b5",
           padding: "1rem",
-          marginX: isMd ? "1rem" : "13rem",
+          marginX: isMd ? 0 : "13rem",
           display: "flex",
           gap: { xs: 2, md: 0 },
           flexDirection: "column",
@@ -139,9 +140,10 @@ const AvatarWithName = ({
             resolvedItemCount={profile?.resolvedItemCount}
             shareCount={profile?.shareCount}
             birthday={profile?.birthday}
+            inherit={true}
           />
           <Typography level="body-sm" fontWeight="400">
-            {profile.role}
+            {profile.role.name}
           </Typography>
         </Box>
         <Box
@@ -260,6 +262,7 @@ const AvatarWithName = ({
         setMessage={setMessage}
         setOpenModal={setOpenModal}
         openModal={openModal}
+        update={update}
       />
       <ChangeContactNumber
         session={session}

@@ -90,7 +90,7 @@ const NotificationComponent = ({ status, session }) => {
 
   // Initial fetch and polling setup
   useEffect(() => {
-    if (status === "authenticated" && session.user.userType === "user") {
+    if (status === "authenticated") {
       // Initial fetch
       fetchNotifications();
 

@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import {
   Box,
@@ -24,25 +22,31 @@ import {
   TableCell,
   Menu,
   MenuItem,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import TitleBreadcrumbs from "./Title/TitleBreadcrumbs";
 import SearchIcon from "@mui/icons-material/Search";
+import AddRole from "./Modal/AddRole";
 import { MoreHoriz } from "@mui/icons-material";
 import EditLocation from "./Modal/EditLocation";
-import AddLocation from "./Modal/AddLocation";
+import EditRole from "./Modal/EditRole";
 
-const ViewLocations = ({ locations, session, refreshData }) => {
+const ViewRoles = ({ roles, refreshData, session, update }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentRoleId, setCurrentRoleId] = useState(null);
   const [open, setOpen] = useState(null);
   const [openEditModal, setOpenEditModal] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(null);
-  const [addLocation, setAddLocation] = useState(false);
+  const [addRole, setAddRole] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleMenuOpen = (event, roleId) => {
     setAnchorEl(event.currentTarget);
@@ -54,10 +58,10 @@ const ViewLocations = ({ locations, session, refreshData }) => {
     setCurrentRoleId(null);
   };
 
-  const handleDelete = async (locationId) => {
+  const handleDelete = async (roleId) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/location/${locationId}`, {
+      const response = await fetch(`/api/role/${roleId}`, {
         method: "DELETE",
       });
 
@@ -67,26 +71,26 @@ const ViewLocations = ({ locations, session, refreshData }) => {
         setMessage(data.message);
       } else {
         setOpenSnackbar("success");
-        setMessage("Location deleted successfully!");
+        setMessage("Role deleted successfully!");
         refreshData(); // Refresh roles data
       }
 
       setOpenDeleteModal(null);
     } catch (error) {
       setOpenSnackbar("danger");
-      setMessage("Failed to delete location");
+      setMessage("Failed to delete role");
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredLocations = locations.filter((location) => {
-    return location.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredRoles = roles.filter((role) => {
+    return role.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   return (
     <>
-      <TitleBreadcrumbs title="Manage Locations" text="Location" />
+      <TitleBreadcrumbs title="Manage Roles" text="Role" />
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Card sx={{ mt: 2, borderTop: "3px solid #3f51b5" }}>
@@ -99,19 +103,22 @@ const ViewLocations = ({ locations, session, refreshData }) => {
               }}
             >
               <Input
+                size={isXs ? "sm" : "md"}
                 startDecorator={<SearchIcon />}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                sx={{ width: { xs: "50%", md: "200px" } }}
               />
               <Button
-                onClick={() => setAddLocation(true)}
+                onClick={() => setAddRole(true)}
                 startDecorator={<AddIcon />}
+                size="small"
               >
-                Add Location
+                Add Role
               </Button>
-              <AddLocation
-                open={addLocation}
-                onClose={() => setAddLocation(false)}
+              <AddRole
+                open={addRole}
+                onClose={() => setAddRole(false)}
                 refreshData={refreshData}
                 setMessage={setMessage}
                 setOpenSnackbar={setOpenSnackbar}
@@ -130,74 +137,46 @@ const ViewLocations = ({ locations, session, refreshData }) => {
               >
                 <TableHead>
                   <TableRow>
-                    <TableCell>Location</TableCell>
-                    <TableCell>Areas</TableCell>
+                    <TableCell>Role Name</TableCell>
+                    <TableCell>Color</TableCell>
                     <TableCell>Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredLocations ? (
-                    filteredLocations.map((location) => (
-                      <TableRow key={location._id}>
-                        <TableCell>{location.name}</TableCell>
+                  {filteredRoles.length > 0 ? (
+                    filteredRoles.map((role) => (
+                      <TableRow key={role._id}>
+                        <TableCell>{role.name}</TableCell>
                         <TableCell>
-                          <Button
-                            onClick={() => {
-                              setOpen(location._id);
+                          <Box
+                            sx={{
+                              backgroundColor: role.color,
+                              borderRadius: "50%",
+                              border: "1px solid black",
+                              width: "2rem",
+                              height: "2rem",
                             }}
-                          >
-                            View Areas
-                          </Button>
-                          <Modal
-                            open={open === location._id}
-                            onClose={() => setOpen(null)}
-                          >
-                            <ModalDialog>
-                              <Typography level="h4">View Areas</Typography>
-                              <ModalClose />
-                              <DialogContent
-                                sx={{
-                                  overflowX: "hidden",
-                                  overflowY: "auto", // Allows vertical scrolling
-                                  "&::-webkit-scrollbar": { display: "none" }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
-                                  "-ms-overflow-style": "none", // Hides scrollbar in IE and Edge
-                                  "scrollbar-width": "none", // Hides scrollbar in Firefox
-                                }}
-                              >
-                                {location.areas.map((area, index) => {
-                                  return (
-                                    <Typography level="body-md" key={index}>
-                                      {area}
-                                    </Typography>
-                                  );
-                                })}
-                              </DialogContent>
-                            </ModalDialog>
-                          </Modal>
+                          ></Box>
                         </TableCell>
                         <TableCell>
                           <IconButton
-                            onClick={(event) =>
-                              handleMenuOpen(event, location._id)
-                            }
+                            onClick={(event) => handleMenuOpen(event, role._id)}
                             aria-controls={
-                              currentRoleId === location._id
-                                ? `menu-${location._id}`
+                              currentRoleId === role._id
+                                ? `menu-${role._id}`
                                 : undefined
                             }
                             aria-haspopup="true"
                             aria-expanded={
-                              currentRoleId === location._id
-                                ? "true"
-                                : undefined
+                              currentRoleId === role._id ? "true" : undefined
                             }
                           >
                             <MoreHoriz />
                           </IconButton>
                           <Menu
-                            id={`menu-${location._id}`}
+                            id={`menu-${role._id}`}
                             anchorEl={anchorEl}
-                            open={currentRoleId === location._id}
+                            open={currentRoleId === role._id}
                             onClose={handleMenuClose}
                             anchorOrigin={{
                               vertical: "bottom",
@@ -210,7 +189,15 @@ const ViewLocations = ({ locations, session, refreshData }) => {
                           >
                             <MenuItem
                               onClick={() => {
-                                setOpenEditModal(location._id);
+                                setOpen(role._id);
+                                handleMenuClose();
+                              }}
+                            >
+                              View Permissions
+                            </MenuItem>
+                            <MenuItem
+                              onClick={() => {
+                                setOpenEditModal(role._id);
                                 handleMenuClose();
                               }}
                             >
@@ -218,32 +205,58 @@ const ViewLocations = ({ locations, session, refreshData }) => {
                             </MenuItem>
                             <MenuItem
                               onClick={() => {
-                                setOpenDeleteModal(location._id);
+                                setOpenDeleteModal(role._id);
                                 handleMenuClose();
                               }}
                             >
                               Delete
                             </MenuItem>
                           </Menu>
-                          <EditLocation
-                            open={openEditModal}
+                          <EditRole
+                            open={openEditModal === role._id}
                             onClose={() => setOpenEditModal(false)}
                             refreshData={refreshData}
-                            location={location}
+                            role={role}
                             setMessage={setMessage}
                             setOpenSnackbar={setOpenSnackbar}
+                            update={update}
+                            session={session}
                           />
                           <Modal
-                            open={openDeleteModal === location._id}
+                            open={open === role._id}
+                            onClose={() => setOpen(null)}
+                          >
+                            <ModalDialog>
+                              <Typography level="h4">Permissions</Typography>
+                              <ModalClose />
+                              <DialogContent
+                                sx={{
+                                  overflowX: "hidden",
+                                  overflowY: "auto", // Allows vertical scrolling
+                                  "&::-webkit-scrollbar": { display: "none" }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                                  "-ms-overflow-style": "none", // Hides scrollbar in IE and Edge
+                                  "scrollbar-width": "none", // Hides scrollbar in Firefox
+                                }}
+                              >
+                                {role.permissions.map((permission, index) => {
+                                  return (
+                                    <Typography level="body-md" key={index}>
+                                      {permission}
+                                    </Typography>
+                                  );
+                                })}
+                              </DialogContent>
+                            </ModalDialog>
+                          </Modal>
+                          <Modal
+                            open={openDeleteModal === role._id}
                             onClose={() => setOpenDeleteModal(null)}
                           >
                             <ModalDialog>
                               <ModalClose />
-                              <Typography level="h4">
-                                Delete Location
-                              </Typography>
+                              <Typography level="h4">Delete Role</Typography>
                               <Typography level="body-md" sx={{ mt: 1 }}>
-                                Are you sure you want to delete this location?
+                                Are you sure you want to delete this role?
                               </Typography>
                               <Box
                                 sx={{
@@ -265,7 +278,7 @@ const ViewLocations = ({ locations, session, refreshData }) => {
                                   loading={loading}
                                   disabled={loading}
                                   color="danger"
-                                  onClick={() => handleDelete(location._id)}
+                                  onClick={() => handleDelete(role._id)}
                                   fullWidth
                                 >
                                   Delete
@@ -279,7 +292,7 @@ const ViewLocations = ({ locations, session, refreshData }) => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={3} align="center">
-                        Loading locations...
+                        Loading roles...
                       </TableCell>
                     </TableRow>
                   )}
@@ -307,4 +320,4 @@ const ViewLocations = ({ locations, session, refreshData }) => {
   );
 };
 
-export default ViewLocations;
+export default ViewRoles;

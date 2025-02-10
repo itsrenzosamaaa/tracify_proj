@@ -181,16 +181,11 @@ export default function App() {
   }, [status, router]);
 
   useEffect(() => {
-    if (
-      status === "authenticated" &&
-      session?.user?.id &&
-      session?.user?.userType === "user"
-    ) {
+    if (status === "authenticated" && session?.user?.id) {
       fetchProfile(session.user.id);
     }
   }, [status, session?.user?.id, session?.user?.userType, fetchProfile]);
 
-  const userType = session?.user?.userType || "";
   const userPermissions = useMemo(
     () => session?.user?.permissions || {},
     [session?.user?.permissions]
@@ -199,43 +194,56 @@ export default function App() {
   const navigation = useMemo(() => {
     const base = [{ icon: <HomeIcon />, menu: "Home", url: "/dashboard" }];
     if (status === "authenticated") {
-      if (userType === "user") {
+      if (userPermissions.includes("View Profile")) {
         base.push({
           icon: <AccountCircleIcon />,
           menu: "Profile",
           url: "/profile",
         });
+      }
+      if (userPermissions.includes("View My Items")) {
         base.push({
           icon: <LuggageIcon />,
           menu: "My Items",
           url: "/my-items",
         });
-      } else {
-        base.push({
-          icon: <FindInPageIcon />,
-          menu: "Found Items",
-          url: "/found-items",
-        });
+      }
+      if (userPermissions.includes("Manage Items")) {
+        base.push(
+          {
+            icon: <FindInPageIcon />,
+            menu: "Found Items",
+            url: "/found-items",
+          },
+          {
+            icon: <HelpOutlineIcon />,
+            menu: "Lost Items",
+            url: "/lost-items",
+          }
+        );
+      }
+      if (userPermissions.includes("Manage Item Retrievals")) {
         base.push({
           icon: <MoveToInboxIcon />,
           menu: "Item Retrieval",
           url: "/item-retrieval",
         });
-        base.push({
-          icon: <HelpOutlineIcon />,
-          menu: "Lost Items",
-          url: "/lost-items",
-        });
+      }
+      if (userPermissions.includes("View Locations")) {
         base.push({
           icon: <LocationOnOutlined />,
           menu: "Locations",
           url: "/locations",
         });
+      }
+      if (userPermissions.includes("Manage Roles")) {
         base.push({
-          icon: <PeopleOutlineIcon />,
-          menu: "Admin",
-          url: "/admin",
+          icon: <SecurityIcon />,
+          menu: "Role",
+          url: "/role",
         });
+      }
+      if (userPermissions.includes("Manage Users")) {
         base.push({
           icon: <PeopleOutlineIcon />,
           menu: "Users",
@@ -244,7 +252,7 @@ export default function App() {
       }
     }
     return base;
-  }, [status, userType]);
+  }, [status, userPermissions]);
 
   const toggleMobileDrawer = () => setMobileOpen(!mobileOpen);
 
@@ -361,7 +369,7 @@ export default function App() {
           }}
         >
           {/* Notification for Users */}
-          {userType === "user" && (
+          {session?.user?.permissions.includes("View Notifications") && (
             <NotificationComponent session={session} status={status} />
           )}
 

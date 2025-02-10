@@ -50,7 +50,6 @@ const ItemRequestApproveModal = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: row?.item?.isFoundItem ? "Surrender Pending" : "Missing",
-          monitoredBy: row?.item?.isFoundItem ? session?.user?.id : null,
         }),
       });
 

@@ -9,7 +9,7 @@ import {
   Typography,
   Dropdown,
   Divider,
-  Snackbar
+  Snackbar,
 } from "@mui/joy";
 import { signOut } from "next-auth/react";
 import ChangePassword from "./Modal/ChangePassword";
@@ -133,14 +133,10 @@ const AvatarComponent = ({ profile, session }) => {
                 level="h6"
                 sx={{ fontWeight: "bold", marginBottom: 0.5 }}
               >
-                {!session
-                  ? "User"
-                  : session?.user?.userType === "user"
-                  ? `${profile?.firstname} ${profile?.lastname}`
-                  : `${session?.user?.firstname} ${session?.user?.lastname}`}
+                {`${session?.user?.firstname} ${session?.user?.lastname}` || "Unknown User"}
               </Typography>
               <Typography level="body2" sx={{ fontSize: 12, opacity: 0.8 }}>
-                {session?.user?.roleName}
+                {session?.user?.roleName || "Guest"}
               </Typography>
             </Box>
 
@@ -192,7 +188,13 @@ const AvatarComponent = ({ profile, session }) => {
           </Menu>
         </Dropdown>
       </DropdownContainer>
-      <ChangePassword session={session} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} openChangePassword={openChangePassword} setOpenChangePassword={setOpenChangePassword} />
+      <ChangePassword
+        session={session}
+        setOpenSnackbar={setOpenSnackbar}
+        setMessage={setMessage}
+        openChangePassword={openChangePassword}
+        setOpenChangePassword={setOpenChangePassword}
+      />
       <Snackbar
         autoHideDuration={5000}
         open={openSnackbar}

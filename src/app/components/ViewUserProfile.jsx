@@ -15,14 +15,10 @@ import {
 } from "@mui/joy";
 import { Paper, useTheme, useMediaQuery } from "@mui/material";
 import AvatarWithName from "./Profile/AvatarWithName";
-import Badges from "./Profile/Badges";
-import ProgBadgeDisplay from "./Profile/ProgBadgeDisplay";
-import RecentRatingsFromUser from "./Profile/RecentRatingsFromUser";
 import TitleBreadcrumbs from "./Title/TitleBreadcrumbs";
 import SharedPost from "./SharedPost";
 import Post from "./Post";
 import Loading from "./Loading";
-import LostItemsList from "./LostItemsList";
 
 const ViewUserProfile = ({
   profile,
@@ -30,6 +26,7 @@ const ViewUserProfile = ({
   session,
   setOpenSnackbar,
   setMessage,
+  update,
 }) => {
   const [posts, setPosts] = useState([]);
   const [matches, setMatches] = useState([]);
@@ -40,7 +37,7 @@ const ViewUserProfile = ({
   const [lostFilter, setLostFilter] = useState("Claimed");
   const [foundFilter, setFoundFilter] = useState("Resolved");
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("xs"));
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isMd = useMediaQuery(theme.breakpoints.down("md"));
   const observerRef = useRef();
 
@@ -216,9 +213,10 @@ const ViewUserProfile = ({
             refreshData={refreshData}
             setOpenSnackbar={setOpenSnackbar}
             setMessage={setMessage}
+            update={update}
           />
         </Grid>
-        <Grid item xs={12} sx={{ marginX: isMd ? "1rem" : "13rem" }}>
+        <Grid item xs={12} sx={{ marginX: isMd ? 0 : "13rem" }}>
           <Tabs aria-label="Basic tabs" defaultValue={0}>
             <TabList>
               <Tab

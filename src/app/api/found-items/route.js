@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import item from "@/lib/models/item";
-import admin from "@/lib/models/admin";
 import roles from "@/lib/models/location";
 import { v2 as cloudinary } from 'cloudinary';
 import { nanoid } from 'nanoid';
@@ -16,11 +15,7 @@ export async function GET() {
   try {
     await dbConnect();
 
-    const findFoundItems = await item.find({ isFoundItem: true })
-      .populate({
-        path: 'monitoredBy',
-        model: 'Admin',
-      });
+    const findFoundItems = await item.find({ isFoundItem: true });
 
     return NextResponse.json(findFoundItems, { status: 200 });
   } catch (error) {

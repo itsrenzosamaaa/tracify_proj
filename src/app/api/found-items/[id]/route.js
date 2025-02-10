@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import item from "@/lib/models/item";
-import admin from "@/lib/models/admin";
 import Role from "@/lib/models/location";
 
 export async function GET(req, { params }) {
@@ -9,11 +8,7 @@ export async function GET(req, { params }) {
     try {
         await dbConnect();
 
-        const findFoundItem = await item.findOne({ _id: id, isFoundItem: true })
-            .populate({
-                path: 'monitoredBy',
-                model: 'Admin',
-            });
+        const findFoundItem = await item.findOne({ _id: id, isFoundItem: true }).lean();
 
         return NextResponse.json(findFoundItem, { status: 200 });
     } catch (error) {

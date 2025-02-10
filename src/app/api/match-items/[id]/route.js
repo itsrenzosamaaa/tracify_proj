@@ -12,7 +12,7 @@ export async function GET(req, { params }) {
                 path: 'finder',
                 populate: [
                     { path: 'user', model: 'User' },
-                    { path: 'item', model: 'Item', populate: { path: 'monitoredBy', populate: 'role' } }
+                    { path: 'item', model: 'Item' }
                 ]
             })
             .populate({

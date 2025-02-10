@@ -14,9 +14,8 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   role: {
-    type: String,
-    enum: ["Student", "Faculty", "Parent", "Security Guard"],
-    required: true,
+    type:  mongoose.Schema.Types.ObjectId,
+    ref: "Role",
   },
   profile_picture: {
     type: String,

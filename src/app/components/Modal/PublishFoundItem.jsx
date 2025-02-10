@@ -134,10 +134,8 @@ const PublishFoundItem = ({
 
       if (foundItemData.status === "Request") {
         foundItemData.dateRequest = new Date();
-        foundItemData.monitoredBy = null;
       } else {
         foundItemData.datePublished = new Date();
-        foundItemData.monitoredBy = session?.user?.id;
       }
 
       const response = await fetch("/api/found-items", {

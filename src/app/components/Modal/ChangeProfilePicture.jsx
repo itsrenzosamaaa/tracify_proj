@@ -22,6 +22,7 @@ const ChangeProfilePicture = ({
   openModal,
   loading,
   setMessage,
+  update
 }) => {
   const [previewImage, setPreviewImage] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -129,9 +130,16 @@ const ChangeProfilePicture = ({
       if (response.ok) {
         const data = await response.json();
         setImage(data.profile_picture); // Update the displayed image
-        setOpenModal(false);
-        setPreviewImage(null);
         await refreshData(session.user.id);
+        await update({
+          ...session,
+          user: {
+            ...session.user,
+            profile_picture: data.profile_picture,
+          },
+        });
+        setOpenModal(false);
+        setPreviewImage(null);    
         setOpenSnackbar("success");
         setMessage("Profile picture updated successfully!");
       } else {

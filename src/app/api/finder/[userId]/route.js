@@ -14,13 +14,7 @@ export async function GET(req, { params }) {
         user: userId,
       })
       .populate("user")
-      .populate({
-        path: "item",
-        populate: {
-          path: "monitoredBy",
-          model: "Admin",
-        },
-      });
+      .populate("item");
 
     return NextResponse.json(findFoundItem, { status: 200 });
   } catch (error) {

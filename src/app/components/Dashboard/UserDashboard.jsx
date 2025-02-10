@@ -325,7 +325,7 @@ const UserDashboard = ({ session, status, users }) => {
                 <Box
                   sx={{
                     display: "flex",
-                    gap: isXs ? 3 : 1,
+                    gap: isXs ? 1 : 3,
                     alignItems: "center",
                   }}
                 >
@@ -335,22 +335,29 @@ const UserDashboard = ({ session, status, users }) => {
                   </IconButton>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  {isMd && (
-                    <>
-                      <Button
-                        size="small"
-                        onClick={() => setOpenDrawer("finders")}
+                  {isMd &&
+                    session?.user?.permissions.includes("View Rankings") && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 1
+                        }}
                       >
-                        Top Finders
-                      </Button>
-                      <Button
-                        size="small"
-                        onClick={() => setOpenDrawer("sharers")}
-                      >
-                        Top Sharers
-                      </Button>
-                    </>
-                  )}
+                        <Button
+                          size="small"
+                          onClick={() => setOpenDrawer("finders")}
+                        >
+                          Top Finders
+                        </Button>
+                        <Button
+                          size="small"
+                          onClick={() => setOpenDrawer("sharers")}
+                        >
+                          Top Sharers
+                        </Button>
+                      </Box>
+                    )}
                 </Box>
               </Box>
               <form
@@ -377,7 +384,7 @@ const UserDashboard = ({ session, status, users }) => {
                 </Box>
               </form>
 
-              {isMd && (
+              {isMd && session?.user?.permissions.includes("Request Items") && (
                 <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
                   <Button
                     fullWidth
@@ -568,21 +575,23 @@ const UserDashboard = ({ session, status, users }) => {
                 msOverflowStyle: "-ms-autohiding-scrollbar",
               }}
             >
-              <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-                <Button
-                  fullWidth
-                  onClick={() => setOpenFoundRequestModal(true)}
-                >
-                  Report Found Item
-                </Button>
-                <Button
-                  color="danger"
-                  fullWidth
-                  onClick={() => setOpenLostRequestModal(true)}
-                >
-                  Report Lost Item
-                </Button>
-              </Box>
+              {session?.user?.permissions.includes("Request Items") && (
+                <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                  <Button
+                    fullWidth
+                    onClick={() => setOpenFoundRequestModal(true)}
+                  >
+                    Report Found Item
+                  </Button>
+                  <Button
+                    color="danger"
+                    fullWidth
+                    onClick={() => setOpenLostRequestModal(true)}
+                  >
+                    Report Lost Item
+                  </Button>
+                </Box>
+              )}
               {birthdayToday.length !== 0 && (
                 <Box sx={{ marginBottom: "16px" }}>
                   <Typography level="h3" gutterBottom>

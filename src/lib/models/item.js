@@ -89,10 +89,6 @@ const ItemSchema = new mongoose.Schema({
   dateCanceled: {
     type: Date,
   },
-  monitoredBy: {
-    type: mongoose.Types.ObjectId,
-    ref: "Admin",
-  },
 });
 
 export default mongoose.models.Item ||

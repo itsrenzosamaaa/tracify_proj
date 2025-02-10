@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import user from "@/lib/models/user";
+import role from "@/lib/models/role";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 
@@ -8,9 +9,9 @@ export async function GET() {
   try {
     await dbConnect();
 
-    const findUser = await user.find();
+    const findUsers = await user.find().populate('role');
 
-    return NextResponse.json(findUser, { status: 200 });
+    return NextResponse.json(findUsers, { status: 200 });
   } catch (error) {
     console.error("Error fetching users:", error);
     return NextResponse.json(
@@ -78,7 +79,6 @@ export async function POST(request) {
         user.date_created = Date.now();
         user.resolvedItemCount = 0;
         user.shareCount = 0;
-        user.role = user.role;
         user.birthday = null;
 
         if (user.password) {

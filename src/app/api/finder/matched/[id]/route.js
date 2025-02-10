@@ -11,13 +11,7 @@ export async function GET(req, { params }) {
   
       const findFoundItem = await finder.findById(id)
         .populate('user')
-        .populate({
-          path: 'item',
-          populate: {
-            path: 'monitoredBy',
-            model: 'Admin',
-          },
-        })
+        .populate('item')
         .lean();
 
       return NextResponse.json(findFoundItem, { status: 200 });

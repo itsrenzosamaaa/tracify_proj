@@ -2,8 +2,8 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "@/lib/mongodb";
-import Admin from "@/lib/models/admin";
 import User from "@/lib/models/user";
+import role from "@/lib/models/role";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
@@ -17,23 +17,24 @@ export const authOptions = {
       async authorize(credentials) {
         try {
           await dbConnect();
-
-          // Attempt to find the user as an Admin
-          let account = await Admin.findOne({ username: credentials.username });
-          let userType = "admin";
-
-          // If not found as Admin, check User model
-          if (!account) {
-            account = await User.findOne({ username: credentials.username });
-            userType = "user";
-          }
+          const account = await User.findOne({
+            username: credentials.username,
+          }).populate("role");
 
           if (
             account &&
             bcrypt.compareSync(credentials.password, account.password)
           ) {
-            const checkAccount = await getUserDetails(account, userType);
-            return checkAccount;
+            return {
+              id: account._id.toString(),
+              firstname: account.firstname,
+              lastname: account.lastname,
+              profile_picture: account.profile_picture || "",
+              email: account.emailAddress || "",
+              contact_number: account.contactNumber || "",
+              roleName: account.role?.name || "Guest", // ✅ Default to "Guest" if no role
+              permissions: account.role?.permissions || [], // ✅ Default to empty array if no permissions
+            };
           } else {
             console.error("Invalid username or password");
             return null;
@@ -62,23 +63,20 @@ export const authOptions = {
           await dbConnect();
 
           // Fetch user details from database
-          const dbAccount =
-            (await Admin.findOne({ emailAddress: user.email })) ||
-            (await User.findOne({ emailAddress: user.email }));
+          const dbAccount = await User.findOne({ emailAddress: user.email }).populate("role");
 
           if (!dbAccount) {
             console.error("User not found in the database.");
             return false; // Reject sign-in if user doesn't exist in the database
           }
 
-          const userType = dbAccount instanceof Admin ? "admin" : "user";
           user.id = dbAccount._id.toString();
           user.firstname = dbAccount.firstname;
           user.lastname = dbAccount.lastname;
           user.profile_picture = dbAccount.profile_picture;
           user.contact_number = dbAccount.contactNumber;
-          user.userType = userType;
-          user.roleName = userType === "admin" ? "SASO" : dbAccount.role;
+          user.roleName = dbAccount.role?.name || "Guest";
+          user.permissions = dbAccount.role?.permissions || [];
         }
         return true; // For credentials sign-in
       } catch (error) {
@@ -87,7 +85,15 @@ export const authOptions = {
       }
     },
 
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === "update") {
+        if (session?.user?.permissions && session?.user?.roleName) {
+          token.roleName = session.user.roleName;
+          token.permissions = session.user.permissions;
+        } else if (session?.user?.profile_picture) {
+          token.profile_picture = session.user.profile_picture;
+        }
+      }
       if (user) {
         token.id = user.id;
         token.firstname = user.firstname;
@@ -95,8 +101,8 @@ export const authOptions = {
         token.profile_picture = user.profile_picture;
         token.contactNumber = user.contact_number;
         token.email = user.email;
-        token.userType = user.userType;
-        token.roleName = user.roleName;
+        token.roleName = user.roleName || "Guest";
+        token.permissions = user.permissions || [];
       }
       return token;
     },
@@ -109,27 +115,13 @@ export const authOptions = {
         session.user.profile_picture = token.profile_picture;
         session.user.contactNumber = token.contactNumber;
         session.user.email = token.email;
-        session.user.userType = token.userType;
-        session.user.roleName = token.roleName;
+        session.user.roleName = token.roleName || "Guest";
+        session.user.permissions = token.permissions || [];
       }
       return session;
     },
   },
 };
-
-// Helper function to get user details based on account data and user type
-async function getUserDetails(account, userType) {
-  return {
-    id: account._id.toString(),
-    firstname: account.firstname,
-    lastname: account.lastname,
-    profile_picture: userType === "admin" ? null : account.profile_picture,
-    email: account.emailAddress,
-    contact_number: account.contactNumber,
-    userType: userType,
-    roleName: userType === 'admin' ? "SASO" : account.role,
-  };
-}
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

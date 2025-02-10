@@ -5,7 +5,6 @@ import finder from "@/lib/models/finder";
 import owner from "@/lib/models/owner";
 import user from "@/lib/models/user";
 import item from "@/lib/models/item";
-import admin from "@/lib/models/admin";
 import roles from "@/lib/models/location";
 
 export async function GET() {
@@ -17,7 +16,7 @@ export async function GET() {
         path: 'finder',
         populate: [
           { path: 'user', model: 'User' },
-          { path: 'item', model: 'Item', populate: { path: 'monitoredBy', populate: 'role' } }
+          { path: 'item', model: 'Item' }
         ]
       })
       .populate({

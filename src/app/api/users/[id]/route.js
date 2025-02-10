@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import user from "@/lib/models/user";
-import badge from "@/lib/models/badge";
+import role from "@/lib/models/role";
 
 export async function GET(req, { params }) {
   const { id } = params;
@@ -9,7 +9,13 @@ export async function GET(req, { params }) {
   try {
     await dbConnect();
 
-    const findUser = await user.findOne({ _id: id }).lean();
+    const findUser = await user
+      .findOne({ _id: id })
+      .populate({
+        path: "role",
+        select: "name color",
+      })
+      .lean();
 
     if (!findUser) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });

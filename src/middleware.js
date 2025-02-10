@@ -10,34 +10,24 @@ export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
   const isLoginPage = pathname === "/";
 
-  const adminPages = [
-    "/admin",
-    "/badges",
-    "/found-items",
-    "/item-history",
-    "/item-retrieval",
-    "/lost-items",
-    "/roles",
-    "/users",
-  ];
-
-  const userPages = ["/profile", "/my-items"];
-
   if (token) {
-    const userRole = token.userType;
-
     // Restrict access to admin pages
     if (
-      adminPages.some((adminPath) => pathname.startsWith(adminPath)) &&
-      userRole !== "admin"
-    ) {
-      return NextResponse.redirect(new URL("/unauthorized", request.url));
-    }
-
-    // Restrict access to user-specific pages
-    if (
-      userPages.some((userPath) => pathname.startsWith(userPath)) &&
-      userRole !== "user"
+      ((pathname.startsWith("/lost-items") ||
+        pathname.startsWith("/found-items")) &&
+        !token.permissions.includes("Manage Items")) ||
+      (pathname.startsWith("/item-retrieval") &&
+        !token.permissions.includes("Manage Item Retrievals")) ||
+      (pathname.startsWith("/users") &&
+        !token.permissions.includes("Manage Users")) ||
+      (pathname.startsWith("/role") &&
+        !token.permissions.includes("Manage Roles")) ||
+      (pathname.startsWith("/locations") &&
+        !token.permissions.includes("Manage Locations")) ||
+      (pathname.startsWith("/my-items") &&
+        !token.permissions.includes("View My Items")) ||
+      (pathname.startsWith("/profile") &&
+        !token.permissions.includes("View Profile"))
     ) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
@@ -57,13 +47,10 @@ export const config = {
   matcher: [
     "/",
     "/dashboard",
-    "/admin",
-    "/badges",
     "/found-items",
-    "/item-history",
     "/item-retrieval",
     "/lost-items",
-    "/roles",
+    "/role",
     "/users",
     "/profile",
     "/my-items/:path*",

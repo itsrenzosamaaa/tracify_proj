@@ -59,9 +59,7 @@ const ChangePassword = ({
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/${
-          session?.user?.userType === "admin" ? "admin" : "users"
-        }/change-password/${session.user.id}`,
+        `/api/users/change-password/${session.user.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

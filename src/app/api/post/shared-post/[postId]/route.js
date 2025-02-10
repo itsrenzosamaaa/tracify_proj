@@ -5,7 +5,7 @@ import user from "@/lib/models/user";
 import item from "@/lib/models/item";
 import owner from "@/lib/models/owner";
 import finder from "@/lib/models/finder";
-import admin from "@/lib/models/admin";
+import role from "@/lib/models/role";
 
 export async function GET(req, { params }) {
   try {
@@ -14,27 +14,26 @@ export async function GET(req, { params }) {
 
     const nextPost = await post
       .findOne({ _id: postId, isShared: true })
-      .populate(
-        "sharedBy",
-        "firstname lastname profile_picture resolvedItemCount shareCount role birthday"
-      )
+      .populate({
+        path: "sharedBy",
+        select:
+          "firstname lastname profile_picture resolvedItemCount shareCount birthday",
+        populate: { path: "role", select: "name color" }, // ✅ Populate role
+      })
       .populate({
         path: "originalPost",
         populate: [
           {
             path: "author",
             select:
-              "firstname lastname profile_picture resolvedItemCount shareCount role birthday",
+              "firstname lastname profile_picture resolvedItemCount shareCount birthday",
+            populate: { path: "role", select: "name color" }, // ✅ Populate role
           },
           {
             path: "finder",
             populate: {
               path: "item",
-              select: "name images monitoredBy status location date_time",
-              populate: {
-                path: "monitoredBy",
-                select: "firstname lastname",
-              },
+              select: "name images status location date_time",
             },
           },
           {

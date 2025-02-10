@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import user from "@/lib/models/user";
-import badge from "@/lib/models/badge";
 
 export async function PUT(req, { params }) {
     const { id } = params;

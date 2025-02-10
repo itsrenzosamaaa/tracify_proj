@@ -28,7 +28,6 @@ import { usePathname, useRouter } from "next/navigation";
 import InfoIcon from "@mui/icons-material/Info";
 import ConfirmationRetrievalRequest from "./Modal/ConfirmationRetrievalRequest";
 import CancelRequest from "./Modal/CancelRequest";
-import RatingsModal from "./Modal/Ratings";
 import ItemDetails from "./Modal/ItemDetails";
 import { useTheme, useMediaQuery } from "@mui/material";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
@@ -57,7 +56,6 @@ const MyItemsComponent = ({ session, status }) => {
   const [confirmationRetrievalModal, setConfirmationRetrievalModal] =
     useState(null);
   const [activeTab, setActiveTab] = useState("lost-item"); // State to track the active tab
-  const [ratingModal, setRatingModal] = useState(null);
   const [message, setMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(null);
   const [openLostRequestModal, setOpenLostRequestModal] = useState(false);
@@ -89,18 +87,16 @@ const MyItemsComponent = ({ session, status }) => {
 
     try {
       // Fetch all required data concurrently
-      const [itemsResponse, ratingsResponse] = await Promise.all([
+      const [itemsResponse] = await Promise.all([
         fetch(`/api/items/${session.user.id}`),
-        fetch("/api/ratings"),
       ]);
 
-      if (!itemsResponse.ok || !ratingsResponse.ok) {
+      if (!itemsResponse.ok) {
         throw new Error("Failed to fetch data from one or more endpoints");
       }
 
-      const [itemsData, ratingsData] = await Promise.all([
+      const [itemsData] = await Promise.all([
         itemsResponse.json(),
-        ratingsResponse.json(),
       ]);
 
       // Filter and categorize items before processing
@@ -116,11 +112,6 @@ const MyItemsComponent = ({ session, status }) => {
           !["Request", "Resolved", "Declined", "Canceled"].includes(
             item.item.status
           )
-      );
-
-      // Filter ratings for the current user
-      const filteredRatings = ratingsData.filter(
-        (rating) => rating.sender?._id.toString() === session.user.id
       );
 
       // Set states

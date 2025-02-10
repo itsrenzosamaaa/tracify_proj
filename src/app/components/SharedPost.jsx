@@ -123,7 +123,7 @@ const SharedPost = ({
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
                   fontWeight={700}
-                  sx={{ color: roleColors[sharedBy?.role] || "inherit" }}
+                  sx={{ color: sharedBy?.role?.color || "inherit" }}
                 >
                   {sharedBy?.firstname} {sharedBy?.lastname}
                 </Typography>
@@ -131,6 +131,7 @@ const SharedPost = ({
                   resolvedItemCount={sharedBy?.resolvedItemCount}
                   shareCount={sharedBy?.shareCount}
                   birthday={sharedBy?.birthday}
+                  inherit={false}
                 />
               </Box>
               <Typography level={isXs ? "body-xs" : "body-sm"} fontWeight={300}>
@@ -209,8 +210,7 @@ const SharedPost = ({
                       level={isXs ? "body-sm" : "body-md"}
                       fontWeight={700}
                       sx={{
-                        color:
-                          roleColors[originalPost?.author?.role] || "inherit",
+                        color: originalPost?.author?.role?.color || "inherit",
                       }}
                     >
                       {originalPost.author.firstname}{" "}
@@ -220,6 +220,7 @@ const SharedPost = ({
                       resolvedItemCount={originalPost.author.resolvedItemCount}
                       shareCount={originalPost.author.shareCount}
                       birthday={originalPost.author.birthday}
+                      inherit={false}
                     />
                   </Box>
                   <Typography

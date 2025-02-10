@@ -136,7 +136,6 @@ const PublishItemIdentified = ({ open, onClose, refreshData }) => {
             image,
             status: 'Reserved',
             matched: lostItemId || null,
-            monitoredBy: session?.user?.id,
         };
 
         console.log("Found Item Data:", foundItemData);

@@ -5,7 +5,7 @@ import user from "@/lib/models/user";
 import item from "@/lib/models/item";
 import finder from "@/lib/models/finder";
 import owner from "@/lib/models/owner";
-import admin from "@/lib/models/admin";
+import role from "@/lib/models/role";
 
 export async function GET(req) {
   try {
@@ -39,7 +39,12 @@ export async function GET(req) {
 
     // ✅ Populate fields
     nextPosts = await post.populate(nextPosts, [
-      { path: "author", select: "firstname lastname profile_picture resolvedItemCount shareCount role birthday" },
+      {
+        path: "author",
+        select:
+          "firstname lastname profile_picture resolvedItemCount shareCount birthday",
+        populate: { path: "role", select: "name color" },
+      },
       {
         path: "finder",
         populate: {
@@ -47,20 +52,36 @@ export async function GET(req) {
           select: "category images status location",
         },
       },
-      { path: "owner", populate: { path: "item", select: "category images status location" } },
-      { path: "sharedBy", select: "firstname lastname profile_picture resolvedItemCount shareCount role birthday" },
+      {
+        path: "owner",
+        populate: { path: "item", select: "category images status location" },
+      },
+      {
+        path: "sharedBy",
+        select:
+          "firstname lastname profile_picture resolvedItemCount shareCount birthday",
+        populate: { path: "role", select: "name color" },
+      },
       {
         path: "originalPost",
         populate: [
           {
             path: "author",
-            select: "firstname lastname profile_picture resolvedItemCount shareCount role birthday",
+            select:
+              "firstname lastname profile_picture resolvedItemCount shareCount birthday",
+            populate: { path: "role", select: "name color" },
           },
           {
             path: "finder",
             populate: { path: "item", select: "images status location" },
           },
-          { path: "owner", populate: { path: "item", select: "category images status location" } },
+          {
+            path: "owner",
+            populate: {
+              path: "item",
+              select: "category images status location",
+            },
+          },
         ],
       },
     ]);
@@ -68,9 +89,15 @@ export async function GET(req) {
     // ✅ Remove resolved/claimed posts
     nextPosts = nextPosts.filter((post) => {
       if (!post.isShared) {
-        return post?.finder?.item?.status !== "Resolved" && post?.owner?.item?.status !== "Claimed";
+        return (
+          post?.finder?.item?.status !== "Resolved" &&
+          post?.owner?.item?.status !== "Claimed"
+        );
       }
-      return post?.originalPost?.finder?.item?.status !== "Resolved" && post?.originalPost?.owner?.item?.status !== "Claimed";
+      return (
+        post?.originalPost?.finder?.item?.status !== "Resolved" &&
+        post?.originalPost?.owner?.item?.status !== "Claimed"
+      );
     });
 
     if (!nextPosts.length) {
@@ -80,7 +107,10 @@ export async function GET(req) {
     return NextResponse.json(nextPosts, { status: 200 });
   } catch (error) {
     console.error("Error fetching posts:", error);
-    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch posts" },
+      { status: 500 }
+    );
   }
 }
 

@@ -91,7 +91,6 @@ const ItemReservedModal = ({
         status: "Claimed",
       });
 
-      // Award badges if conditions are met
       await makeRequest(`/api/users/${row.finder.user._id}/increment`, "PUT", {
         increment: "found-item",
       });

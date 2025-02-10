@@ -72,7 +72,7 @@ const Post = ({
       });
 
       const data = await response.json();
-      if(session?.user?.id !== post?.author?._id) {
+      if (session?.user?.id !== post?.author?._id) {
         await fetch("/api/notification", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -84,8 +84,8 @@ const Post = ({
             dateNotified: new Date(),
             post: session?.user?.id !== post?.author?._id ? data._id : null,
           }),
-        })
-      };
+        });
+      }
       setSharedCaption("");
       setSharePostModal(null);
       setOpenSnackbar("success");
@@ -118,7 +118,7 @@ const Post = ({
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
                   fontWeight={700}
-                  sx={{ color: roleColors[author?.role] || "inherit" }}
+                  sx={{ color: author?.role?.color || "inherit" }}
                 >
                   {author?.firstname} {author?.lastname}
                 </Typography>
@@ -126,6 +126,7 @@ const Post = ({
                   resolvedItemCount={author?.resolvedItemCount}
                   shareCount={author?.shareCount}
                   birthday={author?.birthday}
+                  inherit={false}
                 />
               </Box>
               <Typography level={isXs ? "body-xs" : "body-sm"} fontWeight={300}>

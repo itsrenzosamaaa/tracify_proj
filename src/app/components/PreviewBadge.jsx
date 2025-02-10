@@ -3,7 +3,7 @@ import { Tooltip, Box } from "@mui/joy";
 import { useTheme, useMediaQuery } from "@mui/material";
 import dayjs from "dayjs";
 
-const PreviewBadge = ({ resolvedItemCount, shareCount, birthday }) => {
+const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
   const theme = useTheme();
 
   const birthdayBadge = { shape: "birthdayCake", color: "#F44336" };
@@ -164,7 +164,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday }) => {
         gap: 1,
         alignItems: "center",
         justifyContent: 'center',
-        backgroundColor: noBadges ? "transparent" : "#e0e0e0", // Remove background if no badges
+        backgroundColor: noBadges || inherit ? "transparent" : "#e0e0e0", // Remove background if no badges
         px: noBadges ? 0 : 1, // Remove padding if no badges
         borderRadius: "5px",
       }}

@@ -16,6 +16,10 @@ import {
   IconButton,
   Chip,
   ModalClose,
+  FormControl,
+  FormLabel,
+  Select,
+  Option,
 } from "@mui/joy";
 import {
   Grid,
@@ -36,7 +40,7 @@ import { MoreHoriz } from "@mui/icons-material";
 import { Search } from "@mui/icons-material";
 import EditUser from "./Modal/EditUser";
 
-const ViewUsers = ({ users, refreshData, session }) => {
+const ViewUsers = ({ users, roles, refreshData, session }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isEmailAddress, setIsEmailAddress] = useState(true);
@@ -47,8 +51,10 @@ const ViewUsers = ({ users, refreshData, session }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [openEditModal, setOpenEditModal] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(null);
+  const [openEditRole, setOpenEditRole] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
 
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
@@ -60,6 +66,41 @@ const ViewUsers = ({ users, refreshData, session }) => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleOpenRoleModal = (user) => {
+    setOpenEditRole(user._id);
+    setSelectedRole(user.role?._id || ""); // Ensure the role is set properly
+  };
+
+  const handleAssignRole = async (userId) => {
+    if (!selectedRole) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/users/${userId}/role`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: selectedRole }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setOpenSnackbar("success");
+        setMessage("Role assigned successfully!");
+        refreshData();
+      } else {
+        setOpenSnackbar("danger");
+        setMessage(`Failed to assign role: ${result.error}`);
+      }
+    } catch (error) {
+      setOpenSnackbar("danger");
+      setMessage("An error occurred while assigning the role.");
+    } finally {
+      setIsLoading(false);
+      setOpenEditRole(null);
+    }
   };
 
   const handleMenuOpen = (event, userId) => {
@@ -161,8 +202,10 @@ const ViewUsers = ({ users, refreshData, session }) => {
             >
               <Input
                 startDecorator={<Search />}
+                size={isXs ? "sm" : "md"}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                sx={{ width: { xs: "50%", md: "200px" } }}
               />
               <Button component="label">
                 Import Data
@@ -214,11 +257,9 @@ const ViewUsers = ({ users, refreshData, session }) => {
                       <TableCell sx={{ width: isXs ? "100px" : "200px" }}>
                         Role
                       </TableCell>
-                      {session?.user?.roleName === "SASO" && (
-                        <TableCell sx={{ width: isXs ? "70px" : "90px" }}>
-                          Action
-                        </TableCell>
-                      )}
+                      <TableCell sx={{ width: isXs ? "70px" : "90px" }}>
+                        Action
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -250,76 +291,121 @@ const ViewUsers = ({ users, refreshData, session }) => {
                                 sx={{ width: isXs ? "100px" : "200px" }}
                               >
                                 <Chip
-                                  color={
-                                    user.role === "Student"
-                                      ? "success"
-                                      : user.role === "Parent"
-                                      ? "primary"
-                                      : user.role === "Faculty"
-                                      ? "warning"
-                                      : "neutral"
-                                  }
-                                  variant="solid"
+                                  onClick={() => handleOpenRoleModal(user)}
+                                  sx={{
+                                    backgroundColor: user.role
+                                      ? user.role.color
+                                      : "" + "20",
+                                    color: user.role ? user.role.color : "",
+                                    cursor: "pointer",
+                                    "&:hover": {
+                                      backgroundColor: user.role
+                                        ? user.role.color
+                                        : "" + "30",
+                                    },
+                                    border: `1px solid ${
+                                      user.role ? user.role.color : ""
+                                    }`,
+                                  }}
                                 >
-                                  {user.role}
+                                  {user.role
+                                    ? user.role.name
+                                    : "Not yet assigned"}
                                 </Chip>
                               </TableCell>
-                              {session?.user?.roleName === "SASO" && (
-                                <TableCell
-                                  sx={{ width: isXs ? "70px" : "90px" }}
+                              <TableCell sx={{ width: isXs ? "70px" : "90px" }}>
+                                <IconButton
+                                  onClick={(event) =>
+                                    handleMenuOpen(event, user._id)
+                                  }
+                                  aria-controls={
+                                    currentUserId === user._id
+                                      ? `menu-${user._id}`
+                                      : undefined
+                                  }
+                                  aria-haspopup="true"
+                                  aria-expanded={
+                                    currentUserId === user._id
+                                      ? "true"
+                                      : undefined
+                                  }
                                 >
-                                  <IconButton
-                                    onClick={(event) =>
-                                      handleMenuOpen(event, user._id)
-                                    }
-                                    aria-controls={
-                                      currentUserId === user._id
-                                        ? `menu-${user._id}`
-                                        : undefined
-                                    }
-                                    aria-haspopup="true"
-                                    aria-expanded={
-                                      currentUserId === user._id
-                                        ? "true"
-                                        : undefined
-                                    }
-                                  >
-                                    <MoreHoriz />
-                                  </IconButton>
-                                  <Menu
-                                    id={`menu-${user._id}`}
-                                    anchorEl={anchorEl}
-                                    open={currentUserId === user._id}
-                                    onClose={handleMenuClose}
-                                    anchorOrigin={{
-                                      vertical: "bottom",
-                                      horizontal: "right",
-                                    }}
-                                    transformOrigin={{
-                                      vertical: "top",
-                                      horizontal: "right",
+                                  <MoreHoriz />
+                                </IconButton>
+                                <Menu
+                                  id={`menu-${user._id}`}
+                                  anchorEl={anchorEl}
+                                  open={currentUserId === user._id}
+                                  onClose={handleMenuClose}
+                                  anchorOrigin={{
+                                    vertical: "bottom",
+                                    horizontal: "right",
+                                  }}
+                                  transformOrigin={{
+                                    vertical: "top",
+                                    horizontal: "right",
+                                  }}
+                                >
+                                  <MenuItem
+                                    onClick={() => {
+                                      setOpenEditModal(user._id);
+                                      handleMenuClose();
                                     }}
                                   >
-                                    <MenuItem
-                                      onClick={() => {
-                                        setOpenEditModal(user._id);
-                                        handleMenuClose();
-                                      }}
-                                    >
-                                      Edit
-                                    </MenuItem>
-                                    <MenuItem
-                                      onClick={() => {
-                                        setOpenDeleteModal(user._id);
-                                        handleMenuClose();
-                                      }}
-                                    >
-                                      Delete
-                                    </MenuItem>
-                                  </Menu>
-                                </TableCell>
-                              )}
+                                    Edit
+                                  </MenuItem>
+                                  <MenuItem
+                                    onClick={() => {
+                                      setOpenDeleteModal(user._id);
+                                      handleMenuClose();
+                                    }}
+                                  >
+                                    Delete
+                                  </MenuItem>
+                                </Menu>
+                              </TableCell>
                             </TableRow>
+                            <Modal
+                              open={openEditRole === user._id}
+                              onClose={() => setOpenEditRole(null)}
+                            >
+                              <ModalDialog>
+                                <ModalClose />
+                                <Typography level="h4" sx={{ mb: 2 }}>
+                                  Assign Role
+                                </Typography>
+                                <FormControl sx={{ mb: 3 }}>
+                                  <FormLabel>Select Role</FormLabel>
+                                  <Select
+                                    value={selectedRole}
+                                    onChange={(e, newValue) =>
+                                      setSelectedRole(newValue)
+                                    }
+                                    placeholder="Select role"
+                                  >
+                                    {roles.map((role) => (
+                                      <Option key={role._id} value={role._id}>
+                                        {role.name}
+                                      </Option>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+                                <Button
+                                  fullWidth
+                                  onClick={() => handleAssignRole(openEditRole)}
+                                  loading={isLoading}
+                                  disabled={
+                                    isLoading ||
+                                    selectedRole ===
+                                      users.find(
+                                        (user) => user._id === openEditRole
+                                      )?.role?._id
+                                  }
+                                >
+                                  Assign Role
+                                </Button>
+                              </ModalDialog>
+                            </Modal>
                             <Modal
                               open={openDeleteModal === user._id}
                               onClose={() => setOpenDeleteModal(null)}
@@ -383,7 +469,9 @@ const ViewUsers = ({ users, refreshData, session }) => {
               </TableContainer>
               {openEditModal && (
                 <EditUser
-                  user={filteredUsers.find((user) => user._id === openEditModal)}
+                  user={filteredUsers.find(
+                    (user) => user._id === openEditModal
+                  )}
                   open={openEditModal}
                   onClose={() => setOpenEditModal(null)}
                   setOpenSnackbar={setOpenSnackbar}
