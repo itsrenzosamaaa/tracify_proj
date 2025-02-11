@@ -114,11 +114,17 @@ const Post = ({
               style={{ cursor: "pointer" }}
             />
             <Box>
-              <Box sx={{ display: "flex", gap: 2 }}>
+              <Box sx={{ display: "flex", gap: 2, maxWidth: "100%" }}>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
                   fontWeight={700}
-                  sx={{ color: author?.role?.color || "inherit" }}
+                  sx={{
+                    color: author?.role?.color || "inherit",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                    maxWidth: isXs ? "150px" : "auto", // Adjust based on your layout
+                  }}
                 >
                   {author?.firstname} {author?.lastname}
                 </Typography>

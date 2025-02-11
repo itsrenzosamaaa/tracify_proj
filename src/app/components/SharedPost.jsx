@@ -119,11 +119,17 @@ const SharedPost = ({
               style={{ cursor: "pointer" }}
             />
             <Box>
-              <Box sx={{ display: "flex", gap: 2 }}>
+              <Box sx={{ display: "flex", gap: 2, maxWidth: "100%" }}>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
                   fontWeight={700}
-                  sx={{ color: sharedBy?.role?.color || "inherit" }}
+                  sx={{
+                    color: sharedBy?.role?.color || "inherit",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                    maxWidth: isXs ? "135px" : "auto", // Adjust based on your layout
+                  }}
                 >
                   {sharedBy?.firstname} {sharedBy?.lastname}
                 </Typography>
@@ -174,7 +180,12 @@ const SharedPost = ({
         </Typography> */}
 
           {/* Item Images */}
-          <Box sx={{ border: "1px solid #B0BEC5", borderRadius: "5px" }}>
+          <Box
+            sx={{
+              border: "1px solid #B0BEC5",
+              borderRadius: "5px",
+            }}
+          >
             <Carousel showThumbs={false} useKeyboardArrows>
               {filteredOriginalPost?.item?.images?.map((image, index) => (
                 <Box
@@ -205,24 +216,28 @@ const SharedPost = ({
                   style={{ cursor: "pointer" }}
                 />
                 <Box>
-                  <Box sx={{ display: "flex", gap: 2 }}>
+                  <Box sx={{ display: "flex", gap: 2, maxWidth: "100%" }}>
                     <Typography
                       level={isXs ? "body-sm" : "body-md"}
                       fontWeight={700}
                       sx={{
                         color: originalPost?.author?.role?.color || "inherit",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                        textOverflow: "ellipsis",
+                        maxWidth: isXs ? "105px" : "auto", // Adjust based on your layout
                       }}
                     >
-                      {originalPost.author.firstname}{" "}
-                      {originalPost.author.lastname}
+                      {originalPost?.author?.firstname} {originalPost?.author?.lastname}
                     </Typography>
                     <PreviewBadge
-                      resolvedItemCount={originalPost.author.resolvedItemCount}
-                      shareCount={originalPost.author.shareCount}
-                      birthday={originalPost.author.birthday}
+                      resolvedItemCount={originalPost?.author?.resolvedItemCount}
+                      shareCount={originalPost?.author?.shareCount}
+                      birthday={originalPost?.author?.birthday}
                       inherit={false}
                     />
                   </Box>
+
                   <Typography
                     level={isXs ? "body-xs" : "body-sm"}
                     fontWeight={300}
