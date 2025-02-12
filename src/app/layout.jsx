@@ -31,6 +31,7 @@ export default function RootLayout({ children }) {
         <meta name="keywords" content="tlc, tracify, the lewis college" />
         <meta name="description" content="Login to access your account" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="index, follow" />
         <meta charSet="UTF-8" />
       </head>
       <body>
