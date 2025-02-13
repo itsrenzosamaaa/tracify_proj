@@ -21,7 +21,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={poppins.className}>
       <head>
-        <title>TLC-Tracify | Login</title>
+        <meta charSet="UTF-8" />
+
+        <title>Login | The Lewis College (TLC) - Tracify</title>
+
         <link
           rel="icon"
           type="image/png"
@@ -35,18 +38,63 @@ export default function RootLayout({ children }) {
           sizes="180x180"
           href="/apple-touch-icon.png"
         />
+
         <link rel="manifest" href="/site.webmanifest" />
+
         <meta name="apple-mobile-web-app-title" content="TLC-Tracify" />
-        <meta name="keywords" content="tlc, tracify, the lewis college" />
-        <meta name="description" content="Login to access your account" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=5"
+        />
+
+        <meta
+          name="keywords"
+          content="TLC, The Lewis College, Tracify, TLC Tracify, Student Portal, College Login, Lost and Found"
+        />
+        <meta
+          name="description"
+          content="Login to The Lewis College (TLC) Tracify portal to manage your lost and found items."
+        />
+
+        <meta
+          property="og:title"
+          content="Login | The Lewis College (TLC) - Tracify"
+        />
+        <meta
+          property="og:description"
+          content="Login to your TLC Tracify account to manage your lost and found items."
+        />
+        <meta
+          property="og:image"
+          content="https://tlc-tracify.vercel.app/tracify_logo1.png"
+        />
+        <meta property="og:url" content="https://tlc-tracify.vercel.app/" />
+        <meta property="og:type" content="website" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content="Login | The Lewis College (TLC) - Tracify"
+        />
+        <meta
+          name="twitter:description"
+          content="Access your TLC Tracify account to manage your lost and found items."
+        />
+        <meta
+          name="twitter:image"
+          content="https://tlc-tracify.vercel.app/tracify_logo1.png"
+        />
+
+        <link rel="canonical" href="https://tlc-tracify.vercel.app/" />
+
         <meta name="robots" content="index, follow" />
-        <meta charSet="UTF-8" />
+
         <meta
           name="google-site-verification"
           content="ACWj2uO1RWm6yPG0XOU-5hARanmlEIVjAfAq3VXPSfY"
         />
       </head>
+
       <body>
         <SessionProvider>
           <GlobalStyle />
