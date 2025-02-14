@@ -83,7 +83,7 @@ const ItemValidatingModal = ({
           name: row.user.firstname,
           link: "tracify-project.vercel.app/my-items#found-item",
           itemName: row.item.name,
-          location: session.user.roleName,
+          location: "SASO",
         }),
       });
 
@@ -146,7 +146,7 @@ const ItemValidatingModal = ({
           name: row.user.firstname,
           link: "tracify-project.vercel.app/my-items#declined-item",
           itemName: row.item.name,
-          location: session.user.roleName,
+          location: "SASO",
         }),
       });
 

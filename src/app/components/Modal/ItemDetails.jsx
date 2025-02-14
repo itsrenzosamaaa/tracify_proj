@@ -33,7 +33,13 @@ import { useTheme, useMediaQuery } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { Check } from "@mui/icons-material";
 
-const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage, locationOptions }) => {
+const ItemDetails = ({
+  row,
+  refreshData,
+  setOpenSnackbar,
+  setMessage,
+  locationOptions,
+}) => {
   const { data: session, status } = useSession();
   const [isEditMode, setIsEditMode] = useState(false);
   const [name, setName] = useState(row.item.name);
@@ -384,7 +390,7 @@ const ItemDetails = ({ row, refreshData, setOpenSnackbar, setMessage, locationOp
               </Typography>
               {(row.item.status === "Missing" ||
                 row.item.status === "Published" ||
-                (session?.user?.userType === "user" &&
+                (session.user.permissions.includes("User Dashboard") &&
                   row.item.status === "Request")) &&
                 (!isEditMode ? (
                   <Button

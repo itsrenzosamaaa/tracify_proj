@@ -96,10 +96,13 @@ const PublishLostItem = ({
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.userType !== "user") {
+    if (
+      status === "authenticated" &&
+      session.user.permissions.includes("Admin Dashboard")
+    ) {
       fetchUsers();
     }
-  }, [status, session?.user?.userType, fetchUsers]);
+  }, [status, session?.user?.permissions, fetchUsers]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -139,7 +142,9 @@ const PublishLostItem = ({
             )} to ${format(selectedLostEndDate, "MMMM dd, yyyy hh:mm a")}`
           : "Unidentified",
         images,
-        status: session.user.userType === "user" ? "Request" : "Missing",
+        status: session.user.permissions.includes("User Dashboard")
+          ? "Request"
+          : "Missing",
       };
 
       if (lostItemData.status === "Request") {
@@ -167,8 +172,9 @@ const PublishLostItem = ({
       const lostItemResponse = await response.json();
 
       const ownerFormData = {
-        user:
-          session?.user?.userType === "user" ? session?.user?.id : owner?._id,
+        user: session.user.permissions.includes("User Dashboard")
+          ? session?.user?.id
+          : owner?._id,
         item: lostItemResponse._id,
       };
 
@@ -180,7 +186,7 @@ const PublishLostItem = ({
 
       const ownerData = await ownerResponse.json();
 
-      if (session?.user?.userType !== "user") {
+      if (session.user.permissions.includes("Admin Dashboard")) {
         await Promise.all([
           fetch("/api/post", {
             method: "POST",
@@ -201,7 +207,7 @@ const PublishLostItem = ({
             },
             body: JSON.stringify({
               receiver: owner._id,
-              message: `The lost item (${name}) you reported to ${session.user.roleName} has been published!`,
+              message: `The lost item (${name}) you reported to SASO has been published!`,
               type: "Lost Items",
               markAsRead: false,
               dateNotified: new Date(),
@@ -215,7 +221,7 @@ const PublishLostItem = ({
             body: JSON.stringify({
               to: owner.emailAddress,
               name: owner.firstname,
-              link: "tracify-project.vercel.app",
+              link: "tlc-tracify.vercel.app",
               success: false,
               title: "Lost Item Published Successfully!",
             }),
@@ -229,7 +235,7 @@ const PublishLostItem = ({
         fetchItems();
       }
       setMessage(
-        session?.user?.userType === "user"
+        session.user.permissions.includes("User Dashboard")
           ? "Item requested successfully!"
           : "Item published successfully!"
       );
@@ -334,7 +340,10 @@ const PublishLostItem = ({
         >
           <ModalClose />
           <Typography level="h4" sx={{ mb: 2 }}>
-            {session?.user?.userType === "user" ? "Request" : "Post"} Lost Item
+            {session.user.permissions.includes("User Dashboard")
+              ? "Request"
+              : "Post"}{" "}
+            Lost Item
           </Typography>
           <DialogContent
             sx={{
@@ -369,7 +378,7 @@ const PublishLostItem = ({
           >
             <form onSubmit={handleSubmit}>
               <Stack spacing={2}>
-                {session?.user?.userType !== "user" && (
+                {session.user.permissions.includes("Admin Dashboard") && (
                   <FormControl>
                     <FormLabel>Owner</FormLabel>
                     <Autocomplete
@@ -807,7 +816,7 @@ const PublishLostItem = ({
                   </Box>
                 </FormControl>
                 <Button disabled={loading} loading={loading} type="submit">
-                  {session?.user?.userType === "user" ? "Request" : "Post"}
+                  {session.user.permissions.includes("User Dashboard") ? "Request" : "Post"}
                 </Button>
               </Stack>
             </form>

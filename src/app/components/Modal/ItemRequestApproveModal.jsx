@@ -65,7 +65,7 @@ const ItemRequestApproveModal = ({
           receiver: row.user._id,
           message: `The ${row.item.isFoundItem ? "found" : "lost"} item (${
             row.item.name
-          }) you requested has been approved by ${session.user.roleName}!`,
+          }) you requested has been approved by SASO!`,
           type: row.item.isFoundItem ? "Found Items" : "Lost Items",
           markAsRead: false,
           dateNotified: new Date(),
@@ -88,7 +88,7 @@ const ItemRequestApproveModal = ({
           }`,
           success: row.item.isFoundItem,
           itemName: row.item.name,
-          location: session?.user?.roleName,
+          location: "SASO",
         }),
       });
 

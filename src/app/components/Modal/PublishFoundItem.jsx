@@ -68,10 +68,10 @@ const PublishFoundItem = ({
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.userType !== "user") {
+    if (status === "authenticated" && session.user.permissions.includes("Admin Dashboard")) {
       fetchUsers();
     }
-  }, [status, session?.user?.userType, fetchUsers]);
+  }, [status, session?.user?.permissions, fetchUsers]);
 
   const handleCheck = (e) => {
     const check = e.target.checked;
@@ -129,7 +129,9 @@ const PublishFoundItem = ({
         location,
         date_time: format(selectedDate, "MMMM dd,yyyy hh:mm a"),
         images,
-        status: session.user.userType === "user" ? "Request" : "Published",
+        status: session.user.permissions.includes("User Dashboard")
+          ? "Request"
+          : "Published",
       };
 
       if (foundItemData.status === "Request") {
@@ -155,8 +157,9 @@ const PublishFoundItem = ({
       const foundItemResponse = await response.json();
 
       const finderFormData = {
-        user:
-          session.user.userType === "user" ? session?.user?.id : finder?._id,
+        user: session.user.permissions.includes("User Dashboard")
+          ? session?.user?.id
+          : finder?._id,
         item: foundItemResponse._id,
       };
 
@@ -168,7 +171,7 @@ const PublishFoundItem = ({
 
       const finderData = await finderResponse.json();
 
-      if (session?.user?.userType !== "user") {
+      if (session.user.permissions.includes("Admin Dashboard")) {
         await Promise.all([
           fetch("/api/post", {
             method: "POST",
@@ -187,7 +190,7 @@ const PublishFoundItem = ({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               receiver: finder._id,
-              message: `The found item (${name}) you reported to ${session.user.roleName} has been published!`,
+              message: `The found item (${name}) you reported to SASO has been published!`,
               type: "Found Items",
               markAsRead: false,
               dateNotified: new Date(),
@@ -199,7 +202,7 @@ const PublishFoundItem = ({
             body: JSON.stringify({
               to: finder.emailAddress,
               name: finder.firstname,
-              link: "tracify-project.vercel.app",
+              link: "tlc-tracify.vercel.app",
               success: true,
               title: "Found Item Published Successfully!",
             }),
@@ -212,7 +215,7 @@ const PublishFoundItem = ({
         fetchItems();
       }
       setMessage(
-        session?.user?.userType === "user"
+        session.user.permissions.includes("User Dashboard")
           ? "Item requested successfully!"
           : "Item published successfully!"
       );
@@ -290,7 +293,10 @@ const PublishFoundItem = ({
         >
           <ModalClose />
           <Typography level="h4" sx={{ mb: 2 }}>
-            {session?.user?.userType === "user" ? "Request" : "Post"} Found Item
+            {session.user.permissions.includes("User Dashboard")
+              ? "Request"
+              : "Post"}{" "}
+            Found Item
           </Typography>
           <DialogContent
             sx={{
@@ -325,7 +331,7 @@ const PublishFoundItem = ({
           >
             <form onSubmit={handleSubmit}>
               <Stack spacing={2}>
-                {session?.user?.userType !== "user" && (
+                {session.user.permissions.includes("Admin Dashboard") && (
                   <FormControl required>
                     <FormLabel>Finder</FormLabel>
                     <Autocomplete
@@ -724,7 +730,9 @@ const PublishFoundItem = ({
                   </Box>
                 </FormControl>
                 <Button loading={loading} disabled={loading} type="submit">
-                  Publish
+                  {session.user.permissions.includes("User Dashboard")
+                    ? "Request"
+                    : "Post"}{" "}
                 </Button>
               </Stack>
             </form>

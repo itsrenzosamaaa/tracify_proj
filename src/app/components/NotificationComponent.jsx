@@ -102,7 +102,7 @@ const NotificationComponent = ({ status, session }) => {
         clearInterval(pollInterval);
       };
     }
-  }, [status, session?.user?.userType, fetchNotifications]);
+  }, [status, fetchNotifications]);
 
   // Count unread notifications
   const unreadCount = notifications.filter(

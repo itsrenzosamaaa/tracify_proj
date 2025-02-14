@@ -229,7 +229,7 @@ export default function App() {
           url: "/item-retrieval",
         });
       }
-      if (userPermissions.includes("View Locations")) {
+      if (userPermissions.includes("Manage Locations")) {
         base.push({
           icon: <LocationOnOutlined />,
           menu: "Locations",
