@@ -291,7 +291,11 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                                 sx={{ width: isXs ? "100px" : "200px" }}
                               >
                                 <Chip
-                                  onClick={() => handleOpenRoleModal(user)}
+                                  onClick={() => {
+                                    if (session?.user?.id === user._id) {
+                                      handleOpenRoleModal(user);
+                                    }
+                                  }}
                                   sx={{
                                     backgroundColor: user.role
                                       ? user.role.color
@@ -354,14 +358,16 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                                   >
                                     Edit
                                   </MenuItem>
-                                  <MenuItem
-                                    onClick={() => {
-                                      setOpenDeleteModal(user._id);
-                                      handleMenuClose();
-                                    }}
-                                  >
-                                    Delete
-                                  </MenuItem>
+                                  {session?.user?.id === user._id && (
+                                    <MenuItem
+                                      onClick={() => {
+                                        setOpenDeleteModal(user._id);
+                                        handleMenuClose();
+                                      }}
+                                    >
+                                      Delete
+                                    </MenuItem>
+                                  )}
                                 </Menu>
                               </TableCell>
                             </TableRow>
