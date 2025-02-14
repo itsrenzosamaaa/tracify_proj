@@ -292,7 +292,7 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                               >
                                 <Chip
                                   onClick={() => {
-                                    if (session?.user?.id === user._id) {
+                                    if (session?.user?.id !== user._id) {
                                       handleOpenRoleModal(user);
                                     }
                                   }}
@@ -358,7 +358,7 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                                   >
                                     Edit
                                   </MenuItem>
-                                  {session?.user?.id === user._id && (
+                                  {session?.user?.id !== user._id && (
                                     <MenuItem
                                       onClick={() => {
                                         setOpenDeleteModal(user._id);
