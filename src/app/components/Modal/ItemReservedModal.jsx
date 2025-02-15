@@ -18,6 +18,7 @@ import {
   Select,
   Option,
   Chip,
+  Autocomplete,
 } from "@mui/joy";
 import React, { useState } from "react";
 import { FormControlLabel } from "@mui/material";
@@ -44,7 +45,8 @@ const ItemReservedModal = ({
 
   const filteredUsers = users.filter(
     (user) =>
-      user._id !== row.finder.user._id && user._id !== row.owner.user._id
+      (user._id !== row.finder.user._id && user._id !== row.owner.user._id) &&
+      user.role.permissions.includes("User Dashboard")
   );
 
   const handleReasonChange = (event) => {
@@ -124,13 +126,9 @@ const ItemReservedModal = ({
       );
 
       if (seePost === "It was shared by another user") {
-        await makeRequest(
-          `/api/users/${selectedUser}/increment`,
-          "PUT",
-          {
-            increment: "share",
-          }
-        );
+        await makeRequest(`/api/users/${selectedUser}/increment`, "PUT", {
+          increment: "share",
+        });
       }
 
       // Close modals, refresh data, and show success notification
@@ -454,27 +452,33 @@ const ItemReservedModal = ({
                 {seePost === "It was shared by another user" && (
                   <FormControl>
                     <FormLabel>Who shared the post?</FormLabel>
-                    <Select
+                    <Autocomplete
                       fullWidth
                       required
-                      value={selectedUser}
-                      onChange={(e, value) => setSelectedUser(value)}
-                    >
-                      <Option value="" disabled>
-                        Select User
-                      </Option>
-                      {filteredUsers.map((user) => (
-                        <Option key={user._id} value={user._id}>
-                          {user.firstname} {user.lastname}
-                        </Option>
-                      ))}
-                    </Select>
+                      options={filteredUsers}
+                      getOptionLabel={(user) =>
+                        `${user.firstname} ${user.lastname}`
+                      } // Display full name
+                      value={
+                        filteredUsers.find(
+                          (user) => user._id === selectedUser
+                        ) || null
+                      } // Set selected value
+                      onChange={(event, newValue) =>
+                        setSelectedUser(newValue ? newValue._id : "")
+                      } // Update state
+                      renderInput={(params) => (
+                        <Input {...params} placeholder="Search user..." />
+                      )}
+                    />
                   </FormControl>
                 )}
                 <Button
                   sx={{ mt: 2 }}
                   onClick={() => setConfirmationItemClaimed(true)}
-                  disabled={seePost === 2 && !selectedUser} // Disable if user not selected
+                  disabled={
+                    seePost === "It was shared by another user" && !selectedUser
+                  }
                 >
                   Submit
                 </Button>

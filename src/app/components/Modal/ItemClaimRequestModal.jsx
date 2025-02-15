@@ -31,9 +31,6 @@ const ItemClaimRequestModal = ({
     useState(null);
   const [loading, setLoading] = useState(false);
 
-  console.log(setMessage);
-  console.log(setOpenSnackbar);
-
   const handleSubmit = async (e, lostItemId, matchedItemId) => {
     if (e?.preventDefault) e.preventDefault();
 
@@ -122,8 +119,6 @@ const ItemClaimRequestModal = ({
             errorData.message || `Failed to perform request to ${url}`
           );
         }
-
-        console.log(response);
 
         return response.json();
       };

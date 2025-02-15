@@ -42,6 +42,7 @@ const validTabs = [
 ];
 
 const MyItemsComponent = ({ session, status }) => {
+  const [locationOptions, setLocationOptions] = useState([]);
   const [completedItemDetailsModal, setCompletedItemDetailsModal] =
     useState(null);
   const [invalidItemDetailsModal, setInvalidItemDetailsModal] = useState(null);
@@ -95,9 +96,7 @@ const MyItemsComponent = ({ session, status }) => {
         throw new Error("Failed to fetch data from one or more endpoints");
       }
 
-      const [itemsData] = await Promise.all([
-        itemsResponse.json(),
-      ]);
+      const [itemsData] = await Promise.all([itemsResponse.json()]);
 
       // Filter and categorize items before processing
       const lostItems = itemsData.filter(
@@ -137,13 +136,27 @@ const MyItemsComponent = ({ session, status }) => {
     }
   }, [session?.user?.id]);
 
+  const fetchLocations = useCallback(async () => {
+    try {
+      const response = await fetch("/api/location");
+      const data = await response.json();
+
+      const allRooms = data.reduce((acc, location) => {
+        return [...acc, ...location.areas];
+      }, []);
+
+      setLocationOptions(allRooms);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
   useEffect(() => {
     if (status === "authenticated") {
       fetchItems();
+      fetchLocations();
     }
-  }, [status, fetchItems]);
-
-  console.log(completedItems);
+  }, [status, fetchItems, fetchLocations]);
 
   return (
     <>
@@ -684,6 +697,7 @@ const MyItemsComponent = ({ session, status }) => {
                             </Typography>
                             {isXs && (
                               <Chip
+                                size="sm"
                                 variant="solid"
                                 color={
                                   completedItem.item.isFoundItem
@@ -916,6 +930,7 @@ const MyItemsComponent = ({ session, status }) => {
                             </Typography>
                             {isXs && (
                               <Chip
+                                size="sm"
                                 variant="solid"
                                 color={
                                   declinedItem.item.isFoundItem
@@ -1139,6 +1154,7 @@ const MyItemsComponent = ({ session, status }) => {
                             </Typography>
                             {isXs && (
                               <Chip
+                                size="sm"
                                 variant="solid"
                                 color={
                                   canceledItem.item.isFoundItem
@@ -1362,6 +1378,7 @@ const MyItemsComponent = ({ session, status }) => {
                             </Typography>
                             {isXs && (
                               <Chip
+                                size="sm"
                                 variant="solid"
                                 color={
                                   requestedItem.item.isFoundItem
@@ -1458,6 +1475,7 @@ const MyItemsComponent = ({ session, status }) => {
                                   }}
                                 >
                                   <ItemDetails
+                                    locationOptions={locationOptions}
                                     row={requestedItem}
                                     refreshData={fetchItems}
                                     setOpenSnackbar={setOpenSnackbar}

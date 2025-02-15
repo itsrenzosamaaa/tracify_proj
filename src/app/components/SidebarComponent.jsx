@@ -184,7 +184,7 @@ export default function App() {
     if (status === "authenticated" && session?.user?.id) {
       fetchProfile(session.user.id);
     }
-  }, [status, session?.user?.id, session?.user?.userType, fetchProfile]);
+  }, [status, session?.user?.id, fetchProfile]);
 
   const userPermissions = useMemo(
     () => session?.user?.permissions || {},

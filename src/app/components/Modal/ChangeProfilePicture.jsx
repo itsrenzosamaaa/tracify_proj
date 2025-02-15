@@ -30,7 +30,6 @@ const ChangeProfilePicture = ({
   const [cropArea, setCropArea] = useState(null);
   const onDrop = (acceptedFiles) => {
     const file = acceptedFiles[0];
-    console.log("File MIME Type:", file.type); // Log the MIME type to debug
 
     const validMimeTypes = ["image/jpeg", "image/png", "image/gif"];
     const validExtensions = ["jpg", "jpeg", "png", "gif"];
@@ -114,7 +113,6 @@ const ChangeProfilePicture = ({
     setLoading(true);
     try {
       const croppedDataUrl = await getCroppedImage();
-      console.log("Cropped Image Data URL:", croppedDataUrl);
 
       const response = await fetch(
         `/api/users/${session.user.id}/profile-picture`,

@@ -31,8 +31,6 @@ const DashboardPage = () => {
     return <Loading />;
   }
 
-  console.log(session)
-
   return (
     <>
       {session?.user?.permissions.includes("Admin Dashboard") && (

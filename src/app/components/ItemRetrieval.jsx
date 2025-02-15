@@ -1,14 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Grid, Box, Button, Menu, MenuItem, Typography, Input } from '@mui/joy';
+import { Grid, Box, Button, Menu, MenuItem, Input } from '@mui/joy';
 import { Paper, useMediaQuery } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import TitleBreadcrumbs from './Title/TitleBreadcrumbs';
-import PublishItemIdentified from './Modal/PublishItemIdentified';
-import ItemRetrievalTable from './Table/ItemRetrievalTable';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
+import ItemRetrievalTable from './Table/ItemRetrievalTable';
 
 const ItemRetrievalList = ({ items, fetchItems, users }) => {
     const [anchorEl, setAnchorEl] = useState(null); // For the Menu

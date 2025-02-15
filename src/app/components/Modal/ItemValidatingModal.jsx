@@ -26,8 +26,6 @@ const ItemValidatingModal = ({
   const [itemInvalidate, setItemInvalidate] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  console.log(row)
-
   const handleSubmit = async (e, id) => {
     if (e && e.preventDefault) {
       e.preventDefault();

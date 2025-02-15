@@ -116,7 +116,8 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
   const filteredUsers = users.filter((user) => {
     return (
       user.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.lastname.toLowerCase().includes(searchQuery.toLowerCase())
+      user.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.role.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
