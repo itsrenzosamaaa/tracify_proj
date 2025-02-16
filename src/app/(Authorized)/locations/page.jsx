@@ -1,37 +1,36 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react';
-import { Box } from '@mui/joy';
-import ViewLocations from '@/app/components/ViewLocations';
+import React, { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import ViewLocations from "@/app/components/ViewLocations";
 
 const LocationsPage = () => {
-    const { data: session, status } = useSession();
-    const [locations, setLocations] = useState();
+  const { data: session, status } = useSession();
+  const [locations, setLocations] = useState();
 
-    const fetchLocations = async () => {
-        try {
-            const response = await fetch('/api/location');
-            const data = await response.json();
-            setLocations(data);
-        } catch (error) {
-            console.error(error);
-        }
+  const fetchLocations = useCallback(async () => {
+    try {
+      const response = await fetch("/api/location");
+      const data = await response.json();
+      setLocations(data);
+    } catch (error) {
+      console.error(error);
     }
+  }, []);
 
-    useEffect(() => {
-        fetchLocations();
-    }, [])
+  useEffect(() => {
+    fetchLocations();
+  }, [fetchLocations]);
 
-    if (status === 'loading') {
-        return null;
-    }
+  if (status === "loading") {
+    return null;
+  }
 
-    return (
-        <>
-            <ViewLocations locations={locations} session={session} refreshData={fetchLocations} />
-        </>
-    )
-}
+  return (
+    <>
+      <ViewLocations locations={locations} refreshData={fetchLocations} />
+    </>
+  );
+};
 
-export default LocationsPage
+export default LocationsPage;

@@ -32,7 +32,7 @@ import { MoreHoriz } from "@mui/icons-material";
 import EditLocation from "./Modal/EditLocation";
 import AddLocation from "./Modal/AddLocation";
 
-const ViewLocations = ({ locations, session, refreshData }) => {
+const ViewLocations = ({ locations, refreshData }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentRoleId, setCurrentRoleId] = useState(null);
   const [open, setOpen] = useState(null);
@@ -80,9 +80,11 @@ const ViewLocations = ({ locations, session, refreshData }) => {
     }
   };
 
-  const filteredLocations = locations.filter((location) => {
-    return location.name.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  const filteredLocations = locations
+    ? locations.filter((location) =>
+        location?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
   return (
     <>
