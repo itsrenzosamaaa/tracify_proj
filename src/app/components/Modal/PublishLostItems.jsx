@@ -666,7 +666,7 @@ const PublishLostItem = ({
                   </Grid>
                 </Grid>
                 <FormControl>
-                  <FormLabel>Caption</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <Textarea
                     required
                     type="text"

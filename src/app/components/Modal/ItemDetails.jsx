@@ -789,7 +789,7 @@ const ItemDetails = ({
                     <Divider sx={{ marginY: 2 }} />
                     {isEditMode ? (
                       <FormControl>
-                        <FormLabel>Caption</FormLabel>
+                        <FormLabel>Description</FormLabel>
                         <Textarea
                           type="text"
                           name="description"
@@ -801,7 +801,7 @@ const ItemDetails = ({
                       </FormControl>
                     ) : (
                       <Typography level={isXs ? "body-sm" : "body-md"}>
-                        <strong>Caption:</strong>{" "}
+                        <strong>Description:</strong>{" "}
                         {row.item.description || "N/A"}
                       </Typography>
                     )}

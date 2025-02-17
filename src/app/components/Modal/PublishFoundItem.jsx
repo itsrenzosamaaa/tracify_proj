@@ -614,7 +614,7 @@ const PublishFoundItem = ({
                   </Grid>
                 </Grid>
                 <FormControl required>
-                  <FormLabel>Caption</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <Textarea
                     type="text"
                     name="description"
