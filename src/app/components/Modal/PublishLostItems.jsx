@@ -89,7 +89,10 @@ const PublishLostItem = ({
     try {
       const response = await fetch("/api/users");
       const data = await response.json();
-      setUsers(data);
+      const filterUsers = data.filter((user) =>
+        user?.role?.permissions.includes("User Dashboard")
+      );
+      setUsers(filterUsers);
     } catch (error) {
       console.error(error);
     }
@@ -816,7 +819,9 @@ const PublishLostItem = ({
                   </Box>
                 </FormControl>
                 <Button disabled={loading} loading={loading} type="submit">
-                  {session.user.permissions.includes("User Dashboard") ? "Request" : "Post"}
+                  {session.user.permissions.includes("User Dashboard")
+                    ? "Request"
+                    : "Post"}
                 </Button>
               </Stack>
             </form>

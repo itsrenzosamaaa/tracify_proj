@@ -111,7 +111,7 @@ const FoundItemsList = ({ finders, fetchItems, session, locationOptions }) => {
                                     )}
                                 </Box>
                             </FormControl>
-                            <Button size="small" sx={{ width: isMobile ? '50%' : '170px' }} startDecorator={<AddIcon />} onClick={() => setOpen(true)}>
+                            <Button size="small" startDecorator={<AddIcon />} onClick={() => setOpen(true)}>
                                 Post Found Item
                             </Button>
                             <PublishFoundItem open={open} onClose={() => setOpen(false)} fetchItems={fetchItems} setOpenSnackbar={setOpenSnackbar} setMessage={setMessage} locationOptions={locationOptions} />

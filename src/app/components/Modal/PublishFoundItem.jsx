@@ -61,7 +61,10 @@ const PublishFoundItem = ({
     try {
       const response = await fetch("/api/users");
       const data = await response.json();
-      setUsers(data);
+      const filterUsers = data.filter((user) =>
+        user?.role?.permissions.includes("User Dashboard")
+      );
+      setUsers(filterUsers);
     } catch (error) {
       console.error(error);
     }
