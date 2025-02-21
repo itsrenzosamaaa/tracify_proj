@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import styled from "styled-components";
 import {
   Box,
   Grid,
@@ -28,15 +27,6 @@ import Loading from "./components/Loading";
 import Authenticated from "./components/Authenticated";
 import Image from "next/image";
 
-const StyledLink = styled(Link)`
-  text-decoration: none;
-  color: inherit;
-
-  &:hover {
-    color: inherit;
-  }
-`;
-
 export default function Home() {
   const [text, setText] = useState("");
   const [password, setPassword] = useState("");
@@ -49,30 +39,43 @@ export default function Home() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("dashboard");
+      router.push("/dashboard");
     }
-  }, [status, router, session]);
+  }, [status, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-    const result = await signIn("credentials", {
-      redirect: false,
-      username: text,
-      password: password,
-    });
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        username: text,
+        password: password,
+      });
 
-    if (result.ok) {
-      await getSession();
-    } else {
-      setError("Invalid Credentials!!");
+      if (!result.ok) {
+        setError("Invalid Credentials!!");
+        setIsLoading(false);
+      } else {
+        await getSession();
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setError("Something went wrong. Try again.");
       setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    await signIn("google", { redirect: false, prompt: "select_account" }); // Ensure Google sign-in does not redirect automatically
+    try {
+      setIsLoading(true);
+      await signIn("google", { redirect: false, prompt: "select_account" });
+    } catch (error) {
+      setError("Google sign-in failed.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (status === "loading") {
@@ -106,7 +109,7 @@ export default function Home() {
               <Image
                 priority
                 src="/tracify.png"
-                alt="tracify"
+                alt="Tracify Logo"
                 fill
                 style={{
                   objectFit: "cover",
@@ -117,7 +120,7 @@ export default function Home() {
             <form onSubmit={handleSubmit}>
               <Box sx={{ padding: "0 2rem 2rem 2rem", textAlign: "center" }}>
                 <Stack spacing={1}>
-                  <FormLabel>ID*</FormLabel>
+                  <FormLabel>Username*</FormLabel>
                   <FormControl>
                     <Input
                       type="text"
@@ -168,10 +171,22 @@ export default function Home() {
                   <Button
                     color="neutral"
                     variant="soft"
-                    startDecorator={<GoogleLogo width={30} height={30} />}
                     disabled={isLoading}
                     onClick={handleGoogleSignIn}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1,
+                    }}
                   >
+                    <Image
+                      priority
+                      src="/google.svg"
+                      alt="Google Logo"
+                      width={20}
+                      height={20}
+                    />
                     Sign in using Google
                   </Button>
                   {error && (

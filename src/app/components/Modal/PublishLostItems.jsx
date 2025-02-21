@@ -775,6 +775,7 @@ const PublishLostItem = ({
                       {images.map((image, index) => (
                         <Box key={index} sx={{ position: "relative" }}>
                           <Image
+                            priority
                             src={image}
                             width={0}
                             height={0}

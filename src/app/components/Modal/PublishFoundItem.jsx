@@ -71,7 +71,10 @@ const PublishFoundItem = ({
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated" && session.user.permissions.includes("Admin Dashboard")) {
+    if (
+      status === "authenticated" &&
+      session.user.permissions.includes("Admin Dashboard")
+    ) {
       fetchUsers();
     }
   }, [status, session?.user?.permissions, fetchUsers]);
@@ -689,6 +692,7 @@ const PublishFoundItem = ({
                       {images.map((image, index) => (
                         <Box key={index} sx={{ position: "relative" }}>
                           <Image
+                            priority
                             src={image}
                             width={0}
                             height={0}

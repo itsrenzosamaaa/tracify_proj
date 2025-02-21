@@ -59,7 +59,7 @@ const SidebarContainer = styled(Box)(({ collapsed }) => ({
   left: 0,
   boxShadow: "2px 0 5px rgba(0, 0, 0, 0.2)",
   display: "none",
-  transition: "width 0.3s ease",
+  ...(collapsed === false ? {} : { transition: "width 0.3s ease" }),
   "@media (min-width: 1200px)": {
     display: "block",
   },
@@ -341,7 +341,7 @@ export default function App() {
         />
       )}
 
-      <Header collapsed={collapsed}>
+      <Header collapsed={collapsed ? true : false}>
         <IconButton
           color="inherit"
           onClick={toggleMobileDrawer}
@@ -378,7 +378,7 @@ export default function App() {
         </Box>
       </Header>
 
-      <SidebarContainer collapsed={collapsed}>
+      <SidebarContainer collapsed={collapsed ? true : false}>
         <DrawerContent
           navigation={navigation}
           toggleMobileDrawer={toggleMobileDrawer}

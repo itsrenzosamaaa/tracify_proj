@@ -2,14 +2,13 @@
 
 import React from "react";
 import SidebarComponent from "../components/SidebarComponent";
-import { Box, Typography } from "@mui/joy";
-import styled from "styled-components";
+import { Box } from "@mui/joy";
 
 export default function Layout({ children }) {
   return (
     <html>
       <head>
-        <title>Dashboard</title>
+        <title>Tracify</title>
       </head>
       <body style={{ backgroundColor: "whitesmoke", }}>
         <SidebarComponent />

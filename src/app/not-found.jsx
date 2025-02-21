@@ -33,6 +33,7 @@ export default function NotFound() {
       >
         {/* 🎨 Illustration Image */}
         <Image
+          priority
           src="/not_found.png" // Add a relevant image in your public/images folder
           alt="Page Not Found"
           width={400}
@@ -60,7 +61,8 @@ export default function NotFound() {
             mb: 3,
           }}
         >
-          Oops! The page you are looking for doesn&apos;t exist or has been moved.
+          Oops! The page you are looking for doesn&apos;t exist or has been
+          moved.
         </Typography>
 
         {/* 🎯 Action Buttons */}
