@@ -10,7 +10,6 @@ import { HelpOutline } from "@mui/icons-material";
 
 const DashboardPage = () => {
   const { data: session, status } = useSession();
-  const [isClient, setIsClient] = useState(false);
   const [users, setUsers] = useState([]);
 
   const fetchUsers = async () => {

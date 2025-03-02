@@ -109,8 +109,8 @@ const Post = ({
           <Box display="flex" alignItems="center" mb={2}>
             <Avatar
               sx={{ mr: 2 }}
-              src={author?.profile_picture}
-              alt={author?.firstname}
+              src={author?.profile_picture || null}
+              alt={author?.firstname || "User"}
               style={{ cursor: "pointer" }}
             />
             <Box>
@@ -126,12 +126,12 @@ const Post = ({
                     maxWidth: isXs ? "150px" : "auto", // Adjust based on your layout
                   }}
                 >
-                  {author?.firstname} {author?.lastname}
+                  {`${author?.firstname} ${author?.lastname}` || "Unknown User"}
                 </Typography>
                 <PreviewBadge
-                  resolvedItemCount={author?.resolvedItemCount}
-                  shareCount={author?.shareCount}
-                  birthday={author?.birthday}
+                  resolvedItemCount={author?.resolvedItemCount || 0}
+                  shareCount={author?.shareCount || 0}
+                  birthday={author?.birthday || null}
                   inherit={false}
                 />
               </Box>

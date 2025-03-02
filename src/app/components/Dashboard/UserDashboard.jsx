@@ -247,10 +247,14 @@ const UserDashboard = ({ session, status, users }) => {
     fetchLocations,
   ]); // Trigger effect if status or lastPostId changes
 
-  const birthdayToday = users.filter(
-    (user) =>
-      dayjs(user.birthday).format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD")
-  );
+  const birthdayToday = users.filter((user) => {
+    if (!user?.birthday) return false; // Skip users without a birthday
+
+    const userBirthday = dayjs(user.birthday).format("MM-DD");
+    const today = dayjs().format("MM-DD");
+
+    return userBirthday === today;
+  });
 
   if (error) return <Typography color="error">Error: {error}</Typography>;
 
@@ -341,7 +345,7 @@ const UserDashboard = ({ session, status, users }) => {
                         sx={{
                           display: "flex",
                           flexDirection: "column",
-                          gap: 1
+                          gap: 1,
                         }}
                       >
                         <Button

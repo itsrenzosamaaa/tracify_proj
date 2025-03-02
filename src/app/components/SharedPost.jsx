@@ -114,8 +114,8 @@ const SharedPost = ({
           <Box display="flex" alignItems="center" mb={2}>
             <Avatar
               sx={{ mr: 2 }}
-              src={sharedBy?.profile_picture}
-              alt={sharedBy?.firstname}
+              src={sharedBy?.profile_picture || null}
+              alt={sharedBy?.firstname || "User"}
               style={{ cursor: "pointer" }}
             />
             <Box>
@@ -131,12 +131,13 @@ const SharedPost = ({
                     maxWidth: isXs ? "135px" : "auto", // Adjust based on your layout
                   }}
                 >
-                  {sharedBy?.firstname} {sharedBy?.lastname}
+                  {`${sharedBy?.firstname} ${sharedBy?.lastname}` ||
+                    "Unknown User"}
                 </Typography>
                 <PreviewBadge
-                  resolvedItemCount={sharedBy?.resolvedItemCount}
-                  shareCount={sharedBy?.shareCount}
-                  birthday={sharedBy?.birthday}
+                  resolvedItemCount={sharedBy?.resolvedItemCount || 0}
+                  shareCount={sharedBy?.shareCount || 0}
+                  birthday={sharedBy?.birthday || null}
                   inherit={false}
                 />
               </Box>
@@ -211,8 +212,8 @@ const SharedPost = ({
               <Box display="flex" alignItems="center" mb={2}>
                 <Avatar
                   sx={{ mr: 2 }}
-                  src={originalPost.author.profile_picture}
-                  alt={originalPost.author.firstname}
+                  src={originalPost.author.profile_picture || null}
+                  alt={originalPost.author.firstname || "User"}
                   style={{ cursor: "pointer" }}
                 />
                 <Box>
@@ -228,12 +229,15 @@ const SharedPost = ({
                         maxWidth: isXs ? "105px" : "auto", // Adjust based on your layout
                       }}
                     >
-                      {originalPost?.author?.firstname} {originalPost?.author?.lastname}
+                      {`${originalPost?.author?.firstname} ${originalPost?.author?.lastname}` ||
+                        "Unknown User"}
                     </Typography>
                     <PreviewBadge
-                      resolvedItemCount={originalPost?.author?.resolvedItemCount}
-                      shareCount={originalPost?.author?.shareCount}
-                      birthday={originalPost?.author?.birthday}
+                      resolvedItemCount={
+                        originalPost?.author?.resolvedItemCount || 0
+                      }
+                      shareCount={originalPost?.author?.shareCount || 0}
+                      birthday={originalPost?.author?.birthday || null}
                       inherit={false}
                     />
                   </Box>

@@ -4,8 +4,6 @@ import { useTheme, useMediaQuery } from "@mui/material";
 import dayjs from "dayjs";
 
 const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
-  const theme = useTheme();
-
   const birthdayBadge = { shape: "birthdayCake", color: "#F44336" };
 
   const getResolvedBadge = () => {
@@ -152,7 +150,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
   const shareBadge = getShareBadge();
 
   const isBirthdayToday =
-    dayjs(birthday).format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD");
+    dayjs(birthday).format("MM-DD") === dayjs().format("MM-DD");
   const noBadges = !resolvedBadge && !shareBadge && !isBirthdayToday;
 
   if (noBadges) return null;
