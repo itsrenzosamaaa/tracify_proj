@@ -369,7 +369,7 @@ export default function App() {
           }}
         >
           {/* Notification for Users */}
-          {session?.user?.permissions.includes("View Notifications") && (
+          {session?.user?.permissions.includes("User Dashboard") && (
             <NotificationComponent session={session} status={status} />
           )}
 

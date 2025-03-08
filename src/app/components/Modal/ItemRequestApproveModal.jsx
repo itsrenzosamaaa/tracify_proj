@@ -83,7 +83,7 @@ const ItemRequestApproveModal = ({
           to: row.user.emailAddress,
           subject: "Your Item Request Has Been Approved",
           name: row.user.firstname,
-          link: `tracify-project.vercel.app/my-items#${
+          link: `tlc-tracify.vercel.app/my-items#${
             row.item.isFoundItem ? "found-item" : "lost-item"
           }`,
           success: row.item.isFoundItem,
@@ -183,7 +183,7 @@ const ItemRequestApproveModal = ({
           to: row.user.emailAddress,
           subject: "Your Item Request Has Been Declined",
           name: row.user.firstname,
-          link: "tracify-project.vercel.app/my-items#declined-item",
+          link: "tlc-tracify.vercel.app/my-items#declined-item",
           itemName: row.item.name,
           remarks: declineReason,
         }),

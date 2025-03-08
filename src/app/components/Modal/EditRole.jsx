@@ -22,7 +22,6 @@ const permissionOptions = [
   "View Profile",
   "View My Items",
   "View Rankings",
-  "View Notifications",
   "Request Items",
   "Manage Users",
   "Manage Items",

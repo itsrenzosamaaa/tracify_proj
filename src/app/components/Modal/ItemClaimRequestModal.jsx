@@ -84,6 +84,16 @@ const ItemClaimRequestModal = ({
         )
       );
 
+      await makeRequest("/api/send-email", "POST", {
+        type: "ClaimRequestApproved",
+        to: row.owner.user.emailAddress,
+        subject: "Claim Request Approved",
+        name: row.owner.user.firstname,
+        link: "tlc-tracify.vercel.app/my-items#lost-item",
+        itemName: row.finder.item.name,
+        location: "SASO",
+      });
+
       // Close modals and refresh data
       setConfirmationApproveModal(null);
       onClose();
@@ -136,6 +146,14 @@ const ItemClaimRequestModal = ({
         type: "Lost Items",
         markAsRead: false,
         dateNotified: new Date(),
+      });
+      await makeRequest("/api/send-email", "POST", {
+        type: "ClaimRequestDeclined",
+        to: row.owner.user.emailAddress,
+        subject: "Claim Request Declined",
+        name: row.owner.user.firstname,
+        link: "tlc-tracify.vercel.app/my-items#lost-item",
+        itemName: row.finder.item.name,
       });
 
       // Close modals and refresh data

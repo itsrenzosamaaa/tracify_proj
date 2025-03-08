@@ -129,7 +129,7 @@ const ViewItemPage = ({ params }) => {
 
                                         <Grid container spacing={2} alignItems="flex-start">
                                             {/* Left Side: Surrender Details */}
-                                            <Grid item xs={12} md={4}>
+                                            <Grid item xs={12} md={3}>
                                                 <Typography level={isXs ? 'body-sm' : 'body-md'} color="danger" textAlign="justify" sx={{ my: 2, fontWeight: 'bold' }}>
                                                     <strong>Reminder:</strong> Falsely claiming an item that does not belong to you is a serious offense and may result in consequences such as suspension.
                                                 </Typography>
@@ -143,7 +143,7 @@ const ViewItemPage = ({ params }) => {
                                             />
 
                                             {/* Right Side: Stepper */}
-                                            <Grid item xs={12} md={7}>
+                                            <Grid item xs={12} md={8}>
                                                 <Stepper
                                                     size="md"
                                                     orientation={isSmallScreen ? 'vertical' : 'horizontal'}

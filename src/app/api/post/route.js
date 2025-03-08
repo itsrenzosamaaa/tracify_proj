@@ -14,7 +14,7 @@ export async function GET(req) {
     const url = new URL(req.url);
     const searchQuery = url.searchParams.get("search")?.trim()?.toLowerCase();
     const page = parseInt(url.searchParams.get("page")) || 1; // Get current page, default to 1
-    const limit = 5; // Number of posts per fetch
+    const limit = 8; // Number of posts per fetch
     const skip = (page - 1) * limit; // Calculate how many posts to skip
 
     let matchStage = {

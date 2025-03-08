@@ -122,7 +122,7 @@ const MatchedItemsDetails = ({ row }) => {
               }}
             >
               <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Name:</strong> {row.owner.item.name || "N/A"}
+                <strong>Item Name:</strong> {row.owner.item.name || "N/A"}
               </Typography>
               <Typography level={isXs ? "body-sm" : "body-md"}>
                 <strong>Color:</strong>{" "}
@@ -262,7 +262,7 @@ const MatchedItemsDetails = ({ row }) => {
               }}
             >
               <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Name:</strong> {row.finder.item.name || "N/A"}
+                <strong>Item Name:</strong> {row.finder.item.name || "N/A"}
               </Typography>
               <Typography level={isXs ? "body-sm" : "body-md"}>
                 <strong>Color:</strong>{" "}

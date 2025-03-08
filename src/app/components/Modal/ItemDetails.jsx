@@ -448,7 +448,7 @@ const ItemDetails = ({
                       </FormControl>
                     ) : (
                       <Typography level={isXs ? "body-sm" : "body-md"}>
-                        <strong>Name:</strong> {row.item.name || "N/A"}
+                        <strong>Item Name:</strong> {row.item.name || "N/A"}
                       </Typography>
                     )}
 

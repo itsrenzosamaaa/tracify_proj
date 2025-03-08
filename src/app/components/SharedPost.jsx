@@ -31,8 +31,8 @@ import PreviewBadge from "./PreviewBadge";
 import ConfirmationRetrievalRequest from "./Modal/ConfirmationRetrievalRequest";
 
 const SharedPost = ({
-  refreshData = null,
-  matches = null,
+  refreshData,
+  matches,
   setOpenSnackbar,
   setMessage,
   post,
@@ -379,7 +379,7 @@ const SharedPost = ({
             {session?.user?.id !== originalPost?.author?._id &&
               !matches.some(
                 (match) =>
-                  match?.finder?._id === originalPost?.finder?.item?._id
+                  match?.finder?._id === filteredOriginalPost?._id
               ) &&
               originalPost?.isFinder && (
                 <>
