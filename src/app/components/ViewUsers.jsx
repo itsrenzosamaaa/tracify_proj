@@ -43,7 +43,6 @@ import EditUser from "./Modal/EditUser";
 const ViewUsers = ({ users, roles, refreshData, session }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [isEmailAddress, setIsEmailAddress] = useState(true);
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(null);
   const [message, setMessage] = useState("");
@@ -246,16 +245,16 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                 >
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ width: isXs ? "150px" : "250px" }}>
+                      <TableCell sx={{ width: isXs ? "100px" : "200px" }}>
                         Name
                       </TableCell>
-                      <TableCell
-                        sx={{ width: isXs ? "300px" : "400px" }}
-                        onClick={() => setIsEmailAddress(!isEmailAddress)}
-                      >
-                        {isEmailAddress ? "Email Address" : "Contact Number"}
+                      <TableCell sx={{ width: isXs ? "200px" : "300px" }}>
+                        Email Address
                       </TableCell>
-                      <TableCell sx={{ width: isXs ? "100px" : "200px" }}>
+                      <TableCell sx={{ width: isXs ? "100px" : "175px" }}>
+                        Contact Number
+                      </TableCell>
+                      <TableCell sx={{ width: isXs ? "75px" : "150px" }}>
                         Role
                       </TableCell>
                       <TableCell sx={{ width: isXs ? "70px" : "90px" }}>
@@ -279,14 +278,19 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                                 {user.firstname} {user.lastname}
                               </TableCell>
                               <TableCell
-                                sx={{ width: isXs ? "300px" : "400px" }}
-                                onClick={() =>
-                                  setIsEmailAddress(!isEmailAddress)
-                                }
+                                sx={{
+                                  width: isXs ? "300px" : "400px",
+                                  whiteSpace: { xs: "nowrap" },
+                                  overflow: { xs: "hidden" },
+                                  textOverflow: { xs: "ellipsis" },
+                                }}
                               >
-                                {isEmailAddress
-                                  ? user.emailAddress
-                                  : user.contactNumber}
+                                {user.emailAddress}
+                              </TableCell>
+                              <TableCell
+                                sx={{ width: isXs ? "300px" : "400px" }}
+                              >
+                                {user.contactNumber}
                               </TableCell>
                               <TableCell
                                 sx={{ width: isXs ? "100px" : "200px" }}

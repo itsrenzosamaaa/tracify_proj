@@ -13,15 +13,14 @@ export async function GET(req) {
 
     const url = new URL(req.url);
     const searchQuery = url.searchParams.get("search")?.trim()?.toLowerCase();
-    const page = parseInt(url.searchParams.get("page")) || 1; // Get current page, default to 1
-    const limit = 8; // Number of posts per fetch
-    const skip = (page - 1) * limit; // Calculate how many posts to skip
+    const page = parseInt(url.searchParams.get("page")) || 1;
+    const limit = 5;
+    const skip = (page - 1) * limit;
 
     let matchStage = {
       isShared: { $in: [true, false] },
     };
 
-    // ✅ Apply search filtering if `searchQuery` exists
     if (searchQuery) {
       matchStage.$or = [
         { caption: { $regex: searchQuery, $options: "i" } },
@@ -29,16 +28,14 @@ export async function GET(req) {
       ];
     }
 
-    // ✅ Aggregation Pipeline with Randomization & Pagination
-    let nextPosts = await post.aggregate([
-      { $match: matchStage }, // Apply search filters
-      { $sample: { size: 50 } }, // Randomize from a larger pool (adjust size if needed)
-      { $skip: skip }, // Apply pagination offset
-      { $limit: limit }, // Fetch only `limit` number of posts
+    // 👉 First fetch all posts based on matchStage
+    let allPosts = await post.aggregate([
+      { $match: matchStage },
+      ...(searchQuery ? [] : [{ $sample: { size: 1000 } }]), // Optional: apply sampling if no search
     ]);
 
-    // ✅ Populate fields
-    nextPosts = await post.populate(nextPosts, [
+    // 👉 Populate after aggregation
+    allPosts = await post.populate(allPosts, [
       {
         path: "author",
         select:
@@ -86,25 +83,33 @@ export async function GET(req) {
       },
     ]);
 
-    // ✅ Remove resolved/claimed posts
-    nextPosts = nextPosts.filter((post) => {
+    // ✅ Now filter out resolved/claimed AFTER population
+    const filteredPosts = allPosts.filter((post) => {
       if (!post.isShared) {
+        const finderStatus = post?.finder?.item?.status;
+        const ownerStatus = post?.owner?.item?.status;
+        return finderStatus !== "Resolved" && ownerStatus !== "Claimed";
+      } else {
+        const sharedFinderStatus = post?.originalPost?.finder?.item?.status;
+        const sharedOwnerStatus = post?.originalPost?.owner?.item?.status;
         return (
-          post?.finder?.item?.status !== "Resolved" &&
-          post?.owner?.item?.status !== "Claimed"
+          sharedFinderStatus !== "Resolved" && sharedOwnerStatus !== "Claimed"
         );
       }
-      return (
-        post?.originalPost?.finder?.item?.status !== "Resolved" &&
-        post?.originalPost?.owner?.item?.status !== "Claimed"
-      );
     });
 
-    if (!nextPosts.length) {
+    // ✅ Apply pagination AFTER filtering
+    const paginatedPosts = filteredPosts.slice(skip, skip + limit);
+    const hasMore = skip + limit < filteredPosts.length;
+
+    if (paginatedPosts.length === 0) {
       return NextResponse.json({ error: "No more posts" }, { status: 404 });
     }
 
-    return NextResponse.json(nextPosts, { status: 200 });
+    return NextResponse.json(
+      { posts: paginatedPosts, hasMore },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error fetching posts:", error);
     return NextResponse.json(

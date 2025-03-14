@@ -32,6 +32,7 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { useTheme, useMediaQuery } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { Check } from "@mui/icons-material";
+import Image from "next/image";
 
 const ItemDetails = ({
   row,

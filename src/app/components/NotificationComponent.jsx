@@ -1,11 +1,16 @@
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
-import Menu from "@mui/joy/Menu";
+import {
+  Badge,
+  Box,
+  CircularProgress,
+  Divider,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/joy";
 import IconButton from "@mui/joy/IconButton";
-import MenuItem from "@mui/joy/MenuItem";
-import { Avatar, Badge } from "@mui/joy";
-import { Box, Typography, Divider, CircularProgress } from "@mui/joy";
 import Dropdown from "@mui/joy/Dropdown";
 import MenuButton from "@mui/joy/MenuButton";
 import { formatDistanceToNow } from "date-fns";
@@ -20,94 +25,108 @@ const DropdownContainer = styled.div`
 const NotificationComponent = ({ status, session }) => {
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const pageRef = useRef(1);
+  const observerRef = useRef(null);
+  const sentinelRef = useRef(null);
   const router = useRouter();
+  const LIMIT = 10;
 
-  // Fetch notifications from the server
-  const fetchNotifications = useCallback(async () => {
-    // Only proceed if we have a valid session and user ID
-    if (!session?.user?.id) return;
+  const fetchNotifications = useCallback(
+    async (reset = false) => {
+      if (!session?.user?.id) return;
 
-    try {
-      setIsLoading(true);
-      setError(null);
+      const currentPage = reset ? 1 : pageRef.current;
+      try {
+        if (reset) {
+          setIsLoading(true);
+          setHasMore(true);
+          pageRef.current = 1;
+        } else {
+          setIsFetchingMore(true);
+        }
 
-      const response = await fetch(`/api/notification/${session.user.id}`);
+        const response = await fetch(
+          `/api/notification/${session.user.id}?page=${currentPage}&limit=${LIMIT}`
+        );
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (!Array.isArray(data)) throw new Error("Invalid data");
+
+        if (reset) {
+          setNotifications(data);
+        } else {
+          setNotifications((prev) => {
+            const unique = new Map();
+            [...prev, ...data].forEach((item) => unique.set(item._id, item));
+            return Array.from(unique.values());
+          });
+        }
+
+        pageRef.current += 1;
+        if (data.length < LIMIT) setHasMore(false);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError("Failed to load notifications");
+      } finally {
+        setIsLoading(false);
+        setIsFetchingMore(false);
       }
+    },
+    [session?.user?.id]
+  );
 
-      const data = await response.json();
-      const sortedNotifications = data.sort(
-        (a, b) => new Date(b.dateNotified) - new Date(a.dateNotified)
-      );
-
-      setNotifications(sortedNotifications);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-      setError("Failed to load notifications");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [session?.user?.id]);
-
-  // Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/notification/${session.user.id}/read-all`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            markAsRead: true,
-          }),
-        }
+        { method: "PUT" }
       );
+      if (!response.ok) throw new Error("Failed to mark as read");
 
-      if (!response.ok) {
-        throw new Error("Failed to mark all notifications as read");
-      }
-
-      // Update local state
-      setNotifications((prevNotifications) =>
-        prevNotifications.map((notification) => ({
-          ...notification,
-          markAsRead: true,
-        }))
-      );
-    } catch (error) {
-      console.error("Error marking all notifications as read:", error);
+      setNotifications((prev) => prev.map((n) => ({ ...n, markAsRead: true })));
+    } catch (err) {
+      console.error("Error marking as read:", err);
     }
   }, [session?.user?.id]);
 
-  const handleOpen = useCallback(() => {
+  const handleOpen = () => {
     markAllAsRead();
-  }, [markAllAsRead]);
+    fetchNotifications(true);
+  };
 
-  // Initial fetch and polling setup
   useEffect(() => {
     if (status === "authenticated") {
-      // Initial fetch
-      fetchNotifications();
-
-      // Setup polling every minute
-      const pollInterval = setInterval(fetchNotifications, 60000);
-
-      // Cleanup function
-      return () => {
-        clearInterval(pollInterval);
-      };
+      fetchNotifications(true);
+      const interval = setInterval(() => fetchNotifications(true), 60000);
+      return () => clearInterval(interval);
     }
   }, [status, fetchNotifications]);
 
-  // Count unread notifications
-  const unreadCount = notifications.filter(
-    (notification) => !notification.markAsRead
-  ).length;
+  // 👇 Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (!hasMore || isLoading || isFetchingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchNotifications();
+        }
+      },
+      { root: null, rootMargin: "0px", threshold: 1.0 }
+    );
+
+    const sentinel = sentinelRef.current;
+    if (sentinel) observer.observe(sentinel);
+
+    return () => {
+      if (sentinel) observer.unobserve(sentinel);
+    };
+  }, [fetchNotifications, hasMore, isLoading, isFetchingMore]);
+
+  const unreadCount = notifications.filter((n) => !n.markAsRead).length;
 
   return (
     <DropdownContainer>
@@ -120,9 +139,7 @@ const NotificationComponent = ({ status, session }) => {
               color: "neutral",
               sx: {
                 color: "white",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                },
+                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)" },
               },
             },
           }}
@@ -134,37 +151,29 @@ const NotificationComponent = ({ status, session }) => {
             variant="solid"
             size="sm"
           >
-            <NotificationsIcon
-              sx={{
-                fontSize: { xs: 25, md: 35 },
-                color: "inherit",
-                transition: "color 0.2s",
-              }}
-            />
+            <NotificationsIcon sx={{ fontSize: { xs: 25, md: 35 } }} />
           </Badge>
         </MenuButton>
+
         <Menu
-          placement="bottom-end"
           sx={{
-            width: 300, // Set a fixed width if needed
-            height: 400, // Fixed height for the menu
-            overflowY: "auto", // Enable vertical scrolling for overflowing content
-            overflowX: "hidden", // Prevent horizontal scrolling
+            width: 300,
+            height: 400,
+            overflowY: "auto",
+            overflowX: "hidden",
             borderRadius: "sm",
             boxShadow: "md",
-            mt: 1, // Margin top to position it below the button
+            mt: 1,
           }}
         >
           <Typography
             level="h3"
             sx={{
               padding: "1rem",
-              position: "sticky", // Make the title sticky
-              top: 0, // Stick to the top of the menu
-              backgroundColor: "white", // Ensure the title has a background to overlay the content
-              zIndex: 1, // Make sure it stays on top of the content
-              borderTopLeftRadius: "sm", // Optional: add rounded corners to the top
-              borderTopRightRadius: "sm", // Optional: add rounded corners to the top
+              position: "sticky",
+              top: 0,
+              backgroundColor: "white",
+              zIndex: 1,
             }}
           >
             Notifications
@@ -201,53 +210,58 @@ const NotificationComponent = ({ status, session }) => {
                       },
                     }}
                     onClick={() => {
-                      notification.type === "Found Items"
-                        ? router.push("/my-items#found-item")
-                        : notification.type === "Lost Items"
-                        ? router.push("/my-items#lost-item")
-                        : notification.type === "Declined Items"
-                        ? router.push("/my-items#declined-item")
-                        : notification.type === "Shared Post"
-                        ? router.push(`shared-post/${notification?.post}`)
-                        : router.push("/profile");
+                      if (notification.type === "Found Items")
+                        router.push("/my-items#found-item");
+                      else if (notification.type === "Lost Items")
+                        router.push("/my-items#lost-item");
+                      else if (notification.type === "Declined Items")
+                        router.push("/my-items#declined-item");
+                      else if (notification.type === "Shared Post")
+                        router.push(`/shared-post/${notification?.post}`);
+                      else router.push("/profile");
                     }}
                   >
-                    <Box>
-                      <Typography level="body2">
-                        {notification.message}
+                    <Typography level="body2">
+                      {notification.message}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mt: 0.5,
+                      }}
+                    >
+                      <Typography level="body-xs" color="neutral.500">
+                        {formatDistanceToNow(
+                          new Date(notification.dateNotified),
+                          { addSuffix: true }
+                        )}
                       </Typography>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
+                      <Typography
+                        level="body-xs"
+                        sx={{ textDecoration: "underline" }}
                       >
-                        <Typography
-                          level="body-xs"
-                          sx={{ color: "neutral.500", mt: 0.5 }}
-                        >
-                          {formatDistanceToNow(
-                            new Date(notification.dateNotified),
-                            { addSuffix: true }
-                          )}
-                        </Typography>
-                        <Typography
-                          level="body-xs"
-                          sx={{
-                            color: "neutral.500",
-                            mt: 0.5,
-                            textDecoration: "underline",
-                          }}
-                        >
-                          Redirect here
-                        </Typography>
-                      </Box>
+                        Redirect here
+                      </Typography>
                     </Box>
                   </MenuItem>
                   <Divider />
                 </React.Fragment>
               ))}
+
+              {/* 👇 Intersection Observer target */}
+              <div ref={sentinelRef} style={{ height: 1 }}></div>
+
+              {isFetchingMore && (
+                <Box sx={{ textAlign: "center", py: 1 }}>
+                  <CircularProgress size="sm" />
+                </Box>
+              )}
+              {!hasMore && (
+                <Typography sx={{ textAlign: "center", p: 1 }}>
+                  No more notifications.
+                </Typography>
+              )}
             </>
           ) : (
             <Box sx={{ textAlign: "center", py: 2 }}>

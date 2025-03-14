@@ -51,9 +51,12 @@ import TopSharers from "../TopSharers";
 import SharedPost from "../SharedPost";
 import Post from "../Post";
 import dayjs from "dayjs";
-import { Search, Refresh } from "@mui/icons-material";
+import { Search, Refresh, FindInPage } from "@mui/icons-material";
 import PublishLostItem from "../Modal/PublishLostItems";
 import PublishFoundItem from "../Modal/PublishFoundItem";
+import NoItemsFoundUI from "../NoItemsFound";
+import NoMoreSearchResultsUI from "../NoMoreSearchResults";
+import NoMorePostsUI from "../NoMorePosts";
 
 const UserDashboard = ({ session, status, users }) => {
   const [posts, setPosts] = useState([]);
@@ -72,6 +75,7 @@ const UserDashboard = ({ session, status, users }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [tempSearchQuery, setTempSearchQuery] = useState("");
   const [locationOptions, setLocationOptions] = useState([]);
+  const [searchPerformed, setSearchPerformed] = useState(false);
   const observerRef = useRef();
   const abortControllerRef = useRef(null);
   const isFetchingRef = useRef(false);
@@ -132,12 +136,10 @@ const UserDashboard = ({ session, status, users }) => {
 
   const fetchPosts = useCallback(
     async (query = "", reset = false) => {
-      // Prevent multiple simultaneous fetches
       if (loadingMore || isFetchingRef.current) return;
 
-      isFetchingRef.current = true; // Lock fetching
+      isFetchingRef.current = true;
 
-      // Abort previous fetch if exists
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -153,32 +155,41 @@ const UserDashboard = ({ session, status, users }) => {
         if (query.trim()) url.searchParams.append("search", query);
 
         const response = await fetch(url, { signal: controller.signal });
-        if (!response.ok) throw new Error("Failed to fetch posts");
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            setPosts([]); // Clear posts
+            setHasMore(false); // Stop infinite scrolling
+            return;
+          }
+          throw new Error("Failed to fetch posts");
+        }
 
         const data = await response.json();
-        if (!data || data.length === 0) {
-          setHasMore(false);
-        } else {
-          setPosts((prevPosts) => {
-            const uniquePosts = new Map();
 
-            // ✅ Add previous posts first
-            prevPosts.forEach((post) => uniquePosts.set(post._id, post));
+        const newPosts = data.posts || [];
+        const moreAvailable = data.hasMore ?? false;
 
-            // ✅ Add new posts, avoiding duplicates
-            data.forEach((post) => uniquePosts.set(post._id, post));
+        setPosts((prevPosts) => {
+          const uniquePosts = new Map();
 
-            return reset ? data : Array.from(uniquePosts.values());
-          });
-          setPage((prevPage) => prevPage + 1);
-        }
+          (reset ? [] : prevPosts).forEach((post) =>
+            uniquePosts.set(post._id, post)
+          );
+          newPosts.forEach((post) => uniquePosts.set(post._id, post));
+
+          return Array.from(uniquePosts.values());
+        });
+
+        setHasMore(moreAvailable);
+        setPage((prevPage) => prevPage + 1);
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Failed to fetch posts:", error);
         }
       } finally {
         setLoadingMore(false);
-        isFetchingRef.current = false; // Unlock fetching
+        isFetchingRef.current = false;
       }
     },
     [loadingMore, page]
@@ -187,6 +198,7 @@ const UserDashboard = ({ session, status, users }) => {
   /** ✅ Handles Search Submit */
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    setSearchPerformed(true);
     setSearchQuery(tempSearchQuery);
     setHasMore(true);
     setPosts([]); // Reset posts
@@ -199,6 +211,7 @@ const UserDashboard = ({ session, status, users }) => {
     e.preventDefault();
     setSearchQuery("");
     setTempSearchQuery("");
+    setSearchPerformed(false);
     setPosts([]); // Clear existing posts
     setPage(1); // Reset pagination
     setHasMore(true); // Enable fetching more posts
@@ -211,20 +224,22 @@ const UserDashboard = ({ session, status, users }) => {
    */
   const lastPostElementRef = useCallback(
     (node) => {
-      if (loadingMore) return;
+      if (loadingMore || !hasMore) return;
 
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
 
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && hasMore && !loadingMore) {
-            fetchPosts(searchQuery);
-          }
-        },
-        { threshold: 1.0 }
-      );
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !loadingMore &&
+          !isFetchingRef.current
+        ) {
+          fetchPosts(searchQuery);
+        }
+      });
 
       if (node) observerRef.current.observe(node);
     },
@@ -232,7 +247,7 @@ const UserDashboard = ({ session, status, users }) => {
   );
 
   useEffect(() => {
-    if (status === "authenticated" && posts.length === 0) {
+    if (status === "authenticated" && posts.length === 0 && hasMore) {
       fetchPosts(); // Trigger the first fetch when lastPostId is null
       fetchLostItems();
       fetchMatches();
@@ -245,6 +260,7 @@ const UserDashboard = ({ session, status, users }) => {
     fetchLostItems,
     fetchMatches,
     fetchLocations,
+    hasMore,
   ]); // Trigger effect if status or lastPostId changes
 
   const birthdayToday = users.filter((user) => {
@@ -389,19 +405,19 @@ const UserDashboard = ({ session, status, users }) => {
               </form>
 
               {isMd && session?.user?.permissions.includes("Request Items") && (
-                <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
                   <Button
                     fullWidth
                     onClick={() => setOpenFoundRequestModal(true)}
                   >
-                    Report Found Item
+                    Request Found Item
                   </Button>
                   <Button
                     color="danger"
                     fullWidth
                     onClick={() => setOpenLostRequestModal(true)}
                   >
-                    Report Lost Item
+                    Request Lost Item
                   </Button>
                 </Box>
               )}
@@ -509,40 +525,28 @@ const UserDashboard = ({ session, status, users }) => {
                 </CardActions>
               </Card>
             )}
-            {!hasMore && (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  minHeight: "100px",
-                  backgroundColor: "rgba(0, 0, 0, 0.05)",
-                  borderRadius: "md",
-                  p: 2,
-                  boxShadow: 1,
-                  animation: "fadeIn 0.5s ease-out",
-                }}
-              >
-                <Typography
-                  level="h6"
-                  color="text.secondary"
-                  sx={{
-                    fontWeight: 600,
-                    letterSpacing: "0.5px",
-                    fontSize: "16px",
-                    textAlign: "center",
-                  }}
-                >
-                  No more posts...
-                </Typography>
-              </Box>
+
+            {/* ✅ CASE: No Items Found (Search has been performed and no results at all) */}
+            {searchPerformed && posts.length === 0 && !loadingMore && (
+              <NoItemsFoundUI />
             )}
-            {hasMore && !loadingMore && posts.length > 0 && (
+
+            {/* {hasMore && !loadingMore && posts.length > 0 && (
               <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                 <Button onClick={() => fetchPosts(searchQuery)}>
                   Load More
                 </Button>
               </Box>
+            )} */}
+
+            {!hasMore && !loadingMore && posts.length > 0 && (
+              <>
+                {searchPerformed ? (
+                  <NoMoreSearchResultsUI />
+                ) : (
+                  <NoMorePostsUI />
+                )}
+              </>
             )}
           </Box>
         </Grid>
@@ -580,19 +584,25 @@ const UserDashboard = ({ session, status, users }) => {
               }}
             >
               {session?.user?.permissions.includes("Request Items") && (
-                <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
                   <Button
                     fullWidth
                     onClick={() => setOpenFoundRequestModal(true)}
                   >
-                    Report Found Item
+                    Request Found Item
                   </Button>
                   <Button
                     color="danger"
                     fullWidth
                     onClick={() => setOpenLostRequestModal(true)}
                   >
-                    Report Lost Item
+                    Request Lost Item
                   </Button>
                 </Box>
               )}

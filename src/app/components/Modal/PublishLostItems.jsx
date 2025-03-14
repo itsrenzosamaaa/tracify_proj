@@ -56,6 +56,7 @@ const PublishLostItem = ({
   const [owner, setOwner] = useState(null);
   const [loading, setLoading] = useState(false);
   const [itemWhereabouts, setItemWhereabouts] = useState(false);
+  const [canUploadImages, setCanUploadImages] = useState(false);
   const { data: session, status } = useSession();
 
   const handleCheck = (e) => {
@@ -78,6 +79,15 @@ const PublishLostItem = ({
 
     if (check) {
       setSize({ value: "", unit: "cm" });
+    }
+  };
+
+  const handleCanUploadImages = (e) => {
+    const check = e.target.checked;
+    setCanUploadImages(check);
+
+    if (!check) {
+      setImages([]);
     }
   };
 
@@ -112,7 +122,7 @@ const PublishLostItem = ({
     setLoading(true);
 
     try {
-      if (images.length === 0) {
+      if (canUploadImages && images.length === 0) {
         setOpenSnackbar("danger");
         setMessage("Please upload at least one image.");
         return;
@@ -733,92 +743,101 @@ const PublishLostItem = ({
                   </>
                 )}
                 <FormControl>
-                  <Box
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      mb: 1,
-                    }}
-                  >
-                    <FormLabel>Upload Images</FormLabel>
-                    {images?.length > 0 && (
-                      <Button
-                        size="sm"
-                        color="danger"
-                        onClick={() => setImages([])} // Clear all images
-                      >
-                        Discard All
-                      </Button>
-                    )}
-                  </Box>
-                  <Box
-                    {...getRootProps({ className: "dropzone" })}
-                    sx={{
-                      border: "2px dashed #888",
-                      borderRadius: "4px",
-                      padding: "20px",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: "#f9f9f9",
-                      mb: 2,
-                    }}
-                  >
+                  <Checkbox
+                    label="The owner has an image reference"
+                    checked={canUploadImages}
+                    onChange={handleCanUploadImages}
+                  />
+                </FormControl>
+                {canUploadImages && (
+                  <FormControl>
                     <Box
                       sx={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fill, minmax(100px, 1fr))",
-                        gap: "10px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        mb: 1,
                       }}
                     >
-                      {images.map((image, index) => (
-                        <Box key={index} sx={{ position: "relative" }}>
-                          <Image
-                            priority
-                            src={image}
-                            width={0}
-                            height={0}
-                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            style={{
-                              width: "100%",
-                              height: "auto",
-                              objectFit: "cover",
-                              borderRadius: "4px",
-                            }}
-                            alt={`Preview ${index + 1}`}
-                          />
-                          <Button
-                            size="sm"
-                            color="danger"
-                            sx={{
-                              position: "absolute",
-                              top: "5px",
-                              right: "5px",
-                              minWidth: "unset",
-                              padding: "2px",
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeImage(index);
-                            }}
-                          >
-                            ✕
-                          </Button>
-                        </Box>
-                      ))}
+                      <FormLabel>Upload Images</FormLabel>
+                      {images?.length > 0 && (
+                        <Button
+                          size="sm"
+                          color="danger"
+                          onClick={() => setImages([])} // Clear all images
+                        >
+                          Discard All
+                        </Button>
+                      )}
                     </Box>
-                    <input
-                      {...getInputProps()}
-                      multiple
-                      style={{ display: "none" }}
-                    />
-                    <p>
-                      {images.length === 0 &&
-                        "Drag 'n' drop some files here, or click to select files"}
-                    </p>
-                  </Box>
-                </FormControl>
+                    <Box
+                      {...getRootProps({ className: "dropzone" })}
+                      sx={{
+                        border: "2px dashed #888",
+                        borderRadius: "4px",
+                        padding: "20px",
+                        textAlign: "center",
+                        cursor: "pointer",
+                        backgroundColor: "#f9f9f9",
+                        mb: 2,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fill, minmax(100px, 1fr))",
+                          gap: "10px",
+                        }}
+                      >
+                        {images.map((image, index) => (
+                          <Box key={index} sx={{ position: "relative" }}>
+                            <Image
+                              priority
+                              src={image}
+                              width={0}
+                              height={0}
+                              sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              style={{
+                                width: "100%",
+                                height: "auto",
+                                objectFit: "cover",
+                                borderRadius: "4px",
+                              }}
+                              alt={`Preview ${index + 1}`}
+                            />
+                            <Button
+                              size="sm"
+                              color="danger"
+                              sx={{
+                                position: "absolute",
+                                top: "5px",
+                                right: "5px",
+                                minWidth: "unset",
+                                padding: "2px",
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeImage(index);
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </Box>
+                        ))}
+                      </Box>
+                      <input
+                        {...getInputProps()}
+                        multiple
+                        style={{ display: "none" }}
+                      />
+                      <p>
+                        {images.length === 0 &&
+                          "Drag 'n' drop some files here, or click to select files"}
+                      </p>
+                    </Box>
+                  </FormControl>
+                )}
                 <Button disabled={loading} loading={loading} type="submit">
                   {session.user.permissions.includes("User Dashboard")
                     ? "Request"
