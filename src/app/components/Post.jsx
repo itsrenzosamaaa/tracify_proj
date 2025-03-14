@@ -29,6 +29,10 @@ import { CldImage } from "next-cloudinary";
 import { format, isToday } from "date-fns";
 import ConfirmationRetrievalRequest from "./Modal/ConfirmationRetrievalRequest";
 import PreviewBadge from "./PreviewBadge";
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 const Post = ({
   refreshData,
@@ -98,6 +102,16 @@ const Post = ({
     }
   };
 
+  const matchedOwnerIds = new Set(
+    matches.map((match) => match?.owner?._id?.toString())
+  );
+
+  const filteredLostItems = lostItems.filter(
+    (lostItem) => !matchedOwnerIds.has(lostItem?._id?.toString())
+  );
+
+  console.log(item)
+
   return (
     <>
       <Card
@@ -143,13 +157,24 @@ const Post = ({
             </Box>
           </Box>
 
-          <Chip
-            variant="solid"
-            size={isXs ? "sm" : "md"}
-            color={post?.isFinder ? "success" : "danger"}
-          >
-            {post?.isFinder ? "Found Item" : "Lost Item"}
-          </Chip>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Chip
+              variant="solid"
+              size={isXs ? "sm" : "md"}
+              color={post?.isFinder ? "success" : "danger"}
+            >
+              {post?.isFinder ? <CheckCircleIcon fontSize={isXs ? "12px" : "20px"} /> : <ReportProblemIcon fontSize={isXs ? "12px" : "20px"} />}{" "}
+              {post?.isFinder ? "Found Item" : "Lost Item"}
+            </Chip>
+            <Chip variant="solid" size={isXs ? "sm" : "md"} color="primary">
+              <ShoppingBagIcon fontSize={isXs ? "12px" : "20px"} />{" "}
+              {post?.item_name}
+            </Chip>
+            <Chip variant="solid" size={isXs ? "sm" : "md"} color="neutral">
+              <LocationOnIcon fontSize={isXs ? "12px" : "20px"} />
+              {item?.item?.location}
+            </Chip>
+          </Box>
 
           {/* Post Caption */}
           <Typography
@@ -157,12 +182,6 @@ const Post = ({
             sx={{ color: "text.secondary", mb: 2 }}
           >
             {caption}
-          </Typography>
-          <Typography
-            level={isXs ? "body-sm" : "body-md"}
-            sx={{ color: "text.secondary", mb: 2 }}
-          >
-            <strong>Location:</strong> {item?.item?.location}
           </Typography>
 
           {(() => {
@@ -357,7 +376,7 @@ const Post = ({
                 ? "Claim Request Canceled"
                 : "Send Claim Request"}
             </Typography>
-            {lostItems.length !== 0 ? (
+            {filteredLostItems.length > 0 ? (
               <>
                 <FormControl>
                   <FormLabel>Your Lost Item</FormLabel>
@@ -367,104 +386,65 @@ const Post = ({
                     value={selectedLostItem}
                     onChange={(e, value) => setSelectedLostItem(value)}
                   >
-                    {lostItems.map((lostItem) => (
+                    {filteredLostItems.map((lostItem) => (
                       <Option key={lostItem?._id} value={lostItem?._id}>
                         {lostItem?.item?.name || "Unnamed Item"}
                       </Option>
                     ))}
                   </Select>
-                  {selectedLostItem && (
-                    <Box sx={{ marginTop: 2 }}>
-                      <Typography level="body-md">
-                        <strong>Color:</strong>{" "}
-                        {lostItems
-                          .find(
-                            (lostItem) => lostItem?._id === selectedLostItem
-                          )
-                          ?.item?.color?.join(", ") || "N/A"}
-                      </Typography>
-                      <Typography level="body-md">
-                        <strong>Size:</strong>{" "}
-                        {lostItems.find(
-                          (lostItem) => lostItem?._id === selectedLostItem
-                        )?.item?.size || "N/A"}
-                      </Typography>
-                      <Typography level="body-md">
-                        <strong>Category:</strong>{" "}
-                        {lostItems.find(
-                          (lostItem) => lostItem?._id === selectedLostItem
-                        )?.item?.category || "N/A"}
-                      </Typography>
-                      <Typography level="body-md">
-                        <strong>Material:</strong>{" "}
-                        {lostItems.find(
-                          (lostItem) => lostItem?._id === selectedLostItem
-                        )?.item?.material || "N/A"}
-                      </Typography>
-                      <Typography level="body-md">
-                        <strong>Condition:</strong>{" "}
-                        {lostItems.find(
-                          (lostItem) => lostItem?._id === selectedLostItem
-                        )?.item?.condition || "N/A"}
-                      </Typography>
-                      <Typography level="body-md">
-                        <strong>Distinctive Marks:</strong>{" "}
-                        {lostItems.find(
-                          (lostItem) => lostItem?._id === selectedLostItem
-                        )?.item?.distinctiveMarks || "N/A"}
-                      </Typography>
-                      <Typography level="body-md">
-                        <strong>Location:</strong>{" "}
-                        {lostItems.find(
-                          (lostItem) => lostItem?._id === selectedLostItem
-                        )?.item?.location || "N/A"}
-                      </Typography>
-                      <Typography level="body-md">
-                        <strong>Lost Start Date:</strong>{" "}
-                        {(() => {
-                          const selectedItem = lostItems.find(
-                            (lostItem) => lostItem?._id === selectedLostItem
-                          )?.item;
 
-                          if (!selectedItem) {
-                            return "N/A"; // No item selected
-                          }
+                  {selectedLostItem &&
+                    (() => {
+                      const selectedItem = filteredLostItems.find(
+                        (lostItem) => lostItem?._id === selectedLostItem
+                      )?.item;
 
-                          if (selectedItem?.date_time === "Unidentified") {
-                            return "Unidentified"; // Explicit unidentified case
-                          }
-
-                          const dateTimeParts =
-                            selectedItem?.date_time?.split(" to ");
-                          return dateTimeParts && dateTimeParts[0]
-                            ? dateTimeParts[0]
-                            : "N/A"; // Extract or fallback
-                        })()}
-                      </Typography>
-                      <Typography level="body-md">
-                        <strong>Lost End Date:</strong>{" "}
-                        {(() => {
-                          const selectedItem = lostItems.find(
-                            (lostItem) => lostItem?._id === selectedLostItem
-                          )?.item;
-
-                          if (!selectedItem) {
-                            return "N/A"; // No item selected
-                          }
-
-                          if (selectedItem?.date_time === "Unidentified") {
-                            return "Unidentified"; // Explicit unidentified case
-                          }
-
-                          const dateTimeParts =
-                            selectedItem?.date_time?.split(" to ");
-                          return dateTimeParts && dateTimeParts[1]
-                            ? dateTimeParts[1]
-                            : "N/A"; // Extract or fallback
-                        })()}
-                      </Typography>
-                    </Box>
-                  )}
+                      return selectedItem ? (
+                        <Box sx={{ marginTop: 2 }}>
+                          <Typography level="body-md">
+                            <strong>Color:</strong>{" "}
+                            {selectedItem?.color?.join(", ") || "N/A"}
+                          </Typography>
+                          <Typography level="body-md">
+                            <strong>Size:</strong> {selectedItem?.size || "N/A"}
+                          </Typography>
+                          <Typography level="body-md">
+                            <strong>Category:</strong>{" "}
+                            {selectedItem?.category || "N/A"}
+                          </Typography>
+                          <Typography level="body-md">
+                            <strong>Material:</strong>{" "}
+                            {selectedItem?.material || "N/A"}
+                          </Typography>
+                          <Typography level="body-md">
+                            <strong>Condition:</strong>{" "}
+                            {selectedItem?.condition || "N/A"}
+                          </Typography>
+                          <Typography level="body-md">
+                            <strong>Distinctive Marks:</strong>{" "}
+                            {selectedItem?.distinctiveMarks || "N/A"}
+                          </Typography>
+                          <Typography level="body-md">
+                            <strong>Location:</strong>{" "}
+                            {selectedItem?.location || "N/A"}
+                          </Typography>
+                          <Typography level="body-md">
+                            <strong>Lost Start Date:</strong>{" "}
+                            {selectedItem?.date_time === "Unidentified"
+                              ? "Unidentified"
+                              : selectedItem?.date_time?.split(" to ")[0] ||
+                                "N/A"}
+                          </Typography>
+                          <Typography level="body-md">
+                            <strong>Lost End Date:</strong>{" "}
+                            {selectedItem?.date_time === "Unidentified"
+                              ? "Unidentified"
+                              : selectedItem?.date_time?.split(" to ")[1] ||
+                                "N/A"}
+                          </Typography>
+                        </Box>
+                      ) : null;
+                    })()}
                 </FormControl>
                 <Button
                   type="submit"
@@ -474,10 +454,14 @@ const Post = ({
                   Next
                 </Button>
               </>
-            ) : (
+            ) : lostItems.length === 0 ? (
               <Typography>
                 It requires a recorded lost item in order to be reviewed by
                 SASO.
+              </Typography>
+            ) : (
+              <Typography>
+                You have no lost items to select for manual checking.
               </Typography>
             )}
           </DialogContent>
