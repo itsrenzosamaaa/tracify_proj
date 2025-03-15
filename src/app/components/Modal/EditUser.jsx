@@ -83,7 +83,7 @@ const EditUser = ({
             >
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <FormLabel>First Name</FormLabel>
+                  <FormLabel>Username</FormLabel>
                   <Input
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}

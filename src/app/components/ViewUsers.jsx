@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Box,
   Typography,
@@ -54,6 +54,7 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
+  const fileInputRef = useRef(null);
 
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
@@ -122,6 +123,7 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
 
   const handleDelete = async (e, userId) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const response = await fetch(`/api/users?account=${userId}`, {
@@ -130,9 +132,10 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
       const result = await response.json();
 
       if (response.ok) {
+        setOpenDeleteModal(null);
+        refreshData();
         setOpenSnackbar("danger");
         setMessage(result.message);
-        refreshData();
       } else {
         setOpenSnackbar("danger");
         setMessage(`Error: ${result.message}`);
@@ -140,6 +143,8 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -175,11 +180,17 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
             setOpenSnackbar("danger");
           } finally {
             setLoading(false);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
           }
         },
         error: (error) => {
           setMessage("Error parsing CSV file. Please try again.");
           setOpenSnackbar("error");
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
         },
       });
     }
@@ -213,6 +224,7 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                   type="file"
                   accept=".csv"
                   hidden
+                  ref={fileInputRef}
                   onChange={handleFileUpload}
                 />
               </Button>
