@@ -292,7 +292,7 @@ const SharedPost = ({
                 </Chip>
                 <Chip variant="solid" size={isXs ? "sm" : "md"} color="primary">
                   <ShoppingBagIcon fontSize={isXs ? "12px" : "20px"} />{" "}
-                  {capitalizeFirstLetter(originalPost?.item_name)}
+                  {capitalizeWords(originalPost?.item_name)}
                 </Chip>
                 <Chip variant="solid" size={isXs ? "sm" : "md"} color="neutral">
                   <LocationOnIcon fontSize={isXs ? "12px" : "20px"} />

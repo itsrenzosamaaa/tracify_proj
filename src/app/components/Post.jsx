@@ -179,7 +179,7 @@ const Post = ({
             </Chip>
             <Chip variant="solid" size={isXs ? "sm" : "md"} color="primary">
               <ShoppingBagIcon fontSize={isXs ? "12px" : "20px"} />{" "}
-              {capitalizeFirstLetter(post?.item_name)}
+              {capitalizeWords(post?.item_name)}
             </Chip>
             <Chip variant="solid" size={isXs ? "sm" : "md"} color="neutral">
               <LocationOnIcon fontSize={isXs ? "12px" : "20px"} />
