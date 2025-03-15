@@ -57,8 +57,12 @@ const SharedPost = ({
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const capitalizeFirstLetter = (str) =>
-    str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+  const capitalizeWords = (str) =>
+    str
+      ?.toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
 
   const filteredOriginalPost = originalPost?.isFinder
     ? originalPost?.finder
