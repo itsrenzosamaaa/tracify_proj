@@ -29,10 +29,10 @@ import { CldImage } from "next-cloudinary";
 import { format, isToday } from "date-fns";
 import ConfirmationRetrievalRequest from "./Modal/ConfirmationRetrievalRequest";
 import PreviewBadge from "./PreviewBadge";
-import ReportProblemIcon from '@mui/icons-material/ReportProblem';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 const Post = ({
   refreshData,
@@ -56,6 +56,9 @@ const Post = ({
     useState(null);
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const capitalizeFirstLetter = (str) =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -110,7 +113,7 @@ const Post = ({
     (lostItem) => !matchedOwnerIds.has(lostItem?._id?.toString())
   );
 
-  console.log(item)
+  console.log(item);
 
   return (
     <>
@@ -163,12 +166,16 @@ const Post = ({
               size={isXs ? "sm" : "md"}
               color={post?.isFinder ? "success" : "danger"}
             >
-              {post?.isFinder ? <CheckCircleIcon fontSize={isXs ? "12px" : "20px"} /> : <ReportProblemIcon fontSize={isXs ? "12px" : "20px"} />}{" "}
+              {post?.isFinder ? (
+                <CheckCircleIcon fontSize={isXs ? "12px" : "20px"} />
+              ) : (
+                <ReportProblemIcon fontSize={isXs ? "12px" : "20px"} />
+              )}{" "}
               {post?.isFinder ? "Found Item" : "Lost Item"}
             </Chip>
             <Chip variant="solid" size={isXs ? "sm" : "md"} color="primary">
               <ShoppingBagIcon fontSize={isXs ? "12px" : "20px"} />{" "}
-              {post?.item_name}
+              {capitalizeFirstLetter(post?.item_name)}
             </Chip>
             <Chip variant="solid" size={isXs ? "sm" : "md"} color="neutral">
               <LocationOnIcon fontSize={isXs ? "12px" : "20px"} />

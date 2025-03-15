@@ -29,10 +29,10 @@ import { CldImage } from "next-cloudinary";
 import { format, isToday } from "date-fns";
 import PreviewBadge from "./PreviewBadge";
 import ConfirmationRetrievalRequest from "./Modal/ConfirmationRetrievalRequest";
-import ReportProblemIcon from '@mui/icons-material/ReportProblem';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 const SharedPost = ({
   refreshData,
@@ -56,6 +56,9 @@ const SharedPost = ({
     useState(null);
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const capitalizeFirstLetter = (str) =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
 
   const filteredOriginalPost = originalPost?.isFinder
     ? originalPost?.finder
@@ -285,7 +288,7 @@ const SharedPost = ({
                 </Chip>
                 <Chip variant="solid" size={isXs ? "sm" : "md"} color="primary">
                   <ShoppingBagIcon fontSize={isXs ? "12px" : "20px"} />{" "}
-                  {originalPost?.item_name}
+                  {capitalizeFirstLetter(originalPost?.item_name)}
                 </Chip>
                 <Chip variant="solid" size={isXs ? "sm" : "md"} color="neutral">
                   <LocationOnIcon fontSize={isXs ? "12px" : "20px"} />
@@ -561,7 +564,9 @@ const SharedPost = ({
                     <Button
                       type="submit"
                       disabled={!selectedLostItem}
-                      onClick={() => setConfirmationRetrievalRequest(originalPost._id)}
+                      onClick={() =>
+                        setConfirmationRetrievalRequest(originalPost._id)
+                      }
                     >
                       Next
                     </Button>
