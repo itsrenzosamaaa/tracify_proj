@@ -631,14 +631,14 @@ const ItemDetails = ({
                             Select Category
                           </Option>
                           {[
-                            "Electronics",
-                            "Clothing",
-                            "Accessories",
-                            "School Supplies",
-                            "Books",
-                            "Tools",
-                            "Sports Equipment",
-                            "Jewelry",
+                            "Electronics & Gadgets",
+                            "Clothing & Accessories",
+                            "Personal Items",
+                            "School & Office Supplies",
+                            "Books & Documents",
+                            "Sports & Recreational Equipment",
+                            "Jewelry & Valuables",
+                            "Miscellaneous",
                           ].map((name) => (
                             <Option key={name} value={name}>
                               {name}
