@@ -417,6 +417,7 @@ const PublishLostItem = ({
                 <FormControl>
                   <FormLabel>Item Name</FormLabel>
                   <Input
+                    placeholder="e.g. Wallet"
                     required
                     type="text"
                     name="name"
@@ -447,6 +448,7 @@ const PublishLostItem = ({
                         )}
                       </Box>
                       <Select
+                        placeholder="Select Color..."
                         multiple
                         fullWidth
                         required
@@ -550,9 +552,9 @@ const PublishLostItem = ({
                         onChange={(e, newValue) =>
                           setSize({ ...size, unit: newValue })
                         }
-                        placeholder="Unit"
+                        placeholder="Select Unit..."
                       >
-                        {["cm", "inch", "m", "ft"].map((unit) => (
+                        {["cm", "inch", "m", "ft", "kg", "g"].map((unit) => (
                           <Option key={unit} value={unit}>
                             {unit}
                           </Option>
@@ -565,6 +567,7 @@ const PublishLostItem = ({
                     <FormControl>
                       <FormLabel>Category</FormLabel>
                       <Select
+                        placeholder="Select Category..."
                         required
                         value={category}
                         onChange={(e, value) => setCategory(value)}
@@ -580,6 +583,7 @@ const PublishLostItem = ({
                           "Books",
                           "Tools",
                           "Sports Equipment",
+                          "Jewelry",
                         ].map((name) => (
                           <Option key={name} value={name}>
                             {name}
@@ -592,6 +596,7 @@ const PublishLostItem = ({
                     <FormControl>
                       <FormLabel>Material</FormLabel>
                       <Select
+                        placeholder="Select Material..."
                         required
                         value={material}
                         onChange={(e, value) => setMaterial(value)}
@@ -626,6 +631,7 @@ const PublishLostItem = ({
                     <FormControl>
                       <FormLabel>Condition</FormLabel>
                       <Select
+                        placeholder="Select Condition..."
                         required
                         value={condition}
                         onChange={(e, value) => setCondition(value)}
@@ -652,6 +658,7 @@ const PublishLostItem = ({
                     <FormControl>
                       <FormLabel>Distinctive Marks</FormLabel>
                       <Select
+                        placeholder="Select Marks..."
                         required
                         value={distinctiveMarks}
                         onChange={(e, value) => setDistinctiveMarks(value)}
@@ -681,6 +688,7 @@ const PublishLostItem = ({
                 <FormControl>
                   <FormLabel>Description</FormLabel>
                   <Textarea
+                    placeholder="More details about the item..."
                     required
                     type="text"
                     name="description"
@@ -701,6 +709,7 @@ const PublishLostItem = ({
                     <FormControl required>
                       <FormLabel>Lost Location</FormLabel>
                       <Autocomplete
+                        placeholder="Select Location..."
                         options={locationOptions}
                         value={location}
                         onChange={handleChange}

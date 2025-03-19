@@ -361,6 +361,7 @@ const PublishFoundItem = ({
                 <FormControl required>
                   <FormLabel>Item Name</FormLabel>
                   <Input
+                    placeholder="e.g. Wallet"
                     type="text"
                     name="name"
                     value={name}
@@ -389,6 +390,7 @@ const PublishFoundItem = ({
                         )}
                       </Box>
                       <Select
+                        placeholder="Select Color..."
                         multiple
                         fullWidth
                         required
@@ -491,9 +493,8 @@ const PublishFoundItem = ({
                         onChange={(e, newValue) =>
                           setSize({ ...size, unit: newValue })
                         }
-                        placeholder="Unit"
                       >
-                        {["cm", "inch", "m", "ft"].map((unit) => (
+                        {["cm", "inch", "m", "ft", "kg", "g"].map((unit) => (
                           <Option key={unit} value={unit}>
                             {unit}
                           </Option>
@@ -506,6 +507,7 @@ const PublishFoundItem = ({
                     <FormControl>
                       <FormLabel>Category</FormLabel>
                       <Select
+                        placeholder="Select Category..."
                         required
                         value={category}
                         onChange={(e, value) => setCategory(value)}
@@ -521,6 +523,7 @@ const PublishFoundItem = ({
                           "Books",
                           "Tools",
                           "Sports Equipment",
+                          "Jewelry",
                         ].map((name) => (
                           <Option key={name} value={name}>
                             {name}
@@ -533,6 +536,7 @@ const PublishFoundItem = ({
                     <FormControl>
                       <FormLabel>Material</FormLabel>
                       <Select
+                        placeholder="Select Material..."
                         required
                         value={material}
                         onChange={(e, value) => setMaterial(value)}
@@ -567,6 +571,7 @@ const PublishFoundItem = ({
                     <FormControl>
                       <FormLabel>Condition</FormLabel>
                       <Select
+                        placeholder="Select Condition..."
                         required
                         value={condition}
                         onChange={(e, value) => setCondition(value)}
@@ -593,6 +598,7 @@ const PublishFoundItem = ({
                     <FormControl>
                       <FormLabel>Distinctive Marks</FormLabel>
                       <Select
+                        placeholder="Select Marks..."
                         required
                         value={distinctiveMarks}
                         onChange={(e, value) => setDistinctiveMarks(value)}
@@ -622,6 +628,7 @@ const PublishFoundItem = ({
                 <FormControl required>
                   <FormLabel>Description</FormLabel>
                   <Textarea
+                    placeholder="More details about the item..."
                     type="text"
                     name="description"
                     minRows={4}
@@ -632,6 +639,7 @@ const PublishFoundItem = ({
                 <FormControl required>
                   <FormLabel>Found Location</FormLabel>
                   <Autocomplete
+                    placeholder="Select Location..."
                     options={locationOptions}
                     value={location}
                     onChange={handleChange}

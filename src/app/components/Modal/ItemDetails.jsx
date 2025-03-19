@@ -441,7 +441,7 @@ const ItemDetails = ({
                         <FormLabel>Item Name</FormLabel>
                         <Input
                           required
-                          placeholder="Item Name"
+                          placeholder="e.g. Wallet"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           fullWidth
@@ -600,11 +600,13 @@ const ItemDetails = ({
                                 },
                               }}
                             >
-                              {["cm", "inch", "m", "ft"].map((unit) => (
-                                <Option key={unit} value={unit}>
-                                  {unit}
-                                </Option>
-                              ))}
+                              {["cm", "inch", "m", "ft", "kg", "g"].map(
+                                (unit) => (
+                                  <Option key={unit} value={unit}>
+                                    {unit}
+                                  </Option>
+                                )
+                              )}
                             </Select>
                           }
                         />
@@ -636,6 +638,7 @@ const ItemDetails = ({
                             "Books",
                             "Tools",
                             "Sports Equipment",
+                            "Jewelry",
                           ].map((name) => (
                             <Option key={name} value={name}>
                               {name}
