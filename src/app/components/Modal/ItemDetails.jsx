@@ -656,7 +656,7 @@ const ItemDetails = ({
                   {/* Right Column */}
                   <Grid item xs={12} lg={6}>
                     {isEditMode ? (
-                      <FormControl>
+                      <FormControl required>
                         <FormLabel>Location</FormLabel>
                         <Autocomplete
                           disabled={!itemWhereabouts}
