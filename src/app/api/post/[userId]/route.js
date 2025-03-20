@@ -33,7 +33,7 @@ export async function GET(req, { params }) {
         path: "author",
         select:
           "firstname lastname profile_picture resolvedItemCount shareCount birthday",
-        populate: { path: "role", select: "name color" }, // ✅ Populate role
+        populate: { path: "role", select: "name color permissions" }, // ✅ Populate role
       })
       .populate("finder", "item")
       .populate("owner", "item")
@@ -55,7 +55,7 @@ export async function GET(req, { params }) {
         path: "sharedBy",
         select:
           "firstname lastname profile_picture resolvedItemCount shareCount birthday",
-        populate: { path: "role", select: "name color" }, // ✅ Populate role
+        populate: { path: "role", select: "name color permissions" }, // ✅ Populate role
       })
       .populate({
         path: "originalPost",
@@ -64,7 +64,7 @@ export async function GET(req, { params }) {
             path: "author",
             select:
               "firstname lastname profile_picture resolvedItemCount shareCount birthday",
-            populate: { path: "role", select: "name color" }, // ✅ Populate role
+            populate: { path: "role", select: "name color permissions" }, // ✅ Populate role
           },
           {
             path: "finder",

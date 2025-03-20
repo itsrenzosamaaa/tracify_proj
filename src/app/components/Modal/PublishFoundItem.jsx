@@ -356,7 +356,7 @@ const PublishFoundItem = ({
                   <>
                     <FormControl>
                       <Checkbox
-                        label="Non-SAS officer found an item"
+                        label="Non-registered user found an item"
                         checked={studentCheck}
                         onChange={handleStudentCheck}
                       />
