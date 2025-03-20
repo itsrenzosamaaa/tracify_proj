@@ -55,6 +55,7 @@ const PublishFoundItem = ({
   const [images, setImages] = useState([]);
   const [finder, setFinder] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [studentCheck, setStudentCheck] = useState(false);
   const { data: session, status } = useSession();
 
   const fetchUsers = useCallback(async () => {
@@ -78,6 +79,15 @@ const PublishFoundItem = ({
       fetchUsers();
     }
   }, [status, session?.user?.permissions, fetchUsers]);
+
+  const handleStudentCheck = (e) => {
+    const check = e.target.checked;
+    setStudentCheck(check);
+
+    if (check) {
+      setFinder(null);
+    }
+  };
 
   const handleCheck = (e) => {
     const check = e.target.checked;
@@ -163,7 +173,7 @@ const PublishFoundItem = ({
       const foundItemResponse = await response.json();
 
       const finderFormData = {
-        user: session.user.permissions.includes("User Dashboard")
+        user: session.user.permissions.includes("User Dashboard") || !studentCheck
           ? session?.user?.id
           : finder?._id,
         item: foundItemResponse._id,
@@ -183,7 +193,7 @@ const PublishFoundItem = ({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              author: finder?._id,
+              author: studentCheck ? finder?._id : session.user?.id,
               isFinder: true,
               item_name: name,
               caption: description,
@@ -191,29 +201,34 @@ const PublishFoundItem = ({
               createdAt: new Date(),
             }),
           }),
-          fetch("/api/notification", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              receiver: finder._id,
-              message: `The found item (${name}) you reported to SASO has been published!`,
-              type: "Found Items",
-              markAsRead: false,
-              dateNotified: new Date(),
-            }),
-          }),
-          fetch("/api/send-email", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to: finder.emailAddress,
-              name: finder.firstname,
-              link: "tlc-tracify.vercel.app",
-              success: true,
-              title: "Found Item Published Successfully!",
-            }),
-          }),
         ]);
+
+        if (studentCheck) {
+          await Promise.all([
+            fetch("/api/notification", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                receiver: finder._id,
+                message: `The found item (${name}) you reported to SASO has been published!`,
+                type: "Found Items",
+                markAsRead: false,
+                dateNotified: new Date(),
+              }),
+            }),
+            fetch("/api/send-email", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                to: finder.emailAddress,
+                name: finder.firstname,
+                link: "tlc-tracify.vercel.app",
+                success: true,
+                title: "Found Item Published Successfully!",
+              }),
+            }),
+          ]);
+        }
       }
       resetForm();
       setOpenSnackbar("success");
@@ -338,25 +353,36 @@ const PublishFoundItem = ({
             <form onSubmit={handleSubmit}>
               <Stack spacing={2}>
                 {session.user.permissions.includes("Admin Dashboard") && (
-                  <FormControl required>
-                    <FormLabel>Finder</FormLabel>
-                    <Autocomplete
-                      placeholder="Select a finder"
-                      options={users || []}
-                      value={finder}
-                      onChange={(event, value) => {
-                        setFinder(value);
-                      }}
-                      getOptionLabel={(user) => {
-                        return user
-                          ? `${user.firstname} ${user.lastname}`
-                          : "No Options";
-                      }}
-                      isOptionEqualToValue={(option, value) =>
-                        option.id === value?.id
-                      }
-                    />
-                  </FormControl>
+                  <>
+                    <FormControl>
+                      <Checkbox
+                        label="Non-SAS officer found an item"
+                        checked={studentCheck}
+                        onChange={handleStudentCheck}
+                      />
+                    </FormControl>
+                    {studentCheck && (
+                      <FormControl required>
+                        <FormLabel>Finder</FormLabel>
+                        <Autocomplete
+                          placeholder="Select a finder"
+                          options={users || []}
+                          value={finder}
+                          onChange={(event, value) => {
+                            setFinder(value);
+                          }}
+                          getOptionLabel={(user) => {
+                            return user
+                              ? `${user.firstname} ${user.lastname}`
+                              : "No Options";
+                          }}
+                          isOptionEqualToValue={(option, value) =>
+                            option.id === value?.id
+                          }
+                        />
+                      </FormControl>
+                    )}
+                  </>
                 )}
                 <FormControl required>
                   <FormLabel>Item Name</FormLabel>

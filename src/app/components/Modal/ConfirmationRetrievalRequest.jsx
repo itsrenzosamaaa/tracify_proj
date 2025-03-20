@@ -18,7 +18,8 @@ const ConfirmationRetrievalRequest = ({
   foundItem,
   lostItem,
   finder,
-  refreshData
+  refreshData,
+  isAdmin,
 }) => {
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -58,13 +59,15 @@ const ConfirmationRetrievalRequest = ({
       await makeRequest(`/api/found-items/${foundItemId}`, "PUT", {
         status: "Matched",
       });
-      await makeRequest("/api/notification", "POST", {
-        receiver: foundItem.user,
-        message: `Someone matched their lost item to your found item (${foundItem.item.name}). Click here for review.`,
-        type: "Found Items",
-        markAsRead: false,
-        dateNotified: new Date(),
-      });
+      if(!isAdmin){
+        await makeRequest("/api/notification", "POST", {
+          receiver: foundItem.user,
+          message: `Someone matched their lost item to your found item (${foundItem.item.name}). Click here for review.`,
+          type: "Found Items",
+          markAsRead: false,
+          dateNotified: new Date(),
+        });
+      }
 
       onClose();
       closeModal();
@@ -85,9 +88,7 @@ const ConfirmationRetrievalRequest = ({
           <Typography level="h4" gutterBottom>
             Confirmation
           </Typography>
-          <Typography>
-            Send a retrieval request to SASO?
-          </Typography>
+          <Typography>Send a retrieval request to SASO?</Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               disabled={loading}

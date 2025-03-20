@@ -40,24 +40,24 @@ export async function GET(req) {
         path: "author",
         select:
           "firstname lastname profile_picture resolvedItemCount shareCount birthday",
-        populate: { path: "role", select: "name color" },
+        populate: { path: "role", select: "name color permissions" },
       },
       {
         path: "finder",
         populate: {
           path: "item",
-          select: "category images status location",
+          select: "name images status location",
         },
       },
       {
         path: "owner",
-        populate: { path: "item", select: "category images status location" },
+        populate: { path: "item", select: "name images status location" },
       },
       {
         path: "sharedBy",
         select:
           "firstname lastname profile_picture resolvedItemCount shareCount birthday",
-        populate: { path: "role", select: "name color" },
+        populate: { path: "role", select: "name color permissions" },
       },
       {
         path: "originalPost",
@@ -66,17 +66,17 @@ export async function GET(req) {
             path: "author",
             select:
               "firstname lastname profile_picture resolvedItemCount shareCount birthday",
-            populate: { path: "role", select: "name color" },
+            populate: { path: "role", select: "name color permissions" },
           },
           {
             path: "finder",
-            populate: { path: "item", select: "images status location" },
+            populate: { path: "item", select: "name images status location" },
           },
           {
             path: "owner",
             populate: {
               path: "item",
-              select: "category images status location",
+              select: "name images status location",
             },
           },
         ],

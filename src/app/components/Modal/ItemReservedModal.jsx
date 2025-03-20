@@ -45,7 +45,8 @@ const ItemReservedModal = ({
 
   const filteredUsers = users.filter(
     (user) =>
-      (user._id !== row.finder.user._id && user._id !== row.owner.user._id) &&
+      user._id !== row.finder.user._id &&
+      user._id !== row.owner.user._id &&
       user.role.permissions.includes("User Dashboard")
   );
 
@@ -93,10 +94,6 @@ const ItemReservedModal = ({
         status: "Claimed",
       });
 
-      await makeRequest(`/api/users/${row.finder.user._id}/increment`, "PUT", {
-        increment: "found-item",
-      });
-
       // Update match status
       await makeRequest(`/api/match-items/${matchedId}`, "PUT", {
         request_status: "Completed",
@@ -104,20 +101,31 @@ const ItemReservedModal = ({
 
       const notificationData = [
         {
-          receiver: row.finder.user._id,
-          message: `Your found item ${row.finder.item.name} has been returned to its owner! Please rate your owner by clicking this!`,
-          type: "Completed Items",
-          markAsRead: false,
-          dateNotified: new Date(),
-        },
-        {
           receiver: row.owner.user._id,
-          message: `Congratulations! The item (${row.owner.item.name}) has been successfully claimed. Please rate your finder by clicking this!`,
+          message: `Congratulations! The item (${row.owner.item.name}) has been successfully claimed.`,
           type: "Completed Items",
           markAsRead: false,
           dateNotified: new Date(),
         },
       ];
+
+      if (row?.finder?.user?.role?.permissions.includes("User Dashboard")) {
+        notificationData.push({
+          receiver: row.finder.user._id,
+          message: `Your found item ${row.finder.item.name} has been returned to its owner!`,
+          type: "Completed Items",
+          markAsRead: false,
+          dateNotified: new Date(),
+        });
+
+        await makeRequest(
+          `/api/users/${row.finder.user._id}/increment`,
+          "PUT",
+          {
+            increment: "found-item",
+          }
+        );
+      }
 
       await Promise.all(
         notificationData.map((notif) =>
@@ -192,13 +200,6 @@ const ItemReservedModal = ({
       });
       const notificationData = [
         {
-          receiver: row.finder.user._id,
-          message: `The owner failed to claim the item. Your found item (${row.finder.item.name}) will be reverted back as Published`,
-          type: "Found Items",
-          markAsRead: false,
-          dateNotified: new Date(),
-        },
-        {
           receiver: row.owner.user._id,
           message: `You have failed to claim an item (${row.owner.item.name}). Click here for more details.`,
           type: "Lost Items",
@@ -206,6 +207,16 @@ const ItemReservedModal = ({
           dateNotified: new Date(),
         },
       ];
+
+      if (row?.finder?.user?.role?.permissions.includes("User Dashboard")) {
+        notificationData.push({
+          receiver: row.finder.user._id,
+          message: `The owner failed to claim the item. Your found item (${row.finder.item.name}) will be reverted back as Unresolved.`,
+          type: "Found Items",
+          markAsRead: false,
+          dateNotified: new Date(),
+        });
+      }
 
       await Promise.all(
         notificationData.map((notif) =>

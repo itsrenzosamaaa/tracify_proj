@@ -164,37 +164,43 @@ const ViewUserProfile = ({
     UNRESOLVED: "Matched", // Note: UI shows "Unresolved" but uses "Matched" value
   };
 
-  // For debugging - log the initial data
-
-  // Simplified lost items filter
-  // Filter found item posts
+  // Updated filtering logic as per latest request
   const filterLostItems = (posts, statusFilter) => {
     return posts.filter((post) => {
-      // Check if this is a finder post or shared from a finder
-      const isLostPost = !post?.isFinder || !post?.originalPost?.isFinder;
+      const isLostPost = post?.isFinder || post?.originalPost?.isFinder;
+      const itemStatus =
+        post?.owner?.item?.status || post?.originalPost?.owner?.item?.status;
 
-      // Check status matches the filter - now using finder instead of owner
-      const statusMatches =
-        post?.owner?.item?.status === statusFilter ||
-        post?.originalPost?.owner?.item?.status === statusFilter;
+      // Skip Request only
+      if (isLostPost || itemStatus === "Request") return false;
 
-      return isLostPost && statusMatches;
+      // Claimed Tab
+      if (statusFilter === "Claimed") return itemStatus === "Claimed";
+
+      // Unclaimed Tab
+      return itemStatus !== "Claimed";
     });
   };
 
-  // Simplified found items filter
-  // Filter found item posts
   const filterFoundItems = (posts, statusFilter) => {
     return posts.filter((post) => {
-      // Check if this is a finder post or shared from a finder
       const isFoundPost = post?.isFinder || post?.originalPost?.isFinder;
+      const itemStatus =
+        post?.finder?.item?.status || post?.originalPost?.finder?.item?.status;
 
-      // Check status matches the filter - now using finder instead of owner
-      const statusMatches =
-        post?.finder?.item?.status === statusFilter ||
-        post?.originalPost?.finder?.item?.status === statusFilter;
+      // Skip Request and Surrender Pending
+      if (
+        !isFoundPost ||
+        itemStatus === "Request" ||
+        itemStatus === "Surrender Pending"
+      )
+        return false;
 
-      return isFoundPost && statusMatches;
+      // Resolved Tab
+      if (statusFilter === "Resolved") return itemStatus === "Resolved";
+
+      // Unresolved Tab
+      return itemStatus !== "Resolved";
     });
   };
 

@@ -63,13 +63,6 @@ const ItemClaimRequestModal = ({
 
       const notificationData = [
         {
-          receiver: row.finder.user._id,
-          message: `Your found item ${row.finder.item.name} has been matched to its owner!`,
-          type: "Found Items",
-          markAsRead: false,
-          dateNotified: new Date(),
-        },
-        {
           receiver: row.owner.user._id,
           message: `Your claim request of ${row.finder.item.name} has been approved. Please come to SASO for claiming an item.`,
           type: "Lost Items",
@@ -77,6 +70,16 @@ const ItemClaimRequestModal = ({
           dateNotified: new Date(),
         },
       ];
+
+      if (row?.finder?.user?.role?.permissions.includes("User Dashboard")) {
+        notificationData.push({
+          receiver: row.finder.user._id,
+          message: `Your found item ${row.finder.item.name} has been matched to its owner!`,
+          type: "Found Items",
+          markAsRead: false,
+          dateNotified: new Date(),
+        });
+      }
 
       await Promise.all(
         notificationData.map((notif) =>

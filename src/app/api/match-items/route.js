@@ -5,26 +5,35 @@ import finder from "@/lib/models/finder";
 import owner from "@/lib/models/owner";
 import user from "@/lib/models/user";
 import item from "@/lib/models/item";
-import roles from "@/lib/models/location";
+import role from "@/lib/models/role";
 
 export async function GET() {
   try {
     await dbConnect();
 
-    const findMatchItems = await match_items.find()
+    const findMatchItems = await match_items
+      .find()
       .populate({
-        path: 'finder',
+        path: "finder",
         populate: [
-          { path: 'user', model: 'User' },
-          { path: 'item', model: 'Item' }
-        ]
+          {
+            path: "user",
+            model: "User",
+            populate: {
+              path: "role",
+              model: "Role", // or 'roles' based on your model name export
+              select: "permissions",
+            },
+          },
+          { path: "item", model: "Item" },
+        ],
       })
       .populate({
-        path: 'owner',
+        path: "owner",
         populate: [
-          { path: 'user', model: 'User' },
-          { path: 'item', model: 'Item' }
-        ]
+          { path: "user", model: "User" },
+          { path: "item", model: "Item" },
+        ],
       });
 
     return NextResponse.json(findMatchItems, { status: 200 });
@@ -36,7 +45,6 @@ export async function GET() {
     );
   }
 }
-
 
 export async function POST(req) {
   try {
@@ -52,6 +60,9 @@ export async function POST(req) {
     );
   } catch (error) {
     console.error("Error in POST method:", error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500 }
+    );
   }
 }

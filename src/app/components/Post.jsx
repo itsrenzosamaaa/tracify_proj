@@ -20,6 +20,7 @@ import {
   Option,
   FormControl,
   FormLabel,
+  Tooltip,
 } from "@mui/joy";
 import { ImageList, ImageListItem } from "@mui/material";
 import { Share, Send } from "@mui/icons-material";
@@ -75,7 +76,7 @@ const Post = ({
         body: JSON.stringify({
           isShared: true,
           caption: sharedCaption,
-          item_name: item?.item?.name,
+          item_name: post?.item_name,
           sharedBy: session?.user?.id,
           sharedAt: new Date(),
           originalPost: post?._id,
@@ -83,7 +84,10 @@ const Post = ({
       });
 
       const data = await response.json();
-      if (session?.user?.id !== post?.author?._id) {
+      if (
+        session?.user?.id !== post?.author?._id &&
+        author?.role?.permissions.includes("User Dashboard")
+      ) {
         await fetch("/api/notification", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -136,19 +140,22 @@ const Post = ({
             />
             <Box>
               <Box sx={{ display: "flex", gap: 2, maxWidth: "100%" }}>
-                <Typography
-                  level={isXs ? "body-sm" : "body-md"}
-                  fontWeight={700}
-                  sx={{
-                    color: author?.role?.color || "inherit",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
-                    maxWidth: isXs ? "150px" : "auto", // Adjust based on your layout
-                  }}
-                >
-                  {`${author?.firstname} ${author?.lastname}` || "Unknown User"}
-                </Typography>
+                <Tooltip title={author?.role?.name || "Guest"} placement="top">
+                  <Typography
+                    level={isXs ? "body-sm" : "body-md"}
+                    fontWeight={700}
+                    sx={{
+                      color: author?.role?.color || "inherit",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      maxWidth: isXs ? "150px" : "auto", // Adjust based on your layout
+                    }}
+                  >
+                    {`${author?.firstname} ${author?.lastname}` ||
+                      "Unknown User"}
+                  </Typography>
+                </Tooltip>
                 <PreviewBadge
                   resolvedItemCount={author?.resolvedItemCount || 0}
                   shareCount={author?.shareCount || 0}
@@ -164,7 +171,15 @@ const Post = ({
             </Box>
           </Box>
 
-          <Box sx={{ display: "flex", gap: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap", // allow chips to wrap to next line
+              gap: 1,
+              width: "100%", // full width container
+              overflow: "hidden",
+            }}
+          >
             <Chip
               variant="solid"
               size={isXs ? "sm" : "md"}
@@ -486,6 +501,9 @@ const Post = ({
         lostItem={selectedLostItem}
         finder={item?._id}
         refreshData={refreshData}
+        isAdmin={
+          author?.role?.permissions.includes("Admin Dashboard") ? true : false
+        }
       />
       <Modal
         open={sharePostModal === post._id}
