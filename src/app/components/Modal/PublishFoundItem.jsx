@@ -356,7 +356,7 @@ const PublishFoundItem = ({
                   <>
                     <FormControl>
                       <Checkbox
-                        label="Non-registered user found an item"
+                        label="Assign a registered user as the finder"
                         checked={studentCheck}
                         onChange={handleStudentCheck}
                       />
