@@ -18,6 +18,7 @@ import {
   Option,
 } from "@mui/joy";
 import { FormGroup } from "@mui/material";
+import AccessDenied from "./AccessDenied";
 
 const EditLocation = ({
   open,
@@ -26,6 +27,7 @@ const EditLocation = ({
   location,
   setMessage,
   setOpenSnackbar,
+  checkPermission,
 }) => {
   const [name, setName] = useState(location?.name || ""); // Default to an empty string if role or role.name is undefined
   const [rooms, setRooms] = useState(location?.areas || [""]);
@@ -70,7 +72,7 @@ const EditLocation = ({
       } else {
         const data = await response.json();
         setOpenSnackbar("danger");
-        setMessage(`Failed to update location: ${data.error}`);
+        setMessage(data.message);
       }
     } catch (error) {
       setOpenSnackbar("danger");
@@ -85,67 +87,75 @@ const EditLocation = ({
       <Modal open={open === location._id} onClose={onClose}>
         <ModalDialog>
           <ModalClose />
-          <Typography level="h4" sx={{ mb: 2 }}>
-            Edit Location
-          </Typography>
-          <DialogContent
-            sx={{
-              overflowX: "hidden",
-              overflowY: "auto", // Allows vertical scrolling
-              "&::-webkit-scrollbar": { display: "none" }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
-              "-ms-overflow-style": "none", // Hides scrollbar in IE and Edge
-              "scrollbar-width": "none", // Hides scrollbar in Firefox
-            }}
-          >
-            <form onSubmit={handleSubmit}>
-              {/* Role Name Input */}
-              <FormControl fullWidth sx={{ mb: 1 }}>
-                <FormLabel>Location Name</FormLabel>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. RLO Building"
-                />
-              </FormControl>
-
-              {rooms.map((room, index) => (
-                <FormControl fullWidth sx={{ mb: 1 }} key={index}>
-                  <FormLabel>Room/Area {index + 1}</FormLabel>
-                  <Box sx={{ display: "flex", gap: 1 }}>
+          {checkPermission ? (
+            <>
+              <Typography level="h4" sx={{ mb: 2 }}>
+                Edit Location
+              </Typography>
+              <DialogContent
+                sx={{
+                  overflowX: "hidden",
+                  overflowY: "auto", // Allows vertical scrolling
+                  "&::-webkit-scrollbar": { display: "none" }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                  "-ms-overflow-style": "none", // Hides scrollbar in IE and Edge
+                  "scrollbar-width": "none", // Hides scrollbar in Firefox
+                }}
+              >
+                <form onSubmit={handleSubmit}>
+                  {/* Role Name Input */}
+                  <FormControl fullWidth sx={{ mb: 1 }}>
+                    <FormLabel>Location Name</FormLabel>
                     <Input
-                      type="text"
-                      value={room}
-                      onChange={(e) => handleRoomChange(index, e.target.value)}
-                      placeholder="Enter room/area"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. RLO Building"
                     />
-                    <Button
-                      color="danger"
-                      onClick={() => handleRemoveRoom(index)}
-                    >
-                      Remove
-                    </Button>
-                  </Box>
-                </FormControl>
-              ))}
-              <Button
-                sx={{ mb: 2 }}
-                fullWidth
-                color="neutral"
-                onClick={handleAddRoom}
-              >
-                + Add Room/Area
-              </Button>
-              <Button
-                fullWidth
-                sx={{ mt: 2 }}
-                type="submit"
-                loading={loading}
-                disabled={loading}
-              >
-                Update Location
-              </Button>
-            </form>
-          </DialogContent>
+                  </FormControl>
+
+                  {rooms.map((room, index) => (
+                    <FormControl fullWidth sx={{ mb: 1 }} key={index}>
+                      <FormLabel>Room/Area {index + 1}</FormLabel>
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <Input
+                          type="text"
+                          value={room}
+                          onChange={(e) =>
+                            handleRoomChange(index, e.target.value)
+                          }
+                          placeholder="Enter room/area"
+                        />
+                        <Button
+                          color="danger"
+                          onClick={() => handleRemoveRoom(index)}
+                        >
+                          Remove
+                        </Button>
+                      </Box>
+                    </FormControl>
+                  ))}
+                  <Button
+                    sx={{ mb: 2 }}
+                    fullWidth
+                    color="neutral"
+                    onClick={handleAddRoom}
+                  >
+                    + Add Room/Area
+                  </Button>
+                  <Button
+                    fullWidth
+                    sx={{ mt: 2 }}
+                    type="submit"
+                    loading={loading}
+                    disabled={loading}
+                  >
+                    Update Location
+                  </Button>
+                </form>
+              </DialogContent>
+            </>
+          ) : (
+            <AccessDenied />
+          )}
         </ModalDialog>
       </Modal>
     </>

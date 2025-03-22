@@ -229,21 +229,21 @@ export default function App() {
           url: "/item-retrieval",
         });
       }
-      if (userPermissions.includes("Manage Locations")) {
+      if (userPermissions.includes("View Location")) {
         base.push({
           icon: <LocationOnOutlined />,
           menu: "Locations",
           url: "/locations",
         });
       }
-      if (userPermissions.includes("Manage Roles")) {
+      if (userPermissions.includes("View Role")) {
         base.push({
           icon: <SecurityIcon />,
           menu: "Role",
           url: "/role",
         });
       }
-      if (userPermissions.includes("Manage Users")) {
+      if (userPermissions.includes("View User")) {
         base.push({
           icon: <PeopleOutlineIcon />,
           menu: "Users",

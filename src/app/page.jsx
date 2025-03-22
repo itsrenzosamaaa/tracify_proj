@@ -50,7 +50,7 @@ export default function Home() {
     try {
       const result = await signIn("credentials", {
         redirect: false,
-        username: text,
+        username: text.trim(),
         password: password,
       });
 

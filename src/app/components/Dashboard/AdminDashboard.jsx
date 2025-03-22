@@ -1,22 +1,16 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React from "react";
 import {
   Box,
   Grid,
-  Card,
-  CardContent,
   Paper,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
 import { Typography } from "@mui/joy";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import TopStudentsEarnedBadges from "../TopStudentsEarnedBadges";
-import PublishFoundItem from "../Modal/PublishFoundItem";
-import PublishLostItem from "../Modal/PublishLostItems";
-import { MoreHoriz } from "@mui/icons-material";
 import TopSharers from "../TopSharers";
 
 const AdminDashboard = ({ session, users }) => {

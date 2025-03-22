@@ -19,11 +19,11 @@ export async function middleware(request) {
       (pathname.startsWith("/item-retrieval") &&
         !token.permissions.includes("Manage Item Retrievals")) ||
       (pathname.startsWith("/users") &&
-        !token.permissions.includes("Manage Users")) ||
+        !token.permissions.includes("View User")) ||
       (pathname.startsWith("/role") &&
-        !token.permissions.includes("Manage Roles")) ||
+        !token.permissions.includes("View Role")) ||
       (pathname.startsWith("/locations") &&
-        !token.permissions.includes("Manage Locations")) ||
+        !token.permissions.includes("View Location")) ||
       (pathname.startsWith("/my-items") &&
         !token.permissions.includes("View My Items")) ||
       (pathname.startsWith("/profile") &&

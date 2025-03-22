@@ -13,6 +13,7 @@ import {
   DialogContent,
   Modal,
 } from "@mui/joy";
+import AccessDenied from "./AccessDenied";
 
 const AddLocation = ({
   open,
@@ -20,6 +21,7 @@ const AddLocation = ({
   refreshData,
   setOpenSnackbar,
   setMessage,
+  checkPermission,
 }) => {
   const [name, setName] = useState("");
   const [rooms, setRooms] = useState([""]);
@@ -66,7 +68,7 @@ const AddLocation = ({
       } else {
         const data = await response.json();
         setOpenSnackbar("danger");
-        setMessage(`Failed to add location: ${data.error}`);
+        setMessage(data.message);
       }
     } catch (error) {
       setOpenSnackbar("danger");
@@ -80,66 +82,74 @@ const AddLocation = ({
     <Modal open={open} onClose={onClose}>
       <ModalDialog>
         <ModalClose />
-        <Typography level="h4" sx={{ mb: 2 }}>
-          Add Location
-        </Typography>
-        <DialogContent
-          sx={{
-            overflowX: "hidden",
-            overflowY: "auto",
-            "&::-webkit-scrollbar": { display: "none" },
-            "-ms-overflow-style": "none",
-            "scrollbar-width": "none",
-          }}
-        >
-          <form onSubmit={handleSubmit}>
-            <FormControl required fullWidth sx={{ mb: 2 }}>
-              <FormLabel>Name</FormLabel>
-              <Input
-                placeholder="e.g. RLO Building"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </FormControl>
-
-            {rooms.map((room, index) => (
-              <FormControl fullWidth sx={{ mb: 1 }} key={index}>
-                <FormLabel>Room/Area {index + 1}</FormLabel>
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  <Input
-                    type="text"
-                    value={room}
-                    onChange={(e) => handleRoomChange(index, e.target.value)}
-                    placeholder="Enter room/area"
-                  />
-                  <Button
-                    color="danger"
-                    onClick={() => handleRemoveRoom(index)}
-                  >
-                    Remove
-                  </Button>
-                </Box>
-              </FormControl>
-            ))}
-            <Button
-              sx={{ mb: 2 }}
-              fullWidth
-              color="neutral"
-              onClick={handleAddRoom}
-            >
-              + Add Room/Area
-            </Button>
-            <Button
-              fullWidth
-              sx={{ mt: 2 }}
-              type="submit"
-              loading={loading}
-              disabled={loading}
-            >
+        {checkPermission ? (
+          <>
+            <Typography level="h4" sx={{ mb: 2 }}>
               Add Location
-            </Button>
-          </form>
-        </DialogContent>
+            </Typography>
+            <DialogContent
+              sx={{
+                overflowX: "hidden",
+                overflowY: "auto",
+                "&::-webkit-scrollbar": { display: "none" },
+                "-ms-overflow-style": "none",
+                "scrollbar-width": "none",
+              }}
+            >
+              <form onSubmit={handleSubmit}>
+                <FormControl required fullWidth sx={{ mb: 2 }}>
+                  <FormLabel>Name</FormLabel>
+                  <Input
+                    placeholder="e.g. RLO Building"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </FormControl>
+
+                {rooms.map((room, index) => (
+                  <FormControl fullWidth sx={{ mb: 1 }} key={index}>
+                    <FormLabel>Room/Area {index + 1}</FormLabel>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Input
+                        type="text"
+                        value={room}
+                        onChange={(e) =>
+                          handleRoomChange(index, e.target.value)
+                        }
+                        placeholder="Enter room/area"
+                      />
+                      <Button
+                        color="danger"
+                        onClick={() => handleRemoveRoom(index)}
+                      >
+                        Remove
+                      </Button>
+                    </Box>
+                  </FormControl>
+                ))}
+                <Button
+                  sx={{ mb: 2 }}
+                  fullWidth
+                  color="neutral"
+                  onClick={handleAddRoom}
+                >
+                  + Add Room/Area
+                </Button>
+                <Button
+                  fullWidth
+                  sx={{ mt: 2 }}
+                  type="submit"
+                  loading={loading}
+                  disabled={loading}
+                >
+                  Add Location
+                </Button>
+              </form>
+            </DialogContent>
+          </>
+        ) : (
+          <AccessDenied />
+        )}
       </ModalDialog>
     </Modal>
   );

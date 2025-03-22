@@ -28,7 +28,7 @@ const LocationsPage = () => {
 
   return (
     <>
-      <ViewLocations locations={locations} refreshData={fetchLocations} />
+      <ViewLocations locations={locations} refreshData={fetchLocations} session={session} />
     </>
   );
 };

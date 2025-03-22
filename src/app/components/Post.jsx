@@ -121,8 +121,6 @@ const Post = ({
     (lostItem) => !matchedOwnerIds.has(lostItem?._id?.toString())
   );
 
-  console.log(item);
-
   return (
     <>
       <Card

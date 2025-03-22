@@ -39,6 +39,7 @@ import Papa from "papaparse";
 import { MoreHoriz } from "@mui/icons-material";
 import { Search } from "@mui/icons-material";
 import EditUser from "./Modal/EditUser";
+import AccessDenied from "./Modal/AccessDenied";
 
 const ViewUsers = ({ users, roles, refreshData, session }) => {
   const [page, setPage] = useState(0);
@@ -172,7 +173,7 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
 
             refreshData(); // Refresh the list of users
             setOpenSnackbar("success");
-            setMessage("Users imported successfully!");
+            setMessage("User(s) imported successfully!");
           } catch (error) {
             setMessage(
               error.message || "An error occurred while importing users."
@@ -196,6 +197,8 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
     }
   };
 
+  const hasPermission = session?.user?.permissions || [];
+
   return (
     <>
       <TitleBreadcrumbs title="Manage Users" text="Users" />
@@ -218,16 +221,18 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 sx={{ width: { xs: "50%", md: "200px" } }}
               />
-              <Button component="label">
-                Import Data
-                <input
-                  type="file"
-                  accept=".csv"
-                  hidden
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                />
-              </Button>
+              {hasPermission.includes("Add User") && (
+                <Button component="label">
+                  Import Data
+                  <input
+                    type="file"
+                    accept=".csv"
+                    hidden
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                  />
+                </Button>
+              )}
               <Modal open={loading} onClose={() => {}} disableEscapeKeyDown>
                 <ModalDialog sx={{ alignItems: "center", padding: "1rem" }}>
                   <Typography level="body-lg" fontWeight={700} gutterBottom>
@@ -394,39 +399,50 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                             >
                               <ModalDialog>
                                 <ModalClose />
-                                <Typography level="h4" sx={{ mb: 2 }}>
-                                  Assign Role
-                                </Typography>
-                                <FormControl sx={{ mb: 3 }}>
-                                  <FormLabel>Select Role</FormLabel>
-                                  <Select
-                                    value={selectedRole}
-                                    onChange={(e, newValue) =>
-                                      setSelectedRole(newValue)
-                                    }
-                                    placeholder="Select role"
-                                  >
-                                    {roles.map((role) => (
-                                      <Option key={role._id} value={role._id}>
-                                        {role.name}
-                                      </Option>
-                                    ))}
-                                  </Select>
-                                </FormControl>
-                                <Button
-                                  fullWidth
-                                  onClick={() => handleAssignRole(openEditRole)}
-                                  loading={isLoading}
-                                  disabled={
-                                    isLoading ||
-                                    selectedRole ===
-                                      users.find(
-                                        (user) => user._id === openEditRole
-                                      )?.role?._id
-                                  }
-                                >
-                                  Assign Role
-                                </Button>
+                                {hasPermission.includes("Assign Role") ? (
+                                  <>
+                                    <Typography level="h4" sx={{ mb: 2 }}>
+                                      Assign Role
+                                    </Typography>
+                                    <FormControl sx={{ mb: 3 }}>
+                                      <FormLabel>Select Role</FormLabel>
+                                      <Select
+                                        value={selectedRole}
+                                        onChange={(e, newValue) =>
+                                          setSelectedRole(newValue)
+                                        }
+                                        placeholder="Select role"
+                                      >
+                                        {roles.map((role) => (
+                                          <Option
+                                            key={role._id}
+                                            value={role._id}
+                                          >
+                                            {role.name}
+                                          </Option>
+                                        ))}
+                                      </Select>
+                                    </FormControl>
+                                    <Button
+                                      fullWidth
+                                      onClick={() =>
+                                        handleAssignRole(openEditRole)
+                                      }
+                                      loading={isLoading}
+                                      disabled={
+                                        isLoading ||
+                                        selectedRole ===
+                                          users.find(
+                                            (user) => user._id === openEditRole
+                                          )?.role?._id
+                                      }
+                                    >
+                                      Assign Role
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <AccessDenied />
+                                )}
                               </ModalDialog>
                             </Modal>
                             <Modal
@@ -438,51 +454,59 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                                   aria-label="Close"
                                   sx={{ top: "16px", right: "16px" }}
                                 />
-                                <Typography
-                                  level="h3"
-                                  fontWeight="700"
-                                  sx={{ mb: 2 }}
-                                >
-                                  Delete User
-                                </Typography>
-                                <Typography align="center" sx={{ mb: 3 }}>
-                                  Are you sure you want to delete this user?
-                                  This action cannot be undone.
-                                </Typography>
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    gap: 2,
-                                  }}
-                                >
-                                  <Button
-                                    disabled={isLoading}
-                                    loading={isLoading}
-                                    fullWidth
-                                    onClick={(e) => handleDelete(e, user._id)}
-                                    color="danger"
-                                    aria-label="Confirm delete"
-                                  >
-                                    Confirm
-                                  </Button>
-                                  <Button
-                                    disabled={isLoading}
-                                    fullWidth
-                                    onClick={() => setOpen(null)}
-                                    variant="outlined"
-                                    aria-label="Cancel delete"
-                                  >
-                                    Cancel
-                                  </Button>
-                                </Box>
+                                {hasPermission.includes("Delete User") ? (
+                                  <>
+                                    <Typography
+                                      level="h3"
+                                      fontWeight="700"
+                                      sx={{ mb: 2 }}
+                                    >
+                                      Delete User
+                                    </Typography>
+                                    <Typography align="center" sx={{ mb: 3 }}>
+                                      Are you sure you want to delete this user?
+                                      This action cannot be undone.
+                                    </Typography>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        gap: 2,
+                                      }}
+                                    >
+                                      <Button
+                                        disabled={isLoading}
+                                        loading={isLoading}
+                                        fullWidth
+                                        onClick={(e) =>
+                                          handleDelete(e, user._id)
+                                        }
+                                        color="danger"
+                                        aria-label="Confirm delete"
+                                      >
+                                        Confirm
+                                      </Button>
+                                      <Button
+                                        disabled={isLoading}
+                                        fullWidth
+                                        onClick={() => setOpen(null)}
+                                        variant="outlined"
+                                        aria-label="Cancel delete"
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </Box>
+                                  </>
+                                ) : (
+                                  <AccessDenied />
+                                )}
                               </ModalDialog>
                             </Modal>
                           </>
                         ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={3} align="center">
+                        <TableCell colSpan={5} align="center">
                           No users found...
                         </TableCell>
                       </TableRow>
@@ -500,6 +524,7 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                   setOpenSnackbar={setOpenSnackbar}
                   setMessage={setMessage}
                   refreshData={refreshData}
+                  checkPermission={hasPermission.includes("Edit User")}
                 />
               )}
               <TablePagination

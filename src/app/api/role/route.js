@@ -23,6 +23,17 @@ export async function POST(req) {
     await dbConnect();
     const roleData = await req.json();
 
+    const existingRole = await role.findOne({
+      name: { $regex: new RegExp(`^${roleData.name}$`, "i") },
+    });
+
+    if (existingRole) {
+      return NextResponse.json(
+        { success: false, message: "Role already exists." },
+        { status: 409 }
+      );
+    }
+
     const newRole = new role(roleData);
     await newRole.save();
 

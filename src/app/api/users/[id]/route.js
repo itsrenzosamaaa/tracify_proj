@@ -36,48 +36,43 @@ export async function PUT(req, { params }) {
 
   try {
     const updatedFormData = await req.json();
-
     await dbConnect();
 
-    // const emailRegex = /^[a-z]+@thelewiscollege\.edu\.ph$/;
+    // ✅ Validate email format
+    const emailRegex = /^[a-z]+@thelewiscollege\.edu\.ph$/;
+    const isValidEmail = emailRegex.test(updatedFormData.emailAddress);
 
-    // const isValidEmail = emailRegex.test(updatedFormData.emailAddress);
-
-    // if (!isValidEmail) {
-    //   return NextResponse.json(
-    //     {
-    //       message:
-    //         "Invalid email address. Please ensure the email uses lowercase letters only and ends with @thelewiscollege.edu.ph.",
-    //     },
-    //     { status: 400 } // Status 400 indicates a bad request
-    //   );
-    // }
-
-    const existingUsers = await user.find({
-      $or: [
+    if (!isValidEmail) {
+      return NextResponse.json(
         {
-          firstname: {
-            $regex: `^${updatedFormData.firstname}$`,
-            $options: "i",
-          },
-          lastname: { $regex: `^${updatedFormData.lastname}$`, $options: "i" },
+          message:
+            "Invalid email address. Please ensure it is lowercase and ends with @thelewiscollege.edu.ph",
         },
-      ],
+        { status: 400 }
+      );
+    }
+
+    // ✅ Check for duplicate firstname+lastname (exclude current user)
+    const duplicateUser = await user.findOne({
+      _id: { $ne: id }, // Exclude current user
+      firstname: { $regex: `^${updatedFormData.firstname}$`, $options: "i" },
+      lastname: { $regex: `^${updatedFormData.lastname}$`, $options: "i" },
     });
 
-    if (existingUsers.length > 0) {
+    if (duplicateUser) {
       return NextResponse.json(
         {
           error: "Duplicate record found.",
-          duplicates: existingUsers.map((u) => ({
-            firstname: u.firstname,
-            lastname: u.lastname,
-          })),
+          duplicates: {
+            firstname: duplicateUser.firstname,
+            lastname: duplicateUser.lastname,
+          },
         },
         { status: 409 }
       );
     }
 
+    // ✅ Proceed to update the user
     const updatedUser = await user.findByIdAndUpdate(
       id,
       { $set: updatedFormData },
@@ -85,14 +80,14 @@ export async function PUT(req, { params }) {
     );
 
     if (!updatedUser) {
-      return NextResponse.json({ error: "Student not found" }, { status: 404 });
+      return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
-    return NextResponse.json({ updatedUser }, { status: 200 });
+    return NextResponse.json({ success: true, updatedUser }, { status: 200 });
   } catch (error) {
-    console.error("Error updating student info:", error);
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { error: "Failed to update student info" },
+      { error: "Failed to update user info." },
       { status: 500 }
     );
   }

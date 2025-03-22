@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import ViewRoles from "@/app/components/ViewRoles";
 import { useSession } from "next-auth/react";
@@ -21,9 +21,19 @@ const RolePage = () => {
   useEffect(() => {
     fetchRoles();
   }, [fetchRoles]);
+
+  if (status === "loading") {
+    return null;
+  }
+
   return (
     <>
-      <ViewRoles roles={roles} refreshData={fetchRoles} session={session} update={update} />
+      <ViewRoles
+        roles={roles}
+        refreshData={fetchRoles}
+        session={session}
+        update={update}
+      />
     </>
   );
 };

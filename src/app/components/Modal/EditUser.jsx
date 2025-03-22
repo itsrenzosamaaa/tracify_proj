@@ -12,6 +12,7 @@ import {
   Button,
 } from "@mui/joy";
 import React, { useState } from "react";
+import AccessDenied from "./AccessDenied";
 
 const EditUser = ({
   user,
@@ -20,6 +21,7 @@ const EditUser = ({
   setOpenSnackbar,
   setMessage,
   refreshData,
+  checkPermission,
 }) => {
   const [firstname, setFirstname] = useState(user.firstname);
   const [username, setUsername] = useState(user.username);
@@ -70,65 +72,71 @@ const EditUser = ({
       <Modal open={open === user._id} onClose={onClose}>
         <ModalDialog>
           <ModalClose />
-          <Typography level="h4">Edit Student Details</Typography>
-          <form onSubmit={handleSubmit}>
-            <DialogContent
-              sx={{
-                overflowX: "hidden",
-                overflowY: "auto", // Allows vertical scrolling
-                "&::-webkit-scrollbar": { display: "none" }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
-                "-ms-overflow-style": "none", // Hides scrollbar in IE and Edge
-                "scrollbar-width": "none", // Hides scrollbar in Firefox
-              }}
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <FormLabel>Username</FormLabel>
-                  <Input
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <FormLabel>First Name</FormLabel>
-                  <Input
-                    value={firstname}
-                    onChange={(e) => setFirstname(e.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <FormLabel>Last Name</FormLabel>
-                  <Input
-                    value={lastname}
-                    onChange={(e) => setLastname(e.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormLabel>Email Address</FormLabel>
-                  <Input
-                    value={emailAddress}
-                    onChange={(e) => setEmailAddress(e.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormLabel>Contact Number</FormLabel>
-                  <Input
-                    value={contactNumber}
-                    onChange={(e) => setContactNumber(e.target.value)}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <Button
-              disabled={loading}
-              loading={loading}
-              type="submit"
-              sx={{ mt: 2 }}
-              fullWidth
-            >
-              Update Student
-            </Button>
-          </form>
+          {checkPermission ? (
+            <>
+              <Typography level="h4">Edit Student Details</Typography>
+              <form onSubmit={handleSubmit}>
+                <DialogContent
+                  sx={{
+                    overflowX: "hidden",
+                    overflowY: "auto", // Allows vertical scrolling
+                    "&::-webkit-scrollbar": { display: "none" }, // Hides scrollbar in WebKit-based browsers (Chrome, Edge, Safari)
+                    "-ms-overflow-style": "none", // Hides scrollbar in IE and Edge
+                    "scrollbar-width": "none", // Hides scrollbar in Firefox
+                  }}
+                >
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <FormLabel>Username</FormLabel>
+                      <Input
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <FormLabel>First Name</FormLabel>
+                      <Input
+                        value={firstname}
+                        onChange={(e) => setFirstname(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <FormLabel>Last Name</FormLabel>
+                      <Input
+                        value={lastname}
+                        onChange={(e) => setLastname(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <FormLabel>Email Address</FormLabel>
+                      <Input
+                        value={emailAddress}
+                        onChange={(e) => setEmailAddress(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <FormLabel>Contact Number</FormLabel>
+                      <Input
+                        value={contactNumber}
+                        onChange={(e) => setContactNumber(e.target.value)}
+                      />
+                    </Grid>
+                  </Grid>
+                </DialogContent>
+                <Button
+                  disabled={loading}
+                  loading={loading}
+                  type="submit"
+                  sx={{ mt: 2 }}
+                  fullWidth
+                >
+                  Update Student
+                </Button>
+              </form>
+            </>
+          ) : (
+            <AccessDenied />
+          )}
         </ModalDialog>
       </Modal>
     </>

@@ -9,7 +9,7 @@ export async function GET() {
   try {
     await dbConnect();
 
-    const findUsers = await user.find().populate('role');
+    const findUsers = await user.find().populate("role");
 
     return NextResponse.json(findUsers, { status: 200 });
   } catch (error) {
@@ -23,80 +23,172 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const data = await request.json(); // Parse the incoming data
+    const data = await request.json();
     await dbConnect();
 
-    // Step 1: Check for duplicates in the incoming CSV data
     const seenNames = new Set();
-    const duplicatesInCSV = [];
+    const seenEmails = new Set();
+    const seenUsernames = new Set();
 
-    for (const user of data) {
-      const fullNameKey = `${user.firstname.toLowerCase()}_${user.lastname.toLowerCase()}`;
+    const duplicatesInCSV = {
+      names: [],
+      emails: [],
+      usernames: [],
+    };
 
+    const invalidEmails = [];
+
+    // ✅ Email Format Validation Regex
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    const isValidEmail = (email) => {
+      return email && emailRegex.test(email);
+    };
+
+    // ✅ Step 1: Check CSV duplicates and malformed emails
+    for (const userData of data) {
+      const fullNameKey = `${userData.firstname?.toLowerCase()}_${userData.lastname?.toLowerCase()}`;
+      const emailKey = userData.emailAddress?.toLowerCase();
+      const usernameKey = userData.username?.toLowerCase();
+
+      // Check duplicate full name
       if (seenNames.has(fullNameKey)) {
-        duplicatesInCSV.push(user);
+        duplicatesInCSV.names.push(userData);
       } else {
         seenNames.add(fullNameKey);
       }
+
+      // Check duplicate email
+      if (emailKey) {
+        if (seenEmails.has(emailKey)) {
+          duplicatesInCSV.emails.push(userData);
+        } else {
+          seenEmails.add(emailKey);
+        }
+
+        // Check email format
+        if (!isValidEmail(emailKey)) {
+          invalidEmails.push({
+            firstname: userData.firstname,
+            lastname: userData.lastname,
+            email: userData.emailAddress,
+          });
+        }
+      }
+
+      // Check duplicate username
+      if (usernameKey) {
+        if (seenUsernames.has(usernameKey)) {
+          duplicatesInCSV.usernames.push(userData);
+        } else {
+          seenUsernames.add(usernameKey);
+        }
+      }
     }
 
-    if (duplicatesInCSV.length > 0) {
+    if (
+      duplicatesInCSV.names.length > 0 ||
+      duplicatesInCSV.emails.length > 0 ||
+      duplicatesInCSV.usernames.length > 0
+    ) {
       return NextResponse.json(
         {
-          error: "Duplicate records found in the uploaded file.",
+          error: "Duplicate records found in the CSV file. Import aborted.",
           duplicates: duplicatesInCSV,
         },
         { status: 400 }
       );
     }
 
-    // Step 2: Check for duplicates in the database
-    const existingUsers = await user.find({
-      $or: data.map(({ firstname, lastname }) => ({
-        firstname: { $regex: `^${firstname}$`, $options: "i" },
-        lastname: { $regex: `^${lastname}$`, $options: "i" },
-      })),
-    });
-
-    if (existingUsers.length > 0) {
+    if (invalidEmails.length > 0) {
       return NextResponse.json(
         {
-          error: "Some records already exist in the database.",
-          duplicates: existingUsers.map((u) => ({
-            firstname: u.firstname,
-            lastname: u.lastname,
-          })),
+          error: "Some emails have invalid format.",
+          invalidEmails,
+        },
+        { status: 400 }
+      );
+    }
+
+    // ✅ Step 2: Check for existing records in DB
+    const dbDuplicates = await user.find({
+      $or: [
+        ...data.map(({ firstname, lastname }) => ({
+          firstname: { $regex: `^${firstname}$`, $options: "i" },
+          lastname: { $regex: `^${lastname}$`, $options: "i" },
+        })),
+        ...data
+          .map(({ email }) =>
+            email
+              ? {
+                  email: { $regex: `^${email}$`, $options: "i" },
+                }
+              : null
+          )
+          .filter(Boolean),
+        ...data
+          .map(({ username }) =>
+            username
+              ? {
+                  username: { $regex: `^${username}$`, $options: "i" },
+                }
+              : null
+          )
+          .filter(Boolean),
+      ],
+    });
+
+    if (dbDuplicates.length > 0) {
+      const duplicateNames = [];
+      const duplicateEmails = [];
+      const duplicateUsernames = [];
+
+      dbDuplicates.forEach((u) => {
+        duplicateNames.push(`${u.firstname} ${u.lastname}`);
+        if (u.email) duplicateEmails.push(u.email);
+        if (u.username) duplicateUsernames.push(u.username);
+      });
+
+      return NextResponse.json(
+        {
+          error: "Some records already exist in the database. Import aborted.",
+          duplicateNames,
+          duplicateEmails,
+          duplicateUsernames,
         },
         { status: 409 }
       );
     }
 
-    // Step 3: Process and insert users
-    const processedData = await Promise.all(
-      data.map(async (user) => {
-        user._id =  `user_${nanoid(6)}`;
-        user.profile_picture = null;
-        user.date_created = Date.now();
-        user.resolvedItemCount = 0;
-        user.shareCount = 0;
-        user.birthday = null;
+    // ✅ Step 3: Insert valid users
+    const processedUsers = await Promise.all(
+      data.map(async (userData) => {
+        userData._id = `user_${nanoid(6)}`;
+        userData.profile_picture = null;
+        userData.date_created = Date.now();
+        userData.resolvedItemCount = 0;
+        userData.shareCount = 0;
+        userData.birthday = null;
 
-        if (user.password) {
+        if (userData.password) {
           const saltRounds = 10;
-          user.password = await bcrypt.hash(user.password, saltRounds);
+          userData.password = await bcrypt.hash(userData.password, saltRounds);
         }
 
-        return user;
+        return userData;
       })
     );
 
-    // Insert users into the database
-    const insertedUsers = await user.insertMany(processedData, {
-      ordered: false,
+    const insertedUsers = await user.insertMany(processedUsers, {
+      ordered: true, // All or nothing insert
     });
 
     return NextResponse.json(
-      { message: "Users imported successfully!", count: insertedUsers.length },
+      {
+        success: true,
+        message: "Users imported successfully!",
+        count: insertedUsers.length,
+      },
       { status: 201 }
     );
   } catch (error) {
@@ -109,7 +201,7 @@ export async function POST(request) {
       );
     } else if (error.code === 11000) {
       return NextResponse.json(
-        { error: "Some records already exist." },
+        { error: "Duplicate key error - some records already exist." },
         { status: 409 }
       );
     }

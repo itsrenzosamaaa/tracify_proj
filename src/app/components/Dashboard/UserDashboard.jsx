@@ -428,7 +428,7 @@ const UserDashboard = ({ session, status, users }) => {
               onClose={() => setOpenDrawer(null)}
               sx={{ padding: "1rem" }}
             >
-              <ModalDialog>
+              <ModalDialog layout="fullscreen">
                 <ModalClose />
                 <DialogContent>
                   <TopStudentsEarnedBadges users={users} session={session} />
@@ -440,7 +440,7 @@ const UserDashboard = ({ session, status, users }) => {
               onClose={() => setOpenDrawer(null)}
               sx={{ padding: "1rem" }}
             >
-              <ModalDialog>
+              <ModalDialog layout="fullscreen">
                 <ModalClose />
                 <DialogContent>
                   <TopSharers users={users} session={session} />

@@ -84,10 +84,10 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                 <Table stickyHeader size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ width: "60px" }}>
+                      <TableCell sx={{ width: "80px" }}>
                         <strong>Rank</strong>
                       </TableCell>
-                      <TableCell sx={{ width: "150px" }}>
+                      <TableCell sx={{ width: "40%" }}>
                         <strong>Student Name</strong>
                       </TableCell>
                       <TableCell>
