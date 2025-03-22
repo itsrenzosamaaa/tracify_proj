@@ -164,7 +164,7 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status, locationO
                             : "N/A";
                         })()}
                       </Typography>
-                      {isFoundItem && row.item.status === "Request" && (
+                      {isFoundItem && status === "Request" && (
                         <Chip
                           variant="solid"
                           color={

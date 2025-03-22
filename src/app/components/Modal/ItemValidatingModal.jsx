@@ -224,7 +224,7 @@ const ItemValidatingModal = ({
                 <Typography level="h4" gutterbottom>
                   Confirmation
                 </Typography>
-                <Typography>Are you you want to publish the item?</Typography>
+                <Typography>Are you sure you want to publish the item?</Typography>
                 <Box sx={{ display: "flex", gap: 2 }}>
                   <Button
                     loading={loading}
