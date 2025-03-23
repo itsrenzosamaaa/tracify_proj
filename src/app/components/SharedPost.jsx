@@ -615,9 +615,9 @@ const SharedPost = ({
             open={confirmationRetrievalRequest === originalPost._id}
             onClose={() => setConfirmationRetrievalRequest(null)}
             closeModal={() => setClaimModal(null)}
-            foundItem={originalPost?.finder}
+            foundItem={filteredOriginalPost}
             lostItem={selectedLostItem}
-            finder={originalPost?.finder?._id}
+            finder={filteredOriginalPost?._id}
             refreshData={refreshData}
             isAdmin={
               originalPost?.author?.role?.permissions.includes(
@@ -626,6 +626,8 @@ const SharedPost = ({
                 ? true
                 : false
             }
+            sharedBy={post?.isShared ? post?.sharedBy?._id : null}
+            owner={session?.user?.id}
           />
         </>
       )}

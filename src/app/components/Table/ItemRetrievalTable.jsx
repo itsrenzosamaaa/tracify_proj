@@ -29,7 +29,7 @@ import { format, parseISO } from "date-fns";
 import CompletedModal from "../Modal/CompletedModal";
 import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects";
 
-const ItemRetrievalTable = ({ items, fetchItems, users }) => {
+const ItemRetrievalTable = ({ items, fetchItems }) => {
   const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
   const [openReservedModal, setOpenReservedModal] = useState(null);
   const [openCompletedModal, setOpenCompletedModal] = useState(false);
@@ -175,7 +175,6 @@ const ItemRetrievalTable = ({ items, fetchItems, users }) => {
                             refreshData={fetchItems}
                             setMessage={setMessage}
                             setOpenSnackbar={setOpenSnackbar}
-                            users={users}
                           />
                         </>
                       )}
@@ -456,7 +455,6 @@ const ItemRetrievalTable = ({ items, fetchItems, users }) => {
                                 refreshData={fetchItems}
                                 setMessage={setMessage}
                                 setOpenSnackbar={setOpenSnackbar}
-                                users={users}
                               />
                             </>
                           )}

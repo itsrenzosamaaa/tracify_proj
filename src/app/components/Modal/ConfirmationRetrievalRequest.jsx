@@ -20,6 +20,8 @@ const ConfirmationRetrievalRequest = ({
   finder,
   refreshData,
   isAdmin,
+  sharedBy,
+  owner,
 }) => {
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -35,6 +37,10 @@ const ConfirmationRetrievalRequest = ({
       request_status: "Pending",
       datePending: new Date(),
     };
+
+    if (![null, foundItem?.user, owner].includes(sharedBy)) {
+      newMatch.sharedBy = sharedBy;
+    }
 
     try {
       setLoading(true);
@@ -59,7 +65,7 @@ const ConfirmationRetrievalRequest = ({
       await makeRequest(`/api/found-items/${foundItemId}`, "PUT", {
         status: "Matched",
       });
-      if(!isAdmin){
+      if (!isAdmin) {
         await makeRequest("/api/notification", "POST", {
           receiver: foundItem.user,
           message: `Someone matched their lost item to your found item (${foundItem.item.name}). Click here for review.`,

@@ -31,24 +31,13 @@ const ItemReservedModal = ({
   refreshData,
   setMessage,
   setOpenSnackbar,
-  users,
 }) => {
   const [declineModal, setDeclineModal] = useState(false);
   const [declineRemarks, setDeclineRemarks] = useState("");
   const [otherReason, setOtherReason] = useState("");
-  const [seePost, setSeePost] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
   const [confirmationItemClaimed, setConfirmationItemClaimed] = useState(false);
-  const [itemClaimed, setItemClaimed] = useState(false);
   const [confirmationItemDecline, setConfirmationItemDecline] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const filteredUsers = users.filter(
-    (user) =>
-      user._id !== row.finder.user._id &&
-      user._id !== row.owner.user._id &&
-      user.role.permissions.includes("User Dashboard")
-  );
 
   const handleReasonChange = (event) => {
     setDeclineRemarks(event.target.value);
@@ -133,8 +122,8 @@ const ItemReservedModal = ({
         )
       );
 
-      if (seePost === "It was shared by another user") {
-        await makeRequest(`/api/users/${selectedUser}/increment`, "PUT", {
+      if (row?.sharedBy) {
+        await makeRequest(`/api/users/${row.sharedBy}/increment`, "PUT", {
           increment: "share",
         });
       }
@@ -150,7 +139,6 @@ const ItemReservedModal = ({
 
       // Close modals, refresh data, and show success notification
       setConfirmationItemClaimed(false);
-      setItemClaimed(false);
       onClose();
       await refreshData();
       setOpenSnackbar("success");
@@ -447,73 +435,11 @@ const ItemReservedModal = ({
             </Modal>
             <Button
               color="success"
-              onClick={() => setItemClaimed(true)}
+              onClick={() => setConfirmationItemClaimed(true)}
               fullWidth
             >
               Item Resolved
             </Button>
-            <Modal open={itemClaimed} onClose={() => setItemClaimed(false)}>
-              <ModalDialog>
-                <ModalClose />
-                <Typography level="h4" gutterBottom>
-                  Resolved Item
-                </Typography>
-                <FormControl>
-                  <FormLabel>How was the item found?</FormLabel>
-                  <RadioGroup
-                    value={seePost}
-                    onChange={(e) => setSeePost(e.target.value)}
-                    sx={{ my: 2 }}
-                  >
-                    <Stack spacing={2}>
-                      <FormControlLabel
-                        value="The finder posted it"
-                        control={<Radio />}
-                        label="The finder posted it"
-                      />
-                      <FormControlLabel
-                        value="It was shared by another user"
-                        control={<Radio />}
-                        label="It was shared by another user"
-                      />
-                    </Stack>
-                  </RadioGroup>
-                </FormControl>
-                {seePost === "It was shared by another user" && (
-                  <FormControl>
-                    <FormLabel>Who shared the post?</FormLabel>
-                    <Autocomplete
-                      fullWidth
-                      required
-                      options={filteredUsers}
-                      getOptionLabel={(user) =>
-                        `${user.firstname} ${user.lastname}`
-                      } // Display full name
-                      value={
-                        filteredUsers.find(
-                          (user) => user._id === selectedUser
-                        ) || null
-                      } // Set selected value
-                      onChange={(event, newValue) =>
-                        setSelectedUser(newValue ? newValue._id : "")
-                      } // Update state
-                      renderInput={(params) => (
-                        <Input {...params} placeholder="Search user..." />
-                      )}
-                    />
-                  </FormControl>
-                )}
-                <Button
-                  sx={{ mt: 2 }}
-                  onClick={() => setConfirmationItemClaimed(true)}
-                  disabled={
-                    seePost === "It was shared by another user" && !selectedUser
-                  }
-                >
-                  Submit
-                </Button>
-              </ModalDialog>
-            </Modal>
 
             <Modal
               open={confirmationItemClaimed}

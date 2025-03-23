@@ -14,13 +14,7 @@ const MatchItemsSchema = new mongoose.Schema({
   },
   request_status: {
     type: String,
-    enum: [
-      "Pending",
-      "Approved",
-      "Completed",
-      "Declined",
-      "Canceled",
-    ],
+    enum: ["Pending", "Approved", "Completed", "Declined", "Canceled"],
   },
   datePending: {
     type: Date,
@@ -40,6 +34,11 @@ const MatchItemsSchema = new mongoose.Schema({
   remarks: {
     type: String,
   },
+  sharedBy: {
+    type: String,
+    ref: "User",
+  },
 });
 
-export default mongoose.models.MatchItem || mongoose.model("MatchItem", MatchItemsSchema);
+export default mongoose.models.MatchItem ||
+  mongoose.model("MatchItem", MatchItemsSchema);

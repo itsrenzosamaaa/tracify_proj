@@ -502,6 +502,8 @@ const Post = ({
         isAdmin={
           author?.role?.permissions.includes("Admin Dashboard") ? true : false
         }
+        sharedBy={post?.isShared ? post?.sharedBy?._id : null}
+        owner={session?.user?.id}
       />
       <Modal
         open={sharePostModal === post._id}
