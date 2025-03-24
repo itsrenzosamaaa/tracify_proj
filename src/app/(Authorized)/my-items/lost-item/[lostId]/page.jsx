@@ -64,6 +64,8 @@ const ViewItemPage = ({ params }) => {
   const router = useRouter();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
+  console.log(foundItem);
+
   const formatDate1 = (date) =>
     isToday(new Date(date))
       ? `Today, ${format(new Date(date), "hh:mm a")}`
@@ -82,8 +84,7 @@ const ViewItemPage = ({ params }) => {
       const findFoundItem = data.find(
         (foundItem) =>
           foundItem?.owner?.item?._id === lostItemId &&
-          (foundItem.request_status === "Pending" ||
-            foundItem.owner.item.status === "Unclaimed")
+          ["Pending", "Approved"].includes(foundItem.request_status)
       );
       const findUncompletedItems = data.filter(
         (uncompletedItem) =>
