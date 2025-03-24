@@ -94,12 +94,10 @@ const UserDashboard = ({ session, status, users }) => {
     try {
       const response = await fetch(`/api/match-items`);
       const data = await response.json();
-      const filteredMatches = data.filter(
-        (match) =>
-          match?.finder?.item?.status === "Matched" ||
-          match?.finder?.item?.status === "Resolved"
+      const filteredMatches = data.filter((match) =>
+        !["Completed", "Canceled", "Declined"].includes(match?.request_status)
       );
-      setMatches(filteredMatches);
+      setMatches(filteredMatches); // Keep all matches regardless of status
     } catch (error) {
       console.error(error);
     }
@@ -405,7 +403,14 @@ const UserDashboard = ({ session, status, users }) => {
               </form>
 
               {isMd && session?.user?.permissions.includes("Request Items") && (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
                   <Button
                     fullWidth
                     onClick={() => setOpenFoundRequestModal(true)}

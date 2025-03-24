@@ -114,11 +114,11 @@ const Post = ({
   };
 
   const matchedOwnerIds = new Set(
-    matches.map((match) => match?.owner?._id?.toString())
+    matches.map((match) => match?.owner?._id)
   );
 
   const filteredLostItems = lostItems.filter(
-    (lostItem) => !matchedOwnerIds.has(lostItem?._id?.toString())
+    (lostItem) => !matchedOwnerIds.has(lostItem?._id)
   );
 
   return (
