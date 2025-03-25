@@ -14,6 +14,7 @@ import {
   Option,
   Input,
   Snackbar,
+  IconButton,
 } from "@mui/joy";
 import { Paper, Badge, useMediaQuery } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -21,7 +22,7 @@ import ItemsTable from "./Table/ItemsTable";
 import PublishLostItem from "./Modal/PublishLostItems";
 import TitleBreadcrumbs from "./Title/TitleBreadcrumbs";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import { Search } from "@mui/icons-material";
+import { Refresh, Search } from "@mui/icons-material";
 
 const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
   const [status, setStatus] = useState("Missing");
@@ -70,7 +71,17 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
               }}
             >
               <FormControl>
-                <FormLabel>Filter by Status</FormLabel>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <FormLabel sx={{ mb: 0 }}>Filter by Status</FormLabel>
+                  <IconButton
+                    size="small"
+                    onClick={() => fetchItems()}
+                    sx={{ p: 0.5, mt: "-2px" }} // Optional vertical tweak
+                  >
+                    <Refresh fontSize="small" />
+                  </IconButton>
+                </Box>
+
                 <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 1 }}>
                   {isMobile ? (
                     <>

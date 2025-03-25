@@ -22,7 +22,7 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
       ...user,
       resolvedFoundItemsCount: user.resolvedItemCount || 0, // Default to 0 if undefined
     }))
-    // .filter((user) => user.resolvedFoundItemsCount >= 2) // Only include users with 2+ items
+    .filter((user) => user.resolvedFoundItemsCount >= 2) // Only include users with 2+ items
     .sort((a, b) => b.resolvedFoundItemsCount - a.resolvedFoundItemsCount);
 
   // ✅ Assign ranks using the average rank method for ties

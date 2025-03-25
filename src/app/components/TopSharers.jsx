@@ -23,7 +23,7 @@ const TopSharers = ({ users, session }) => {
       ...user,
       sharedCount: user.shareCount,
     }))
-    // .filter((user) => user.sharedCount >= 3)
+    .filter((user) => user.sharedCount >= 3)
     .sort((a, b) => b.sharedCount - a.sharedCount);
 
   // ✅ Assign ranks using the average rank method for ties

@@ -1,13 +1,15 @@
-import React, { useState } from "react";
-import { Paper, useTheme, useMediaQuery } from "@mui/material";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Paper,
+  useTheme,
+  useMediaQuery,
+  keyframes,
+  styled,
+} from "@mui/material";
 import {
   Avatar,
   Box,
   Typography,
-  Menu,
-  MenuItem,
-  MenuButton,
-  Dropdown,
   ModalDialog,
   Modal,
   ModalClose,
@@ -17,12 +19,33 @@ import {
   Button,
   FormHelperText,
 } from "@mui/joy";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ChangeProfilePicture from "../Modal/ChangeProfilePicture";
 import EditIcon from "@mui/icons-material/Edit";
 import dayjs from "dayjs";
-import ChangeContactNumber from "../Modal/ChangeContactNumber";
+import ReactConfetti from "react-confetti";
 import PreviewBadge from "../PreviewBadge";
+import ChangeProfilePicture from "../Modal/ChangeProfilePicture";
+import ChangeContactNumber from "../Modal/ChangeContactNumber";
+
+const pulseGlow = keyframes`
+  0% {
+    box-shadow: 0 0 10px #FFD700;
+  }
+  50% {
+    box-shadow: 0 0 30px #FFD700;
+  }
+  100% {
+    box-shadow: 0 0 10px #FFD700;
+  }
+`;
+
+const HighlightAvatar = styled(Avatar)(({ theme }) => ({
+  width: 100,
+  height: 100,
+  borderRadius: "50%",
+  boxShadow: `0 0 10px 4px #FFD700`,
+  animation: `${pulseGlow} 2s infinite ease-in-out`,
+  zIndex: 2,
+}));
 
 const AvatarWithName = ({
   profile,
@@ -32,14 +55,34 @@ const AvatarWithName = ({
   setMessage,
   update,
 }) => {
+  const theme = useTheme();
+  const isMd = useMediaQuery(theme.breakpoints.down("md"));
+
   const [image, setImage] = useState(profile.profile_picture || null);
   const [openModal, setOpenModal] = useState(false);
   const [openUsernameModal, setOpenUsernameModal] = useState(false);
   const [openBirthdayModal, setOpenBirthdayModal] = useState(false);
   const [birthday, setBirthday] = useState(null);
   const [loading, setLoading] = useState(false);
-  const theme = useTheme();
-  const isMd = useMediaQuery(theme.breakpoints.down("md"));
+  const [showConfetti, setShowConfetti] = useState(true);
+
+  const isBirthdayToday = useMemo(() => {
+    return (
+      profile?.birthday &&
+      dayjs(profile.birthday).format("MM-DD") === dayjs().format("MM-DD")
+    );
+  }, [profile?.birthday]);
+
+  const isMilestone =
+    (profile?.resolvedItemCount || 0) >= 20 || (profile?.shareCount || 0) >= 20;
+
+  useEffect(() => {
+    if (isBirthdayToday) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isBirthdayToday]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,14 +91,12 @@ const AvatarWithName = ({
     try {
       await fetch(`/api/users/${session?.user?.id}/birthday`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ birthday }),
       });
 
       setOpenBirthdayModal(false);
-      setBirthday(false);
+      setBirthday(null);
       refreshData();
       setOpenSnackbar("success");
       setMessage("Birthday saved successfully!");
@@ -76,30 +117,55 @@ const AvatarWithName = ({
           padding: "1rem",
           marginX: isMd ? 0 : "13rem",
           display: "flex",
-          gap: { xs: 2, md: 0 },
           flexDirection: "column",
           alignItems: "center",
           position: "relative",
         }}
       >
+        {showConfetti && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: 300,
+              zIndex: 1,
+              pointerEvents: "none",
+            }}
+          >
+            <ReactConfetti
+              width={600}
+              height={300}
+              numberOfPieces={200}
+              recycle={false}
+              gravity={0.3}
+            />
+          </Box>
+        )}
+
+        {/* Avatar */}
         <Box sx={{ position: "relative", display: "inline-block" }}>
           {image ? (
-            <Avatar
-              alt={`${profile.firstname} ${profile.lastname}'s Profile Picture`}
-              src={profile.profile_picture}
-              sx={{
-                width: 100,
-                height: 100,
-                borderRadius: "50%",
-                boxShadow: 2,
-              }}
-            />
+            isMilestone ? (
+              <HighlightAvatar src={image} alt="Profile" />
+            ) : (
+              <Avatar
+                src={image}
+                alt="Profile"
+                sx={{
+                  width: 100,
+                  height: 100,
+                  zIndex: 2,
+                  border: "3px solid black",
+                }}
+              />
+            )
           ) : (
             <Avatar
               sx={{
                 width: 100,
                 height: 100,
-                marginBottom: "1rem",
                 backgroundColor: "primary.light",
               }}
             >
@@ -108,12 +174,13 @@ const AvatarWithName = ({
               </Typography>
             </Avatar>
           )}
-          {/* Pencil Icon */}
+
+          {/* Edit Icon */}
           <Box
             sx={{
               position: "absolute",
-              bottom: 7,
-              right: 7,
+              bottom: 0,
+              right: 0,
               backgroundColor: "#f5f5f5",
               borderRadius: "50%",
               width: "28px",
@@ -124,28 +191,33 @@ const AvatarWithName = ({
               boxShadow: 1,
               cursor: "pointer",
               border: "2px solid white",
+              zIndex: 3,
             }}
-            onClick={() => {
-              setOpenModal(true);
-            }}
+            onClick={() => setOpenModal(true)}
           >
             <EditIcon sx={{ fontSize: 16 }} />
           </Box>
         </Box>
-        <Box sx={{ textAlign: "center" }}>
+
+        {/* User Info */}
+        <Box sx={{ textAlign: "center", mt: 1 }}>
           <Typography level="body-lg" fontWeight="500">
             {profile.firstname} {profile.lastname}
           </Typography>
+
           <PreviewBadge
-            resolvedItemCount={profile?.resolvedItemCount}
-            shareCount={profile?.shareCount}
+            resolvedItemCount={profile?.resolvedItemCount || 0}
+            shareCount={profile?.shareCount || 0}
             birthday={profile?.birthday}
-            inherit={true}
+            inherit
           />
+
           <Typography level="body-sm" fontWeight="400">
             {profile.role.name}
           </Typography>
         </Box>
+
+        {/* Fields */}
         <Box
           sx={{
             width: "100%",
@@ -213,6 +285,8 @@ const AvatarWithName = ({
           ))}
         </Box>
       </Paper>
+
+      {/* Modals */}
       <Modal
         open={openBirthdayModal}
         onClose={() => setOpenBirthdayModal(false)}
@@ -231,11 +305,10 @@ const AvatarWithName = ({
                 onChange={(e) => setBirthday(e.target.value)}
                 slotProps={{
                   input: {
-                    max: dayjs().format("YYYY-MM-DD"), // Formats to "YYYY-MM-DD" for compatibility
+                    max: dayjs().format("YYYY-MM-DD"),
                   },
                 }}
               />
-
               <FormHelperText>
                 You can only set your birthday once!
               </FormHelperText>
@@ -252,6 +325,8 @@ const AvatarWithName = ({
           </form>
         </ModalDialog>
       </Modal>
+
+      {/* Profile & Contact Change Modals */}
       <ChangeProfilePicture
         loading={loading}
         setImage={setImage}
@@ -264,6 +339,7 @@ const AvatarWithName = ({
         openModal={openModal}
         update={update}
       />
+
       <ChangeContactNumber
         session={session}
         profile={profile}

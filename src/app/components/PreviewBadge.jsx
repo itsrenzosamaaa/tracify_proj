@@ -1,156 +1,148 @@
 import React from "react";
-import { Tooltip, Box } from "@mui/joy";
-import { useTheme, useMediaQuery } from "@mui/material";
+import { Box, Tooltip } from "@mui/joy";
+import { Fade } from "@mui/material";
 import dayjs from "dayjs";
 
+const glowAnimation = (color) => ({
+  animation: "pulseGlow 2s infinite",
+  boxShadow: `0 0 5px ${color}, 0 0 10px ${color}`,
+  "@keyframes pulseGlow": {
+    "0%": { boxShadow: `0 0 5px ${color}, 0 0 10px ${color}` },
+    "50%": { boxShadow: `0 0 15px ${color}, 0 0 30px ${color}` },
+    "100%": { boxShadow: `0 0 5px ${color}, 0 0 10px ${color}` },
+  },
+});
+
 const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
-  const birthdayBadge = { shape: "birthdayCake", color: "#F44336" };
-
-  const getResolvedBadge = () => {
-    if (resolvedItemCount >= 10) {
-      return { shape: "star", color: "#FFD700" }; // Gold star
-    } else if (resolvedItemCount >= 5) {
-      return { shape: "star", color: "#C0C0C0" }; // Silver star
-    } else if (resolvedItemCount >= 1) {
-      return { shape: "star", color: "#CD7F32" }; // Bronze star
-    }
-    return null;
-  };
-
-  const getShareBadge = () => {
-    if (shareCount >= 10) {
-      return { shape: "circle", color: "#FFD700" }; // Gold circle
-    } else if (shareCount >= 5) {
-      return { shape: "circle", color: "#C0C0C0" }; // Silver circle
-    } else if (shareCount >= 1) {
-      return { shape: "circle", color: "#CD7F32" }; // Bronze circle
-    }
-    return null;
-  };
-
-  const createStarShape = (size, color) => ({
-    width: size,
-    height: size,
-    backgroundColor: color,
-    clipPath:
-      "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
-  });
-
-  const createCircleShape = (size, color) => ({
-    width: size,
-    height: size,
-    backgroundColor: color,
-    borderRadius: "50%",
-  });
-
-  const createBirthdayGiftBadge = (size, boxColor, ribbonColor) => ({
-    width: size,
-    height: size * 0.8,
-    backgroundColor: boxColor,
-    borderRadius: `${size * 0.1}px`,
-    position: "relative",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-    "&::before": {
-      // Vertical Ribbon
-      content: '""',
-      position: "absolute",
-      top: 0,
-      left: "50%",
-      transform: "translateX(-50%)",
-      width: size * 0.15,
-      height: "100%",
-      backgroundColor: ribbonColor,
-    },
-    "&::after": {
-      // Horizontal Ribbon
-      content: '""',
-      position: "absolute",
-      top: "50%",
-      left: 0,
-      transform: "translateY(-50%)",
-      width: "100%",
-      height: size * 0.15,
-      backgroundColor: ribbonColor,
-    },
-    "& .bow": {
-      position: "absolute",
-      top: -size * 0.2,
-      left: "50%",
-      transform: "translateX(-50%)",
-      width: size * 0.4,
-      height: size * 0.2,
-      backgroundColor: ribbonColor,
-      borderRadius: `${size * 0.1}px`,
-      "&::before, &::after": {
-        content: '""',
-        position: "absolute",
-        width: size * 0.2,
-        height: size * 0.2,
-        backgroundColor: ribbonColor,
-        borderRadius: "50%",
-      },
-      "&::before": {
-        left: -size * 0.15,
-        top: 0,
-      },
-      "&::after": {
-        right: -size * 0.15,
-        top: 0,
-      },
-    },
-  });
-
-  const createCheckmarkShape = (size, color) => ({
-    width: size,
-    height: size,
-    backgroundColor: color,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-    "&::before": {
-      // Optional: Add slight shadow/depth to the badge
-      content: '""',
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      borderRadius: "50%",
-      boxShadow: "inset 0 -1px 2px rgba(0,0,0,0.2)",
-    },
-    "&::after": {
-      content: '""',
-      width: `${size * 0.2}px`, // Slightly smaller width for better proportions
-      height: `${size * 0.5}px`, // Reduced height for better checkmark look
-      border: `${size * 0.12}px solid white`, // Dynamic border width based on size
-      borderLeft: "0",
-      borderTop: "0",
-      transform: "rotate(45deg) translate(0, -70%)", // Adjusted positioning
-      position: "absolute",
-      top: "45%", // Moved slightly up
-      transformOrigin: "center",
-      boxShadow: "0 1px 1px rgba(0,0,0,0.1)", // Subtle shadow on the checkmark
-    },
-  });
-
-  const createShape = (type, color) => {
-    switch (type) {
-      case "star":
-        return createStarShape(20, color);
-      case "checkmark":
-        return createCheckmarkShape(18, color);
-      default:
-        return createCircleShape(14, color);
-    }
-  };
-
-  const resolvedBadge = getResolvedBadge();
-  const shareBadge = getShareBadge();
-
   const isBirthdayToday =
-    dayjs(birthday).format("MM-DD") === dayjs().format("MM-DD");
+    birthday && dayjs(birthday).format("MM-DD") === dayjs().format("MM-DD");
+
+  const getResolvedLevel = () => {
+    if (resolvedItemCount >= 20)
+      return {
+        shape: "star",
+        color: "#DAA520",
+        label: "Legendary Finder",
+        glow: "#DAA520",
+      };
+    if (resolvedItemCount >= 10)
+      return {
+        shape: "star",
+        color: "#FFD700",
+        label: "Gold Resolver",
+        glow: "#FFD700",
+      };
+    if (resolvedItemCount >= 5)
+      return {
+        shape: "star",
+        color: "#C0C0C0",
+        label: "Silver Solver",
+        glow: "#C0C0C0",
+      };
+    if (resolvedItemCount >= 1)
+      return {
+        shape: "star",
+        color: "#CD7F32",
+        label: "Bronze Seeker",
+        glow: "#CD7F32",
+      };
+    return null;
+  };
+
+  const getShareLevel = () => {
+    if (shareCount >= 20)
+      return {
+        shape: "circle",
+        color: "#DAA520",
+        label: "Master Broadcaster",
+        glow: "#DAA520",
+      };
+    if (shareCount >= 10)
+      return {
+        shape: "circle",
+        color: "#FFD700",
+        label: "Top Sharer",
+        glow: "#FFD700",
+      };
+    if (shareCount >= 5)
+      return {
+        shape: "circle",
+        color: "#C0C0C0",
+        label: "Amateur Sharer",
+        glow: "#C0C0C0",
+      };
+    if (shareCount >= 1)
+      return {
+        shape: "circle",
+        color: "#CD7F32",
+        label: "Rookie Sharer",
+        glow: "#CD7F32",
+      };
+    return null;
+  };
+
+  const StarBadge = ({ color, glow }) => (
+    <Box
+      sx={{
+        width: 20,
+        height: 20,
+        backgroundColor: color,
+        clipPath:
+          "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
+        border: "1px solid rgba(0,0,0,0.4)",
+        ...glowAnimation(glow),
+        transition: "transform 0.3s ease-in-out",
+        "&:hover": { transform: "scale(1.2)" },
+      }}
+    />
+  );
+
+  const CircleBadge = ({ color, glow }) => (
+    <Box
+      sx={{
+        width: 16,
+        height: 16,
+        borderRadius: "50%",
+        backgroundColor: color,
+        border: "1.5px solid white",
+        ...glowAnimation(glow),
+        transition: "transform 0.3s ease-in-out",
+        "&:hover": { transform: "scale(1.2)" },
+      }}
+    />
+  );
+
+  const GiftBadge = () => (
+    <Box
+      sx={{
+        width: 16,
+        height: 16,
+        position: "relative",
+        backgroundColor: "#ff4081",
+        borderRadius: "3px",
+        ...glowAnimation("#ff4081"),
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          width: "100%",
+          height: "3px",
+          backgroundColor: "#fff176",
+          top: "6px",
+        },
+        "&::after": {
+          content: '""',
+          position: "absolute",
+          width: "3px",
+          height: "100%",
+          backgroundColor: "#fff176",
+          left: "6.5px",
+        },
+      }}
+    />
+  );
+
+  const resolvedBadge = getResolvedLevel();
+  const shareBadge = getShareLevel();
   const noBadges = !resolvedBadge && !shareBadge && !isBirthdayToday;
 
   if (noBadges) return null;
@@ -161,55 +153,52 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
         display: "flex",
         gap: 1,
         alignItems: "center",
-        justifyContent: 'center',
-        backgroundColor: noBadges || inherit ? "transparent" : "#e0e0e0", // Remove background if no badges
-        px: noBadges ? 0 : 1, // Remove padding if no badges
-        borderRadius: "5px",
+        justifyContent: "center",
+        backgroundColor: inherit ? "transparent" : "#f5f5f5",
+        px: 1,
+        py: 0.5,
+        borderRadius: 8,
       }}
     >
-      {birthdayBadge && isBirthdayToday && (
-        <Tooltip title="Happy Birthday!" arrow placement="top">
-          <Box
-            sx={{
-              ...createBirthdayGiftBadge(20, "#FF4081", "#FFC107"), // Box: Pink, Ribbon: Yellow
-              display: "inline-block",
-            }}
-          >
-            <Box className="bow" />
+      {isBirthdayToday && (
+        <Tooltip
+          title="🎂 It's Your Special Day!"
+          arrow
+          placement="top"
+          TransitionComponent={Fade}
+          TransitionProps={{ timeout: 300 }}
+        >
+          <Box component="span">
+            <GiftBadge />
           </Box>
         </Tooltip>
       )}
 
       {resolvedBadge && (
         <Tooltip
-          title={`Resolved Items: ${resolvedItemCount}`}
+          title={`${resolvedBadge.label}: ${resolvedItemCount}`}
           arrow
           placement="top"
+          TransitionComponent={Fade}
+          TransitionProps={{ timeout: 300 }}
         >
-          <Box
-            sx={{
-              ...createShape(resolvedBadge.shape, resolvedBadge.color),
-              display: "inline-block",
-              transition: "transform 0.2s ease-in-out",
-              "&:hover": {
-                transform: "scale(1.1)",
-              },
-            }}
-          />
+          <Box component="span">
+            <StarBadge color={resolvedBadge.color} glow={resolvedBadge.glow} />
+          </Box>
         </Tooltip>
       )}
+
       {shareBadge && (
-        <Tooltip title={`Shares: ${shareCount}`} arrow placement="top">
-          <Box
-            sx={{
-              ...createShape(shareBadge.shape, shareBadge.color),
-              display: "inline-block",
-              transition: "transform 0.2s ease-in-out",
-              "&:hover": {
-                transform: "scale(1.1)",
-              },
-            }}
-          />
+        <Tooltip
+          title={`${shareBadge.label}: ${shareCount}`}
+          arrow
+          placement="top"
+          TransitionComponent={Fade}
+          TransitionProps={{ timeout: 300 }}
+        >
+          <Box component="span">
+            <CircleBadge color={shareBadge.color} glow={shareBadge.glow} />
+          </Box>
         </Tooltip>
       )}
     </Box>
