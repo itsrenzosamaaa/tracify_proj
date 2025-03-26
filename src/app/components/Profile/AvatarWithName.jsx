@@ -64,7 +64,7 @@ const AvatarWithName = ({
   const [openBirthdayModal, setOpenBirthdayModal] = useState(false);
   const [birthday, setBirthday] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(true);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const isBirthdayToday = useMemo(() => {
     return (

@@ -3,16 +3,6 @@ import { Box, Tooltip } from "@mui/joy";
 import { Fade } from "@mui/material";
 import dayjs from "dayjs";
 
-const glowAnimation = (color) => ({
-  animation: "pulseGlow 2s infinite",
-  boxShadow: `0 0 5px ${color}, 0 0 10px ${color}`,
-  "@keyframes pulseGlow": {
-    "0%": { boxShadow: `0 0 5px ${color}, 0 0 10px ${color}` },
-    "50%": { boxShadow: `0 0 15px ${color}, 0 0 30px ${color}` },
-    "100%": { boxShadow: `0 0 5px ${color}, 0 0 10px ${color}` },
-  },
-});
-
 const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
   const isBirthdayToday =
     birthday && dayjs(birthday).format("MM-DD") === dayjs().format("MM-DD");
@@ -22,29 +12,25 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
       return {
         shape: "star",
         color: "#DAA520",
-        label: "Legendary Finder",
-        glow: "#DAA520",
+        label: "Legendary Finder",s
       };
     if (resolvedItemCount >= 10)
       return {
         shape: "star",
         color: "#FFD700",
         label: "Gold Resolver",
-        glow: "#FFD700",
       };
     if (resolvedItemCount >= 5)
       return {
         shape: "star",
         color: "#C0C0C0",
         label: "Silver Solver",
-        glow: "#C0C0C0",
       };
     if (resolvedItemCount >= 1)
       return {
         shape: "star",
         color: "#CD7F32",
         label: "Bronze Seeker",
-        glow: "#CD7F32",
       };
     return null;
   };
@@ -55,57 +41,51 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
         shape: "circle",
         color: "#DAA520",
         label: "Master Broadcaster",
-        glow: "#DAA520",
       };
     if (shareCount >= 10)
       return {
         shape: "circle",
         color: "#FFD700",
         label: "Top Sharer",
-        glow: "#FFD700",
       };
     if (shareCount >= 5)
       return {
         shape: "circle",
         color: "#C0C0C0",
         label: "Amateur Sharer",
-        glow: "#C0C0C0",
       };
     if (shareCount >= 1)
       return {
         shape: "circle",
         color: "#CD7F32",
         label: "Rookie Sharer",
-        glow: "#CD7F32",
       };
     return null;
   };
 
-  const StarBadge = ({ color, glow }) => (
+  const StarBadge = ({ color }) => (
     <Box
       sx={{
-        width: 20,
-        height: 20,
+        width: 16,
+        height: 16,
         backgroundColor: color,
         clipPath:
           "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
         border: "1px solid rgba(0,0,0,0.4)",
-        ...glowAnimation(glow),
         transition: "transform 0.3s ease-in-out",
         "&:hover": { transform: "scale(1.2)" },
       }}
     />
   );
 
-  const CircleBadge = ({ color, glow }) => (
+  const CircleBadge = ({ color }) => (
     <Box
       sx={{
-        width: 16,
-        height: 16,
+        width: 12,
+        height: 12,
         borderRadius: "50%",
         backgroundColor: color,
         border: "1.5px solid white",
-        ...glowAnimation(glow),
         transition: "transform 0.3s ease-in-out",
         "&:hover": { transform: "scale(1.2)" },
       }}
@@ -115,12 +95,11 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
   const GiftBadge = () => (
     <Box
       sx={{
-        width: 16,
-        height: 16,
+        width: 12,
+        height: 12,
         position: "relative",
         backgroundColor: "#ff4081",
         borderRadius: "3px",
-        ...glowAnimation("#ff4081"),
         "&::before": {
           content: '""',
           position: "absolute",
@@ -183,7 +162,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
           TransitionProps={{ timeout: 300 }}
         >
           <Box component="span">
-            <StarBadge color={resolvedBadge.color} glow={resolvedBadge.glow} />
+            <StarBadge color={resolvedBadge.color} />
           </Box>
         </Tooltip>
       )}
@@ -197,7 +176,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
           TransitionProps={{ timeout: 300 }}
         >
           <Box component="span">
-            <CircleBadge color={shareBadge.color} glow={shareBadge.glow} />
+            <CircleBadge color={shareBadge.color} />
           </Box>
         </Tooltip>
       )}
