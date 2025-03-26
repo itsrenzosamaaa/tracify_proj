@@ -35,10 +35,10 @@ export async function GET(req, { params }) {
 
 
 export async function PUT(req, { params }) {
-    const { id } = params; // Get the office ID from the URL
+    const { id } = params;
     const { request_status, ...fields } = await req.json();
 
-    await dbConnect(); // Connect to MongoDB
+    await dbConnect();
 
     try {
         const updateData = { request_status, ...fields };
@@ -59,7 +59,7 @@ export async function PUT(req, { params }) {
         );
 
         if (!updateMatchedData) {
-            return NextResponse.json({ message: 'Found item not found' }, { status: 404 });
+            return NextResponse.json({ message: 'Matched items not found' }, { status: 404 });
         }
 
         return NextResponse.json(updateMatchedData);

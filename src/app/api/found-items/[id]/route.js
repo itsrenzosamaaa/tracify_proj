@@ -21,10 +21,10 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-    const { id } = params; // Get the office ID from the URL
+    const { id } = params;
     const { status, ...fields } = await req.json();
 
-    await dbConnect(); // Connect to MongoDB
+    await dbConnect(); 
 
     try {
         const updateData = { status, ...fields };

@@ -30,7 +30,7 @@ export async function GET() {
 export async function POST(req) {
   try {
     await dbConnect();
-    const foundItemData = await req.json(); // This will only work for JSON data, not FormData
+    const foundItemData = await req.json();
 
     if (!foundItemData.images || !foundItemData.status) {
       return NextResponse.json(
@@ -41,7 +41,6 @@ export async function POST(req) {
 
     foundItemData._id = `FI_${nanoid(6)}`;
 
-    // Assuming you're sending the image as a URL or base64 from the frontend
     const uploadedImages = [];
     for (const image of foundItemData.images) {
       const uploadResponse = await cloudinary.uploader.upload(image, {

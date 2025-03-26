@@ -20,10 +20,10 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-  const { id } = params; // Get the office ID from the URL
+  const { id } = params;
   const { status, ...fields } = await req.json();
 
-  await dbConnect(); // Connect to MongoDB
+  await dbConnect();
 
   try {
     const updateData = { status, ...fields };
@@ -51,11 +51,11 @@ export async function PUT(req, { params }) {
     );
 
     if (!updateLostItem) {
-      return NextResponse.json({ message: 'Found item not found' }, { status: 404 });
+      return NextResponse.json({ message: 'Lost item not found' }, { status: 404 });
     }
 
     return NextResponse.json(updateLostItem);
   } catch (error) {
-    return NextResponse.json({ message: 'Error updating found item' }, { status: 500 });
+    return NextResponse.json({ message: 'Error updating lost item' }, { status: 500 });
   }
 }

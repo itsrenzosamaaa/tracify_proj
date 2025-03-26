@@ -28,13 +28,11 @@ export async function GET(req) {
       ];
     }
 
-    // 👉 First fetch all posts based on matchStage
     let allPosts = await post.aggregate([
       { $match: matchStage },
-      ...(searchQuery ? [] : [{ $sample: { size: 1000 } }]), // Optional: apply sampling if no search
+      ...(searchQuery ? [] : [{ $sample: { size: 1000 } }]),
     ]);
 
-    // 👉 Populate after aggregation
     allPosts = await post.populate(allPosts, [
       {
         path: "author",
@@ -83,7 +81,6 @@ export async function GET(req) {
       },
     ]);
 
-    // ✅ Now filter out resolved/claimed AFTER population
     const filteredPosts = allPosts.filter((post) => {
       if (!post.isShared) {
         const finderStatus = post?.finder?.item?.status;
@@ -98,7 +95,6 @@ export async function GET(req) {
       }
     });
 
-    // ✅ Apply pagination AFTER filtering
     const paginatedPosts = filteredPosts.slice(skip, skip + limit);
     const hasMore = skip + limit < filteredPosts.length;
 
