@@ -37,7 +37,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 const SharedPost = ({
   refreshData,
-  matches,
+  matches = [],
   setOpenSnackbar,
   setMessage,
   post,
@@ -47,7 +47,7 @@ const SharedPost = ({
   caption,
   sharedAt,
   isXs,
-  lostItems = null,
+  lostItems = [],
   roleColors,
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);

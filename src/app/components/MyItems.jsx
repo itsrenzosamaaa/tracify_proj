@@ -1431,7 +1431,7 @@ const MyItemsComponent = ({ session, status }) => {
                             </Button>
 
                             <Modal
-                              open={openDetails}
+                              open={openDetails === requestedItem?.item?._id}
                               onClose={() => setOpenDetails(null)}
                             >
                               <ModalDialog>
