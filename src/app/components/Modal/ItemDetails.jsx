@@ -39,7 +39,7 @@ const ItemDetails = ({
   refreshData,
   setOpenSnackbar,
   setMessage,
-  locationOptions,
+  locationOptions = [],
 }) => {
   const { data: session, status } = useSession();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -299,19 +299,10 @@ const ItemDetails = ({
                 >
                   <Avatar
                     alt={
-                      `${
-                        row.sender ? row.sender.firstname : row.user.firstname
-                      } ${
-                        row.sender ? row.sender.lastname : row.user.lastname
-                      }'s Profile Picture` || "User Profile Picture"
+                      `${row.user.firstname} ${row.user.lastname}'s Profile Picture` ||
+                      "User Profile Picture"
                     }
-                    src={
-                      `${
-                        row.sender
-                          ? row.sender.profile_picture
-                          : row.user.profile_picture
-                      }` || null
-                    }
+                    src={row.user.profile_picture}
                     sx={{
                       width: 80,
                       height: 80,
@@ -341,11 +332,8 @@ const ItemDetails = ({
                         textOverflow: isXs ? "ellipsis" : "",
                       }}
                     >
-                      {`${
-                        row.sender ? row.sender.firstname : row.user?.firstname
-                      } ${
-                        row.sender ? row.sender.lastname : row.user?.lastname
-                      }` || "Unknown User"}
+                      {`${row.user?.firstname} ${row.user?.lastname}` ||
+                        "Unknown User"}
                     </Typography>
                     <Typography
                       level={isXs ? "body-sm" : "body-md"}
@@ -355,11 +343,7 @@ const ItemDetails = ({
                         textOverflow: isXs ? "ellipsis" : "",
                       }}
                     >
-                      {`${
-                        row.sender
-                          ? row.sender.emailAddress
-                          : row.user?.emailAddress
-                      }` || "No Email Address"}
+                      {`${row.user?.emailAddress}` || "No Email Address"}
                     </Typography>
                     <Typography
                       level={isXs ? "body-sm" : "body-md"}
@@ -369,11 +353,7 @@ const ItemDetails = ({
                         textOverflow: isXs ? "ellipsis" : "",
                       }}
                     >
-                      {`${
-                        row.sender
-                          ? row.sender.contactNumber
-                          : row.user?.contactNumber
-                      }` || "No Contact Number"}
+                      {`${row.user?.contactNumber}` || "No Contact Number"}
                     </Typography>
                   </Stack>
                 </Grid>
@@ -1189,26 +1169,31 @@ const ItemDetails = ({
               Item Image
             </Typography>
             <Carousel showThumbs={false} useKeyboardArrows>
-              {row.item.images?.map((image, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    overflow: "hidden",
-                    display: "inline-block",
-                    cursor: "pointer",
-                    margin: 1, // Adds some spacing between images
-                  }}
-                  onClick={() => window.open(image || "#", "_blank")}
-                >
-                  <CldImage
-                    src={image}
-                    width={200}
-                    height={200}
-                    alt={row.item?.name || "Item Image"}
-                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
-                  />
-                </Box>
-              ))}
+              {row.item.images?.map((image, index) => {
+                if (!image || image === "null") return null;
+
+                return (
+                  <Box
+                    key={index}
+                    sx={{
+                      overflow: "hidden",
+                      display: "inline-block",
+                      cursor: "pointer",
+                      margin: 1,
+                    }}
+                    onClick={() => window.open(image, "_blank")}
+                  >
+                    <CldImage
+                      priority
+                      src={image}
+                      width={200}
+                      height={200}
+                      alt={row.item?.name || "Item Image"}
+                      sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+                    />
+                  </Box>
+                );
+              })}
             </Carousel>
           </Box>
         </Grid>

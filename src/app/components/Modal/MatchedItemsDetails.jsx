@@ -492,6 +492,7 @@ const MatchedItemsDetails = ({ row }) => {
                   }}
                 >
                   <CldImage
+                    priority
                     src={image}
                     width={250}
                     height={250}
@@ -526,6 +527,7 @@ const MatchedItemsDetails = ({ row }) => {
                   }}
                 >
                   <CldImage
+                    priority
                     src={image}
                     width={250}
                     height={250}

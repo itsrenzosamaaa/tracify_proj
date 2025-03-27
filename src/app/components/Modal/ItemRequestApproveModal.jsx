@@ -12,6 +12,7 @@ import {
   RadioGroup,
   Stack,
   DialogContent,
+  Input,
 } from "@mui/joy";
 import { FormControlLabel } from "@mui/material";
 import React, { useState } from "react";
@@ -25,6 +26,7 @@ const ItemRequestApproveModal = ({
   session,
   setMessage,
   setOpenSnackbar,
+  locationOptions,
 }) => {
   const [confirmationApproveModal, setConfirmationApproveModal] =
     useState(null);
@@ -33,6 +35,7 @@ const ItemRequestApproveModal = ({
   const [reasonModal, setReasonModal] = useState(null);
   const [declineReason, setDeclineReason] = useState("");
   const [loading, setLoading] = useState(false);
+  const [otherReason, setOtherReason] = useState("");
 
   const handleReasonChange = (event) => {
     setDeclineReason(event.target.value);
@@ -140,7 +143,7 @@ const ItemRequestApproveModal = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: "Declined",
-          reason: declineReason,
+          reason: declineReason === "Others" ? otherReason : declineReason,
         }),
       });
 
@@ -275,7 +278,7 @@ const ItemRequestApproveModal = ({
                 <Typography level="h4" gutterBottom>
                   Decline
                 </Typography>
-                <Typography>Reason to Decline</Typography>
+                <Typography>Remarks</Typography>
                 <RadioGroup
                   value={declineReason}
                   onChange={handleReasonChange}
@@ -288,22 +291,31 @@ const ItemRequestApproveModal = ({
                       label="Invalid Information"
                     />
                     <FormControlLabel
-                      value="Item Is Not Tangible"
+                      value="Item is not tangible"
                       control={<Radio />}
-                      label="Item Is Not Tangible"
+                      label="Item is not tangible"
                     />
                     <FormControlLabel
-                      value="Item Not Eligible for Posting"
+                      value="Item not eligible for posting"
                       control={<Radio />}
-                      label="Item Not Eligible for Posting"
+                      label="Item not eligible for posting"
                     />
                     <FormControlLabel
-                      value="Other"
+                      value="Others"
                       control={<Radio />}
-                      label="Other"
+                      label="Others"
                     />
                   </Stack>
                 </RadioGroup>
+
+                {declineReason === "Others" && (
+                  <Input
+                    placeholder="Please specify your remarks..."
+                    fullWidth
+                    value={otherReason}
+                    onChange={(e) => setOtherReason(e.target.value)}
+                  />
+                )}
                 <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
                   <Button
                     color="danger"

@@ -269,6 +269,7 @@ const SharedPost = ({
                   onClick={() => window.open(image || "#", "_blank")}
                 >
                   <CldImage
+                    priority
                     src={image}
                     width={isXs ? 200 : 300}
                     height={isXs ? 200 : 300}

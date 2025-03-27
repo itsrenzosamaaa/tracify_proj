@@ -343,6 +343,7 @@ const ViewItemPage = ({ params }) => {
                       }}
                     >
                       <CldImage
+                        priority
                         src={image}
                         width={250}
                         height={250}
@@ -511,6 +512,7 @@ const ViewItemPage = ({ params }) => {
                         }}
                       >
                         <CldImage
+                          priority
                           src={image}
                           width={250}
                           height={250}

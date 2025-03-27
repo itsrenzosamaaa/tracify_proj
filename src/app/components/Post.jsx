@@ -77,8 +77,7 @@ const Post = ({
   const [loading, setLoading] = useState(false);
 
   const isMilestone =
-    (author?.resolvedItemCounts || 21) >= 20 &&
-    (author?.shareCounts || 21) >= 20;
+    (author?.resolvedItemCount || 0) >= 20 && (author?.shareCount || 0) >= 20;
 
   const capitalizeWords = (str) =>
     str
@@ -321,6 +320,7 @@ const Post = ({
                 onClick={() => window.open(image || "#", "_blank")}
               >
                 <CldImage
+                  priority
                   src={image}
                   width={isXs ? 200 : 300}
                   height={isXs ? 200 : 300}
