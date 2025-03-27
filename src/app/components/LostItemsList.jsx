@@ -29,6 +29,7 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
   const [openSnackbar, setOpenSnackbar] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1); // Tracks current page
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -87,7 +88,10 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
                     <>
                       <Select
                         value={status}
-                        onChange={(e, newValue) => setStatus(newValue)}
+                        onChange={(e, newValue) => {
+                          setStatus(newValue);
+                          setCurrentPage(1);
+                        }}
                         size="sm"
                       >
                         {statusOptions.map((name) => (
@@ -182,6 +186,8 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
               items={filteredItems}
               fetchItems={fetchItems}
               isFoundItem={false}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
             />
           </Paper>
         </Grid>

@@ -32,7 +32,7 @@ import ItemClaimRequestModal from "../Modal/ItemClaimRequestModal";
 import ItemReservedModal from "../Modal/ItemReservedModal";
 import { format } from "date-fns";
 
-const ItemsTable = ({ items, fetchItems, session, isFoundItem, status, locationOptions }) => {
+const ItemsTable = ({ items, fetchItems, session, isFoundItem, status, locationOptions, currentPage, setCurrentPage }) => {
   const [approveModal, setApproveModal] = useState(null);
   const [openDeclinedModal, setOpenDeclinedModal] = useState(null);
   const [openCanceledModal, setOpenCanceledModal] = useState(null);
@@ -42,7 +42,6 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status, locationO
   const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
   const [openReservedModal, setOpenReservedModal] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1); // Tracks current page
   const [rowsPerPage, setRowsPerPage] = useState(5); // Tracks rows per page
   const [message, setMessage] = useState("");
   const isMobile = useMediaQuery("(max-width:600px)");

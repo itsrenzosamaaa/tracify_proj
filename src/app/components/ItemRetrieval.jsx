@@ -13,6 +13,7 @@ const ItemRetrievalList = ({ items, fetchItems, users }) => {
   const [anchorEl, setAnchorEl] = useState(null); // For the Menu
   const [selectedStatus, setSelectedStatus] = useState("All"); // Default status
   const [searchQuery, setSearchQuery] = useState(""); // Track search input
+  const [currentPage, setCurrentPage] = useState(1); // Tracks current page
   const isMobile = useMediaQuery("(max-width:600px)");
 
   // Filter the items based on status and search query
@@ -45,6 +46,7 @@ const ItemRetrievalList = ({ items, fetchItems, users }) => {
   // Set the selected status from the menu
   const handleStatusSelect = (status) => {
     setSelectedStatus(status); // Set the selected status
+    setCurrentPage(1);
     handleMenuClose(); // Close the menu after selection
   };
 
@@ -121,6 +123,8 @@ const ItemRetrievalList = ({ items, fetchItems, users }) => {
               fetchItems={fetchItems}
               selectedStatus={selectedStatus}
               users={users}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
             />
           </Paper>
         </Grid>

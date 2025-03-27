@@ -29,11 +29,10 @@ import { format, parseISO } from "date-fns";
 import CompletedModal from "../Modal/CompletedModal";
 import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects";
 
-const ItemRetrievalTable = ({ items, fetchItems }) => {
+const ItemRetrievalTable = ({ items, fetchItems, currentPage, setCurrentPage }) => {
   const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
   const [openReservedModal, setOpenReservedModal] = useState(null);
   const [openCompletedModal, setOpenCompletedModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1); // Tracks current page
   const [rowsPerPage, setRowsPerPage] = useState(5); // Tracks rows per page
   const [message, setMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(null);

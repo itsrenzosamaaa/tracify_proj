@@ -27,6 +27,7 @@ const FoundItemsList = ({ finders, fetchItems, session, locationOptions }) => {
   const [searchQuery, setSearchQuery] = useState(""); // Track search input
   const [openSnackbar, setOpenSnackbar] = useState(null);
   const [message, setMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1); // Tracks current page
   const isMobile = useMediaQuery("(max-width:600px)");
 
   // Define status options
@@ -68,7 +69,10 @@ const FoundItemsList = ({ finders, fetchItems, session, locationOptions }) => {
       <Chip
         variant="plain"
         color={isChecked ? "primary" : "neutral"}
-        onClick={() => setStatus(name)}
+        onClick={() => {
+          setStatus(name);
+          setCurrentPage(1);
+        }}
         sx={{ cursor: "pointer" }}
       >
         <Radio
@@ -79,7 +83,9 @@ const FoundItemsList = ({ finders, fetchItems, session, locationOptions }) => {
           label={name}
           value={name}
           checked={isChecked}
-          onChange={() => setStatus(name)}
+          onChange={() => {
+            setStatus(name);
+          }}
         />
       </Chip>
     </Badge>
@@ -189,6 +195,8 @@ const FoundItemsList = ({ finders, fetchItems, session, locationOptions }) => {
               fetchItems={fetchItems}
               isFoundItem={true}
               status={status}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
             />
           </Paper>
         </Grid>
