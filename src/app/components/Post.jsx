@@ -22,7 +22,7 @@ import {
   FormLabel,
   Tooltip,
 } from "@mui/joy";
-import { ImageList, ImageListItem } from "@mui/material";
+import { ImageList, ImageListItem, keyframes, styled } from "@mui/material";
 import { Share, Send } from "@mui/icons-material";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
@@ -34,6 +34,24 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+
+const pulseGlow = keyframes`
+  0% {
+    box-shadow: 0 0 10px #FFD700;
+  }
+  50% {
+    box-shadow: 0 0 30px #FFD700;
+  }
+  100% {
+    box-shadow: 0 0 10px #FFD700;
+  }
+`;
+
+const HighlightAvatar = styled(Avatar)(({ theme }) => ({
+  borderRadius: "50%",
+  boxShadow: `0 0 10px 4px #FFD700`,
+  animation: `${pulseGlow} 2s infinite ease-in-out`,
+}));
 
 const Post = ({
   refreshData,
@@ -57,6 +75,10 @@ const Post = ({
     useState(null);
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const isMilestone =
+    (author?.resolvedItemCounts || 21) >= 20 &&
+    (author?.shareCounts || 21) >= 20;
 
   const capitalizeWords = (str) =>
     str
@@ -113,9 +135,7 @@ const Post = ({
     }
   };
 
-  const matchedOwnerIds = new Set(
-    matches.map((match) => match?.owner?._id)
-  );
+  const matchedOwnerIds = new Set(matches.map((match) => match?.owner?._id));
 
   const filteredLostItems = lostItems.filter(
     (lostItem) => !matchedOwnerIds.has(lostItem?._id)
@@ -130,12 +150,21 @@ const Post = ({
         <CardContent>
           {/* Author Info */}
           <Box display="flex" alignItems="center" mb={2}>
-            <Avatar
-              sx={{ mr: 2 }}
-              src={author?.profile_picture || null}
-              alt={author?.firstname || "User"}
-              style={{ cursor: "pointer" }}
-            />
+            {isMilestone ? (
+              <HighlightAvatar
+                sx={{ mr: 2, backgroundColor: "#FFF9C4" }}
+                src={author?.profile_picture || null}
+                alt={author?.firstname || "User"}
+                style={{ cursor: "pointer" }}
+              />
+            ) : (
+              <Avatar
+                sx={{ mr: 2 }}
+                src={author?.profile_picture || null}
+                alt={author?.firstname || "User"}
+                style={{ cursor: "pointer" }}
+              />
+            )}
             <Box>
               <Box sx={{ display: "flex", gap: 2, maxWidth: "100%" }}>
                 <Tooltip title={author?.role?.name || "Guest"} placement="top">
@@ -143,11 +172,16 @@ const Post = ({
                     level={isXs ? "body-sm" : "body-md"}
                     fontWeight={700}
                     sx={{
+                      backgroundColor: isMilestone ? "#FFF9C4" : "transparent", // soft yellow
                       color: author?.role?.color || "inherit",
                       overflow: "hidden",
                       whiteSpace: "nowrap",
                       textOverflow: "ellipsis",
-                      maxWidth: isXs ? "150px" : "auto", // Adjust based on your layout
+                      maxWidth: isXs ? "150px" : "auto",
+                      px: isMilestone ? 1 : 0, // horizontal padding
+                      py: isMilestone ? 0.5 : 0, // vertical padding
+                      borderRadius: isMilestone ? "6px" : 0,
+                      transition: "background-color 0.3s ease",
                     }}
                   >
                     {`${author?.firstname} ${author?.lastname}` ||

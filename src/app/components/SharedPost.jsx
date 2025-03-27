@@ -22,7 +22,13 @@ import {
   Option,
   Tooltip,
 } from "@mui/joy";
-import { ImageList, ImageListItem, Paper } from "@mui/material";
+import {
+  ImageList,
+  ImageListItem,
+  keyframes,
+  Paper,
+  styled,
+} from "@mui/material";
 import { Share, Send } from "@mui/icons-material";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
@@ -34,6 +40,24 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+
+const pulseGlow = keyframes`
+  0% {
+    box-shadow: 0 0 10px #FFD700;
+  }
+  50% {
+    box-shadow: 0 0 30px #FFD700;
+  }
+  100% {
+    box-shadow: 0 0 10px #FFD700;
+  }
+`;
+
+const HighlightAvatar = styled(Avatar)(({ theme }) => ({
+  borderRadius: "50%",
+  boxShadow: `0 0 10px 4px #FFD700`,
+  animation: `${pulseGlow} 2s infinite ease-in-out`,
+}));
 
 const SharedPost = ({
   refreshData,
@@ -58,6 +82,11 @@ const SharedPost = ({
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isMilestone =
+    ((sharedBy?.resolvedItemCount || 0) >= 20 &&
+      (sharedBy?.shareCount || 0) >= 20) ||
+    ((originalPost?.author?.resolvedItemCount || 0) >= 20 &&
+      (originalPost?.author?.shareCount || 0) >= 20);
   const capitalizeWords = (str) =>
     str
       ?.toLowerCase()
@@ -118,9 +147,7 @@ const SharedPost = ({
     }
   };
 
-  const matchedOwnerIds = new Set(
-    matches.map((match) => match?.owner?._id)
-  );
+  const matchedOwnerIds = new Set(matches.map((match) => match?.owner?._id));
 
   const filteredLostItems = lostItems.filter(
     (lostItem) => !matchedOwnerIds.has(lostItem?._id)
@@ -135,12 +162,21 @@ const SharedPost = ({
         <CardContent>
           {/* Author Info */}
           <Box display="flex" alignItems="center" mb={2}>
-            <Avatar
-              sx={{ mr: 2 }}
-              src={sharedBy?.profile_picture || null}
-              alt={sharedBy?.firstname || "User"}
-              style={{ cursor: "pointer" }}
-            />
+            {isMilestone ? (
+              <HighlightAvatar
+                sx={{ mr: 2, backgroundColor: "#FFF9C4" }}
+                src={sharedBy?.profile_picture || null}
+                alt={sharedBy?.firstname || "User"}
+                style={{ cursor: "pointer" }}
+              />
+            ) : (
+              <Avatar
+                sx={{ mr: 2 }}
+                src={sharedBy?.profile_picture || null}
+                alt={sharedBy?.firstname || "User"}
+                style={{ cursor: "pointer" }}
+              />
+            )}
             <Box>
               <Box sx={{ display: "flex", gap: 2, maxWidth: "100%" }}>
                 <Tooltip
@@ -151,11 +187,16 @@ const SharedPost = ({
                     level={isXs ? "body-sm" : "body-md"}
                     fontWeight={700}
                     sx={{
+                      backgroundColor: isMilestone ? "#FFF9C4" : "transparent", // soft yellow
                       color: sharedBy?.role?.color || "inherit",
                       overflow: "hidden",
                       whiteSpace: "nowrap",
                       textOverflow: "ellipsis",
-                      maxWidth: isXs ? "135px" : "auto", // Adjust based on your layout
+                      maxWidth: isXs ? "150px" : "auto",
+                      px: isMilestone ? 1 : 0, // horizontal padding
+                      py: isMilestone ? 0.5 : 0, // vertical padding
+                      borderRadius: isMilestone ? "6px" : 0,
+                      transition: "background-color 0.3s ease",
                     }}
                   >
                     {`${sharedBy?.firstname} ${sharedBy?.lastname}` ||
@@ -239,12 +280,21 @@ const SharedPost = ({
             </Carousel>
             <Box sx={{ padding: 2 }}>
               <Box display="flex" alignItems="center" mb={2}>
-                <Avatar
-                  sx={{ mr: 2 }}
-                  src={originalPost.author.profile_picture || null}
-                  alt={originalPost.author.firstname || "User"}
-                  style={{ cursor: "pointer" }}
-                />
+                {isMilestone ? (
+                  <HighlightAvatar
+                    sx={{ mr: 2, backgroundColor: "#FFF9C4" }}
+                    src={originalPost?.author?.profile_picture || null}
+                    alt={originalPost?.author?.firstname || "User"}
+                    style={{ cursor: "pointer" }}
+                  />
+                ) : (
+                  <Avatar
+                    sx={{ mr: 2 }}
+                    src={originalPost.author.profile_picture || null}
+                    alt={originalPost.author.firstname || "User"}
+                    style={{ cursor: "pointer" }}
+                  />
+                )}
                 <Box>
                   <Box sx={{ display: "flex", gap: 2, maxWidth: "100%" }}>
                     <Tooltip
@@ -255,11 +305,18 @@ const SharedPost = ({
                         level={isXs ? "body-sm" : "body-md"}
                         fontWeight={700}
                         sx={{
+                          backgroundColor: isMilestone
+                            ? "#FFF9C4"
+                            : "transparent", // soft yellow
                           color: originalPost?.author?.role?.color || "inherit",
                           overflow: "hidden",
                           whiteSpace: "nowrap",
                           textOverflow: "ellipsis",
-                          maxWidth: isXs ? "105px" : "auto", // Adjust based on your layout
+                          maxWidth: isXs ? "150px" : "auto",
+                          px: isMilestone ? 1 : 0, // horizontal padding
+                          py: isMilestone ? 0.5 : 0, // vertical padding
+                          borderRadius: isMilestone ? "6px" : 0,
+                          transition: "background-color 0.3s ease",
                         }}
                       >
                         {`${originalPost?.author?.firstname} ${originalPost?.author?.lastname}` ||

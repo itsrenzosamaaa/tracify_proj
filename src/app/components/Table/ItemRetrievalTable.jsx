@@ -29,7 +29,12 @@ import { format, parseISO } from "date-fns";
 import CompletedModal from "../Modal/CompletedModal";
 import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects";
 
-const ItemRetrievalTable = ({ items, fetchItems, currentPage, setCurrentPage }) => {
+const ItemRetrievalTable = ({
+  items,
+  fetchItems,
+  currentPage,
+  setCurrentPage,
+}) => {
   const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
   const [openReservedModal, setOpenReservedModal] = useState(null);
   const [openCompletedModal, setOpenCompletedModal] = useState(false);
@@ -75,8 +80,9 @@ const ItemRetrievalTable = ({ items, fetchItems, currentPage, setCurrentPage }) 
                   >
                     <CardContent>
                       <Typography level="h6">
-                        <strong>Claimer:</strong> {row?.owner?.user?.firstname}{" "}
-                        {row?.owner?.user?.lastname}
+                        <strong>Claimer:</strong>{" "}
+                        {`${row?.owner?.user?.firstname} ${row?.owner?.user?.lastname}` ||
+                          "Unknown User"}
                       </Typography>
                       <Typography level="body1">
                         <strong>Item Name:</strong> {row.finder.item.name}
@@ -341,8 +347,8 @@ const ItemRetrievalTable = ({ items, fetchItems, currentPage, setCurrentPage }) 
                     {paginatedItems.map((row) => (
                       <TableRow key={row._id}>
                         <TableCell>
-                          {row?.owner?.user?.firstname}{" "}
-                          {row?.owner?.user?.lastname}
+                          {`${row?.owner?.user?.firstname} ${row?.owner?.user?.lastname}` ||
+                            "Unknown User"}
                         </TableCell>
                         <TableCell>{row.finder.item.name}</TableCell>
                         <TableCell>

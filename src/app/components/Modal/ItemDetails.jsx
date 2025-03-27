@@ -298,15 +298,19 @@ const ItemDetails = ({
                   }}
                 >
                   <Avatar
-                    alt={`${
-                      row.sender ? row.sender.firstname : row.user.firstname
-                    } ${
-                      row.sender ? row.sender.lastname : row.user.lastname
-                    }'s Profile Picture`}
+                    alt={
+                      `${
+                        row.sender ? row.sender.firstname : row.user.firstname
+                      } ${
+                        row.sender ? row.sender.lastname : row.user.lastname
+                      }'s Profile Picture` || "User Profile Picture"
+                    }
                     src={
-                      row.sender
-                        ? row.sender.profile_picture
-                        : row.user.profile_picture
+                      `${
+                        row.sender
+                          ? row.sender.profile_picture
+                          : row.user.profile_picture
+                      }` || null
                     }
                     sx={{
                       width: 80,
@@ -337,8 +341,11 @@ const ItemDetails = ({
                         textOverflow: isXs ? "ellipsis" : "",
                       }}
                     >
-                      {row.sender ? row.sender.firstname : row.user?.firstname}{" "}
-                      {row.sender ? row.sender.lastname : row.user?.lastname}
+                      {`${
+                        row.sender ? row.sender.firstname : row.user?.firstname
+                      } ${
+                        row.sender ? row.sender.lastname : row.user?.lastname
+                      }` || "Unknown User"}
                     </Typography>
                     <Typography
                       level={isXs ? "body-sm" : "body-md"}
@@ -348,9 +355,11 @@ const ItemDetails = ({
                         textOverflow: isXs ? "ellipsis" : "",
                       }}
                     >
-                      {row.sender
-                        ? row.sender.emailAddress
-                        : row.user?.emailAddress}
+                      {`${
+                        row.sender
+                          ? row.sender.emailAddress
+                          : row.user?.emailAddress
+                      }` || "No Email Address"}
                     </Typography>
                     <Typography
                       level={isXs ? "body-sm" : "body-md"}
@@ -360,9 +369,11 @@ const ItemDetails = ({
                         textOverflow: isXs ? "ellipsis" : "",
                       }}
                     >
-                      {row.sender
-                        ? row.sender.contactNumber
-                        : row.user?.contactNumber}
+                      {`${
+                        row.sender
+                          ? row.sender.contactNumber
+                          : row.user?.contactNumber
+                      }` || "No Contact Number"}
                     </Typography>
                   </Stack>
                 </Grid>

@@ -11,42 +11,42 @@ import {
 } from "@mui/material";
 
 const TopStudentsEarnedBadges = ({ users, session }) => {
-  const userPermissions = session?.user?.permissions || []; // Ensure it's an array
-
-  // ✅ Check if the user has permission to view rankings
+  const userPermissions = session?.user?.permissions || [];
   const canViewRankings = userPermissions.includes("View Rankings");
 
-  // ✅ Filter and sort users by resolved found items count
   const rankedUsers = users
     .map((user) => ({
       ...user,
-      resolvedFoundItemsCount: user.resolvedItemCount || 0, // Default to 0 if undefined
+      resolvedFoundItemsCount: user.resolvedItemCount || 0,
     }))
-    .filter((user) => user.resolvedFoundItemsCount >= 2) // Only include users with 2+ items
+    .filter((user) => user.resolvedFoundItemsCount >= 2)
     .sort((a, b) => b.resolvedFoundItemsCount - a.resolvedFoundItemsCount);
 
-  // ✅ Assign ranks using the average rank method for ties
+  // Assign integer-only ranks with skip logic for ties
   const rankedUsersWithRanks = [];
   let currentRank = 1;
 
   for (let i = 0; i < rankedUsers.length; i++) {
-    const start = i;
-    while (
-      i + 1 < rankedUsers.length &&
-      rankedUsers[i].resolvedFoundItemsCount ===
-        rankedUsers[i + 1].resolvedFoundItemsCount
-    ) {
-      i++;
+    const sameRankCount = rankedUsers.filter(
+      (u) =>
+        u.resolvedFoundItemsCount === rankedUsers[i].resolvedFoundItemsCount
+    ).length;
+
+    const alreadyRanked = rankedUsersWithRanks.some(
+      (u) =>
+        u.resolvedFoundItemsCount === rankedUsers[i].resolvedFoundItemsCount
+    );
+
+    if (!alreadyRanked) {
+      const sameRankUsers = rankedUsers.filter(
+        (u) =>
+          u.resolvedFoundItemsCount === rankedUsers[i].resolvedFoundItemsCount
+      );
+      sameRankUsers.forEach((u) =>
+        rankedUsersWithRanks.push({ ...u, rank: currentRank })
+      );
+      currentRank += sameRankCount;
     }
-
-    const end = i;
-    const averageRank = (start + 1 + end + 1) / 2;
-
-    for (let j = start; j <= end; j++) {
-      rankedUsersWithRanks.push({ ...rankedUsers[j], rank: averageRank });
-    }
-
-    currentRank = end + 2; // Update the rank for the next group
   }
 
   return (
@@ -78,7 +78,6 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
               position: "relative",
             }}
           >
-            {/* ✅ Render content based on permissions */}
             {canViewRankings ? (
               rankedUsersWithRanks.length > 0 ? (
                 <Table stickyHeader size="small">
@@ -97,7 +96,7 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                   </TableHead>
                   <TableBody>
                     {rankedUsersWithRanks.slice(0, 10).map((user) => {
-                      const rank = Math.floor(user.rank);
+                      const rank = user.rank;
                       const color =
                         rank === 1
                           ? "#FFD700"
@@ -110,11 +109,7 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                       return (
                         <TableRow key={user._id} sx={{ height: "35px" }}>
                           <TableCell
-                            sx={{
-                              fontWeight: "bold",
-                              color: color,
-                              width: "60px",
-                            }}
+                            sx={{ fontWeight: "bold", color, width: "60px" }}
                           >
                             <Box
                               sx={{
@@ -131,9 +126,7 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                                 fontSize: "0.75rem",
                               }}
                             >
-                              {Number.isInteger(user.rank)
-                                ? user.rank
-                                : user.rank.toFixed(1)}
+                              {rank}
                             </Box>
                           </TableCell>
                           <TableCell sx={{ width: "150px" }}>
@@ -144,7 +137,6 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
                       );
                     })}
 
-                    {/* Fill empty rows to maintain consistent height */}
                     {Array.from({
                       length: Math.max(0, 10 - rankedUsersWithRanks.length),
                     }).map((_, index) => (

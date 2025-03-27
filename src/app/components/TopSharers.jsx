@@ -12,44 +12,36 @@ import {
 
 const TopSharers = ({ users, session }) => {
   const loggedInUserEmail = session?.user?.email;
-  const userPermissions = session?.user?.permissions || []; // Ensure it's an array
-
-  // ✅ Check if user has permission
+  const userPermissions = session?.user?.permissions || [];
   const canViewRankings = userPermissions.includes("View Rankings");
 
-  // Include only users who have at least 3 shares
+  // Filter users with at least 3 shares
   const rankedUsers = users
     .map((user) => ({
       ...user,
-      sharedCount: user.shareCount,
+      sharedCount: user.shareCount || 0,
     }))
     .filter((user) => user.sharedCount >= 3)
     .sort((a, b) => b.sharedCount - a.sharedCount);
 
-  // ✅ Assign ranks using the average rank method for ties
+  // ✅ Assign integer-only ranks with skipped numbers for ties
   const rankedUsersWithRanks = [];
   let currentRank = 1;
 
-  for (let i = 0; i < rankedUsers.length; i++) {
-    const start = i;
-    while (
-      i + 1 < rankedUsers.length &&
-      rankedUsers[i].sharedCount === rankedUsers[i + 1].sharedCount
-    ) {
-      i++;
-    }
+  for (let i = 0; i < rankedUsers.length; ) {
+    const sameCount = rankedUsers[i].sharedCount;
+    const sameRankUsers = rankedUsers.filter(
+      (u) => u.sharedCount === sameCount
+    );
 
-    const end = i;
-    const averageRank = (start + 1 + end + 1) / 2;
+    sameRankUsers.forEach((user) =>
+      rankedUsersWithRanks.push({ ...user, rank: currentRank })
+    );
 
-    for (let j = start; j <= end; j++) {
-      rankedUsersWithRanks.push({ ...rankedUsers[j], rank: averageRank });
-    }
-
-    currentRank = end + 2; // Update the rank for the next group
+    currentRank += sameRankUsers.length;
+    i += sameRankUsers.length;
   }
 
-  // ✅ Find logged-in user's rank
   const loggedInUser = rankedUsersWithRanks.find(
     (user) => user.emailAddress === loggedInUserEmail
   );
@@ -83,7 +75,6 @@ const TopSharers = ({ users, session }) => {
               position: "relative",
             }}
           >
-            {/* ✅ Handle permission check before rendering */}
             {canViewRankings ? (
               rankedUsersWithRanks.length > 0 ? (
                 <Table stickyHeader size="small">
@@ -92,17 +83,17 @@ const TopSharers = ({ users, session }) => {
                       <TableCell sx={{ width: "80px" }}>
                         <strong>Rank</strong>
                       </TableCell>
-                      <TableCell sx={{  width: "40%" }}>
+                      <TableCell sx={{ width: "40%" }}>
                         <strong>Student Name</strong>
                       </TableCell>
                       <TableCell>
-                        <strong>Count</strong>
+                        <strong>Share Count</strong>
                       </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {rankedUsersWithRanks.slice(0, 10).map((user) => {
-                      const rank = Math.floor(user.rank);
+                      const rank = user.rank;
                       const color =
                         rank === 1
                           ? "#FFD700"
@@ -136,9 +127,7 @@ const TopSharers = ({ users, session }) => {
                                 fontSize: "0.75rem",
                               }}
                             >
-                              {Number.isInteger(user.rank)
-                                ? user.rank
-                                : user.rank.toFixed(1)}
+                              {rank}
                             </Box>
                           </TableCell>
                           <TableCell sx={{ width: "150px" }}>
@@ -149,7 +138,6 @@ const TopSharers = ({ users, session }) => {
                       );
                     })}
 
-                    {/* Fill empty rows to maintain consistent height */}
                     {Array.from({
                       length: Math.max(0, 10 - rankedUsersWithRanks.length),
                     }).map((_, index) => (

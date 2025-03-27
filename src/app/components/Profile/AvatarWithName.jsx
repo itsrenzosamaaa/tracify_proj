@@ -74,7 +74,7 @@ const AvatarWithName = ({
   }, [profile?.birthday]);
 
   const isMilestone =
-    (profile?.resolvedItemCount || 0) >= 20 || (profile?.shareCount || 0) >= 20;
+    (profile?.resolvedItemCount || 0) >= 20 && (profile?.shareCount || 0) >= 20;
 
   useEffect(() => {
     if (isBirthdayToday) {

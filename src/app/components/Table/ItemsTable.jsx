@@ -32,7 +32,16 @@ import ItemClaimRequestModal from "../Modal/ItemClaimRequestModal";
 import ItemReservedModal from "../Modal/ItemReservedModal";
 import { format } from "date-fns";
 
-const ItemsTable = ({ items, fetchItems, session, isFoundItem, status, locationOptions, currentPage, setCurrentPage }) => {
+const ItemsTable = ({
+  items,
+  fetchItems,
+  session,
+  isFoundItem,
+  status,
+  locationOptions,
+  currentPage,
+  setCurrentPage,
+}) => {
   const [approveModal, setApproveModal] = useState(null);
   const [openDeclinedModal, setOpenDeclinedModal] = useState(null);
   const [openCanceledModal, setOpenCanceledModal] = useState(null);
@@ -129,7 +138,8 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status, locationO
                         <strong>
                           Item {isFoundItem ? "Finder" : "Owner"}:
                         </strong>{" "}
-                        {row.user.firstname} {row.user.lastname}
+                        {`${row.user.firstname} ${row.user.lastname}` ||
+                          "Unknown User"}
                       </Typography>
                       <Typography level="body1">
                         <strong>Item Name:</strong> {row.item.name}
@@ -403,7 +413,8 @@ const ItemsTable = ({ items, fetchItems, session, isFoundItem, status, locationO
                     {paginatedItems.map((row) => (
                       <TableRow key={row._id}>
                         <TableCell>
-                          {row.user.firstname} {row.user.lastname}
+                          {`${row.user.firstname} ${row.user.lastname}` ||
+                            "Unknown User"}
                         </TableCell>
                         <TableCell>{row.item.name}</TableCell>
                         <TableCell sx={{ width: "25%" }}>

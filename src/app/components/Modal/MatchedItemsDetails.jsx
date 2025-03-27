@@ -52,8 +52,11 @@ const MatchedItemsDetails = ({ row }) => {
             >
               {/* Avatar */}
               <Avatar
-                alt={`${row.owner.user.firstname} ${row.owner.user.lastname}'s Profile Picture`}
-                src={row.owner.user.profile_picture}
+                alt={
+                  `${row.owner.user.firstname} ${row.owner.user.lastname}'s Profile Picture` ||
+                  "User Profile Picture"
+                }
+                src={row.owner.user.profile_picture || null}
                 sx={{
                   width: 80,
                   height: 80,
@@ -74,8 +77,8 @@ const MatchedItemsDetails = ({ row }) => {
                   }}
                   fontWeight="700"
                 >
-                  {row.owner.user?.firstname || "N/A"}{" "}
-                  {row.owner.user?.lastname || "N/A"}
+                  {`${row?.owner?.user?.firstname} ${row?.owner?.user?.lastname}` ||
+                    "Unknown User"}
                 </Typography>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
@@ -126,7 +129,9 @@ const MatchedItemsDetails = ({ row }) => {
               </Typography>
               <Typography level={isXs ? "body-sm" : "body-md"}>
                 <strong>Color:</strong>{" "}
-                {row.owner.item.color.length > 0 ? row.owner.item.color.join(", ") : "N/A"}
+                {row.owner.item.color.length > 0
+                  ? row.owner.item.color.join(", ")
+                  : "N/A"}
               </Typography>
               <Typography level={isXs ? "body-sm" : "body-md"}>
                 <strong>Size:</strong> {row.owner.item.size || "N/A"}
@@ -192,8 +197,11 @@ const MatchedItemsDetails = ({ row }) => {
             >
               {/* Avatar */}
               <Avatar
-                alt={`${row.finder.user.firstname} ${row.finder.user.lastname}'s Profile Picture`}
-                src={row.finder.user.profile_picture}
+                alt={
+                  `${row.finder.user.firstname} ${row.finder.user.lastname}'s Profile Picture` ||
+                  "User Profile"
+                }
+                src={row.finder.user.profile_picture || null}
                 sx={{
                   width: 80,
                   height: 80,
@@ -214,8 +222,8 @@ const MatchedItemsDetails = ({ row }) => {
                   }}
                   fontWeight="700"
                 >
-                  {row.finder.user?.firstname || "N/A"}{" "}
-                  {row.finder.user?.lastname || "N/A"}
+                  {`${row?.finder?.user?.firstname} ${row?.finder?.user?.lastname}` ||
+                    "Unknown User"}
                 </Typography>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
@@ -266,7 +274,9 @@ const MatchedItemsDetails = ({ row }) => {
               </Typography>
               <Typography level={isXs ? "body-sm" : "body-md"}>
                 <strong>Color:</strong>{" "}
-                {row.finder.item.color.length > 0 ? row.finder.item.color.join(", ") : "N/A"}
+                {row.finder.item.color.length > 0
+                  ? row.finder.item.color.join(", ")
+                  : "N/A"}
               </Typography>
               <Typography level={isXs ? "body-sm" : "body-md"}>
                 <strong>Size:</strong> {row.finder.item.size || "N/A"}
