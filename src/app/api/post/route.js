@@ -30,7 +30,8 @@ export async function GET(req) {
 
     let allPosts = await post.aggregate([
       { $match: matchStage },
-      ...(searchQuery ? [] : [{ $sample: { size: 1000 } }]),
+      { $addFields: { randomSort: { $rand: {} } } },
+      { $sort: { randomSort: 1 } },
     ]);
 
     allPosts = await post.populate(allPosts, [
