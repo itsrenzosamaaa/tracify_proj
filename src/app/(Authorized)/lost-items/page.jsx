@@ -8,40 +8,36 @@ const FoundItemsPage = () => {
   const [owners, setOwners] = useState([]);
   const { data: session, status } = useSession();
   const [locationOptions, setLocationOptions] = useState([]);
-  const [matches, setMatches] = useState([]);
 
-  const fetchMatches = useCallback(async () => {
+  const fetchAllData = useCallback(async () => {
     try {
-      const response = await fetch("/api/match-items");
-      const data = await response.json();
-      const filteredMatches = data.filter(
+      const [matchesRes, ownersRes] = await Promise.all([
+        fetch("/api/match-items"),
+        fetch("/api/owner"),
+      ]);
+
+      const matchesData = await matchesRes.json();
+      const filteredMatches = matchesData.filter(
         (match) => match?.request_status === "Pending"
       );
       setMatches(filteredMatches);
-    } catch (error) {
-      console.error(error);
-    }
-  }, []);
 
-  const fetchItems = useCallback(async () => {
-    try {
-      const response = await fetch("/api/owner");
-      const data = await response.json();
-
-      const matchedLostItemIds = matches
+      const matchedLostItemIds = filteredMatches
         .map((match) => match?.owner?.item?._id)
-        .filter(Boolean); // remove undefined/null
+        .filter(Boolean);
 
-      const filteredItems = data.filter(
+      const ownersData = await ownersRes.json();
+      const filteredItems = ownersData.filter(
         (lostItem) =>
           !["Unclaimed", "Claimed"].includes(lostItem?.item?.status) &&
           !matchedLostItemIds.includes(lostItem?.item?._id)
       );
+
       setOwners(filteredItems);
     } catch (error) {
       console.error(error);
     }
-  }, [matches]);
+  }, []);
 
   const fetchLocations = useCallback(async () => {
     try {
@@ -59,16 +55,11 @@ const FoundItemsPage = () => {
   }, []);
 
   useEffect(() => {
-    const loadData = async () => {
-      if (status === "authenticated") {
-        await fetchMatches(); // Fetch matches first
-        await fetchItems(); // Then fetch items with matches available
-        await fetchLocations();
-      }
-    };
-
-    loadData();
-  }, [status, fetchMatches, fetchItems, fetchLocations]);
+    if (status === "authenticated") {
+      fetchAllData();
+      fetchLocations();
+    }
+  }, [status, fetchAllData, fetchLocations]);
 
   if (status === "loading") {
     return null;
