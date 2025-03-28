@@ -20,7 +20,6 @@ const FoundItemsPage = () => {
       const filteredMatches = matchesData.filter(
         (match) => match?.request_status === "Pending"
       );
-      setMatches(filteredMatches);
 
       const matchedLostItemIds = filteredMatches
         .map((match) => match?.owner?.item?._id)
@@ -70,7 +69,7 @@ const FoundItemsPage = () => {
       <LostItemsList
         locationOptions={locationOptions}
         owners={owners}
-        fetchItems={fetchItems}
+        fetchItems={fetchAllData}
         session={session}
       />
     </>
