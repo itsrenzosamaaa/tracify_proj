@@ -8,16 +8,40 @@ const FoundItemsPage = () => {
   const [owners, setOwners] = useState([]);
   const { data: session, status } = useSession();
   const [locationOptions, setLocationOptions] = useState([]);
+  const [matches, setMatches] = useState([]);
+
+  const fetchMatches = useCallback(async () => {
+    try {
+      const response = await fetch("/api/match-items");
+      const data = await response.json();
+      const filteredMatches = data.filter(
+        (match) => match?.request_status === "Pending"
+      );
+      setMatches(filteredMatches);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
 
   const fetchItems = useCallback(async () => {
     try {
       const response = await fetch("/api/owner");
       const data = await response.json();
-      setOwners(data);
+
+      const matchedLostItemIds = matches
+        .map((match) => match?.owner?.item?._id)
+        .filter(Boolean); // remove undefined/null
+
+      const filteredItems = data.filter(
+        (lostItem) =>
+          !["Unclaimed", "Claimed"].includes(lostItem?.item?.status) &&
+          !matchedLostItemIds.includes(lostItem?.item?._id)
+      );
+      setOwners(filteredItems);
     } catch (error) {
       console.error(error);
     }
-  }, []);
+  }, [matches]);
 
   const fetchLocations = useCallback(async () => {
     try {
@@ -35,11 +59,16 @@ const FoundItemsPage = () => {
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated") {
-      fetchItems();
-      fetchLocations();
-    }
-  }, [status, fetchItems, fetchLocations]);
+    const loadData = async () => {
+      if (status === "authenticated") {
+        await fetchMatches(); // Fetch matches first
+        await fetchItems(); // Then fetch items with matches available
+        await fetchLocations();
+      }
+    };
+
+    loadData();
+  }, [status, fetchMatches, fetchItems, fetchLocations]);
 
   if (status === "loading") {
     return null;
