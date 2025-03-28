@@ -256,7 +256,7 @@ const ItemRequestApproveModal = ({
               msOverflowStyle: "-ms-autohiding-scrollbar",
             }}
           >
-            <ItemDetails row={row} />
+            <ItemDetails row={row} session={session} />
           </DialogContent>
           <Box sx={{ display: "flex", gap: 2 }}>
             <Button

@@ -256,28 +256,6 @@ const ItemsTable = ({
                         isOpenSnackbar={setOpenSnackbar}
                         locationOptions={locationOptions}
                       />
-                      <ModalButton
-                        status="Claim Request"
-                        row={row}
-                        setModal={setOpenClaimRequestModal}
-                        modalState={openClaimRequestModal}
-                        ModalComponent={ItemClaimRequestModal}
-                        isSession={session}
-                        fetchItems={fetchItems}
-                        snackbarMessage={setMessage}
-                        isOpenSnackbar={setOpenSnackbar}
-                      />
-                      <ModalButton
-                        status="Reserved"
-                        row={row}
-                        setModal={setOpenReservedModal}
-                        modalState={openReservedModal}
-                        ModalComponent={ItemReservedModal}
-                        isSession={session}
-                        fetchItems={fetchItems}
-                        snackbarMessage={setMessage}
-                        isOpenSnackbar={setOpenSnackbar}
-                      />
                     </CardActions>
                   </Card>
                 ))}
@@ -549,28 +527,6 @@ const ItemsTable = ({
                             snackbarMessage={setMessage}
                             isOpenSnackbar={setOpenSnackbar}
                             locationOptions={locationOptions}
-                          />
-                          <ModalButton
-                            status="Claim Request"
-                            row={row}
-                            setModal={setOpenClaimRequestModal}
-                            modalState={openClaimRequestModal}
-                            ModalComponent={ItemClaimRequestModal}
-                            isSession={session}
-                            fetchItems={fetchItems}
-                            snackbarMessage={setMessage}
-                            isOpenSnackbar={setOpenSnackbar}
-                          />
-                          <ModalButton
-                            status="Reserved"
-                            row={row}
-                            setModal={setOpenReservedModal}
-                            modalState={openReservedModal}
-                            ModalComponent={ItemReservedModal}
-                            isSession={session}
-                            fetchItems={fetchItems}
-                            snackbarMessage={setMessage}
-                            isOpenSnackbar={setOpenSnackbar}
                           />
                         </TableCell>
                       </TableRow>

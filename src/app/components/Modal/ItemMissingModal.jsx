@@ -17,6 +17,7 @@ const ItemMissingModal = ({
   onClose,
   refreshData,
   snackBar,
+  session,
   setMessage,
   setOpenSnackbar,
   locationOptions,
@@ -68,6 +69,7 @@ const ItemMissingModal = ({
             refreshData={refreshData}
             setOpenSnackbar={setOpenSnackbar}
             setMessage={setMessage}
+            session={session}
           />
         </DialogContent>
         <Button variant="outlined" onClick={onClose}>

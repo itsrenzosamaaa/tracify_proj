@@ -69,6 +69,7 @@ const ItemPublishedModal = ({
             refreshData={refreshData}
             setOpenSnackbar={setOpenSnackbar}
             setMessage={setMessage}
+            session={session}
           />
         </DialogContent>
         <Button variant="outlined" onClick={onClose}>
