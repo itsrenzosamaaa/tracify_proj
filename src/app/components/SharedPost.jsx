@@ -386,51 +386,33 @@ const SharedPost = ({
               >
                 {originalPost.caption}
               </Typography>
-              {matches !== null &&
-                (() => {
-                  let matchedItem;
-                  const isFinder = originalPost?.isFinder;
+              {(() => {
+                if (!originalPost?.isFinder) return null;
 
-                  // Function to determine the color and message based on item status
-                  const getItemMessage = (itemStatus, role) => {
-                    if (itemStatus === "Resolved" || itemStatus === "Claimed") {
-                      return {
-                        message:
-                          role === "finder"
-                            ? "The owner has successfully claimed the item!"
-                            : "The item has been found by the finder.",
-                        color: "success",
-                      };
-                    }
-                    return null;
-                  };
+                const matchedItem = matches?.find((match) => {
+                  const matchItem = match?.finder?.item;
+                  return (
+                    match?.finder?._id === originalPost?.finder?._id &&
+                    ["Resolved", "Matched"].includes(matchItem?.status)
+                  );
+                });
 
-                  if (isFinder) {
-                    // Finder logic: match based on finder ID and item status
-                    matchedItem = matches.find(
-                      (match) =>
-                        match?.finder?._id === originalPost?.finder?._id &&
-                        ["Resolved", "Matched"].includes(
-                          match?.finder?.item?.status
-                        )
-                    );
-                    const { message, color } = matchedItem
-                      ? getItemMessage(
-                          matchedItem?.finder?.item?.status,
-                          "finder"
-                        )
-                      : {};
+                if (!matchedItem) return null;
 
-                    return matchedItem ? (
-                      <Typography
-                        level={isXs ? "body-sm" : "body-md"}
-                        color={color}
-                      >
-                        {message}
-                      </Typography>
-                    ) : null;
-                  }
-                })()}
+                const status = matchedItem?.finder?.item?.status;
+                const isResolved = status === "Resolved";
+
+                return (
+                  <Typography
+                    level={isXs ? "body-sm" : "body-md"}
+                    color={isResolved ? "success" : "warning"}
+                  >
+                    {isResolved
+                      ? "The owner has successfully claimed the item!"
+                      : "Someone sent a claim request for this item!"}
+                  </Typography>
+                );
+              })()}
             </Box>
           </Box>
 
