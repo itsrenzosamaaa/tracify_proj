@@ -85,12 +85,16 @@ export async function GET(req) {
       if (!post.isShared) {
         const finderStatus = post?.finder?.item?.status;
         const ownerStatus = post?.owner?.item?.status;
-        return finderStatus !== "Resolved" && ownerStatus !== "Claimed";
+        return (
+          !["Resolved", "Matched"].includes(finderStatus) &&
+          ownerStatus !== "Claimed"
+        );
       } else {
         const sharedFinderStatus = post?.originalPost?.finder?.item?.status;
         const sharedOwnerStatus = post?.originalPost?.owner?.item?.status;
         return (
-          sharedFinderStatus !== "Resolved" && sharedOwnerStatus !== "Claimed"
+          !["Resolved", "Matched"].includes(sharedFinderStatus) &&
+          sharedOwnerStatus !== "Claimed"
         );
       }
     });

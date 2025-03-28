@@ -401,17 +401,6 @@ const SharedPost = ({
                             : "The item has been found by the finder.",
                         color: "success",
                       };
-                    } else if (
-                      itemStatus === "Matched" ||
-                      itemStatus === "Unclaimed"
-                    ) {
-                      return {
-                        message:
-                          role === "finder"
-                            ? "Someone sent a claim request for this item!"
-                            : "The item is still unclaimed.",
-                        color: "warning",
-                      };
                     }
                     return null;
                   };
@@ -429,30 +418,6 @@ const SharedPost = ({
                       ? getItemMessage(
                           matchedItem?.finder?.item?.status,
                           "finder"
-                        )
-                      : {};
-
-                    return matchedItem ? (
-                      <Typography
-                        level={isXs ? "body-sm" : "body-md"}
-                        color={color}
-                      >
-                        {message}
-                      </Typography>
-                    ) : null;
-                  } else {
-                    // Owner logic: match based on owner ID and item status
-                    matchedItem = matches.find(
-                      (match) =>
-                        match?.owner?._id === originalPost?.owner?._id &&
-                        ["Claimed", "Unclaimed"].includes(
-                          match?.owner?.item?.status
-                        )
-                    );
-                    const { message, color } = matchedItem
-                      ? getItemMessage(
-                          matchedItem?.owner?.item?.status,
-                          "owner"
                         )
                       : {};
 

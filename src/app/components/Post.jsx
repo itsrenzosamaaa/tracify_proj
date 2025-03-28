@@ -242,53 +242,31 @@ const Post = ({
           </Typography>
 
           {(() => {
-            let matchedItem;
+            if (!post?.isFinder) return null;
 
-            if (post?.isFinder) {
-              // Check for matches where the finder matches the item ID
-              matchedItem = matches.find(
-                (match) =>
-                  match?.finder?._id === item?._id &&
-                  ["Resolved", "Matched"].includes(match?.finder?.item?.status)
+            const matchedItem = matches.find((match) => {
+              const matchItem = match?.finder?.item;
+              return (
+                match?.finder?._id === item?._id &&
+                ["Resolved", "Matched"].includes(matchItem?.status)
               );
+            });
 
-              return matchedItem ? (
-                <Typography
-                  level={isXs ? "body-sm" : "body-md"}
-                  color={
-                    matchedItem?.finder?.item?.status === "Resolved"
-                      ? "success"
-                      : "warning"
-                  }
-                >
-                  {matchedItem?.finder?.item?.status === "Resolved"
-                    ? "The owner has successfully claimed the item!"
-                    : "Someone sent a claim request for this item!"}
-                </Typography>
-              ) : null; // Return null if no match is found
-            } else {
-              // Check for matches where the owner matches the item ID
-              matchedItem = matches.find(
-                (match) =>
-                  match?.owner?._id === item?._id &&
-                  ["Claimed", "Unclaimed"].includes(match?.owner?.item?.status)
-              );
+            if (!matchedItem) return null;
 
-              return matchedItem ? (
-                <Typography
-                  level={isXs ? "body-sm" : "body-md"}
-                  color={
-                    matchedItem?.owner?.item?.status === "Claimed"
-                      ? "success"
-                      : "warning"
-                  }
-                >
-                  {matchedItem?.owner?.item?.status === "Claimed"
-                    ? "The owner has successfully claimed the item!"
-                    : "The item has been found by the finder."}
-                </Typography>
-              ) : null; // Return null if no match is found
-            }
+            const status = matchedItem.finder.item.status;
+            const isResolved = status === "Resolved";
+
+            return (
+              <Typography
+                level={isXs ? "body-sm" : "body-md"}
+                color={isResolved ? "success" : "warning"}
+              >
+                {isResolved
+                  ? "The owner has successfully claimed the item!"
+                  : "Someone sent a claim request for this item!"}
+              </Typography>
+            );
           })()}
 
           {/* Item Details */}
