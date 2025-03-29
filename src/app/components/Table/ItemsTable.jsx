@@ -138,9 +138,11 @@ const ItemsTable = ({
                         <strong>
                           Item {isFoundItem ? "Finder" : "Owner"}:
                         </strong>{" "}
-                        {`${row.user.firstname} ${row.user.lastname}` ||
-                          "Unknown User"}
+                        {row?.user?.firstname && row?.user?.lastname
+                          ? `${row.user.firstname} ${row.user.lastname}`
+                          : "Deleted User"}
                       </Typography>
+
                       <Typography level="body1">
                         <strong>Item Name:</strong> {row.item.name}
                       </Typography>
@@ -391,8 +393,9 @@ const ItemsTable = ({
                     {paginatedItems.map((row) => (
                       <TableRow key={row._id}>
                         <TableCell>
-                          {`${row.user.firstname} ${row.user.lastname}` ||
-                            "Unknown User"}
+                          {row?.user?.firstname && row?.user?.lastname
+                            ? `${row.user.firstname} ${row.user.lastname}`
+                            : "Deleted User"}
                         </TableCell>
                         <TableCell>{row.item.name}</TableCell>
                         <TableCell sx={{ width: "25%" }}>

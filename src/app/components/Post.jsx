@@ -106,8 +106,9 @@ const Post = ({
 
       const data = await response.json();
       if (
-        session?.user?.id !== post?.author?._id &&
-        author?.role?.permissions.includes("User Dashboard")
+        (session?.user?.id !== post?.author?._id &&
+          author?.role?.permissions.includes("User Dashboard")) ||
+        author !== null
       ) {
         await fetch("/api/notification", {
           method: "POST",
@@ -152,15 +153,15 @@ const Post = ({
             {isMilestone ? (
               <HighlightAvatar
                 sx={{ mr: 2, backgroundColor: "#FFF9C4" }}
-                src={author?.profile_picture || null}
-                alt={author?.firstname || "User"}
+                src={author?.profile_picture}
+                alt={author ? author?.firstname : "User"}
                 style={{ cursor: "pointer" }}
               />
             ) : (
               <Avatar
                 sx={{ mr: 2 }}
-                src={author?.profile_picture || null}
-                alt={author?.firstname || "User"}
+                src={author?.profile_picture}
+                alt={author ? author?.firstname : "User"}
                 style={{ cursor: "pointer" }}
               />
             )}
@@ -183,8 +184,9 @@ const Post = ({
                       transition: "background-color 0.3s ease",
                     }}
                   >
-                    {`${author?.firstname} ${author?.lastname}` ||
-                      "Unknown User"}
+                    {author?.firstname && author?.lastname
+                      ? `${author?.firstname} ${author?.lastname}`
+                      : "Deleted User"}
                   </Typography>
                 </Tooltip>
                 <PreviewBadge

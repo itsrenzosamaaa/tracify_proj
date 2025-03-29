@@ -128,14 +128,16 @@ const ItemReservedModal = ({
         });
       }
 
-      await makeRequest("/api/send-email", "POST", {
-        type: "ClaimProcessSuccess",
-        to: row.owner.user.emailAddress,
-        subject: "Claim Process Success",
-        name: row.owner.user.firstname,
-        link: "tlc-tracify.vercel.app/my-items#completed-item",
-        itemName: row.finder.item.name,
-      });
+      if (row?.owner?.user?.emailAddress) {
+        await makeRequest("/api/send-email", "POST", {
+          type: "ClaimProcessSuccess",
+          to: row.owner.user.emailAddress,
+          subject: "Claim Process Success",
+          name: row.owner.user.firstname,
+          link: "tlc-tracify.vercel.app/my-items#completed-item",
+          itemName: row.finder.item.name,
+        });
+      }
 
       // Close modals, refresh data, and show success notification
       setConfirmationItemClaimed(false);
@@ -212,15 +214,17 @@ const ItemReservedModal = ({
         )
       );
 
-      await makeRequest("/api/send-email", "POST", {
-        type: "ClaimProcessDeclined",
-        to: row.owner.user.emailAddress,
-        subject: "Claim Process Declined",
-        name: row.owner.user.firstname,
-        link: "tlc-tracify.vercel.app/my-items#lost-item",
-        itemName: row.finder.item.name,
-        remarks: declineRemarks,
-      });
+      if (row?.owner?.user?.emailAddress) {
+        await makeRequest("/api/send-email", "POST", {
+          type: "ClaimProcessDeclined",
+          to: row.owner.user.emailAddress,
+          subject: "Claim Process Declined",
+          name: row.owner.user.firstname,
+          link: "tlc-tracify.vercel.app/my-items#lost-item",
+          itemName: row.finder.item.name,
+          remarks: declineRemarks,
+        });
+      }
 
       // Close modals and refresh data
       setConfirmationItemDecline(false);

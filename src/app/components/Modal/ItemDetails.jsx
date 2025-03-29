@@ -350,10 +350,11 @@ const ItemDetails = ({
               >
                 <Avatar
                   alt={
-                    `${row.user.firstname} ${row.user.lastname}'s Profile Picture` ||
-                    "User Profile Picture"
+                    row?.user?.firstname && row?.user?.lastname
+                      ? `${row?.user?.firstname} ${row?.user?.lastname}'s Profile Picture`
+                      : "?"
                   }
-                  src={row.user.profile_picture}
+                  src={row?.user?.profile_picture}
                   sx={{
                     width: 80,
                     height: 80,
@@ -371,8 +372,9 @@ const ItemDetails = ({
                       textOverflow: isXs ? "ellipsis" : "",
                     }}
                   >
-                    {`${row.user?.firstname} ${row.user?.lastname}` ||
-                      "Unknown User"}
+                    {row?.user?.firstname && row?.user?.lastname
+                      ? `${row?.user?.firstname} ${row?.user?.lastname}`
+                      : "Deleted User"}
                   </Typography>
                   <Typography
                     level={isXs ? "body-sm" : "body-md"}
@@ -382,7 +384,9 @@ const ItemDetails = ({
                       textOverflow: isXs ? "ellipsis" : "",
                     }}
                   >
-                    {`${row.user?.emailAddress}` || "No Email Address"}
+                    {row?.user?.emailAddress
+                      ? row?.user?.emailAddress
+                      : "No Email Address"}
                   </Typography>
                   <Typography
                     level={isXs ? "body-sm" : "body-md"}
@@ -392,7 +396,9 @@ const ItemDetails = ({
                       textOverflow: isXs ? "ellipsis" : "",
                     }}
                   >
-                    {`${row.user?.contactNumber}` || "No Contact Number"}
+                    {row?.user?.contactNumber
+                      ? row?.user?.contactNumber
+                      : "No Contact Number"}
                   </Typography>
                 </Box>
               </Box>

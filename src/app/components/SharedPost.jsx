@@ -118,8 +118,9 @@ const SharedPost = ({
 
       const data = await response.json();
       if (
-        session?.user?.id !== originalPost?.author?._id &&
-        originalPost?.author?.role?.permissions.includes("User Dashboard")
+        (session?.user?.id !== originalPost?.author?._id &&
+          originalPost?.author?.role?.permissions.includes("User Dashboard")) ||
+        originalPost?.author !== null
       ) {
         await fetch("/api/notification", {
           method: "POST",
@@ -165,15 +166,15 @@ const SharedPost = ({
             {isMilestone ? (
               <HighlightAvatar
                 sx={{ mr: 2, backgroundColor: "#FFF9C4" }}
-                src={sharedBy?.profile_picture || null}
-                alt={sharedBy?.firstname || "User"}
+                src={sharedBy?.profile_picture}
+                alt={sharedBy ? sharedBy?.firstname : "User"}
                 style={{ cursor: "pointer" }}
               />
             ) : (
               <Avatar
                 sx={{ mr: 2 }}
-                src={sharedBy?.profile_picture || null}
-                alt={sharedBy?.firstname || "User"}
+                src={sharedBy?.profile_picture}
+                alt={sharedBy ? sharedBy?.firstname : "User"}
                 style={{ cursor: "pointer" }}
               />
             )}
@@ -199,8 +200,9 @@ const SharedPost = ({
                       transition: "background-color 0.3s ease",
                     }}
                   >
-                    {`${sharedBy?.firstname} ${sharedBy?.lastname}` ||
-                      "Unknown User"}
+                    {sharedBy?.firstname && sharedBy?.lastname
+                      ? `${sharedBy?.firstname} ${sharedBy?.lastname}`
+                      : "Deleted User"}
                   </Typography>
                 </Tooltip>
 
@@ -284,15 +286,23 @@ const SharedPost = ({
                 {isMilestone ? (
                   <HighlightAvatar
                     sx={{ mr: 2, backgroundColor: "#FFF9C4" }}
-                    src={originalPost?.author?.profile_picture || null}
-                    alt={originalPost?.author?.firstname || "User"}
+                    src={originalPost?.author?.profile_picture}
+                    alt={
+                      originalPost?.author
+                        ? originalPost?.author?.firstname
+                        : "User"
+                    }
                     style={{ cursor: "pointer" }}
                   />
                 ) : (
                   <Avatar
                     sx={{ mr: 2 }}
-                    src={originalPost.author.profile_picture || null}
-                    alt={originalPost.author.firstname || "User"}
+                    src={originalPost?.author?.profile_picture}
+                    alt={
+                      originalPost?.author
+                        ? originalPost?.author.firstname
+                        : "User"
+                    }
                     style={{ cursor: "pointer" }}
                   />
                 )}
@@ -320,8 +330,10 @@ const SharedPost = ({
                           transition: "background-color 0.3s ease",
                         }}
                       >
-                        {`${originalPost?.author?.firstname} ${originalPost?.author?.lastname}` ||
-                          "Unknown User"}
+                        {originalPost?.author?.firstname &&
+                        originalPost?.author?.lastname
+                          ? `${originalPost?.author?.firstname} ${originalPost?.author?.lastname}`
+                          : "Deleted User"}
                       </Typography>
                     </Tooltip>
                     <PreviewBadge
@@ -508,7 +520,7 @@ const SharedPost = ({
           </Box>
         </CardContent>
       </Card>
-      {originalPost.author._id !== session?.user?.id && (
+      {originalPost?.author?._id !== session?.user?.id && (
         <>
           <Modal
             open={claimModal === originalPost._id}

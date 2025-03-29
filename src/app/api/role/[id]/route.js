@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import role from "@/lib/models/role";
+import user from "@/lib/models/user";
 
 export async function PUT(req, { params }) {
   const { id } = params;
@@ -59,16 +60,22 @@ export async function PUT(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
-  const { id } = params; // Get the office ID from the URL
+  const { id } = params; // Role ID
 
   await dbConnect(); // Connect to MongoDB
 
   try {
+    // Step 1: Remove the role reference from users
+    await user.updateMany({ role: id }, { $unset: { role: null } });
+
+    // Step 2: Delete the role document
     await role.findByIdAndDelete(id);
+
     return NextResponse.json({ message: "Role deleted successfully" });
   } catch (error) {
+    console.error("Role Deletion Error:", error);
     return NextResponse.json(
-      { message: "Error updating role" },
+      { message: "Error deleting role" },
       { status: 500 }
     );
   }

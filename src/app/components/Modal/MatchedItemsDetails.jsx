@@ -50,13 +50,13 @@ const MatchedItemsDetails = ({ row }) => {
                 boxShadow: "sm",
               }}
             >
-              {/* Avatar */}
               <Avatar
                 alt={
-                  `${row.owner.user.firstname} ${row.owner.user.lastname}'s Profile Picture` ||
-                  "User Profile Picture"
+                  row?.owner?.user?.firstname && row?.owner?.user?.lastname
+                    ? `${row?.owner?.user?.firstname} ${row?.owner?.user?.lastname}'s Profile Picture`
+                    : "?"
                 }
-                src={row.owner.user.profile_picture || null}
+                src={row?.owner?.user?.profile_picture}
                 sx={{
                   width: 80,
                   height: 80,
@@ -77,8 +77,9 @@ const MatchedItemsDetails = ({ row }) => {
                   }}
                   fontWeight="700"
                 >
-                  {`${row?.owner?.user?.firstname} ${row?.owner?.user?.lastname}` ||
-                    "Unknown User"}
+                  {row?.owner?.user?.firstname && row?.owner?.user?.lastname
+                    ? `${row?.owner?.user?.firstname} ${row?.owner?.user?.lastname}`
+                    : "Deleted User"}
                 </Typography>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
@@ -89,7 +90,9 @@ const MatchedItemsDetails = ({ row }) => {
                     width: "100%",
                   }}
                 >
-                  {row.owner.user?.emailAddress || "N/A"}
+                  {row?.owner?.user?.emailAddress
+                    ? row?.owner?.user?.emailAddress
+                    : "No Email Address"}
                 </Typography>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
@@ -100,7 +103,9 @@ const MatchedItemsDetails = ({ row }) => {
                     width: "100%",
                   }}
                 >
-                  {row.owner.user?.contactNumber || "N/A"}
+                  {row?.owner?.user?.contactNumber
+                    ? row?.owner?.user?.contactNumber
+                    : "No Contact Number"}
                 </Typography>
               </Stack>
             </Box>
@@ -198,10 +203,11 @@ const MatchedItemsDetails = ({ row }) => {
               {/* Avatar */}
               <Avatar
                 alt={
-                  `${row.finder.user.firstname} ${row.finder.user.lastname}'s Profile Picture` ||
-                  "User Profile"
+                  row?.finder?.user?.firstname && row?.finder?.user?.lastname
+                    ? `${row?.finder?.user?.firstname} ${row?.finder?.user?.lastname}'s Profile Picture`
+                    : "?"
                 }
-                src={row.finder.user.profile_picture || null}
+                src={row?.finder?.user?.profile_picture}
                 sx={{
                   width: 80,
                   height: 80,
@@ -222,8 +228,9 @@ const MatchedItemsDetails = ({ row }) => {
                   }}
                   fontWeight="700"
                 >
-                  {`${row?.finder?.user?.firstname} ${row?.finder?.user?.lastname}` ||
-                    "Unknown User"}
+                  {row?.finder?.user?.firstname && row?.finder?.user?.lastname
+                    ? `${row?.finder?.user?.firstname} ${row?.finder?.user?.lastname}`
+                    : "Deleted User"}
                 </Typography>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
@@ -234,7 +241,9 @@ const MatchedItemsDetails = ({ row }) => {
                     width: "100%",
                   }}
                 >
-                  {row.finder.user?.emailAddress || "N/A"}
+                  {row?.finder?.user?.emailAddress
+                    ? row?.finder?.user?.emailAddress
+                    : "No Email Address"}
                 </Typography>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
@@ -245,7 +254,9 @@ const MatchedItemsDetails = ({ row }) => {
                     width: "100%",
                   }}
                 >
-                  {row.finder.user?.contactNumber || "N/A"}
+                  {row?.finder?.user?.contactNumber
+                    ? row?.finder?.user?.contactNumber
+                    : "No Contact Number"}
                 </Typography>
               </Stack>
             </Box>

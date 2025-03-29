@@ -71,22 +71,24 @@ const ItemValidatingModal = ({
       if (!notificationResponse.ok)
         throw new Error(data.message || "Failed to send notification");
 
-      const mailResponse = await fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "ItemSurrenderSuccess",
-          to: row.user.emailAddress,
-          subject: "Item Surrender Success",
-          name: row.user.firstname,
-          link: "tlc-tracify.vercel.app/my-items#found-item",
-          itemName: row.item.name,
-          location: "SASO",
-        }),
-      });
+      if (row?.user?.emailAddress) {
+        const mailResponse = await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "ItemSurrenderSuccess",
+            to: row.user.emailAddress,
+            subject: "Item Surrender Success",
+            name: row.user.firstname,
+            link: "tlc-tracify.vercel.app/my-items#found-item",
+            itemName: row.item.name,
+            location: "SASO",
+          }),
+        });
 
-      if (!mailResponse.ok)
-        throw new Error(data.message || "Failed to send email");
+        if (!mailResponse.ok)
+          throw new Error(data.message || "Failed to send email");
+      }
 
       setOpenSnackbar("success");
       setMessage("Item has been published!");
@@ -134,22 +136,24 @@ const ItemValidatingModal = ({
       if (!notificationResponse.ok)
         throw new Error(data.message || "Failed to send notification");
 
-      const mailResponse = await fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "ItemSurrenderInvalid",
-          to: row.user.emailAddress,
-          subject: "You failed to surrender the item",
-          name: row.user.firstname,
-          link: "tlc-tracify.vercel.app/my-items#declined-item",
-          itemName: row.item.name,
-          location: "SASO",
-        }),
-      });
+      if (row?.user?.emailAddress) {
+        const mailResponse = await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "ItemSurrenderInvalid",
+            to: row.user.emailAddress,
+            subject: "You failed to surrender the item",
+            name: row.user.firstname,
+            link: "tlc-tracify.vercel.app/my-items#declined-item",
+            itemName: row.item.name,
+            location: "SASO",
+          }),
+        });
 
-      if (!mailResponse.ok)
-        throw new Error(data.message || "Failed to send email");
+        if (!mailResponse.ok)
+          throw new Error(data.message || "Failed to send email");
+      }
 
       setOpenSnackbar("success");
       setMessage("Item has been invalidated.");
@@ -224,7 +228,9 @@ const ItemValidatingModal = ({
                 <Typography level="h4" gutterbottom>
                   Confirmation
                 </Typography>
-                <Typography>Are you sure you want to publish the item?</Typography>
+                <Typography>
+                  Are you sure you want to publish the item?
+                </Typography>
                 <Box sx={{ display: "flex", gap: 2 }}>
                   <Button
                     loading={loading}

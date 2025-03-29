@@ -64,8 +64,6 @@ const ViewItemPage = ({ params }) => {
   const router = useRouter();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  console.log(foundItem);
-
   const formatDate1 = (date) =>
     isToday(new Date(date))
       ? `Today, ${format(new Date(date), "hh:mm a")}`
@@ -649,8 +647,13 @@ const ViewItemPage = ({ params }) => {
                           justifyContent="center"
                         >
                           <Avatar
-                            alt={`${foundItem.finder.user.firstname} ${foundItem.finder.user.lastname}'s Profile Picture`}
-                            src={foundItem.finder.user.profile_picture}
+                            alt={
+                              foundItem?.finder?.user?.firstname &&
+                              foundItem?.finder?.user?.lastname
+                                ? `${foundItem?.finder?.user?.firstname} ${foundItem?.finder?.user?.lastname}'s Profile Picture`
+                                : "?"
+                            }
+                            src={foundItem?.finder?.user?.profile_picture}
                             sx={{
                               width: 50,
                               height: 50,
@@ -670,8 +673,10 @@ const ViewItemPage = ({ params }) => {
                               textOverflow: { xs: "ellipsis" },
                             }}
                           >
-                            {foundItem.finder.user.firstname}{" "}
-                            {foundItem.finder.user.lastname}
+                            {foundItem?.finder?.user?.firstname &&
+                            foundItem?.finder?.user?.lastname
+                              ? `${foundItem?.finder?.user?.firstname} ${foundItem?.finder?.user?.lastname}`
+                              : "Deleted User"}
                           </Typography>
                           <Typography
                             level={isXs ? "body-sm" : "body-md"}
@@ -682,7 +687,9 @@ const ViewItemPage = ({ params }) => {
                               textOverflow: { xs: "ellipsis" },
                             }}
                           >
-                            {foundItem.finder.user.emailAddress}
+                            {foundItem?.finder?.user?.emailAddress
+                              ? foundItem?.finder?.user?.emailAddress
+                              : "No Email Address"}
                           </Typography>
                           <Typography
                             level={isXs ? "body-sm" : "body-md"}
@@ -693,7 +700,9 @@ const ViewItemPage = ({ params }) => {
                               textOverflow: { xs: "ellipsis" },
                             }}
                           >
-                            {foundItem.finder.user.contactNumber}
+                            {foundItem?.finder?.user?.contactNumber
+                              ? foundItem?.finder?.user?.contactNumber
+                              : "No Contact Number"}
                           </Typography>
                         </Grid>
                       </Grid>
@@ -720,7 +729,7 @@ const ViewItemPage = ({ params }) => {
                             color="neutral"
                           >
                             <strong>Color:</strong>{" "}
-                            {foundItem.finder.item.color}
+                            {foundItem.finder.item.color.join(", ")}
                           </Typography>
                           <Typography
                             level={isXs ? "body-sm" : "body-md"}

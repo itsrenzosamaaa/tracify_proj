@@ -207,14 +207,16 @@ const ViewRoles = ({ roles, refreshData, session, update }) => {
                             >
                               Edit
                             </MenuItem>
-                            <MenuItem
-                              onClick={() => {
-                                setOpenDeleteModal(role._id);
-                                handleMenuClose();
-                              }}
-                            >
-                              Delete
-                            </MenuItem>
+                            {session?.user?.roleName !== role.name && (
+                              <MenuItem
+                                onClick={() => {
+                                  setOpenDeleteModal(role._id);
+                                  handleMenuClose();
+                                }}
+                              >
+                                Delete
+                              </MenuItem>
+                            )}
                           </Menu>
                           <EditRole
                             open={openEditModal === role._id}

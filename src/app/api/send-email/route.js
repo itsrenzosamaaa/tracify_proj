@@ -22,6 +22,15 @@ export async function POST(req) {
       remarks,
     } = await req.json();
 
+    if (!to || typeof to !== "string" || to.trim() === "") {
+      return new Response(
+        JSON.stringify({
+          error: "Email not sent: recipient address is invalid or missing.",
+        }),
+        { status: 400 }
+      );
+    }
+
     let htmlContent;
     if (type === "ItemRequestApproval") {
       htmlContent = ItemRequestApproval({

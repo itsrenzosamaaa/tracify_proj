@@ -78,25 +78,27 @@ const ItemRequestApproveModal = ({
       if (!notificationResponse.ok)
         throw new Error(data.message || "Failed to send notification");
 
-      const mailResponse = await fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "ItemRequestApproval",
-          to: row.user.emailAddress,
-          subject: "Your Item Request Has Been Approved",
-          name: row.user.firstname,
-          link: `tlc-tracify.vercel.app/my-items#${
-            row.item.isFoundItem ? "found-item" : "lost-item"
-          }`,
-          success: row.item.isFoundItem,
-          itemName: row.item.name,
-          location: "SASO",
-        }),
-      });
+      if (row?.user?.emailAddress) {
+        const mailResponse = await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "ItemRequestApproval",
+            to: row.user.emailAddress,
+            subject: "Your Item Request Has Been Approved",
+            name: row.user.firstname,
+            link: `tlc-tracify.vercel.app/my-items#${
+              row.item.isFoundItem ? "found-item" : "lost-item"
+            }`,
+            success: row.item.isFoundItem,
+            itemName: row.item.name,
+            location: "SASO",
+          }),
+        });
 
-      if (!mailResponse.ok)
-        throw new Error(data.message || "Failed to send email");
+        if (!mailResponse.ok)
+          throw new Error(data.message || "Failed to send email");
+      }
 
       if (!row?.item?.isFoundItem) {
         const postResponse = await fetch("/api/post", {
@@ -154,46 +156,50 @@ const ItemRequestApproveModal = ({
       }
 
       // Notification request
-      const notificationResponse = await fetch("/api/notification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          receiver: row?.user?._id || "",
-          message: `The ${row?.item?.isFoundItem ? "found" : "lost"} item (${
-            row?.item?.name || ""
-          }) you requested has been declined.`,
-          type: "Declined Items",
-          markAsRead: false,
-          dateNotified: new Date(),
-        }),
-      });
+      if (row?.user?._id) {
+        const notificationResponse = await fetch("/api/notification", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            receiver: row?.user?._id,
+            message: `The ${row?.item?.isFoundItem ? "found" : "lost"} item (${
+              row?.item?.name || ""
+            }) you requested has been declined.`,
+            type: "Declined Items",
+            markAsRead: false,
+            dateNotified: new Date(),
+          }),
+        });
 
-      const notificationData = await notificationResponse.json();
+        const notificationData = await notificationResponse.json();
 
-      if (!notificationResponse.ok) {
-        throw new Error(
-          notificationData.message || "Failed to send notification"
-        );
+        if (!notificationResponse.ok) {
+          throw new Error(
+            notificationData.message || "Failed to send notification"
+          );
+        }
       }
 
-      const mailResponse = await fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "ItemRequestDecline",
-          to: row.user.emailAddress,
-          subject: "Your Item Request Has Been Declined",
-          name: row.user.firstname,
-          link: "tlc-tracify.vercel.app/my-items#declined-item",
-          itemName: row.item.name,
-          remarks: declineReason,
-        }),
-      });
+      if (row?.user?.emailAddress) {
+        const mailResponse = await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "ItemRequestDecline",
+            to: row.user.emailAddress,
+            subject: "Your Item Request Has Been Declined",
+            name: row.user.firstname,
+            link: "tlc-tracify.vercel.app/my-items#declined-item",
+            itemName: row.item.name,
+            remarks: declineReason,
+          }),
+        });
 
-      if (!mailResponse.ok)
-        throw new Error(data.message || "Failed to send email");
+        if (!mailResponse.ok)
+          throw new Error(data.message || "Failed to send email");
+      }
 
       // Success path
       onClose();

@@ -118,7 +118,7 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
     return (
       user.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.role.name.toLowerCase().includes(searchQuery.toLowerCase())
+      user?.role?.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
