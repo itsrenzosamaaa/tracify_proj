@@ -420,7 +420,7 @@ const ViewItemPage = ({ params }) => {
                   }}
                 >
                   <Button fullWidth onClick={() => setOpenHistoryModal(true)}>
-                    View Retrieval History
+                    View Request History
                   </Button>
                   {!foundItem && (
                     <Button
