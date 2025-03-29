@@ -65,6 +65,13 @@ const ItemReservedModal = ({
 
         if (!response.ok) {
           const errorData = await response.json();
+
+          // Gracefully handle missing user for increment route
+          if (response.status === 404 && errorData.error === "User not found") {
+            console.warn("Skipping increment: User not found.");
+            return null;
+          }
+
           throw new Error(
             errorData.message || `Failed to perform request to ${url}`
           );
@@ -78,7 +85,7 @@ const ItemReservedModal = ({
         status: "Resolved",
       });
 
-      // // Update lost item status
+      // Update lost item status
       await makeRequest(`/api/lost-items/${lostItemId}`, "PUT", {
         status: "Claimed",
       });
@@ -88,6 +95,7 @@ const ItemReservedModal = ({
         request_status: "Completed",
       });
 
+      // Prepare notification(s)
       const notificationData = [
         {
           receiver: row.owner.user._id,
@@ -98,7 +106,8 @@ const ItemReservedModal = ({
         },
       ];
 
-      if (row?.finder?.user?.role?.permissions.includes("User Dashboard")) {
+      // If the finder is a regular user with dashboard access
+      if (row?.finder?.user?.role?.permissions?.includes("User Dashboard")) {
         notificationData.push({
           receiver: row.finder.user._id,
           message: `Your found item ${row.finder.item.name} has been returned to its owner!`,
@@ -107,34 +116,39 @@ const ItemReservedModal = ({
           dateNotified: new Date(),
         });
 
-        await makeRequest(
-          `/api/users/${row.finder.user._id}/increment`,
-          "PUT",
-          {
-            increment: "found-item",
-          }
-        );
+        if (row.finder.user._id) {
+          await makeRequest(
+            `/api/users/${row.finder.user._id}/increment`,
+            "PUT",
+            {
+              increment: "found-item",
+            }
+          );
+        }
       }
 
+      // Send notifications
       await Promise.all(
         notificationData.map((notif) =>
           makeRequest("/api/notification", "POST", notif)
         )
       );
 
+      // Increment share count if sharedBy exists
       if (row?.sharedBy) {
         await makeRequest(`/api/users/${row.sharedBy}/increment`, "PUT", {
           increment: "share",
         });
       }
 
+      // Send email to owner if email is available
       if (row?.owner?.user?.emailAddress) {
         await makeRequest("/api/send-email", "POST", {
           type: "ClaimProcessSuccess",
           to: row.owner.user.emailAddress,
           subject: "Claim Process Success",
           name: row.owner.user.firstname,
-          link: "tlc-tracify.vercel.app/my-items#completed-item",
+          link: "https://tlc-tracify.vercel.app/my-items#completed-item",
           itemName: row.finder.item.name,
         });
       }
@@ -146,8 +160,8 @@ const ItemReservedModal = ({
       setOpenSnackbar("success");
       setMessage("The item has been returned to the owner!");
     } catch (error) {
-      setOpenSnackbar("danger"); // Display error message
-      setMessage("Error updating items:", error);
+      setOpenSnackbar("danger");
+      setMessage(`Error updating items: ${error.message}`);
     } finally {
       setLoading(false);
     }
