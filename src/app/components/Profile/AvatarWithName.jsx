@@ -97,7 +97,7 @@ const AvatarWithName = ({
 
       setOpenBirthdayModal(false);
       setBirthday(null);
-      refreshData();
+      refreshData(session?.user?.id);
       setOpenSnackbar("success");
       setMessage("Birthday saved successfully!");
     } catch (error) {

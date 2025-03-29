@@ -12,7 +12,8 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
       return {
         shape: "star",
         color: "#DAA520",
-        label: "Legendary Finder",s
+        label: "Legendary Finder",
+        s,
       };
     if (resolvedItemCount >= 10)
       return {
@@ -95,29 +96,48 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
   const GiftBadge = () => (
     <Box
       sx={{
-        width: 12,
-        height: 12,
-        position: "relative",
+        width: 16,
+        height: 16,
         backgroundColor: "#ff4081",
-        borderRadius: "3px",
+        borderRadius: "4px",
+        position: "relative",
+        border: "1px solid #d81b60",
+
         "&::before": {
           content: '""',
           position: "absolute",
-          width: "100%",
-          height: "3px",
-          backgroundColor: "#fff176",
-          top: "6px",
+          top: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "2px",
+          height: "100%",
+          backgroundColor: "#fff176", // vertical ribbon
         },
         "&::after": {
           content: '""',
           position: "absolute",
-          width: "3px",
-          height: "100%",
-          backgroundColor: "#fff176",
-          left: "6.5px",
+          left: 0,
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: "100%",
+          height: "2px",
+          backgroundColor: "#fff176", // horizontal ribbon
+        },
+        "& .bow": {
+          position: "absolute",
+          top: "-6px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: 0,
+          height: 0,
+          borderLeft: "4px solid transparent",
+          borderRight: "4px solid transparent",
+          borderBottom: "6px solid #fff176",
         },
       }}
-    />
+    >
+      <Box className="bow" />
+    </Box>
   );
 
   const resolvedBadge = getResolvedLevel();
