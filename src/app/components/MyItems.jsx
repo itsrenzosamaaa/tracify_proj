@@ -336,7 +336,7 @@ const MyItemsComponent = ({ session, status }) => {
       <Box sx={{ paddingY: "1rem" }}>
         {activeTab === "lost-item" && (
           <>
-            <Typography level="h4" gutterBottom>
+            <Typography level="h4" gutterBottom sx={{ mb: 5 }}>
               Lost Items
             </Typography>
 
@@ -360,25 +360,51 @@ const MyItemsComponent = ({ session, status }) => {
                         },
                       }}
                     >
-                      <AspectRatio
-                        ratio="1"
-                        sx={{
-                          width: { xs: "120px", sm: "100%" },
-                          minWidth: { xs: "120px", sm: "auto" },
-                          minHeight: { xs: "120px", sm: "220px" },
-                        }}
-                      >
-                        <CldImage
-                          priority
-                          src={lostItem.item.images[0]}
-                          fill
-                          alt={lostItem.item.name || "Item Image"}
-                          sizes="(max-width: 600px) 120px, (max-width: 960px) 50vw, 33vw"
-                          style={{
-                            objectFit: "cover",
+                      <Box sx={{ position: "relative", flexShrink: 0 }}>
+                        {!isXs && (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: 8,
+                              left: 8,
+                              zIndex: 1,
+                              backgroundColor: ["Unclaimed"].includes(
+                                lostItem.item.status
+                              )
+                                ? "orange"
+                                : "red",
+                              color: "#fff",
+                              px: 1,
+                              py: 0.5,
+                              borderRadius: 1,
+                              fontSize: "0.75rem",
+                              fontWeight: "bold",
+                              textShadow: "0px 0px 4px rgba(0, 0, 0, 0.7)",
+                            }}
+                          >
+                            {lostItem.item.status}
+                          </Box>
+                        )}
+                        <AspectRatio
+                          ratio="1"
+                          sx={{
+                            width: { xs: "120px", sm: "100%" },
+                            minWidth: { xs: "120px", sm: "auto" },
+                            minHeight: { xs: "120px", sm: "220px" },
                           }}
-                        />
-                      </AspectRatio>
+                        >
+                          <CldImage
+                            priority
+                            src={lostItem.item.images[0]}
+                            fill
+                            alt={lostItem.item.name || "Item Image"}
+                            sizes="(max-width: 600px) 120px, (max-width: 960px) 50vw, 33vw"
+                            style={{
+                              objectFit: "cover",
+                            }}
+                          />
+                        </AspectRatio>
+                      </Box>
 
                       <CardContent
                         sx={{
@@ -398,6 +424,20 @@ const MyItemsComponent = ({ session, status }) => {
                         >
                           {lostItem.item.name}
                         </Typography>
+
+                        {isXs && (
+                          <Chip
+                            size="sm"
+                            variant="solid"
+                            color={
+                              ["Unclaimed"].includes(lostItem.item.status)
+                                ? "warning"
+                                : "danger"
+                            }
+                          >
+                            {lostItem.item.status}
+                          </Chip>
+                        )}
 
                         <Typography
                           level="body2"
@@ -468,7 +508,7 @@ const MyItemsComponent = ({ session, status }) => {
 
         {activeTab === "found-item" && (
           <>
-            <Typography level="h4" gutterBottom>
+            <Typography level="h4" gutterBottom sx={{ mb: 5 }}>
               Found Items
             </Typography>
 
@@ -491,25 +531,53 @@ const MyItemsComponent = ({ session, status }) => {
                         },
                       }}
                     >
-                      <AspectRatio
-                        ratio="1"
-                        sx={{
-                          width: { xs: "120px", sm: "100%" },
-                          minWidth: { xs: "120px", sm: "auto" },
-                          minHeight: { xs: "120px", sm: "220px" },
-                        }}
-                      >
-                        <CldImage
-                          priority
-                          src={foundItem.item.images[0]}
-                          fill
-                          alt={foundItem.item.name || "Item Image"}
-                          sizes="(max-width: 600px) 120px, (max-width: 960px) 50vw, 33vw"
-                          style={{
-                            objectFit: "cover",
+                      <Box sx={{ position: "relative", flexShrink: 0 }}>
+                        {!isXs && (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: 8,
+                              left: 8,
+                              zIndex: 1,
+                              backgroundColor: ["Surrender Pending"].includes(
+                                foundItem.item.status
+                              )
+                                ? "orange"
+                                : ["Published"].includes(foundItem.item.status)
+                                ? "blue"
+                                : "green",
+                              color: "#fff",
+                              px: 1,
+                              py: 0.5,
+                              borderRadius: 1,
+                              fontSize: "0.75rem",
+                              fontWeight: "bold",
+                              textShadow: "0px 0px 4px rgba(0, 0, 0, 0.7)",
+                            }}
+                          >
+                            {foundItem.item.status}
+                          </Box>
+                        )}
+                        <AspectRatio
+                          ratio="1"
+                          sx={{
+                            width: { xs: "120px", sm: "100%" },
+                            minWidth: { xs: "120px", sm: "auto" },
+                            minHeight: { xs: "120px", sm: "220px" },
                           }}
-                        />
-                      </AspectRatio>
+                        >
+                          <CldImage
+                            priority
+                            src={foundItem.item.images[0]}
+                            fill
+                            alt={foundItem.item.name || "Item Image"}
+                            sizes="(max-width: 600px) 120px, (max-width: 960px) 50vw, 33vw"
+                            style={{
+                              objectFit: "cover",
+                            }}
+                          />
+                        </AspectRatio>
+                      </Box>
 
                       <CardContent
                         sx={{
@@ -529,7 +597,23 @@ const MyItemsComponent = ({ session, status }) => {
                         >
                           {foundItem.item.name}
                         </Typography>
-
+                        {isXs && (
+                          <Chip
+                            size="sm"
+                            variant="solid"
+                            color={
+                              ["Surrender Pending"].includes(
+                                foundItem.item.status
+                              )
+                                ? "warning"
+                                : ["Published"].includes(foundItem.item.status)
+                                ? "primary"
+                                : "success"
+                            }
+                          >
+                            {foundItem.item.status}
+                          </Chip>
+                        )}
                         <Typography
                           level="body2"
                           sx={{
@@ -544,7 +628,6 @@ const MyItemsComponent = ({ session, status }) => {
                         >
                           {foundItem.item.description}
                         </Typography>
-
                         <Button
                           fullWidth
                           size="sm"
