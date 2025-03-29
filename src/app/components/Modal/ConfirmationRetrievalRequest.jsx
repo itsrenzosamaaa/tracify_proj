@@ -99,21 +99,21 @@ const ConfirmationRetrievalRequest = ({
             <Button
               disabled={loading}
               loading={loading}
+              onClick={onClose}
+              fullWidth
+              color="danger"
+            >
+              Abort
+            </Button>
+            <Button
+              disabled={loading}
+              loading={loading}
               onClick={(e) =>
                 handleSubmit(e, foundItem.item._id, finder, lostItem)
               }
               fullWidth
             >
               Send
-            </Button>
-            <Button
-              disabled={loading}
-              loading={loading}
-              onClick={onClose}
-              fullWidth
-              color="danger"
-            >
-              Abort
             </Button>
           </Box>
         </ModalDialog>
