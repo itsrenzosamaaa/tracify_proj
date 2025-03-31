@@ -128,13 +128,28 @@ const PublishLostItem = ({
         return;
       }
 
-      const selectedLostStartDate = new Date(lostDateStart);
-      const selectedLostEndDate = new Date(lostDateEnd);
+      const now = new Date();
+      const startDate = itemWhereabouts ? new Date(lostDateStart) : null;
+      const endDate = itemWhereabouts ? new Date(lostDateEnd) : null;
 
-      if (selectedLostStartDate >= selectedLostEndDate) {
-        setOpenSnackbar("danger");
-        setMessage("The start date must be earlier than the end date.");
-        return;
+      if (itemWhereabouts) {
+        if (isNaN(startDate) || isNaN(endDate)) {
+          setOpenSnackbar("danger");
+          setMessage("Please provide valid start and end dates.");
+          return;
+        }
+
+        if (startDate >= endDate) {
+          setOpenSnackbar("danger");
+          setMessage("The start date must be earlier than the end date.");
+          return;
+        }
+
+        if (startDate > now) {
+          setOpenSnackbar("danger");
+          setMessage("The start date cannot be in the future.");
+          return;
+        }
       }
 
       let lostItemData = {
@@ -149,10 +164,10 @@ const PublishLostItem = ({
         description,
         location: itemWhereabouts ? location : "Unidentified",
         date_time: itemWhereabouts
-          ? `${format(
-              selectedLostStartDate,
+          ? `${format(startDate, "MMMM dd, yyyy hh:mm a")} to ${format(
+              endDate,
               "MMMM dd, yyyy hh:mm a"
-            )} to ${format(selectedLostEndDate, "MMMM dd, yyyy hh:mm a")}`
+            )}`
           : "Unidentified",
         images,
         status: session.user.permissions.includes("User Dashboard")
@@ -253,6 +268,7 @@ const PublishLostItem = ({
           : "Item published successfully!"
       );
     } catch (error) {
+      console.error(error);
       setOpenSnackbar("danger");
       setMessage("An unexpected error occurred.");
     } finally {
@@ -272,6 +288,7 @@ const PublishLostItem = ({
     setDistinctiveMarks();
     setDescription("");
     setItemWhereabouts(false);
+    setCanUploadImages(false);
     setLocation("");
     setLostDateStart("");
     setLostDateEnd("");

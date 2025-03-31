@@ -643,7 +643,7 @@ const ItemDetails = ({
                     },
                     {
                       label: "Color",
-                      value: (row?.item?.color || []).join(", "),
+                      value: (row?.item?.color).join(", "),
                       suggestion: (row?.item?.edit?.color).join(", "),
                     },
                     {
