@@ -28,7 +28,6 @@ export async function GET(req, { params }) {
     const nextPosts = await post
       .find(query)
       .sort({ createdAt: -1 }) // Reverse chronological order
-      .limit(10)
       .populate({
         path: "author",
         select:
@@ -81,7 +80,8 @@ export async function GET(req, { params }) {
             },
           },
         ],
-      });
+      })
+      .lean();
 
     if (nextPosts.length === 0) {
       return NextResponse.json({ error: "No more posts" }, { status: 404 });
@@ -115,10 +115,7 @@ export async function PUT(req, { params }) {
     );
 
     if (!updatePost) {
-      return NextResponse.json(
-        { message: "Post not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Post not found" }, { status: 404 });
     }
 
     return NextResponse.json(updatePost);
