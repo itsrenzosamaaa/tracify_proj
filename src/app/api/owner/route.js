@@ -9,7 +9,7 @@ export async function GET() {
   try {
     await dbConnect();
 
-    const findOwners = await owner.find().populate("user").populate("item");
+    const findOwners = await owner.find().populate("user").populate("item").lean();
 
     return NextResponse.json(findOwners, { status: 200 });
   } catch (error) {

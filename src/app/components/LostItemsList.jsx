@@ -33,18 +33,40 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const statusOptions = ["Missing", "Request", "Declined", "Canceled"];
+  const statusOptions = [
+    "Missing",
+    "Request",
+    "Declined",
+    "Canceled",
+    "Edit Suggestions",
+  ];
 
   // Calculate counts for each status
   const statusCounts = statusOptions.reduce((acc, currentStatus) => {
-    acc[currentStatus] = owners.filter(
-      (owner) => owner.item.status === currentStatus
-    ).length;
+    acc[currentStatus] = acc[currentStatus] =
+      currentStatus === "Edit Suggestions"
+        ? owners.filter(
+            (owner) =>
+              owner.item.edit &&
+              Object.values(owner.item.edit).some((val) => {
+                if (Array.isArray(val)) return val.length > 0;
+                return val !== "" && val !== null && val !== undefined;
+              })
+          ).length
+        : owners.filter((owner) => owner.item.status === currentStatus).length;
+
     return acc;
   }, {});
 
   const filteredItems = owners.filter((owner) => {
-    const matchesStatus = owner.item.status === status;
+    const matchesStatus =
+      status === "Edit Suggestions"
+        ? owner.item.edit &&
+          Object.values(owner.item.edit).some((val) => {
+            if (Array.isArray(val)) return val.length > 0;
+            return val !== "" && val !== null && val !== undefined;
+          })
+        : owner.item.status === status;
 
     const matchesSearch =
       owner.item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

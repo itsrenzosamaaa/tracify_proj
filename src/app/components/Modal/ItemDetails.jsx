@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -25,6 +25,11 @@ import {
   FormLabel,
   Autocomplete,
   Tooltip,
+  ModalDialog,
+  ModalClose,
+  DialogContent,
+  Modal,
+  Badge,
 } from "@mui/joy";
 import { CldImage } from "next-cloudinary";
 import { format, subDays, isBefore, isAfter, isToday } from "date-fns";
@@ -47,6 +52,8 @@ import {
   AccessTime,
   Flag,
   HourglassBottom,
+  ArrowDownward,
+  ArrowForward,
 } from "@mui/icons-material";
 import Image from "next/image";
 
@@ -120,7 +127,11 @@ const ItemDetails = ({
     }
     return ""; // Default value if item is found
   });
+  const [openSuggestionModal, setOpenSuggestionModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [rejectSuggestion, setRejectSuggestion] = useState(false);
+  const [approveSuggestion, setApproveSuggestion] = useState(false);
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
@@ -179,6 +190,8 @@ const ItemDetails = ({
       }
     }
   };
+
+  console.log(row);
 
   const handleEdit = async (e) => {
     e.preventDefault();
@@ -259,6 +272,18 @@ const ItemDetails = ({
         throw new Error(data.message || "Failed to update item details.");
       }
 
+      if (row?.item?.status !== "Request") {
+        await fetch(`api/post/${row._id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            isFinder: row?.item?.isFoundItem ? true : false,
+            item_name: name,
+            caption: description,
+          }),
+        });
+      }
+
       // Refresh and update UI
       await refreshData();
       setIsEditMode(false);
@@ -267,6 +292,109 @@ const ItemDetails = ({
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSuggestionEdit = async (isApprove) => {
+    setLoading(true);
+
+    const edit = row?.item?.edit;
+    const isFoundItem = row?.item?.isFoundItem;
+    const itemId = row?.item?._id;
+    const postId = row?._id;
+    const userId = row?.user?._id;
+
+    // Ensure edit exists before proceeding
+    if (!edit) {
+      setOpenSnackbar("danger");
+      setMessage("No edit suggestion found.");
+      setLoading(false);
+      return;
+    }
+
+    const formData = {
+      edit: null, // clear the edit field upon approval or rejection
+    };
+
+    if (isApprove) {
+      formData.name = edit?.name;
+      formData.color = edit?.color;
+      formData.size = edit?.size;
+      formData.category = edit?.category;
+      formData.material = edit?.material;
+      formData.condition = edit?.condition;
+      formData.distinctiveMarks = edit?.distinctiveMarks;
+      formData.description = edit?.description;
+      formData.location = edit?.location;
+      formData.date_time = edit?.date_time;
+    }
+
+    try {
+      // 🔄 Update item with suggestion values
+      const response = await fetch(
+        `/api/${isFoundItem ? "found-items" : "lost-items"}/${itemId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to update item details.");
+      }
+
+      // 📝 Update related post if item is not in Request status
+      if (isApprove && row?.item?.status === "Missing") {
+        await fetch(`/api/post/${postId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            isFinder: row?.item?.isFoundItem,
+            item_name: edit?.name,
+            caption: edit?.description,
+          }),
+        });
+      }
+
+      // 🔔 Notify the user
+      const notificationPayload = {
+        receiver: userId,
+        message: `The edit suggestion for your ${
+          row?.item?.isFoundItem ? "found item" : "lost item"
+        } (${row?.item?.name}) has been ${
+          isApprove ? "approved" : "declined"
+        }.`,
+        type: row?.item?.isFoundItem ? "Found Items" : "Lost Items",
+        markAsRead: false,
+        dateNotified: new Date(),
+      };
+
+      await fetch("/api/notification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notificationPayload),
+      });
+
+      // ✅ Cleanup & UI feedback
+      setOpenSuggestionModal(false);
+      setRejectSuggestion(false);
+      setApproveSuggestion(false);
+      setOpenSnackbar("success");
+      refreshData();
+
+      setMessage(
+        isApprove
+          ? "Item details updated successfully."
+          : "The edit suggestion has been declined."
+      );
+    } catch (error) {
+      console.error("Error during suggestion edit:", error);
+      setOpenSnackbar("danger");
+      setMessage("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -324,13 +452,13 @@ const ItemDetails = ({
           </Box>
         </Grid>
 
-        <Grid item lg={12}>
+        <Grid item xs={12}>
           <Divider />
         </Grid>
 
         {session?.user?.id !== row?.user?._id && (
           <>
-            <Grid item lg={12}>
+            <Grid item xs={12}>
               <Typography
                 level="h5"
                 sx={{
@@ -404,13 +532,13 @@ const ItemDetails = ({
               </Box>
             </Grid>
 
-            <Grid item lg={12}>
+            <Grid item xs={12}>
               <Divider />
             </Grid>
           </>
         )}
 
-        <Grid item lg={12}>
+        <Grid item xs={12}>
           <Box
             sx={{
               display: "flex",
@@ -427,29 +555,292 @@ const ItemDetails = ({
             >
               Item Information
             </Typography>
-            {(row.item.status === "Missing" ||
-              row.item.status === "Published" ||
-              (session.user.permissions.includes("User Dashboard") &&
-                row.item.status === "Request")) &&
-              (!isEditMode ? (
-                <Button
-                  size={isXs ? "small" : "medium"}
-                  onClick={() => setIsEditMode(true)}
-                >
-                  Edit
-                </Button>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              {(row.item.status === "Missing" ||
+                row.item.status === "Published" ||
+                (session.user.permissions.includes("User Dashboard") &&
+                  row.item.status === "Request")) &&
+                (!isEditMode ? (
+                  <Button
+                    size={isXs ? "small" : "medium"}
+                    onClick={() => setIsEditMode(true)}
+                  >
+                    Edit
+                  </Button>
+                ) : (
+                  <Button
+                    size={isXs ? "small" : "medium"}
+                    color="danger"
+                    onClick={() => setIsEditMode(false)}
+                  >
+                    Cancel
+                  </Button>
+                ))}
+
+              {row.item.status === "Missing" && (
+                <>
+                  <Badge invisible={!row?.item?.edit} sx={{ marginRight: 1 }}>
+                    <Button
+                      size={isXs ? "small" : "medium"}
+                      onClick={() => setOpenSuggestionModal(true)}
+                      color="neutral"
+                    >
+                      Suggestion
+                    </Button>
+                  </Badge>
+                </>
+              )}
+            </Box>
+          </Box>
+        </Grid>
+        <Modal
+          open={openSuggestionModal}
+          onClose={() => setOpenSuggestionModal(false)}
+        >
+          <ModalDialog>
+            <Typography level="h4">Edit Suggestions</Typography>
+            <ModalClose />
+            <DialogContent
+              sx={{
+                paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+                maxHeight: "85.5vh",
+                height: "100%",
+                overflowX: "hidden",
+                overflowY: "scroll", // Always reserve space for scrollbar
+                // Default scrollbar styles (invisible)
+                "&::-webkit-scrollbar": {
+                  width: "8px", // Always reserve 8px width
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "transparent", // Invisible by default
+                  borderRadius: "4px",
+                },
+                // Show scrollbar on hover
+                "&:hover": {
+                  "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                  },
+                },
+                // Firefox
+                scrollbarWidth: "thin",
+                scrollbarColor: "transparent transparent", // Both track and thumb transparent
+                "&:hover": {
+                  scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+                },
+                // IE and Edge
+                msOverflowStyle: "-ms-autohiding-scrollbar",
+              }}
+            >
+              {!row?.item?.edit ? (
+                <Typography>No suggestions created yet...</Typography>
               ) : (
+                <Grid container spacing={2}>
+                  {[
+                    {
+                      label: "Name",
+                      value: row?.item?.name,
+                      suggestion: row?.item?.edit?.name,
+                    },
+                    {
+                      label: "Color",
+                      value: (row?.item?.color || []).join(", "),
+                      suggestion: (row?.item?.edit?.color).join(", "),
+                    },
+                    {
+                      label: "Size",
+                      value: row?.item?.size,
+                      suggestion: row?.item?.edit?.size,
+                    },
+                    {
+                      label: "Category",
+                      value: row?.item?.category,
+                      suggestion: row?.item?.edit?.category,
+                    },
+                    {
+                      label: "Location",
+                      value: row?.item?.location,
+                      suggestion: row?.item?.edit?.location,
+                    },
+                    {
+                      label: "Material",
+                      value: row?.item?.material,
+                      suggestion: row?.item?.edit?.material,
+                    },
+                    {
+                      label: "Condition",
+                      value: row?.item?.condition,
+                      suggestion: row?.item?.edit?.condition,
+                    },
+                    {
+                      label: "Distinctive Marks",
+                      value: row?.item?.distinctiveMarks,
+                      suggestion: row?.item?.edit?.distinctiveMarks,
+                    },
+                    {
+                      label: "Description",
+                      value: row?.item?.description,
+                      suggestion: row?.item?.edit?.description,
+                    },
+                    {
+                      label: "Date",
+                      value: row?.item?.date_time?.split(" to ")[0],
+                      suggestion: row?.item?.edit?.date_time?.split(" to ")[0],
+                    },
+                    {
+                      label: "Time",
+                      value: row?.item?.date_time?.split(" to ")[1],
+                      suggestion: row?.item?.edit?.date_time?.split(" to ")[1],
+                    },
+                  ].map(({ label, value, suggestion }, index) => {
+                    const hasChanged = value !== suggestion;
+
+                    return (
+                      <Grid
+                        item
+                        xs={12}
+                        sm={label === "Description" ? 12 : 6}
+                        key={index}
+                      >
+                        <Box
+                          sx={{
+                            border: "1px solid",
+                            borderColor: hasChanged ? "error.main" : "divider",
+                            borderRadius: 2,
+                            p: 2,
+                            backgroundColor: hasChanged ? "#ffeaea" : "#f9f9f9",
+                          }}
+                        >
+                          <Typography level="subtitle" gutterBottom>
+                            {label}
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: {
+                                xs: "column", // mobile: stack vertically
+                                sm: "row", // tablet and up: row
+                              },
+                              alignItems: {
+                                xs: "flex-start",
+                                sm: "center",
+                              },
+                              gap: 1,
+                            }}
+                          >
+                            <Typography
+                              level={isXs ? "body-sm" : "body-md"}
+                              sx={{ flex: 1 }}
+                            >
+                              {value || "-"}
+                            </Typography>
+                            {isXs ? <ArrowDownward /> : <ArrowForward />}
+                            <Typography
+                              level={isXs ? "body-sm" : "body-md"}
+                              sx={{
+                                flex: 1,
+                                fontWeight: hasChanged ? "bold" : "normal",
+                                color: hasChanged
+                                  ? "error.main"
+                                  : "text.primary",
+                              }}
+                            >
+                              {suggestion || "-"}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Grid>
+                    );
+                  })}
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      color="danger"
+                      onClick={() => setRejectSuggestion(true)}
+                    >
+                      Decline
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      onClick={() => setApproveSuggestion(true)}
+                    >
+                      Approve
+                    </Button>
+                  </Grid>
+                </Grid>
+              )}
+            </DialogContent>
+          </ModalDialog>
+        </Modal>
+        <Modal
+          open={approveSuggestion}
+          onClose={() => setApproveSuggestion(false)}
+        >
+          <ModalDialog>
+            <ModalClose />
+            <Typography level="h4">Approve Edit Changes</Typography>
+            <DialogContent>
+              <Typography level="body-md">
+                Are you sure you want to overwrite these changes?
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
                 <Button
-                  size={isXs ? "small" : "medium"}
-                  color="danger"
-                  onClick={() => setIsEditMode(false)}
+                  fullWidth
+                  onClick={() => setApproveSuggestion(false)}
+                  disabled={loading}
+                  loading={loading}
+                  variant="outlined"
                 >
                   Cancel
                 </Button>
-              ))}
-          </Box>
-        </Grid>
-        <Grid item lg={12}>
+                <Button
+                  fullWidth
+                  onClick={() => handleSuggestionEdit(true)}
+                  loading={loading}
+                  disabled={loading}
+                >
+                  Confirm
+                </Button>
+              </Box>
+            </DialogContent>
+          </ModalDialog>
+        </Modal>
+        <Modal
+          open={rejectSuggestion}
+          onClose={() => setRejectSuggestion(false)}
+        >
+          <ModalDialog>
+            <ModalClose />
+            <Typography level="h4">Decline Edit Changes</Typography>
+            <DialogContent>
+              <Typography level="body-md">
+                Are you sure you want to decline this edit item suggestion?
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                <Button
+                  fullWidth
+                  onClick={() => setRejectSuggestion(false)}
+                  variant="outlined"
+                  disabled={loading}
+                  loading={loading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  fullWidth
+                  color="danger"
+                  onClick={() => handleSuggestionEdit(false)}
+                  disabled={loading}
+                  loading={loading}
+                >
+                  Confirm
+                </Button>
+              </Box>
+            </DialogContent>
+          </ModalDialog>
+        </Modal>
+        <Grid item xs={12}>
           <Box component="form" onSubmit={handleEdit}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
@@ -813,19 +1204,18 @@ const ItemDetails = ({
                 )}
               </Grid>
 
-              <Grid item lg={12}>
+              <Grid item xs={12}>
                 <Divider />
               </Grid>
 
-              <Grid item lg={12}>
+              <Grid item xs={12}>
                 {isEditMode ? (
                   <FormControl>
                     <FormLabel>Description</FormLabel>
                     <Textarea
-                      type="text"
-                      name="description"
                       minRows={2}
                       value={description}
+                      placeholder="More details about the item..."
                       onChange={(e) => setDescription(e.target.value)}
                       fullWidth
                     />
@@ -852,11 +1242,11 @@ const ItemDetails = ({
                 )}
               </Grid>
 
-              <Grid item lg={12}>
+              <Grid item xs={12}>
                 <Divider />
               </Grid>
 
-              <Grid item lg={12}>
+              <Grid item xs={12}>
                 {row.item.isFoundItem ? (
                   isEditMode ? (
                     <>
@@ -1003,8 +1393,13 @@ const ItemDetails = ({
 
               {/* Submit Button */}
               {isEditMode && (
-                <Grid item lg={12}>
-                  <Button disabled={loading} loading={loading} type="submit">
+                <Grid item xs={12}>
+                  <Button
+                    disabled={loading}
+                    loading={loading}
+                    type="submit"
+                    fullWidth
+                  >
                     Save Changes
                   </Button>
                 </Grid>
@@ -1014,7 +1409,7 @@ const ItemDetails = ({
         </Grid>
 
         {/* Publishing Details */}
-        <Grid item lg={12}>
+        <Grid item xs={12}>
           <Box sx={{ marginBottom: 4 }}>
             <Typography
               level="h5"
@@ -1264,7 +1659,7 @@ const ItemDetails = ({
         </Grid>
 
         {/* Item Image */}
-        <Grid item lg={12}>
+        <Grid item xs={12}>
           <Box>
             <Typography
               level="h5"

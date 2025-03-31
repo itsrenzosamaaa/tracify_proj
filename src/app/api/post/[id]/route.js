@@ -12,7 +12,7 @@ export async function GET(req, { params }) {
     await dbConnect();
 
     // Get the lastPostId from URL search params
-    const { userId } = params;
+    const { id } = params;
     const url = new URL(req.url);
     const lastPostId = url.searchParams.get("lastPostId");
 
@@ -92,6 +92,39 @@ export async function GET(req, { params }) {
     console.error("Error fetching posts:", error);
     return NextResponse.json(
       { error: "Failed to fetch posts" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(req, { params }) {
+  const { id } = params;
+  const { isFinder, item_name, caption } = await req.json();
+
+  await dbConnect();
+
+  try {
+    const updateData = { isFinder, item_name, caption };
+
+    const query = isFinder ? { finder: id } : { owner: id };
+
+    const updatePost = await post.findOneAndUpdate(
+      query,
+      { $set: updateData },
+      { new: true }
+    );
+
+    if (!updatePost) {
+      return NextResponse.json(
+        { message: "Post not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(updatePost);
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Error updating post" },
       { status: 500 }
     );
   }

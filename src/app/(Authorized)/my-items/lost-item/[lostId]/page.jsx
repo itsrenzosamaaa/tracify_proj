@@ -22,6 +22,7 @@ import {
   Radio,
   Input,
   FormLabel,
+  Snackbar,
 } from "@mui/joy";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
@@ -33,6 +34,8 @@ import { CldImage } from "next-cloudinary";
 import ViewRetrievalHistory from "@/app/components/Modal/ViewRetrievalHistory";
 import { FindInPage } from "@mui/icons-material";
 import { FormControlLabel, useMediaQuery, useTheme } from "@mui/material";
+import SuggestEditLostItem from "@/app/components/Modal/SuggestEditLostItem";
+import { useSession } from "next-auth/react";
 
 const formatDate = (date, fallback = "Unidentified") => {
   if (!date) return fallback;
@@ -59,10 +62,30 @@ const ViewItemPage = ({ params }) => {
   const [cancelModal, setCancelModal] = useState(false);
   const [openUnpublishModal, setOpenUnpublishModal] = useState(false);
   const [inputConfirmation, setInputConfirmation] = useState("");
+  const [suggestEditModal, setSuggestEditModal] = useState(false);
+  const [locationOptions, setLocationOptions] = useState([]);
+  const [openSnackbar, setOpenSnackbar] = useState(null);
+  const [message, setMessage] = useState("");
+  const { data: session, status } = useSession();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const fetchLocations = useCallback(async () => {
+    try {
+      const response = await fetch("/api/location");
+      const data = await response.json();
+
+      const allRooms = data.reduce((acc, location) => {
+        return [...acc, ...location.areas];
+      }, []);
+
+      setLocationOptions(allRooms);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
 
   const formatDate1 = (date) =>
     isToday(new Date(date))
@@ -143,7 +166,11 @@ const ViewItemPage = ({ params }) => {
       if (lostId) {
         setLoading(true);
         try {
-          await Promise.all([fetchLostItem(), fetchFoundItem(lostId)]);
+          await Promise.all([
+            fetchLostItem(),
+            fetchFoundItem(lostId),
+            fetchLocations(),
+          ]);
         } catch (error) {
           console.error(error);
           setError("Failed to load data. Please try again later.");
@@ -154,7 +181,7 @@ const ViewItemPage = ({ params }) => {
     };
 
     loadData();
-  }, [lostId, fetchLostItem, fetchFoundItem]);
+  }, [lostId, fetchLostItem, fetchFoundItem, fetchLocations]);
 
   if (loading) return <Loading />;
   if (error) return <Typography color="danger">{error}</Typography>;
@@ -362,6 +389,7 @@ const ViewItemPage = ({ params }) => {
                   <Typography level={isXs ? "h3" : "h2"}>
                     {lostItem.name}
                   </Typography>
+
                   {lostItem.status === "Missing" && (
                     <Button
                       onClick={() => router.push("/my-items#lost-item")}
@@ -410,28 +438,51 @@ const ViewItemPage = ({ params }) => {
 
                 <Divider />
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    gap: 1,
-                    flexDirection: { xs: "column", md: "row" },
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+                <Box sx={{ display: "flex", gap: 1, flexDirection: "column" }}>
                   <Button fullWidth onClick={() => setOpenHistoryModal(true)}>
                     View Request History
                   </Button>
+
                   {!foundItem && (
-                    <Button
-                      fullWidth
-                      onClick={() => setOpenUnpublishModal(true)}
-                      color="danger"
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 1,
+                        flexDirection: { xs: "column", md: "row" },
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
                     >
-                      Unpublish an Item
-                    </Button>
+                      <Button
+                        fullWidth
+                        color="neutral"
+                        onClick={() => setSuggestEditModal(true)}
+                        aria-label="Back to my items"
+                      >
+                        Suggest Edits
+                      </Button>
+                      <Button
+                        fullWidth
+                        onClick={() => setOpenUnpublishModal(true)}
+                        color="danger"
+                      >
+                        Unpublish an Item
+                      </Button>
+                    </Box>
                   )}
                 </Box>
+
+                <SuggestEditLostItem
+                  suggestEditModal={suggestEditModal}
+                  setSuggestEditModal={setSuggestEditModal}
+                  lostItem={lostItem}
+                  locationOptions={locationOptions}
+                  setMessage={setMessage}
+                  setOpenSnackbar={setOpenSnackbar}
+                  session={session}
+                  refreshData={fetchLostItem}
+                />
+
                 <ViewRetrievalHistory
                   open={openHistoryModal}
                   onClose={() => setOpenHistoryModal(false)}
@@ -850,6 +901,20 @@ const ViewItemPage = ({ params }) => {
           </Button>
         </ModalDialog>
       </Modal>
+      <Snackbar
+        autoHideDuration={5000}
+        open={openSnackbar}
+        variant="solid"
+        color={openSnackbar}
+        onClose={(event, reason) => {
+          if (reason === "clickaway") {
+            return;
+          }
+          setOpenSnackbar(null);
+        }}
+      >
+        {message}
+      </Snackbar>
     </>
   );
 };

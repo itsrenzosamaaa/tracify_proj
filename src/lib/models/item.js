@@ -38,9 +38,11 @@ const ItemSchema = new mongoose.Schema({
   date_time: {
     type: String,
   },
-  images: [{
-    type: String,
-  }],
+  images: [
+    {
+      type: String,
+    },
+  ],
   reason: {
     type: String,
   },
@@ -52,9 +54,9 @@ const ItemSchema = new mongoose.Schema({
       "Published",
       "Matched",
       "Resolved",
-      'Missing',
-      'Unclaimed',
-      'Claimed',
+      "Missing",
+      "Unclaimed",
+      "Claimed",
       "Declined",
       "Canceled",
     ],
@@ -89,7 +91,19 @@ const ItemSchema = new mongoose.Schema({
   dateCanceled: {
     type: Date,
   },
+  edit: {
+    name: { type: String },
+    color: { type: [String] },
+    size: { type: String },
+    category: { type: String },
+    material: { type: String },
+    condition: { type: String },
+    distinctiveMarks: { type: String },
+    description: { type: String },
+    location: { type: String },
+    date_time: { type: String },
+    _id: false, // prevent automatic _id creation inside edit
+  },
 });
 
-export default mongoose.models.Item ||
-  mongoose.model("Item", ItemSchema);
+export default mongoose.models.Item || mongoose.model("Item", ItemSchema);

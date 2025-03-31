@@ -7,7 +7,7 @@ export async function GET(req, { params }) {
   try {
     await dbConnect();
 
-    const findLostItem = await item.findById({ _id: id, isFoundItem: false });
+    const findLostItem = await item.findById({ _id: id, isFoundItem: false }).lean();
 
     return NextResponse.json(findLostItem, { status: 200 });
   } catch (error) {
