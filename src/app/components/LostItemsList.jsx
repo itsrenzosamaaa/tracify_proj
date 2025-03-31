@@ -38,15 +38,16 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
     "Request",
     "Declined",
     "Canceled",
-    "Edit Suggestions",
+    "Pending Edits",
   ];
 
   // Calculate counts for each status
   const statusCounts = statusOptions.reduce((acc, currentStatus) => {
-    acc[currentStatus] = acc[currentStatus] =
-      currentStatus === "Edit Suggestions"
+    acc[currentStatus] =
+      currentStatus === "Pending Edits"
         ? owners.filter(
             (owner) =>
+              owner.item.status === "Missing" &&
               owner.item.edit &&
               Object.values(owner.item.edit).some((val) => {
                 if (Array.isArray(val)) return val.length > 0;
@@ -54,14 +55,14 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
               })
           ).length
         : owners.filter((owner) => owner.item.status === currentStatus).length;
-
     return acc;
   }, {});
 
   const filteredItems = owners.filter((owner) => {
     const matchesStatus =
-      status === "Edit Suggestions"
-        ? owner.item.edit &&
+      status === "Pending Edits"
+        ? owner?.item?.status === "Missing" &&
+          owner.item.edit &&
           Object.values(owner.item.edit).some((val) => {
             if (Array.isArray(val)) return val.length > 0;
             return val !== "" && val !== null && val !== undefined;
