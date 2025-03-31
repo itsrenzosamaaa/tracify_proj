@@ -19,8 +19,8 @@ export async function GET(req, { params }) {
     // Build the query based on lastPostId
     const query = {
       $or: [
-        { author: userId }, // Posts created by the user
-        { sharedBy: userId }, // Posts shared by the user
+        { author: id }, // Posts created by the user
+        { sharedBy: id }, // Posts shared by the user
       ],
       ...(lastPostId && { _id: { $lt: lastPostId } }), // Pagination
     }; // Changed from $gt to $lt for reverse chronological order
