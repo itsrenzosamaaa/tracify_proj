@@ -211,14 +211,14 @@ export default function App() {
       if (userPermissions.includes("Manage Items")) {
         base.push(
           {
-            icon: <FindInPageIcon />,
-            menu: "Found Items",
-            url: "/found-items",
-          },
-          {
             icon: <HelpOutlineIcon />,
             menu: "Lost Items",
             url: "/lost-items",
+          },
+          {
+            icon: <FindInPageIcon />,
+            menu: "Found Items",
+            url: "/found-items",
           }
         );
       }
