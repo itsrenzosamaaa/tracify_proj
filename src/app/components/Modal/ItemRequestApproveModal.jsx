@@ -333,7 +333,10 @@ const ItemRequestApproveModal = ({
                   <Button
                     onClick={() => setConfirmationDeclineModal(row._id)}
                     fullWidth
-                    disabled={!declineReason} // Disable confirm button if no reason is selected
+                    disabled={
+                      !declineReason ||
+                      (declineReason === "Others" && otherReason === "")
+                    }
                   >
                     Submit
                   </Button>

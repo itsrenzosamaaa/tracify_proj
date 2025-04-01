@@ -129,7 +129,10 @@ const CancelRetrievalRequest = ({ open, onClose, matchItem }) => {
             <Button
               onClick={() => setConfirmationCancelModal(true)}
               fullWidth
-              disabled={!cancelRemarks} // Disable confirm button if no reason is selected
+              disabled={
+                !cancelRemarks ||
+                (cancelRemarks === "Other" && otherReason === "")
+              }
             >
               Submit
             </Button>
