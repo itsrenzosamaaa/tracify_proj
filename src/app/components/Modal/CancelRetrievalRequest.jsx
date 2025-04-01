@@ -131,7 +131,7 @@ const CancelRetrievalRequest = ({ open, onClose, matchItem }) => {
               fullWidth
               disabled={
                 !cancelRemarks ||
-                (cancelRemarks === "Other" && otherReason === "")
+                (cancelRemarks === "Other" && otherReason.trim() === "")
               }
             >
               Submit

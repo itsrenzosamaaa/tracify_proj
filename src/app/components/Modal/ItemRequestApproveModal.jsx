@@ -335,7 +335,7 @@ const ItemRequestApproveModal = ({
                     fullWidth
                     disabled={
                       !declineReason ||
-                      (declineReason === "Others" && otherReason === "")
+                      (declineReason === "Others" && otherReason.trim() === "")
                     }
                   >
                     Submit

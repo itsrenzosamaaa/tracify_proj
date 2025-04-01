@@ -365,7 +365,7 @@ const ItemReservedModal = ({
                     fullWidth
                     disabled={
                       !declineRemarks ||
-                      (declineRemarks === "Other" && otherReason === "")
+                      (declineRemarks === "Other" && otherReason.trim() === "")
                     } // Disable confirm button if no reason is selected
                   >
                     Submit
