@@ -238,6 +238,7 @@ const ItemValidatingModal = ({
                     color="danger"
                     onClick={() => setItemValidate(null)}
                     fullWidth
+                    variant="outlined"
                   >
                     Cancel
                   </Button>

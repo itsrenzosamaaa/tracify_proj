@@ -357,6 +357,7 @@ const ItemReservedModal = ({
                     color="danger"
                     onClick={() => setDeclineModal(false)}
                     fullWidth
+                    variant="outlined"
                   >
                     Cancel
                   </Button>
@@ -391,6 +392,7 @@ const ItemReservedModal = ({
                     color="danger"
                     onClick={() => setConfirmationItemDecline(false)}
                     fullWidth
+                    variant="outlined"
                   >
                     Cancel
                   </Button>
@@ -430,6 +432,7 @@ const ItemReservedModal = ({
                     color="danger"
                     onClick={() => setConfirmationItemDecline(false)}
                     fullWidth
+                    variant="outlined"
                   >
                     Cancel
                   </Button>
@@ -475,6 +478,7 @@ const ItemReservedModal = ({
                     color="danger"
                     onClick={() => setConfirmationItemClaimed(false)}
                     fullWidth
+                    variant="outlined"
                   >
                     Cancel
                   </Button>

@@ -327,6 +327,7 @@ const ItemRequestApproveModal = ({
                     color="danger"
                     onClick={() => setReasonModal(null)}
                     fullWidth
+                    variant="outlined"
                   >
                     Cancel
                   </Button>
@@ -364,6 +365,7 @@ const ItemRequestApproveModal = ({
                     color="danger"
                     onClick={() => setConfirmationApproveModal(null)}
                     fullWidth
+                    variant="outlined"
                   >
                     Cancel
                   </Button>
@@ -397,8 +399,9 @@ const ItemRequestApproveModal = ({
                     color="danger"
                     onClick={() => setConfirmationDeclineModal(null)}
                     fullWidth
+                    variant="outlined"
                   >
-                    Abort
+                    Cancel
                   </Button>
                   <Button
                     loading={loading}

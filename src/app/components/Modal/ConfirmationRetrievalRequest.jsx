@@ -101,9 +101,10 @@ const ConfirmationRetrievalRequest = ({
               loading={loading}
               onClick={onClose}
               fullWidth
+              variant="outlined"
               color="danger"
             >
-              Abort
+              Cancel
             </Button>
             <Button
               disabled={loading}

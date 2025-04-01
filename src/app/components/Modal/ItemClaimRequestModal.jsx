@@ -247,6 +247,7 @@ const ItemClaimRequestModal = ({
                     color="danger"
                     onClick={() => setConfirmationDeclineModal(null)}
                     fullWidth
+                    variant="outlined"
                   >
                     Cancel
                   </Button>
@@ -279,7 +280,8 @@ const ItemClaimRequestModal = ({
                   Confirmation
                 </Typography>
                 <Typography>
-                  Reserve this item to the potential owner?
+                  Approve this retrieval request and notify the owner to claim
+                  the item at the office?
                 </Typography>
                 <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
                   <Button
@@ -287,6 +289,7 @@ const ItemClaimRequestModal = ({
                     color="danger"
                     onClick={() => setConfirmationApproveModal(null)}
                     fullWidth
+                    variant="outlined"
                   >
                     Cancel
                   </Button>
