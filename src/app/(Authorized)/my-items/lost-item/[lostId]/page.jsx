@@ -53,7 +53,6 @@ const formatDate = (date, fallback = "Unidentified") => {
   }
 };
 
-
 const ViewItemPage = ({ params }) => {
   const { lostId } = params;
   const [lostItem, setLostItem] = useState(null);
@@ -157,9 +156,14 @@ const ViewItemPage = ({ params }) => {
 
       if (!response.ok)
         throw new Error(data.message || "Failed to update status");
-      router.push("/my-items");
+
+      await fetchFoundItem(lostId),
+      setMessage("Retrieval canceled successfully.");
+      setOpenSnackbar("success");
     } catch (error) {
       console.error(error);
+      setMessage("Error occured.");
+      setOpenSnackbar("danger");
     } finally {
       setIsLoading(false);
     }
