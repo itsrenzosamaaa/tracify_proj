@@ -156,14 +156,11 @@ const ViewItemPage = ({ params }) => {
 
       if (!response.ok)
         throw new Error(data.message || "Failed to update status");
-
-      await fetchFoundItem(lostId),
-      setMessage("Retrieval canceled successfully.");
-      setOpenSnackbar("success");
+      router.push("/my-items");
     } catch (error) {
       console.error(error);
-      setMessage("Error occured.");
       setOpenSnackbar("danger");
+      setMessage("Error occured.");
     } finally {
       setIsLoading(false);
     }
@@ -690,6 +687,10 @@ const ViewItemPage = ({ params }) => {
                             open={cancelModal}
                             onClose={() => setCancelModal(false)}
                             matchItem={foundItem}
+                            setMessage={setMessage}
+                            setOpenSnackbar={setOpenSnackbar}
+                            refreshData={fetchFoundItem}
+                            lostId={lostId}
                           />
                         </>
                       )}

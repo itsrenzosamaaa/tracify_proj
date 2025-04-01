@@ -16,12 +16,17 @@ import { FormControlLabel } from "@mui/material";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
-const CancelRetrievalRequest = ({ open, onClose, matchItem }) => {
+const CancelRetrievalRequest = ({
+  open,
+  onClose,
+  matchItem,
+  setMessage,
+  setOpenSnackbar,
+}) => {
   const [loading, setLoading] = useState(false);
   const [cancelRemarks, setCancelRemarks] = useState("");
   const [confirmationCancelModal, setConfirmationCancelModal] = useState(false);
   const [otherReason, setOtherReason] = useState("");
-  const router = useRouter();
 
   const handleReasonChange = (event) => {
     setCancelRemarks(event.target.value);
@@ -62,9 +67,15 @@ const CancelRetrievalRequest = ({ open, onClose, matchItem }) => {
 
       if (!matchResponse.ok) throw new Error("Failed to update status");
 
-      router.push("/my-items");
+      setOpenSnackbar("success");
+      setMessage("Retrieval canceled successfully.");
+      refreshData(lostId);
     } catch (error) {
       console.error(error);
+      setOpenSnackbar("danger");
+      setMessage("Error occured.");
+    } finally {
+      setLoading(false);
     }
   };
   return (
