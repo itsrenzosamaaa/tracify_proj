@@ -64,9 +64,9 @@ const FoundItemsList = ({
 
     // Search across multiple fields (name, description, category, location, etc.)
     const matchesSearch =
-      finder.item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      finder.user.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      finder.user.lastname.toLowerCase().includes(searchQuery.toLowerCase());
+      finder?.item?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      finder?.user?.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      finder?.user?.lastname.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 

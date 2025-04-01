@@ -72,8 +72,8 @@ const LostItemsList = ({
 
     const matchesStatus =
       status === "Pending Edits"
-        ? item.status === "Missing" && isPendingEdit
-        : item.status === status;
+        ? item?.status === "Missing" && isPendingEdit
+        : item?.status === status;
 
     const matchesSubStatus =
       status !== "Missing" ||
@@ -81,9 +81,9 @@ const LostItemsList = ({
       (missingSubStatus === "Pending Edits" && isPendingEdit);
 
     const matchesSearch =
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      owner.user.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      owner.user.lastname.toLowerCase().includes(searchQuery.toLowerCase());
+      item?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      owner?.user?.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      owner?.user?.lastname.toLowerCase().includes(searchQuery.toLowerCase());
 
     return matchesStatus && matchesSubStatus && matchesSearch;
   });
