@@ -173,9 +173,10 @@ const PublishFoundItem = ({
       const foundItemResponse = await response.json();
 
       const finderFormData = {
-        user: session.user.permissions.includes("User Dashboard") || !studentCheck
-          ? session?.user?.id
-          : finder?._id,
+        user:
+          session.user.permissions.includes("User Dashboard") || !studentCheck
+            ? session?.user?.id
+            : finder?._id,
         item: foundItemResponse._id,
       };
 
@@ -241,6 +242,7 @@ const PublishFoundItem = ({
           : "Item published successfully!"
       );
     } catch (error) {
+      console.error(error);
       setOpenSnackbar("danger");
       setMessage("An unexpected error occurred.");
     } finally {
