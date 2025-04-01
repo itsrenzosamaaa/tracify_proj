@@ -315,8 +315,8 @@ const PublishFoundItem = ({
           <ModalClose />
           <Typography level="h4" sx={{ mb: 2 }}>
             {session.user.permissions.includes("User Dashboard")
-              ? "Request"
-              : "Post"}{" "}
+              ? "Report"
+              : "Publish"}{" "}
             Found Item
           </Typography>
           <DialogContent

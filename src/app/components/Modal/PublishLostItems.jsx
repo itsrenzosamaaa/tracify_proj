@@ -371,8 +371,8 @@ const PublishLostItem = ({
           <ModalClose />
           <Typography level="h4" sx={{ mb: 2 }}>
             {session.user.permissions.includes("User Dashboard")
-              ? "Request"
-              : "Post"}{" "}
+              ? "Report"
+              : "Publish"}{" "}
             Lost Item
           </Typography>
           <DialogContent
