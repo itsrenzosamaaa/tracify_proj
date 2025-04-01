@@ -415,14 +415,14 @@ const UserDashboard = ({ session, status, users }) => {
                     fullWidth
                     onClick={() => setOpenFoundRequestModal(true)}
                   >
-                    Request Found Item
+                    Report Found Item
                   </Button>
                   <Button
                     color="danger"
                     fullWidth
                     onClick={() => setOpenLostRequestModal(true)}
                   >
-                    Request Lost Item
+                    Report Lost Item
                   </Button>
                 </Box>
               )}
@@ -600,14 +600,14 @@ const UserDashboard = ({ session, status, users }) => {
                     fullWidth
                     onClick={() => setOpenFoundRequestModal(true)}
                   >
-                    Request Found Item
+                    Report Found Item
                   </Button>
                   <Button
                     color="danger"
                     fullWidth
                     onClick={() => setOpenLostRequestModal(true)}
                   >
-                    Request Lost Item
+                    Report Lost Item
                   </Button>
                 </Box>
               )}

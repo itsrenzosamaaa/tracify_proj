@@ -772,7 +772,7 @@ const PublishFoundItem = ({
                 </FormControl>
                 <Button loading={loading} disabled={loading} type="submit">
                   {session.user.permissions.includes("User Dashboard")
-                    ? "Request"
+                    ? "Report"
                     : "Post"}{" "}
                 </Button>
               </Stack>

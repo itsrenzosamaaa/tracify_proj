@@ -866,7 +866,7 @@ const PublishLostItem = ({
                 )}
                 <Button disabled={loading} loading={loading} type="submit">
                   {session.user.permissions.includes("User Dashboard")
-                    ? "Request"
+                    ? "Report"
                     : "Post"}
                 </Button>
               </Stack>
