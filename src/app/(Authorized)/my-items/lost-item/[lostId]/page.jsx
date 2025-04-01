@@ -44,11 +44,15 @@ const formatDate = (date, fallback = "Unidentified") => {
       year: "numeric",
       month: "long",
       day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
     }).format(new Date(date));
   } catch {
     return fallback;
   }
 };
+
 
 const ViewItemPage = ({ params }) => {
   const { lostId } = params;

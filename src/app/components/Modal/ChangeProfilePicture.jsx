@@ -212,7 +212,7 @@ const ChangeProfilePicture = ({
                   >
                     {loading ? "Saving..." : "Save Picture"}
                   </Button>
-                  <Button onClick={() => setPreviewImage(null)} color="danger">
+                  <Button onClick={() => setPreviewImage(null)} color="danger" disabled={loading} loading={loading}>
                     Discard
                   </Button>
                 </Box>
