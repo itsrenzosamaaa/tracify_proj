@@ -22,6 +22,8 @@ const CancelRetrievalRequest = ({
   matchItem,
   setMessage,
   setOpenSnackbar,
+  refreshData,
+  lostId,
 }) => {
   const [loading, setLoading] = useState(false);
   const [cancelRemarks, setCancelRemarks] = useState("");
