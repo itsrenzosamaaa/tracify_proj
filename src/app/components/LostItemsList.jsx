@@ -32,14 +32,9 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
   const [currentPage, setCurrentPage] = useState(1); // Tracks current page
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [missingSubStatus, setMissingSubStatus] = useState("All");
 
-  const statusOptions = [
-    "Missing",
-    "Request",
-    "Declined",
-    "Canceled",
-    "Pending Edits",
-  ];
+  const statusOptions = ["Missing", "Request", "Declined", "Canceled"];
 
   // Calculate counts for each status
   const statusCounts = statusOptions.reduce((acc, currentStatus) => {
@@ -59,21 +54,31 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
   }, {});
 
   const filteredItems = owners.filter((owner) => {
+    const item = owner.item;
+
+    const isPendingEdit =
+      item.edit &&
+      Object.values(item.edit).some((val) => {
+        if (Array.isArray(val)) return val.length > 0;
+        return val !== "" && val !== null && val !== undefined;
+      });
+
     const matchesStatus =
       status === "Pending Edits"
-        ? owner?.item?.status === "Missing" &&
-          owner.item.edit &&
-          Object.values(owner.item.edit).some((val) => {
-            if (Array.isArray(val)) return val.length > 0;
-            return val !== "" && val !== null && val !== undefined;
-          })
-        : owner.item.status === status;
+        ? item.status === "Missing" && isPendingEdit
+        : item.status === status;
+
+    const matchesSubStatus =
+      status !== "Missing" ||
+      missingSubStatus === "All" ||
+      (missingSubStatus === "Pending Edits" && isPendingEdit);
 
     const matchesSearch =
-      owner.item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       owner.user.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
       owner.user.lastname.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
+
+    return matchesStatus && matchesSubStatus && matchesSearch;
   });
 
   return (
@@ -196,6 +201,49 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
                 locationOptions={locationOptions}
               />
             </Box>
+            {status === "Missing" && (
+              <Box sx={{ display: "flex", gap: 1, my: 1 }}>
+                <Chip
+                  variant="outlined"
+                  color={missingSubStatus === "All" ? "primary" : "neutral"}
+                  onClick={() => setMissingSubStatus("All")}
+                  sx={{ cursor: "pointer" }}
+                >
+                  All
+                </Chip>
+                <Badge
+                  badgeContent="!"
+                  color="error"
+                  size="sm"
+                  invisible={
+                    !owners.some(
+                      (owner) =>
+                        owner.item.status === "Missing" &&
+                        owner.item.edit &&
+                        Object.values(owner.item.edit).some((val) =>
+                          Array.isArray(val)
+                            ? val.length > 0
+                            : val !== "" && val !== null
+                        )
+                    )
+                  }
+                >
+                  <Chip
+                    variant="outlined"
+                    color={
+                      missingSubStatus === "Pending Edits"
+                        ? "primary"
+                        : "neutral"
+                    }
+                    onClick={() => setMissingSubStatus("Pending Edits")}
+                    sx={{ cursor: "pointer" }}
+                  >
+                    Pending Edits
+                  </Chip>
+                </Badge>
+              </Box>
+            )}
+
             <Input
               startDecorator={<Search />}
               sx={{ mb: 3, width: isMobile ? "100%" : "30%" }}

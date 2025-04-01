@@ -158,7 +158,47 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
         skipEmptyLines: true, // Skip blank lines
         complete: async (results) => {
           try {
+            // Define your required CSV headers
+            const requiredHeaders = [
+              "username",
+              "password",
+              "emailAddress",
+              "firstname",
+              "lastname",
+              "contactNumber",
+            ];
+            const csvHeaders = results.meta.fields; // Extracted headers from CSV
+
+            // Check if any required header is missing
+            const missingHeaders = requiredHeaders.filter(
+              (header) => !csvHeaders.includes(header)
+            );
+
+            if (missingHeaders.length > 0) {
+              setOpenSnackbar("danger");
+              setMessage(
+                `CSV header mismatch. Missing columns: ${missingHeaders.join(
+                  ", "
+                )}.`
+              );
+              return;
+            }
+
+            // Optionally, if you want to warn about extra headers:
+            const extraHeaders = csvHeaders.filter(
+              (header) => !requiredHeaders.includes(header)
+            );
+            if (extraHeaders.length > 0) {
+              setOpenSnackbar("danger");
+              setMessage(
+                `Extra columns found in CSV: ${extraHeaders.join(", ")}`
+              );
+              return;
+            }
+
             setLoading(true);
+
+            // Proceed to send the data to your backend
             const response = await fetch("/api/users", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -476,6 +516,15 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                                     >
                                       <Button
                                         disabled={isLoading}
+                                        fullWidth
+                                        onClick={() => setOpen(null)}
+                                        variant="outlined"
+                                        aria-label="Cancel delete"
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button
+                                        disabled={isLoading}
                                         loading={isLoading}
                                         fullWidth
                                         onClick={(e) =>
@@ -485,15 +534,6 @@ const ViewUsers = ({ users, roles, refreshData, session }) => {
                                         aria-label="Confirm delete"
                                       >
                                         Confirm
-                                      </Button>
-                                      <Button
-                                        disabled={isLoading}
-                                        fullWidth
-                                        onClick={() => setOpen(null)}
-                                        variant="outlined"
-                                        aria-label="Cancel delete"
-                                      >
-                                        Cancel
                                       </Button>
                                     </Box>
                                   </>
