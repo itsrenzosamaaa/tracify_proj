@@ -10,6 +10,7 @@ import {
   CardActions,
   Typography,
   Snackbar,
+  Divider,
 } from "@mui/joy";
 import {
   Paper,
@@ -352,10 +353,20 @@ const ItemRetrievalTable = ({
                         </TableCell>
                         <TableCell>{row.finder.item.name}</TableCell>
                         <TableCell>
-                          {format(
-                            parseISO(row.datePending),
-                            "MMMM dd, yyyy - hh:mm a"
-                          )}
+                          <Box
+                            sx={{ display: "flex", flexDirection: "column" }}
+                          >
+                            <Typography fontWeight={500} level="body-sm">
+                              {format(
+                                parseISO(row.datePending),
+                                "MMMM dd, yyyy"
+                              )}
+                            </Typography>
+                            <Divider />
+                            <Typography fontWeight={500} level="body-sm">
+                              {format(parseISO(row.datePending), "hh:mm a")}
+                            </Typography>
+                          </Box>
                         </TableCell>
                         <TableCell sx={{ width: { xs: "90px", md: "150px" } }}>
                           <Chip

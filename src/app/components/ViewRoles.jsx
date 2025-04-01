@@ -34,15 +34,13 @@ import EditLocation from "./Modal/EditLocation";
 import EditRole from "./Modal/EditRole";
 import AccessDenied from "./Modal/AccessDenied";
 
-const ViewRoles = ({ roles, refreshData, session, update }) => {
+const ViewRoles = ({ roles, refreshData, session, update, setOpenSnackbar, setMessage }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentRoleId, setCurrentRoleId] = useState(null);
   const [open, setOpen] = useState(null);
   const [openEditModal, setOpenEditModal] = useState(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(null);
   const [addRole, setAddRole] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(null);
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -331,20 +329,6 @@ const ViewRoles = ({ roles, refreshData, session, update }) => {
           </Card>
         </Grid>
       </Grid>
-      <Snackbar
-        autoHideDuration={5000}
-        open={openSnackbar}
-        variant="solid"
-        color={openSnackbar}
-        onClose={(event, reason) => {
-          if (reason === "clickaway") {
-            return;
-          }
-          setOpenSnackbar(null);
-        }}
-      >
-        {message}
-      </Snackbar>
     </>
   );
 };

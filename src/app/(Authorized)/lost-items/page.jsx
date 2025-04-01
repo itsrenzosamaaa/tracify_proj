@@ -8,8 +8,10 @@ const FoundItemsPage = () => {
   const [owners, setOwners] = useState([]);
   const { data: session, status } = useSession();
   const [locationOptions, setLocationOptions] = useState([]);
+  const [isFetchingItems, setIsFetchingItems] = useState(false);
 
   const fetchAllData = useCallback(async () => {
+    setIsFetchingItems(true);
     try {
       const [matchesRes, ownersRes] = await Promise.all([
         fetch("/api/match-items"),
@@ -35,6 +37,8 @@ const FoundItemsPage = () => {
       setOwners(filteredItems);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsFetchingItems(false);
     }
   }, []);
 
@@ -71,6 +75,7 @@ const FoundItemsPage = () => {
         owners={owners}
         fetchItems={fetchAllData}
         session={session}
+        isFetchingItems={isFetchingItems}
       />
     </>
   );

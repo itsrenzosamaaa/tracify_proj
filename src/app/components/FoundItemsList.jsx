@@ -13,15 +13,22 @@ import {
   Input,
   Snackbar,
   IconButton,
+  Typography,
 } from "@mui/joy";
-import { Paper, Badge, useMediaQuery } from "@mui/material";
+import { Paper, Badge, useMediaQuery, CircularProgress } from "@mui/material";
 import ItemsTable from "./Table/ItemsTable";
 import AddIcon from "@mui/icons-material/Add";
 import PublishFoundItem from "./Modal/PublishFoundItem";
 import TitleBreadcrumbs from "./Title/TitleBreadcrumbs";
 import { Refresh, Search } from "@mui/icons-material";
 
-const FoundItemsList = ({ finders, fetchItems, session, locationOptions }) => {
+const FoundItemsList = ({
+  finders,
+  fetchItems,
+  session,
+  locationOptions,
+  isFetchingItems,
+}) => {
   const [status, setStatus] = useState("Published");
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // Track search input
@@ -188,16 +195,35 @@ const FoundItemsList = ({ finders, fetchItems, session, locationOptions }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)} // Update search query
             />
-            <ItemsTable
-              locationOptions={locationOptions}
-              session={session}
-              items={filteredItems}
-              fetchItems={fetchItems}
-              isFoundItem={true}
-              status={status}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-            />
+
+            {!isFetchingItems ? (
+              <ItemsTable
+                locationOptions={locationOptions}
+                session={session}
+                items={filteredItems}
+                fetchItems={fetchItems}
+                isFoundItem={true}
+                status={status}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+              />
+            ) : (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: 300,
+                }}
+              >
+                <Typography level="title-md" sx={{ mr: 2 }}>
+                  Loading items...
+                </Typography>
+                <CircularProgress size={28} />
+              </Box>
+            )}
           </Paper>
         </Grid>
       </Grid>

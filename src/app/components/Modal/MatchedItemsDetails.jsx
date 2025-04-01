@@ -66,7 +66,7 @@ const MatchedItemsDetails = ({ row }) => {
               />
 
               {/* User Details */}
-              <Stack spacing={1} sx={{ flex: 1, width: "100%" }}>
+              <Box sx={{ flex: 1, width: "100%" }}>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
                   sx={{
@@ -107,7 +107,7 @@ const MatchedItemsDetails = ({ row }) => {
                     ? row?.owner?.user?.contactNumber
                     : "No Contact Number"}
                 </Typography>
-              </Stack>
+              </Box>
             </Box>
           </Box>
           <Box sx={{ marginBottom: 4 }}>
@@ -217,7 +217,7 @@ const MatchedItemsDetails = ({ row }) => {
               />
 
               {/* User Details */}
-              <Stack spacing={1} sx={{ flex: 1, width: "100%" }}>
+              <Box sx={{ flex: 1, width: "100%" }}>
                 <Typography
                   level={isXs ? "body-sm" : "body-md"}
                   sx={{
@@ -258,7 +258,7 @@ const MatchedItemsDetails = ({ row }) => {
                     ? row?.finder?.user?.contactNumber
                     : "No Contact Number"}
                 </Typography>
-              </Stack>
+              </Box>
             </Box>
           </Box>
           <Box sx={{ marginBottom: 4 }}>

@@ -8,9 +8,11 @@ const ItemRetrievalPage = () => {
   const [items, setItems] = useState([]);
   const [users, setUsers] = useState([]);
   const { data: session, status } = useSession();
+  const [isFetchingItems, setIsFetchingItems] = useState(false);
 
   const fetchItems = useCallback(async () => {
     if (!session?.user?.id) return;
+    setIsFetchingItems(true);
     try {
       const response = await fetch("/api/match-items");
       const data = await response.json();
@@ -21,6 +23,8 @@ const ItemRetrievalPage = () => {
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsFetchingItems(false);
     }
   }, [session?.user?.id]);
 
@@ -47,7 +51,12 @@ const ItemRetrievalPage = () => {
 
   return (
     <>
-      <ItemRetrievalList items={items} fetchItems={fetchItems} users={users} />
+      <ItemRetrievalList
+        items={items}
+        fetchItems={fetchItems}
+        users={users}
+        isFetchingItems={isFetchingItems}
+      />
     </>
   );
 };

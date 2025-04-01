@@ -169,6 +169,9 @@ const EditRole = ({
       onClose();
       await refreshData();
 
+      setOpenSnackbar("success");
+      setMessage("Role updated successfully!");
+
       // ✅ If the logged-in user's role is updated, update session permissions
       if (isEditingOwnRole) {
         await update({
@@ -180,9 +183,6 @@ const EditRole = ({
           },
         });
       }
-
-      setOpenSnackbar("success");
-      setMessage("Role updated successfully!");
     } catch (error) {
       console.error("Error in updating role:", error); // ✅ Logs the actual error
       setOpenSnackbar("danger");

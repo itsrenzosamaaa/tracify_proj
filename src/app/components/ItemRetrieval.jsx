@@ -1,15 +1,24 @@
 "use client";
 
 import React, { useState } from "react";
-import { Grid, Box, Button, Menu, MenuItem, Input, IconButton } from "@mui/joy";
-import { Paper, useMediaQuery } from "@mui/material";
+import {
+  Grid,
+  Box,
+  Button,
+  Menu,
+  MenuItem,
+  Input,
+  IconButton,
+  Typography,
+} from "@mui/joy";
+import { CircularProgress, Paper, useMediaQuery } from "@mui/material";
 import TitleBreadcrumbs from "./Title/TitleBreadcrumbs";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import SearchIcon from "@mui/icons-material/Search";
 import ItemRetrievalTable from "./Table/ItemRetrievalTable";
 import { Refresh } from "@mui/icons-material";
 
-const ItemRetrievalList = ({ items, fetchItems, users }) => {
+const ItemRetrievalList = ({ items, fetchItems, users, isFetchingItems }) => {
   const [anchorEl, setAnchorEl] = useState(null); // For the Menu
   const [selectedStatus, setSelectedStatus] = useState("All"); // Default status
   const [searchQuery, setSearchQuery] = useState(""); // Track search input
@@ -69,25 +78,43 @@ const ItemRetrievalList = ({ items, fetchItems, users }) => {
               sx={{
                 mb: 3,
                 display: "flex",
-                alignItems: "center",
+                flexDirection: { xs: "column", sm: "row" }, // Stack on mobile
+                gap: 2,
+                alignItems: { xs: "stretch", sm: "center" },
                 justifyContent: "space-between",
               }}
             >
-              {/* Search Input */}
-              <Input
-                startDecorator={<SearchIcon />}
-                placeholder="Search name..."
-                value={searchQuery}
-                onChange={handleSearchChange} // Update search query on input change
-                sx={{ marginRight: 2, width: { xs: "50%", md: "250px" } }}
-              />
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: 1,
+                  width: { xs: "100%", sm: "auto" },
+                }}
+              >
+                <Input
+                  startDecorator={<SearchIcon />}
+                  placeholder="Search name..."
+                  value={searchQuery}
+                  onChange={handleSearchChange} // Update search query on input change
+                  sx={{ marginRight: 2, width: { xs: "50%", md: "250px" } }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={() => fetchItems()}
+                  sx={{ p: 0.5, mt: "-2px" }} // Optional vertical tweak
+                >
+                  <Refresh fontSize="small" />
+                </IconButton>
+              </Box>
 
               {/* Filter Menu Button */}
               <Button
+                fullWidth={isMobile}
                 startDecorator={<FilterListIcon />}
                 onClick={handleMenuOpen}
               >
-                {selectedStatus} {/* Display the selected status */}
+                {selectedStatus}
               </Button>
 
               {/* Menu for status selection */}
@@ -118,14 +145,32 @@ const ItemRetrievalList = ({ items, fetchItems, users }) => {
             </Box>
 
             {/* Item Retrieval Table */}
-            <ItemRetrievalTable
-              items={filteredItems}
-              fetchItems={fetchItems}
-              selectedStatus={selectedStatus}
-              users={users}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-            />
+            {!isFetchingItems ? (
+              <ItemRetrievalTable
+                items={filteredItems}
+                fetchItems={fetchItems}
+                selectedStatus={selectedStatus}
+                users={users}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+              />
+            ) : (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: 300,
+                }}
+              >
+                <Typography level="title-md" sx={{ mr: 2 }}>
+                  Loading items...
+                </Typography>
+                <CircularProgress size={28} />
+              </Box>
+            )}
           </Paper>
         </Grid>
       </Grid>

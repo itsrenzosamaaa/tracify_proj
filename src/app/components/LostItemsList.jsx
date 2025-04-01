@@ -15,8 +15,9 @@ import {
   Input,
   Snackbar,
   IconButton,
+  Typography,
 } from "@mui/joy";
-import { Paper, Badge, useMediaQuery } from "@mui/material";
+import { Paper, Badge, useMediaQuery, CircularProgress } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ItemsTable from "./Table/ItemsTable";
 import PublishLostItem from "./Modal/PublishLostItems";
@@ -24,7 +25,13 @@ import TitleBreadcrumbs from "./Title/TitleBreadcrumbs";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { Refresh, Search } from "@mui/icons-material";
 
-const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
+const LostItemsList = ({
+  owners,
+  fetchItems,
+  session,
+  locationOptions,
+  isFetchingItems,
+}) => {
   const [status, setStatus] = useState("Missing");
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -243,7 +250,6 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
                 </Badge>
               </Box>
             )}
-
             <Input
               startDecorator={<Search />}
               sx={{ mb: 3, width: isMobile ? "100%" : "30%" }}
@@ -251,15 +257,33 @@ const LostItemsList = ({ owners, fetchItems, session, locationOptions }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <ItemsTable
-              locationOptions={locationOptions}
-              session={session}
-              items={filteredItems}
-              fetchItems={fetchItems}
-              isFoundItem={false}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-            />
+            {!isFetchingItems ? (
+              <ItemsTable
+                locationOptions={locationOptions}
+                session={session}
+                items={filteredItems}
+                fetchItems={fetchItems}
+                isFoundItem={false}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+              />
+            ) : (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: 300,
+                }}
+              >
+                <Typography level="title-md" sx={{ mr: 2 }}>
+                  Loading items...
+                </Typography>
+                <CircularProgress size={28} />
+              </Box>
+            )}
           </Paper>
         </Grid>
       </Grid>

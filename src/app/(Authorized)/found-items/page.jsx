@@ -8,14 +8,18 @@ const FoundItemsPage = () => {
   const [finders, setFinders] = useState([]);
   const { data: session, status } = useSession();
   const [locationOptions, setLocationOptions] = useState([]);
+  const [isFetchingItems, setIsFetchingItems] = useState(false);
 
   const fetchItems = useCallback(async () => {
+    setIsFetchingItems(true);
     try {
       const response = await fetch("/api/finder");
       const data = await response.json();
       setFinders(data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsFetchingItems(false);
     }
   }, []);
 
@@ -52,6 +56,7 @@ const FoundItemsPage = () => {
         finders={finders}
         fetchItems={fetchItems}
         session={session}
+        isFetchingItems={isFetchingItems}
       />
     </>
   );
