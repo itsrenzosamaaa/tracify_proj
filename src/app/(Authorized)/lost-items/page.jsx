@@ -1,6 +1,7 @@
 "use client";
 
 import LostItemsList from "@/app/components/LostItemsList";
+import { Snackbar } from "@mui/joy";
 import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useCallback } from "react";
 
@@ -9,6 +10,8 @@ const FoundItemsPage = () => {
   const { data: session, status } = useSession();
   const [locationOptions, setLocationOptions] = useState([]);
   const [isFetchingItems, setIsFetchingItems] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(null);
+  const [message, setMessage] = useState("");
 
   const fetchAllData = useCallback(async () => {
     setIsFetchingItems(true);
@@ -76,7 +79,23 @@ const FoundItemsPage = () => {
         fetchItems={fetchAllData}
         session={session}
         isFetchingItems={isFetchingItems}
+        setMessage={setMessage}
+        setOpenSnackbar={setOpenSnackbar}
       />
+      <Snackbar
+        autoHideDuration={5000}
+        open={openSnackbar}
+        variant="solid"
+        color={openSnackbar}
+        onClose={(event, reason) => {
+          if (reason === "clickaway") {
+            return;
+          }
+          setOpenSnackbar(null);
+        }}
+      >
+        {message}
+      </Snackbar>
     </>
   );
 };

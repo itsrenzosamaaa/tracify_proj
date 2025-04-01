@@ -18,7 +18,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ItemRetrievalTable from "./Table/ItemRetrievalTable";
 import { Refresh } from "@mui/icons-material";
 
-const ItemRetrievalList = ({ items, fetchItems, users, isFetchingItems }) => {
+const ItemRetrievalList = ({ items, fetchItems, users, isFetchingItems, setOpenSnackbar, setMessage }) => {
   const [anchorEl, setAnchorEl] = useState(null); // For the Menu
   const [selectedStatus, setSelectedStatus] = useState("All"); // Default status
   const [searchQuery, setSearchQuery] = useState(""); // Track search input
@@ -153,6 +153,8 @@ const ItemRetrievalList = ({ items, fetchItems, users, isFetchingItems }) => {
                 users={users}
                 currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
+                setOpenSnackbar={setOpenSnackbar}
+                setMessage={setMessage}
               />
             ) : (
               <Box

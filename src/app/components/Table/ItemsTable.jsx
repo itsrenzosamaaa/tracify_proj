@@ -43,6 +43,8 @@ const ItemsTable = ({
   locationOptions,
   currentPage,
   setCurrentPage,
+  setMessage,
+  setOpenSnackbar,
 }) => {
   const [approveModal, setApproveModal] = useState(null);
   const [openDeclinedModal, setOpenDeclinedModal] = useState(null);
@@ -52,9 +54,7 @@ const ItemsTable = ({
   const [openMissingModal, setOpenMissingModal] = useState(null);
   const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
   const [openReservedModal, setOpenReservedModal] = useState(null);
-  const [openSnackbar, setOpenSnackbar] = useState(null);
   const [rowsPerPage, setRowsPerPage] = useState(5); // Tracks rows per page
-  const [message, setMessage] = useState("");
   const isMobile = useMediaQuery("(max-width:600px)");
 
   // Handle changing the page
@@ -590,20 +590,6 @@ const ItemsTable = ({
           />
         </>
       )}
-      <Snackbar
-        autoHideDuration={5000}
-        open={openSnackbar}
-        variant="solid"
-        color={openSnackbar}
-        onClose={(event, reason) => {
-          if (reason === "clickaway") {
-            return;
-          }
-          setOpenSnackbar(null);
-        }}
-      >
-        {message}
-      </Snackbar>
     </>
   );
 };

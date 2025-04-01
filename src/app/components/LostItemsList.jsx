@@ -31,13 +31,13 @@ const LostItemsList = ({
   session,
   locationOptions,
   isFetchingItems,
+  setOpenSnackbar,
+  setMessage,
 }) => {
   const [status, setStatus] = useState("Missing");
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
-  const [openSnackbar, setOpenSnackbar] = useState(null);
   const [currentPage, setCurrentPage] = useState(1); // Tracks current page
-  const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [missingSubStatus, setMissingSubStatus] = useState("All");
 
@@ -266,6 +266,8 @@ const LostItemsList = ({
                 isFoundItem={false}
                 currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
+                setOpenSnackbar={setOpenSnackbar}
+                setMessage={setMessage}
               />
             ) : (
               <Box
@@ -287,20 +289,6 @@ const LostItemsList = ({
           </Paper>
         </Grid>
       </Grid>
-      <Snackbar
-        autoHideDuration={5000}
-        open={openSnackbar}
-        variant="solid"
-        color={openSnackbar}
-        onClose={(event, reason) => {
-          if (reason === "clickaway") {
-            return;
-          }
-          setOpenSnackbar(null);
-        }}
-      >
-        {message}
-      </Snackbar>
     </>
   );
 };

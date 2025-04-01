@@ -35,13 +35,13 @@ const ItemRetrievalTable = ({
   fetchItems,
   currentPage,
   setCurrentPage,
+  setMessage,
+  setOpenSnackbar,
 }) => {
   const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
   const [openReservedModal, setOpenReservedModal] = useState(null);
   const [openCompletedModal, setOpenCompletedModal] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5); // Tracks rows per page
-  const [message, setMessage] = useState("");
-  const [openSnackbar, setOpenSnackbar] = useState(null);
   const isMobile = useMediaQuery("(max-width:720px)");
 
   // Handle changing the page
@@ -553,20 +553,6 @@ const ItemRetrievalTable = ({
           />
         </>
       )}
-      <Snackbar
-        autoHideDuration={5000}
-        open={openSnackbar}
-        variant="solid"
-        color={openSnackbar}
-        onClose={(event, reason) => {
-          if (reason === "clickaway") {
-            return;
-          }
-          setOpenSnackbar(false);
-        }}
-      >
-        {message}
-      </Snackbar>
     </>
   );
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import ItemRetrievalList from "@/app/components/ItemRetrieval";
+import { Snackbar } from "@mui/joy";
 import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useCallback } from "react";
 
@@ -9,6 +10,8 @@ const ItemRetrievalPage = () => {
   const [users, setUsers] = useState([]);
   const { data: session, status } = useSession();
   const [isFetchingItems, setIsFetchingItems] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(null);
+  const [message, setMessage] = useState("");
 
   const fetchItems = useCallback(async () => {
     if (!session?.user?.id) return;
@@ -56,7 +59,23 @@ const ItemRetrievalPage = () => {
         fetchItems={fetchItems}
         users={users}
         isFetchingItems={isFetchingItems}
+        setMessage={setMessage}
+        setOpenSnackbar={setOpenSnackbar}
       />
+      <Snackbar
+        autoHideDuration={5000}
+        open={openSnackbar}
+        variant="solid"
+        color={openSnackbar}
+        onClose={(event, reason) => {
+          if (reason === "clickaway") {
+            return;
+          }
+          setOpenSnackbar(null);
+        }}
+      >
+        {message}
+      </Snackbar>
     </>
   );
 };

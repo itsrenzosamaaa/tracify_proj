@@ -28,12 +28,12 @@ const FoundItemsList = ({
   session,
   locationOptions,
   isFetchingItems,
+  setOpenSnackbar,
+  setMessage,
 }) => {
   const [status, setStatus] = useState("Published");
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // Track search input
-  const [openSnackbar, setOpenSnackbar] = useState(null);
-  const [message, setMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1); // Tracks current page
   const isMobile = useMediaQuery("(max-width:600px)");
 
@@ -206,6 +206,8 @@ const FoundItemsList = ({
                 status={status}
                 currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
+                setMessage={setMessage}
+                setOpenSnackbar={setOpenSnackbar}
               />
             ) : (
               <Box
@@ -227,20 +229,6 @@ const FoundItemsList = ({
           </Paper>
         </Grid>
       </Grid>
-      <Snackbar
-        autoHideDuration={5000}
-        open={openSnackbar}
-        variant="solid"
-        color={openSnackbar}
-        onClose={(event, reason) => {
-          if (reason === "clickaway") {
-            return;
-          }
-          setOpenSnackbar(null);
-        }}
-      >
-        {message}
-      </Snackbar>
     </>
   );
 };
