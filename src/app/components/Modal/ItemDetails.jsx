@@ -635,6 +635,12 @@ const ItemDetails = ({
                 <Typography>No suggestions created yet...</Typography>
               ) : (
                 <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Typography level="body-md">
+                      These are the changes suggested by{" "}
+                      <strong>{row?.user?.firstname}</strong>.
+                    </Typography>
+                  </Grid>
                   {[
                     {
                       label: "Name",
