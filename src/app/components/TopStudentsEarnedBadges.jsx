@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Table, Box } from "@mui/joy";
+import { Typography, Table, Box, Tooltip } from "@mui/joy";
 import {
   Card,
   CardContent,
@@ -9,6 +9,7 @@ import {
   TableCell,
   TableBody,
 } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 const TopStudentsEarnedBadges = ({ users, session }) => {
   const userPermissions = session?.user?.permissions || [];
@@ -51,9 +52,29 @@ const TopStudentsEarnedBadges = ({ users, session }) => {
 
   return (
     <>
-      <Typography level="h3" gutterBottom>
-        Top Finders
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1,
+          alignItems: "center",
+        }}
+      >
+        <Typography level="h3" gutterBottom>
+          Top Finders
+        </Typography>
+        <Tooltip
+          title={
+            <>
+              Only the resolved items will be <br /> counted in the
+              leaderboards.
+            </>
+          }
+          placement="top"
+          size="sm"
+        >
+          <InfoOutlinedIcon sx={{ fontSize: "20px" }} />
+        </Tooltip>
+      </Box>
 
       <Card
         sx={{

@@ -1,5 +1,6 @@
 import React from "react";
-import { Typography, Table, Box } from "@mui/joy";
+import { Typography, Table, Box, Tooltip } from "@mui/joy";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   Card,
   CardContent,
@@ -48,9 +49,29 @@ const TopSharers = ({ users, session }) => {
 
   return (
     <>
-      <Typography level="h3" gutterBottom>
-        Top Sharers
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1,
+          alignItems: "center",
+        }}
+      >
+        <Typography level="h3" gutterBottom>
+          Top Sharers
+        </Typography>
+        <Tooltip
+          title={
+            <>
+              Only the shared posts that have been resolved <br />
+              will be counted in the leaderboards.
+            </>
+          }
+          placement="top"
+          size="sm"
+        >
+          <InfoOutlinedIcon sx={{ fontSize: "20px" }} />
+        </Tooltip>
+      </Box>
 
       <Card
         sx={{
