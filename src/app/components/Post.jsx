@@ -34,6 +34,7 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import DummyPhoto from "./DummyPhoto";
 
 const pulseGlow = keyframes`
   0% {
@@ -243,34 +244,6 @@ const Post = ({
             {caption}
           </Typography>
 
-          {(() => {
-            if (!post?.isFinder) return null;
-
-            const matchedItem = matches.find((match) => {
-              const matchItem = match?.finder?.item;
-              return (
-                match?.finder?._id === item?._id &&
-                ["Resolved", "Matched"].includes(matchItem?.status)
-              );
-            });
-
-            if (!matchedItem) return null;
-
-            const status = matchedItem.finder.item.status;
-            const isResolved = status === "Resolved";
-
-            return (
-              <Typography
-                level={isXs ? "body-sm" : "body-md"}
-                color={isResolved ? "success" : "warning"}
-              >
-                {isResolved
-                  ? "The owner has successfully claimed the item!"
-                  : "Someone sent a claim request for this item!"}
-              </Typography>
-            );
-          })()}
-
           {/* Item Details */}
           {/* <Typography level="h6" sx={{ fontWeight: "bold", mb: 1 }}>
           {item.name} - {item.category}
@@ -287,29 +260,33 @@ const Post = ({
         </Typography> */}
 
           {/* Item Images */}
-          <Carousel showThumbs={false} useKeyboardArrows>
-            {item?.item?.images?.map((image, index) => (
-              <Box
-                key={index}
-                sx={{
-                  overflow: "hidden",
-                  display: "inline-block",
-                  cursor: "pointer",
-                  margin: 1, // Adds some spacing between images
-                }}
-                onClick={() => window.open(image || "#", "_blank")}
-              >
-                <CldImage
-                  priority
-                  src={image}
-                  width={isXs ? 200 : 300}
-                  height={isXs ? 200 : 300}
-                  alt={item?.item?.name || "Item Image"}
-                  sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
-                />
-              </Box>
-            ))}
-          </Carousel>
+          {post?.isFinder ? (
+            <DummyPhoto category={item?.item?.category} isXs={isXs} />
+          ) : (
+            <Carousel showThumbs={false} useKeyboardArrows>
+              {item?.item?.images?.map((image, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    overflow: "hidden",
+                    display: "inline-block",
+                    cursor: "pointer",
+                    margin: 1, // Adds some spacing between images
+                  }}
+                  onClick={() => window.open(image || "#", "_blank")}
+                >
+                  <CldImage
+                    priority
+                    src={image}
+                    width={isXs ? 200 : 300}
+                    height={isXs ? 200 : 300}
+                    alt={item?.item?.name || "Item Image"}
+                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+                  />
+                </Box>
+              ))}
+            </Carousel>
+          )}
 
           <Divider sx={{ mb: 1 }} />
 
@@ -327,7 +304,6 @@ const Post = ({
           >
             {/* Claim Section */}
             {session?.user?.id !== author?._id &&
-              !matches.some((match) => match?.finder?._id === item?._id) &&
               post?.isFinder && ( // Ensure item is not already matched
                 <>
                   <Box

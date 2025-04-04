@@ -24,6 +24,8 @@ const basicPermissionOptions = [
   "View My Items",
   "View Rankings",
   "Request Items",
+  "Browse Lost Corner",
+  "Browse Found Corner",
 ];
 
 const managementSections = [

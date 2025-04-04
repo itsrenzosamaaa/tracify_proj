@@ -27,7 +27,11 @@ export async function middleware(request) {
       (pathname.startsWith("/my-items") &&
         !token.permissions.includes("View My Items")) ||
       (pathname.startsWith("/profile") &&
-        !token.permissions.includes("View Profile"))
+        !token.permissions.includes("View Profile")) ||
+      (pathname.startsWith("/lost-corner") &&
+        !token.permissions.includes("Browse Lost Corner")) ||
+      (pathname.startsWith("/found-corner") &&
+        !token.permissions.includes("Browse Found Corner"))
     ) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
@@ -53,6 +57,8 @@ export const config = {
     "/role",
     "/users",
     "/profile",
+    "/lost-corner",
+    "/found-corner",
     "/my-items/:path*",
   ], // Add all necessary protected routes
 };

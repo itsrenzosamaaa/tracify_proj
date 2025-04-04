@@ -17,8 +17,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import AvatarComponent from "./AvatarComponent";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Typography, Input, Button } from "@mui/joy";
-import KeyboardTabIcon from "@mui/icons-material/KeyboardTab";
 import { LinearProgress } from "@mui/material";
 import { useSession } from "next-auth/react";
 import Loading from "./Loading";
@@ -26,18 +24,17 @@ import Image from "next/image";
 import HomeIcon from "@mui/icons-material/Home";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LuggageIcon from "@mui/icons-material/Luggage";
-import SearchIcon from "@mui/icons-material/Search";
-import HistoryIcon from "@mui/icons-material/History";
-import LinkIcon from "@mui/icons-material/Link";
-import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
-import StarRateIcon from "@mui/icons-material/StarRate";
 import SecurityIcon from "@mui/icons-material/Security";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import FindInPageIcon from "@mui/icons-material/FindInPage";
 import MoveToInboxIcon from "@mui/icons-material/MoveToInbox";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import NotificationComponent from "./NotificationComponent";
-import { LocationOnOutlined } from "@mui/icons-material";
+import {
+  Inventory2,
+  LocationOnOutlined,
+  ReportProblem,
+} from "@mui/icons-material";
 
 // Updated Styled Link
 const StyledLink = styled(Link)`
@@ -199,6 +196,20 @@ export default function App() {
           icon: <AccountCircleIcon />,
           menu: "Profile",
           url: "/profile",
+        });
+      }
+      if (userPermissions.includes("Browse Lost Corner")) {
+        base.push({
+          icon: <ReportProblem />,
+          menu: "Lost Corner",
+          url: "/lost-corner",
+        });
+      }
+      if (userPermissions.includes("Browse Found Corner")) {
+        base.push({
+          icon: <Inventory2 />,
+          menu: "Found Corner",
+          url: "/found-corner",
         });
       }
       if (userPermissions.includes("View My Items")) {
