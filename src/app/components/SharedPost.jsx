@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -21,6 +21,10 @@ import {
   Select,
   Option,
   Tooltip,
+  Autocomplete,
+  Stack,
+  Input,
+  FormHelperText,
 } from "@mui/joy";
 import {
   ImageList,
@@ -29,7 +33,7 @@ import {
   Paper,
   styled,
 } from "@mui/material";
-import { Share, Send } from "@mui/icons-material";
+import { Share, Send, ContentCopy } from "@mui/icons-material";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { CldImage } from "next-cloudinary";
@@ -60,8 +64,6 @@ const HighlightAvatar = styled(Avatar)(({ theme }) => ({
 }));
 
 const SharedPost = ({
-  refreshData,
-  matches = [],
   setOpenSnackbar,
   setMessage,
   post,
@@ -71,8 +73,7 @@ const SharedPost = ({
   caption,
   sharedAt,
   isXs,
-  lostItems = [],
-  roleColors,
+  users,
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);
   const [claimModal, setClaimModal] = useState(null);
@@ -81,6 +82,40 @@ const SharedPost = ({
     useState(null);
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const inputRef = useRef();
+
+  const handleCopyLink = () => {
+    const isLost = !originalPost?.isFinder; // true if it's a lost item
+    const itemType = isLost ? "Lost Item Alert 🚨" : "Found Item Notice 🟢";
+    const introMessage = isLost
+      ? "Have you seen this item?"
+      : "Has someone lost this item?";
+    const callToAction = isLost
+      ? "Let's help the owner recover it!"
+      : "Help us locate the rightful owner!";
+
+    const customMessage = `📣 ${itemType}
+  
+  ${introMessage}
+  
+  🧾 Caption: ${caption || "No caption provided."}
+  🔗 Link: https://tlc-tracify.vercel.app/post/${post?._id}
+  
+  ${callToAction}
+  (Shared via Tracify)`;
+
+    navigator.clipboard
+      .writeText(customMessage)
+      .then(() => {
+        setOpenSnackbar("success");
+        setMessage("Custom message copied to clipboard!");
+      })
+      .catch(() => {
+        setOpenSnackbar("danger");
+        setMessage("Failed to copy message.");
+      });
+  };
 
   const isMilestone =
     ((sharedBy?.resolvedItemCount || 0) >= 20 &&
@@ -109,33 +144,63 @@ const SharedPost = ({
         body: JSON.stringify({
           isShared: true,
           caption: sharedCaption,
-          sharedBy: session.user.id,
           item_name: originalPost?.item_name,
+          sharedBy: session?.user?.id,
           sharedAt: new Date(),
           originalPost: originalPost._id,
         }),
       });
 
       const data = await response.json();
+      const notificationData = [
+        {
+          receiver: user?._id,
+          message: `${session?.user?.firstname} ${session?.user?.lastname} shared a post with you.`,
+          type: "Shared Post",
+          markAsRead: false,
+          dateNotified: new Date(),
+          post:
+            session?.user?.id !== originalPost?.author?._id ? data._id : null,
+        },
+      ];
       if (
         (session?.user?.id !== originalPost?.author?._id &&
           originalPost?.author?.role?.permissions.includes("User Dashboard")) ||
         originalPost?.author !== null
       ) {
-        await fetch("/api/notification", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            receiver: originalPost?.author?._id,
-            message: `${session?.user?.firstname} ${session?.user?.lastname} shared your post.`,
-            type: "Shared Post",
-            markAsRead: false,
-            dateNotified: new Date(),
-            post:
-              session?.user?.id !== originalPost?.author?._id ? data._id : null,
-          }),
+        notificationData.push({
+          receiver: originalPost?.author?._id,
+          message: `${session?.user?.firstname} ${session?.user?.lastname} shared your post.`,
+          type: "Shared Post",
+          markAsRead: false,
+          dateNotified: new Date(),
+          post:
+            session?.user?.id !== originalPost?.author?._id ? data._id : null,
         });
       }
+      await fetch("/api/notification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notificationData),
+      });
+
+      await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "SharedItem",
+          to: user?.emailAddress,
+          name: user?.firstname,
+          sharedBy: session?.user?.firstname,
+          caption: originalPost?.caption,
+          itemName: filteredOriginalPost?.item?.name,
+          link: `https://tlc-tracify.vercel.app/post/${data._id}`,
+          subject: "An Item Has Been Shared With You via Tracify!",
+        }),
+      });
+
       setSharePostModal(null);
       setSharedCaption("");
       setOpenSnackbar("success");
@@ -147,12 +212,6 @@ const SharedPost = ({
       setLoading(false);
     }
   };
-
-  const matchedOwnerIds = new Set(matches.map((match) => match?.owner?._id));
-
-  const filteredLostItems = lostItems.filter(
-    (lostItem) => !matchedOwnerIds.has(lostItem?._id)
-  );
 
   return (
     <>
@@ -398,33 +457,6 @@ const SharedPost = ({
               >
                 {originalPost.caption}
               </Typography>
-              {(() => {
-                if (!originalPost?.isFinder) return null;
-
-                const matchedItem = matches?.find((match) => {
-                  const matchItem = match?.finder?.item;
-                  return (
-                    match?.finder?._id === originalPost?.finder?._id &&
-                    ["Resolved", "Matched"].includes(matchItem?.status)
-                  );
-                });
-
-                if (!matchedItem) return null;
-
-                const status = matchedItem?.finder?.item?.status;
-                const isResolved = status === "Resolved";
-
-                return (
-                  <Typography
-                    level={isXs ? "body-sm" : "body-md"}
-                    color={isResolved ? "success" : "warning"}
-                  >
-                    {isResolved
-                      ? "The owner has successfully claimed the item!"
-                      : "Someone sent a claim request for this item!"}
-                  </Typography>
-                );
-              })()}
             </Box>
           </Box>
 
@@ -444,9 +476,6 @@ const SharedPost = ({
           >
             {/* Claim Section */}
             {session?.user?.id !== originalPost?.author?._id &&
-              !matches.some(
-                (match) => match?.finder?._id === filteredOriginalPost?._id
-              ) &&
               originalPost?.isFinder && (
                 <>
                   <Box
@@ -520,172 +549,127 @@ const SharedPost = ({
           </Box>
         </CardContent>
       </Card>
-      {originalPost?.author?._id !== session?.user?.id && (
-        <>
-          <Modal
-            open={claimModal === originalPost._id}
-            onClose={() => setClaimModal(null)}
-          >
-            <ModalDialog>
-              <ModalClose />
-              <DialogContent>
-                <Typography level="h4" gutterBottom>
-                  {lostItems.length === 0
-                    ? "Claim Request Canceled"
-                    : "Send Claim Request"}
-                </Typography>
-                {filteredLostItems.length > 0 ? (
-                  <>
-                    <FormControl>
-                      <FormLabel>Your Lost Item</FormLabel>
-                      <Select
-                        required
-                        placeholder="Select your missing lost item"
-                        value={selectedLostItem}
-                        onChange={(e, value) => setSelectedLostItem(value)}
-                      >
-                        {filteredLostItems.map((lostItem) => (
-                          <Option key={lostItem?._id} value={lostItem?._id}>
-                            {lostItem?.item?.name || "Unnamed Item"}
-                          </Option>
-                        ))}
-                      </Select>
-
-                      {selectedLostItem &&
-                        (() => {
-                          const selectedItem = filteredLostItems.find(
-                            (lostItem) => lostItem?._id === selectedLostItem
-                          )?.item;
-
-                          return selectedItem ? (
-                            <Box sx={{ marginTop: 2 }}>
-                              <Typography level="body-md">
-                                <strong>Color:</strong>{" "}
-                                {selectedItem?.color?.join(", ") || "N/A"}
-                              </Typography>
-                              <Typography level="body-md">
-                                <strong>Size:</strong>{" "}
-                                {selectedItem?.size || "N/A"}
-                              </Typography>
-                              <Typography level="body-md">
-                                <strong>Category:</strong>{" "}
-                                {selectedItem?.category || "N/A"}
-                              </Typography>
-                              <Typography level="body-md">
-                                <strong>Material:</strong>{" "}
-                                {selectedItem?.material || "N/A"}
-                              </Typography>
-                              <Typography level="body-md">
-                                <strong>Condition:</strong>{" "}
-                                {selectedItem?.condition || "N/A"}
-                              </Typography>
-                              <Typography level="body-md">
-                                <strong>Distinctive Marks:</strong>{" "}
-                                {selectedItem?.distinctiveMarks || "N/A"}
-                              </Typography>
-                              <Typography level="body-md">
-                                <strong>Location:</strong>{" "}
-                                {selectedItem?.location || "N/A"}
-                              </Typography>
-                              <Typography level="body-md">
-                                <strong>Lost Start Date:</strong>{" "}
-                                {selectedItem?.date_time === "Unidentified"
-                                  ? "Unidentified"
-                                  : selectedItem?.date_time?.split(" to ")[0] ||
-                                    "N/A"}
-                              </Typography>
-                              <Typography level="body-md">
-                                <strong>Lost End Date:</strong>{" "}
-                                {selectedItem?.date_time === "Unidentified"
-                                  ? "Unidentified"
-                                  : selectedItem?.date_time?.split(" to ")[1] ||
-                                    "N/A"}
-                              </Typography>
-                            </Box>
-                          ) : null;
-                        })()}
-                    </FormControl>
-                    <Button
-                      type="submit"
-                      disabled={!selectedLostItem}
-                      onClick={() =>
-                        setConfirmationRetrievalRequest(originalPost._id)
-                      }
-                    >
-                      Next
-                    </Button>
-                  </>
-                ) : lostItems.length === 0 ? (
-                  <Typography>
-                    It requires a recorded lost item in order to be reviewed by
-                    SASO.
-                  </Typography>
-                ) : (
-                  <Typography>
-                    You have no lost items to select for manual checking.
-                  </Typography>
-                )}
-              </DialogContent>
-            </ModalDialog>
-          </Modal>
-          <ConfirmationRetrievalRequest
-            open={confirmationRetrievalRequest === originalPost._id}
-            onClose={() => setConfirmationRetrievalRequest(null)}
-            closeModal={() => setClaimModal(null)}
-            foundItem={filteredOriginalPost}
-            lostItem={selectedLostItem}
-            finder={filteredOriginalPost?._id}
-            refreshData={refreshData}
-            isAdmin={
-              originalPost?.author?.role?.permissions.includes(
-                "Admin Dashboard"
-              )
-                ? true
-                : false
-            }
-            sharedBy={post?.isShared ? post?.sharedBy?._id : null}
-            owner={session?.user?.id}
-          />
-        </>
-      )}
+      <Modal
+        open={claimModal === originalPost._id}
+        onClose={() => setClaimModal(null)}
+      >
+        <ModalDialog>
+          <ModalClose />
+          <DialogContent>
+            <Typography level="h4" gutterBottom>
+              Send Claim Request
+            </Typography>
+            <FormControl>
+              <FormLabel>Your Lost Item</FormLabel>
+              <Select
+                required
+                placeholder="Select your missing lost item"
+                value={selectedLostItem}
+                onChange={(e, value) => setSelectedLostItem(value)}
+              >
+                <Option value="">Unnamed Item</Option>
+              </Select>
+            </FormControl>
+            <Button
+              type="submit"
+              disabled={!selectedLostItem}
+              onClick={() => setConfirmationRetrievalRequest(originalPost._id)}
+            >
+              Next
+            </Button>
+          </DialogContent>
+        </ModalDialog>
+      </Modal>
+      <ConfirmationRetrievalRequest
+        open={confirmationRetrievalRequest === originalPost._id}
+        onClose={() => setConfirmationRetrievalRequest(null)}
+        closeModal={() => setClaimModal(null)}
+        foundItem={filteredOriginalPost}
+        lostItem={selectedLostItem}
+        finder={filteredOriginalPost?._id}
+        isAdmin={
+          originalPost?.author?.role?.permissions.includes("Admin Dashboard")
+            ? true
+            : false
+        }
+        sharedBy={post?.isShared ? post?.sharedBy?._id : null}
+        owner={session?.user?.id}
+      />
       <Modal
         open={sharePostModal === originalPost._id}
         onClose={() => setSharePostModal(null)}
       >
-        <form onSubmit={handleSubmit}>
-          <ModalDialog>
-            <ModalClose />
-            <Typography level="h4" fontWeight={700}>
-              Share
-            </Typography>
-            <Divider />
-            <Box display="flex" alignItems="center" mb={2}>
-              <Avatar
-                sx={{ mr: 2 }}
-                src={session.user.profile_picture}
-                alt={session.user.firstname}
+        <ModalDialog>
+          <ModalClose />
+          <Typography level={isXs ? "h5" : "h4"} fontWeight={700}>
+            Share this Post
+          </Typography>
+          <Divider />
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={1}>
+              <Typography level="body-md" fontWeight={500}>
+                Share to a User
+              </Typography>
+              <Autocomplete
+                required
+                placeholder="Select user"
+                options={
+                  users.filter((user) =>
+                    ![session?.user?.id, originalPost?.author?._id].includes(
+                      user._id
+                    )
+                  ) || []
+                } // Ensure users is an array
+                value={user} // Ensure value corresponds to an option in users
+                onChange={(event, value) => {
+                  setUser(value); // Update state with selected user
+                }}
+                getOptionLabel={(user) => {
+                  if (!user || !user.firstname || !user.lastname) {
+                    return "No Options"; // Safeguard in case user data is undefined
+                  }
+                  return `${user.firstname} ${user.lastname}`; // Correctly format user names
+                }}
+                isOptionEqualToValue={(option, value) =>
+                  option.id === value?.id
+                } // Ensure comparison by unique identifier
               />
-              <Box>
-                <Typography level="body-session.user" fontWeight={700}>
-                  {session.user.firstname} {session.user.lastname}
-                </Typography>
-                <Chip size="sm" variant="solid">
-                  Feed
-                </Chip>
-              </Box>
-            </Box>
-            <Textarea
-              minRows={4}
-              disabled={loading}
-              placeholder="Say something about this..."
-              value={sharedCaption}
-              onChange={(e) => setSharedCaption(e.target.value)}
-            />
-            <Button disabled={loading} loading={loading} type="submit">
-              Share now
-            </Button>
-          </ModalDialog>
-        </form>
+              <Textarea
+                minRows={2}
+                disabled={loading}
+                placeholder="Say something about this..."
+                value={sharedCaption}
+                onChange={(e) => setSharedCaption(e.target.value)}
+              />
+              <Button disabled={loading} loading={loading} type="submit">
+                Share to User
+              </Button>
+            </Stack>
+          </form>
+
+          <Typography level="body-md" fontWeight={500}>
+            Copy Link
+          </Typography>
+          <Input
+            value={`https://tlc-tracify.vercel.app/post/${post?._id}`}
+            readOnly
+            slotProps={{
+              input: {
+                ref: inputRef,
+              },
+            }}
+            endDecorator={
+              <IconButton onClick={handleCopyLink} variant="plain" size="sm">
+                <ContentCopy fontSize="16px" />
+              </IconButton>
+            }
+          />
+
+          <FormHelperText>
+            You can paste this link anywhere (Messenger, Gmail, <br /> Facebook,
+            etc.) to spread the info publicly.
+          </FormHelperText>
+        </ModalDialog>
       </Modal>
     </>
   );

@@ -217,7 +217,7 @@ const NotificationComponent = ({ status, session }) => {
                       else if (notification.type === "Declined Items")
                         router.push("/my-items#declined-item");
                       else if (notification.type === "Shared Post")
-                        router.push(`/shared-post/${notification?.post}`);
+                        router.push(`/post/${notification?.post}`);
                       else router.push("/my-items#completed-item");
                     }}
                   >

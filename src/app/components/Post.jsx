@@ -81,12 +81,24 @@ const Post = ({
   const inputRef = useRef();
 
   const handleCopyLink = () => {
-    const customMessage = `📣 Check out this item on Tracify!
+    const isLost = !post?.isFinder; // true if it's a lost item
+    const itemType = isLost ? "Lost Item Alert 🚨" : "Found Item Notice 🟢";
+    const introMessage = isLost
+      ? "Have you seen this item?"
+      : "Has someone lost this item?";
+    const callToAction = isLost
+      ? "Let's help the owner recover it!"
+      : "Help us locate the rightful owner!";
+
+    const customMessage = `📣 ${itemType}
+  
+  ${introMessage}
   
   🧾 Caption: ${caption || "No caption provided."}
   🔗 Link: https://tlc-tracify.vercel.app/post/${post?._id}
   
-  Let's help reunite it with the rightful owner!`;
+  ${callToAction}
+  (Shared via Tracify)`;
 
     navigator.clipboard
       .writeText(customMessage)
@@ -129,24 +141,58 @@ const Post = ({
       });
 
       const data = await response.json();
+      const notificationData = [
+        {
+          receiver: user?._id,
+          message: `${session?.user?.firstname} ${session?.user?.lastname} shared a post with you.`,
+          type: "Shared Post",
+          markAsRead: false,
+          dateNotified: new Date(),
+          post: session?.user?.id !== post?.author?._id ? data._id : null,
+        },
+      ];
       if (
         (session?.user?.id !== post?.author?._id &&
           author?.role?.permissions.includes("User Dashboard")) ||
         author !== null
       ) {
-        await fetch("/api/notification", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            receiver: post?.author?._id,
-            message: `${session?.user?.firstname} ${session?.user?.lastname} shared your post.`,
-            type: "Shared Post",
-            markAsRead: false,
-            dateNotified: new Date(),
-            post: session?.user?.id !== post?.author?._id ? data._id : null,
-          }),
+        notificationData.push({
+          receiver: post?.author?._id,
+          message: `${session?.user?.firstname} ${session?.user?.lastname} shared your post.`,
+          type: "Shared Post",
+          markAsRead: false,
+          dateNotified: new Date(),
+          post: session?.user?.id !== post?.author?._id ? data._id : null,
         });
       }
+
+      await Promise.all(
+        notificationData.map((notif) =>
+          fetch("/api/notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(notif),
+          })
+        )
+      );
+
+      await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "SharedItem",
+          to: user?.emailAddress,
+          name: user?.firstname,
+          sharedBy: session?.user?.firstname,
+          caption: post?.caption,
+          itemName: item?.item?.name,
+          link: `https://tlc-tracify.vercel.app/post/${data._id}`,
+          subject: "An Item Has Been Shared With You via Tracify!",
+        }),
+      });
+
       setSharedCaption("");
       setSharePostModal(null);
       setOpenSnackbar("success");
@@ -457,7 +503,12 @@ const Post = ({
               <Autocomplete
                 required
                 placeholder="Select user"
-                options={users || []} // Ensure users is an array
+                options={
+                  users.filter(
+                    (user) =>
+                      ![session?.user?.id, author?._id].includes(user._id)
+                  ) || []
+                } // Ensure users is an array
                 value={user} // Ensure value corresponds to an option in users
                 onChange={(event, value) => {
                   setUser(value); // Update state with selected user

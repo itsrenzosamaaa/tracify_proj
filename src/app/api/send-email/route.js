@@ -7,6 +7,7 @@ import ClaimRequestApproved from "@/app/components/Email/ClaimRequestApproved";
 import ClaimRequestDeclined from "@/app/components/Email/ClaimRequestDecline";
 import ClaimProcessDeclined from "@/app/components/Email/ClaimProcessDeclined";
 import ClaimProcessSuccess from "@/app/components/Email/ClaimProcessSuccess";
+import SharedItem from "@/app/components/Email/SharedItemEmail";
 
 export async function POST(req) {
   try {
@@ -20,6 +21,8 @@ export async function POST(req) {
       itemName,
       location,
       remarks,
+      sharedBy,
+      caption,
     } = await req.json();
 
     if (!to || typeof to !== "string" || to.trim() === "") {
@@ -54,6 +57,8 @@ export async function POST(req) {
       htmlContent = ClaimProcessDeclined({ name, link, itemName, remarks });
     } else if (type === "ClaimProcessSuccess") {
       htmlContent = ClaimProcessSuccess({ name, link, itemName });
+    } else if (type === "SharedItem") {
+      htmlContent = SharedItem({ name, link, itemName, sharedBy, caption });
     }
 
     // Configure your transporter

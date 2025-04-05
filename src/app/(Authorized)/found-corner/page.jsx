@@ -13,9 +13,11 @@ const FoundCornerPage = () => {
     try {
       const response = await fetch("/api/users");
       const data = await response.json();
+
       const filterUsers = data.filter((user) =>
         user?.role?.permissions.includes("User Dashboard")
       );
+
       setUsers(filterUsers);
     } catch (error) {
       console.error(error);

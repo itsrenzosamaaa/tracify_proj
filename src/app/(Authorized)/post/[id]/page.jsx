@@ -6,6 +6,7 @@ import { useTheme, useMediaQuery } from "@mui/material";
 import { useSession } from "next-auth/react";
 import Loading from "@/app/components/Loading";
 import Post from "@/app/components/Post";
+import SharedPost from "@/app/components/SharedPost";
 
 const PostPage = ({ params }) => {
   const { data: session, status } = useSession();
@@ -53,6 +54,19 @@ const PostPage = ({ params }) => {
         <Grid item xs={12} sx={{ marginX: isXs ? "" : "15rem" }}>
           {!post ? (
             <Loading />
+          ) : post?.isShared ? (
+            <SharedPost
+              setOpenSnackbar={setOpenSnackbar}
+              setMessage={setMessage}
+              session={session}
+              post={post}
+              sharedBy={post.sharedBy}
+              originalPost={post.originalPost}
+              caption={post.caption}
+              sharedAt={post.sharedAt}
+              isXs={isXs}
+              users={users}
+            />
           ) : (
             <Post
               setOpenSnackbar={setOpenSnackbar}
