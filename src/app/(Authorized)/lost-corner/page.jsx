@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Loading from "@/app/components/Loading";
 import NewsFeed from "@/app/components/NewsFeed";
@@ -13,7 +13,10 @@ const LostCornerPage = () => {
     try {
       const response = await fetch("/api/users");
       const data = await response.json();
-      setUsers(data);
+      const filterUsers = data.filter((user) =>
+        user?.role?.permissions.includes("User Dashboard")
+      );
+      setUsers(filterUsers);
     } catch (error) {
       console.error(error);
     }
@@ -28,7 +31,12 @@ const LostCornerPage = () => {
   }
   return (
     <>
-      <NewsFeed users={users} session={session} status={status} corner="lost-item" />
+      <NewsFeed
+        users={users}
+        session={session}
+        status={status}
+        corner="lost-item"
+      />
     </>
   );
 };

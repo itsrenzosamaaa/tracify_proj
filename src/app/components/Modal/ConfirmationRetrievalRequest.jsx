@@ -18,7 +18,6 @@ const ConfirmationRetrievalRequest = ({
   foundItem,
   lostItem,
   finder,
-  refreshData,
   isAdmin,
   sharedBy,
   owner,
@@ -77,7 +76,6 @@ const ConfirmationRetrievalRequest = ({
 
       onClose();
       closeModal();
-      refreshData();
       setOpenSnackbar(true);
       return;
     } catch (error) {

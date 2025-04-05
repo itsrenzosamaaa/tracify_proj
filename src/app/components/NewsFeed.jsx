@@ -448,6 +448,7 @@ const NewsFeed = ({ session, status, users, corner }) => {
                     isXs={isXs}
                     lostItems={lostItems}
                     roleColors={roleColors}
+                    users={users}
                   />
                 </div>
               );

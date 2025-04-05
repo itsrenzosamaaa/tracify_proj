@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -21,9 +21,13 @@ import {
   FormControl,
   FormLabel,
   Tooltip,
+  Autocomplete,
+  Input,
+  FormHelperText,
+  Stack,
 } from "@mui/joy";
 import { ImageList, ImageListItem, keyframes, styled } from "@mui/material";
-import { Share, Send } from "@mui/icons-material";
+import { Share, Send, ContentCopy } from "@mui/icons-material";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { CldImage } from "next-cloudinary";
@@ -55,8 +59,6 @@ const HighlightAvatar = styled(Avatar)(({ theme }) => ({
 }));
 
 const Post = ({
-  refreshData,
-  matches,
   setOpenSnackbar,
   setMessage,
   post,
@@ -66,8 +68,7 @@ const Post = ({
   createdAt,
   caption,
   isXs,
-  lostItems = null,
-  roleColors,
+  users,
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);
   const [claimModal, setClaimModal] = useState(null);
@@ -76,6 +77,28 @@ const Post = ({
     useState(null);
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const inputRef = useRef();
+
+  const handleCopyLink = () => {
+    const customMessage = `📣 Check out this item on Tracify!
+  
+  🧾 Caption: ${caption || "No caption provided."}
+  🔗 Link: https://tlc-tracify.vercel.app/post/${post?._id}
+  
+  Let's help reunite it with the rightful owner!`;
+
+    navigator.clipboard
+      .writeText(customMessage)
+      .then(() => {
+        setOpenSnackbar("success");
+        setMessage("Custom message copied to clipboard!");
+      })
+      .catch(() => {
+        setOpenSnackbar("danger");
+        setMessage("Failed to copy message.");
+      });
+  };
 
   const isMilestone =
     (author?.resolvedItemCount || 0) >= 20 && (author?.shareCount || 0) >= 20;
@@ -135,12 +158,6 @@ const Post = ({
       setLoading(false);
     }
   };
-
-  const matchedOwnerIds = new Set(matches.map((match) => match?.owner?._id));
-
-  const filteredLostItems = lostItems.filter(
-    (lostItem) => !matchedOwnerIds.has(lostItem?._id)
-  );
 
   return (
     <>
@@ -386,98 +403,26 @@ const Post = ({
           <ModalClose />
           <DialogContent>
             <Typography level="h4" gutterBottom>
-              {lostItems.length === 0
-                ? "Claim Request Canceled"
-                : "Send Claim Request"}
+              Send Claim Request
             </Typography>
-            {filteredLostItems.length > 0 ? (
-              <>
-                <FormControl>
-                  <FormLabel>Your Lost Item</FormLabel>
-                  <Select
-                    required
-                    placeholder="Select your missing lost item"
-                    value={selectedLostItem}
-                    onChange={(e, value) => setSelectedLostItem(value)}
-                  >
-                    {filteredLostItems.map((lostItem) => (
-                      <Option key={lostItem?._id} value={lostItem?._id}>
-                        {lostItem?.item?.name || "Unnamed Item"}
-                      </Option>
-                    ))}
-                  </Select>
-
-                  {selectedLostItem &&
-                    (() => {
-                      const selectedItem = filteredLostItems.find(
-                        (lostItem) => lostItem?._id === selectedLostItem
-                      )?.item;
-
-                      return selectedItem ? (
-                        <Box sx={{ marginTop: 2 }}>
-                          <Typography level="body-md">
-                            <strong>Color:</strong>{" "}
-                            {selectedItem?.color?.join(", ") || "N/A"}
-                          </Typography>
-                          <Typography level="body-md">
-                            <strong>Size:</strong> {selectedItem?.size || "N/A"}
-                          </Typography>
-                          <Typography level="body-md">
-                            <strong>Category:</strong>{" "}
-                            {selectedItem?.category || "N/A"}
-                          </Typography>
-                          <Typography level="body-md">
-                            <strong>Material:</strong>{" "}
-                            {selectedItem?.material || "N/A"}
-                          </Typography>
-                          <Typography level="body-md">
-                            <strong>Condition:</strong>{" "}
-                            {selectedItem?.condition || "N/A"}
-                          </Typography>
-                          <Typography level="body-md">
-                            <strong>Distinctive Marks:</strong>{" "}
-                            {selectedItem?.distinctiveMarks || "N/A"}
-                          </Typography>
-                          <Typography level="body-md">
-                            <strong>Location:</strong>{" "}
-                            {selectedItem?.location || "N/A"}
-                          </Typography>
-                          <Typography level="body-md">
-                            <strong>Lost Start Date:</strong>{" "}
-                            {selectedItem?.date_time === "Unidentified"
-                              ? "Unidentified"
-                              : selectedItem?.date_time?.split(" to ")[0] ||
-                                "N/A"}
-                          </Typography>
-                          <Typography level="body-md">
-                            <strong>Lost End Date:</strong>{" "}
-                            {selectedItem?.date_time === "Unidentified"
-                              ? "Unidentified"
-                              : selectedItem?.date_time?.split(" to ")[1] ||
-                                "N/A"}
-                          </Typography>
-                        </Box>
-                      ) : null;
-                    })()}
-                </FormControl>
-                <Button
-                  type="submit"
-                  disabled={!selectedLostItem}
-                  onClick={() => setConfirmationRetrievalRequest(post._id)}
-                >
-                  Next
-                </Button>
-              </>
-            ) : lostItems.length === 0 ? (
-              <Typography>
-                It requires a recorded lost item in order to be reviewed by
-                SASO.
-              </Typography>
-            ) : (
-              <Typography>
-                You have no lost items to select for manual checking.
-              </Typography>
-            )}
+            <FormControl>
+              <FormLabel>Your Lost Item</FormLabel>
+              <Select
+                required
+                placeholder="Select your missing lost item"
+                value={selectedLostItem}
+                onChange={(e, value) => setSelectedLostItem(value)}
+              >
+                <Option value="">Unnamed Item</Option>
+              </Select>
+            </FormControl>
+            <Button
+              type="submit"
+              disabled={!selectedLostItem}
+              onClick={() => setConfirmationRetrievalRequest(post._id)}
+            >
+              Next
+            </Button>
           </DialogContent>
         </ModalDialog>
       </Modal>
@@ -488,7 +433,6 @@ const Post = ({
         foundItem={item}
         lostItem={selectedLostItem}
         finder={item?._id}
-        refreshData={refreshData}
         isAdmin={
           author?.role?.permissions.includes("Admin Dashboard") ? true : false
         }
@@ -499,43 +443,71 @@ const Post = ({
         open={sharePostModal === post._id}
         onClose={() => setSharePostModal(null)}
       >
-        <form onSubmit={handleSubmit}>
-          <ModalDialog>
-            <ModalClose />
-            <Typography level={isXs ? "h5" : "h4"} fontWeight={700}>
-              Share
-            </Typography>
-            <Divider />
-            <Box display="flex" alignItems="center" mb={2}>
-              <Avatar
-                sx={{ mr: 2 }}
-                src={session?.user?.profile_picture}
-                alt={session?.user?.firstname}
+        <ModalDialog>
+          <ModalClose />
+          <Typography level={isXs ? "h5" : "h4"} fontWeight={700}>
+            Share this Post
+          </Typography>
+          <Divider />
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={1}>
+              <Typography level="body-md" fontWeight={500}>
+                Share to a User
+              </Typography>
+              <Autocomplete
+                required
+                placeholder="Select user"
+                options={users || []} // Ensure users is an array
+                value={user} // Ensure value corresponds to an option in users
+                onChange={(event, value) => {
+                  setUser(value); // Update state with selected user
+                }}
+                getOptionLabel={(user) => {
+                  if (!user || !user.firstname || !user.lastname) {
+                    return "No Options"; // Safeguard in case user data is undefined
+                  }
+                  return `${user.firstname} ${user.lastname}`; // Correctly format user names
+                }}
+                isOptionEqualToValue={(option, value) =>
+                  option.id === value?.id
+                } // Ensure comparison by unique identifier
               />
-              <Box>
-                <Typography
-                  level={isXs ? "body-sm" : "body-md"}
-                  fontWeight={700}
-                >
-                  {session?.user?.firstname} {session?.user?.lastname}
-                </Typography>
-                <Chip size="sm" variant="solid">
-                  Feed
-                </Chip>
-              </Box>
-            </Box>
-            <Textarea
-              minRows={4}
-              disabled={loading}
-              placeholder="Say something about this..."
-              value={sharedCaption}
-              onChange={(e) => setSharedCaption(e.target.value)}
-            />
-            <Button disabled={loading} loading={loading} type="submit">
-              Share now
-            </Button>
-          </ModalDialog>
-        </form>
+              <Textarea
+                minRows={2}
+                disabled={loading}
+                placeholder="Say something about this..."
+                value={sharedCaption}
+                onChange={(e) => setSharedCaption(e.target.value)}
+              />
+              <Button disabled={loading} loading={loading} type="submit">
+                Share to User
+              </Button>
+            </Stack>
+          </form>
+
+          <Typography level="body-md" fontWeight={500}>
+            Copy Link
+          </Typography>
+          <Input
+            value={`https://tlc-tracify.vercel.app/post/${post?._id}`}
+            readOnly
+            slotProps={{
+              input: {
+                ref: inputRef,
+              },
+            }}
+            endDecorator={
+              <IconButton onClick={handleCopyLink} variant="plain" size="sm">
+                <ContentCopy fontSize="16px" />
+              </IconButton>
+            }
+          />
+
+          <FormHelperText>
+            You can paste this link anywhere (Messenger, Gmail, <br /> Facebook,
+            etc.) to spread the info publicly.
+          </FormHelperText>
+        </ModalDialog>
       </Modal>
     </>
   );
