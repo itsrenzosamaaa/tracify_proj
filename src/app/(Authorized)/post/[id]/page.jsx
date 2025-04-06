@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Grid, Snackbar } from "@mui/joy";
+import { Grid, Snackbar, Typography } from "@mui/joy";
 import { useTheme, useMediaQuery } from "@mui/material";
 import { useSession } from "next-auth/react";
 import Loading from "@/app/components/Loading";
@@ -55,31 +55,37 @@ const PostPage = ({ params }) => {
           {!post ? (
             <Loading />
           ) : post?.isShared ? (
-            <SharedPost
-              setOpenSnackbar={setOpenSnackbar}
-              setMessage={setMessage}
-              session={session}
-              post={post}
-              sharedBy={post.sharedBy}
-              originalPost={post.originalPost}
-              caption={post.caption}
-              sharedAt={post.sharedAt}
-              isXs={isXs}
-              users={users}
-            />
+            <>
+              <Typography level="h3" sx={{ mb: 2 }}>Shared To You</Typography>
+              <SharedPost
+                setOpenSnackbar={setOpenSnackbar}
+                setMessage={setMessage}
+                session={session}
+                post={post}
+                sharedBy={post.sharedBy}
+                originalPost={post.originalPost}
+                caption={post.caption}
+                sharedAt={post.sharedAt}
+                isXs={isXs}
+                users={users}
+              />
+            </>
           ) : (
-            <Post
-              setOpenSnackbar={setOpenSnackbar}
-              setMessage={setMessage}
-              session={session}
-              post={post}
-              author={post.author}
-              caption={post.caption}
-              item={post?.isFinder ? post?.finder : post?.owner}
-              createdAt={post.createdAt}
-              isXs={isXs}
-              users={users}
-            />
+            <>
+              <Typography level="h3" sx={{ mb: 2 }}>Post</Typography>
+              <Post
+                setOpenSnackbar={setOpenSnackbar}
+                setMessage={setMessage}
+                session={session}
+                post={post}
+                author={post.author}
+                caption={post.caption}
+                item={post?.isFinder ? post?.finder : post?.owner}
+                createdAt={post.createdAt}
+                isXs={isXs}
+                users={users}
+              />
+            </>
           )}
         </Grid>
       </Grid>

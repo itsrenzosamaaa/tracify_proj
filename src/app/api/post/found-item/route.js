@@ -20,7 +20,7 @@ export async function GET(req) {
     const skip = (page - 1) * limit;
 
     let matchStage = {
-      isShared: { $in: [false] },
+      isShared: { $in: [true, false] },
       isFinder: { $in: [true] },
     };
 

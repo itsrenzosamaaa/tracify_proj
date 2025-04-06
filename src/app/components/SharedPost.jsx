@@ -82,7 +82,7 @@ const SharedPost = ({
     useState(null);
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const inputRef = useRef();
 
   const handleCopyLink = () => {
@@ -148,21 +148,43 @@ const SharedPost = ({
           sharedBy: session?.user?.id,
           sharedAt: new Date(),
           originalPost: originalPost._id,
+          sharedTo: selectedUsers.map((u) => u._id),
         }),
       });
 
       const data = await response.json();
-      const notificationData = [
-        {
-          receiver: user?._id,
-          message: `${session?.user?.firstname} ${session?.user?.lastname} shared a post with you.`,
-          type: "Shared Post",
-          markAsRead: false,
-          dateNotified: new Date(),
-          post:
-            session?.user?.id !== originalPost?.author?._id ? data._id : null,
-        },
-      ];
+      const notificationData = [];
+
+      await Promise.all(
+        selectedUsers.map(async (user) => {
+          notificationData.push({
+            receiver: user?._id,
+            message: `${session?.user?.firstname} ${session?.user?.lastname} shared a post with you.`,
+            type: "Shared Post",
+            markAsRead: false,
+            dateNotified: new Date(),
+            post:
+              session?.user?.id !== originalPost?.author?._id ? data._id : null,
+          });
+
+          await fetch("/api/send-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              type: "SharedItem",
+              to: user?.emailAddress,
+              name: user?.firstname,
+              sharedBy: session?.user?.firstname,
+              caption: originalPost?.caption,
+              itemName: filteredOriginalPost?.item?.name,
+              link: `https://tlc-tracify.vercel.app/post/${data._id}`,
+              subject: "An Item Has Been Shared With You via Tracify!",
+            }),
+          });
+        })
+      );
       if (
         (session?.user?.id !== originalPost?.author?._id &&
           originalPost?.author?.role?.permissions.includes("User Dashboard")) ||
@@ -178,28 +200,15 @@ const SharedPost = ({
             session?.user?.id !== originalPost?.author?._id ? data._id : null,
         });
       }
-      await fetch("/api/notification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(notificationData),
-      });
-
-      await fetch("/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: "SharedItem",
-          to: user?.emailAddress,
-          name: user?.firstname,
-          sharedBy: session?.user?.firstname,
-          caption: originalPost?.caption,
-          itemName: filteredOriginalPost?.item?.name,
-          link: `https://tlc-tracify.vercel.app/post/${data._id}`,
-          subject: "An Item Has Been Shared With You via Tracify!",
-        }),
-      });
+      await Promise.all(
+        notificationData.map((notif) =>
+          fetch("/api/notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(notif),
+          })
+        )
+      );
 
       setSharePostModal(null);
       setSharedCaption("");
@@ -409,13 +418,13 @@ const SharedPost = ({
                     level={isXs ? "body-xs" : "body-sm"}
                     fontWeight={300}
                   >
-                    {isToday(new Date(originalPost.createdAt))
+                    {isToday(new Date(originalPost?.createdAt))
                       ? `Today, ${format(
-                          new Date(originalPost.createdAt),
+                          new Date(originalPost?.createdAt),
                           "hh:mm a"
                         )}`
                       : format(
-                          new Date(originalPost.createdAt),
+                          new Date(originalPost?.createdAt),
                           "MMMM dd, yyyy - hh:mm a"
                         )}
                   </Typography>
@@ -611,28 +620,23 @@ const SharedPost = ({
                 Share to a User
               </Typography>
               <Autocomplete
-                required
+                multiple
                 placeholder="Select user"
-                options={
-                  users.filter((user) =>
-                    ![session?.user?.id, originalPost?.author?._id].includes(
-                      user._id
-                    )
-                  ) || []
-                } // Ensure users is an array
-                value={user} // Ensure value corresponds to an option in users
-                onChange={(event, value) => {
-                  setUser(value); // Update state with selected user
+                options={users.filter(
+                  (user) => ![session?.user?.id, originalPost?.author?._id].includes(user._id)
+                )}
+                value={selectedUsers}
+                onChange={(event, value, reason, details) => {
+                  setSelectedUsers(value);
                 }}
-                getOptionLabel={(user) => {
-                  if (!user || !user.firstname || !user.lastname) {
-                    return "No Options"; // Safeguard in case user data is undefined
-                  }
-                  return `${user.firstname} ${user.lastname}`; // Correctly format user names
-                }}
+                getOptionLabel={(user) =>
+                  user?.firstname && user?.lastname
+                    ? `${user.firstname} ${user.lastname}`
+                    : ""
+                }
                 isOptionEqualToValue={(option, value) =>
-                  option.id === value?.id
-                } // Ensure comparison by unique identifier
+                  option._id === value?._id
+                }
               />
               <Textarea
                 minRows={2}

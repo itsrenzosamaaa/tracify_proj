@@ -12,7 +12,7 @@ const postSchema = new mongoose.Schema(
     item_name: {
       type: String,
     },
-    isFinder : {
+    isFinder: {
       type: Boolean,
     },
     finder: {
@@ -45,6 +45,12 @@ const postSchema = new mongoose.Schema(
       ref: "Post", // Reference to the original post if shared
       default: null,
     },
+    sharedTo: [
+      {
+        type: String,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

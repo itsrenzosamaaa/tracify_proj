@@ -224,7 +224,7 @@ const ViewUserProfile = ({
         </Grid>
         <Grid item xs={12} sx={{ marginX: isMd ? 0 : "13rem" }}>
           <Tabs aria-label="Basic tabs" defaultValue={0}>
-            <TabList>
+            <TabList tabFlex={1}>
               <Tab
                 sx={{
                   paddingX: { xs: "17%", md: "24%" }, // Adjust padding based on screen size
