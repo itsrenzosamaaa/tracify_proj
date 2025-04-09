@@ -26,7 +26,6 @@ export async function GET(req) {
 
     if (searchQuery) {
       matchStage.$or = [
-        { caption: { $regex: searchQuery, $options: "i" } },
         { item_name: { $regex: searchQuery, $options: "i" } },
       ];
     }
@@ -47,7 +46,7 @@ export async function GET(req) {
         path: "finder",
         populate: {
           path: "item",
-          select: "name images status location category",
+          select: "name images status location category questions",
         },
       },
       {

@@ -6,8 +6,48 @@ const MatchItemsSchema = new mongoose.Schema({
     ref: "Finder",
   },
   owner: {
-    type: String,
-    ref: "Owner",
+    user: {
+      type: String,
+      ref: "User",
+    },
+    item: {
+      name: {
+        type: String,
+      },
+      color: {
+        type: [String],
+      },
+      category: {
+        type: String,
+      },
+      size: {
+        type: String,
+      },
+      material: {
+        type: String,
+      },
+      description: {
+        type: String,
+      },
+      condition: {
+        type: String,
+      },
+      distinctiveMarks: {
+        type: String,
+      },
+      location: {
+        type: String,
+      },
+      date_time: {
+        type: String,
+      },
+      images: {
+        type: [String],
+      },
+      answers: {
+        type: [String],
+      },
+    },
   },
   matched_date: {
     type: Date,

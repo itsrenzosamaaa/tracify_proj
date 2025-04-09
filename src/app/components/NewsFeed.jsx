@@ -42,6 +42,7 @@ import NoMorePostsUI from "./NoMorePosts";
 
 const NewsFeed = ({ session, status, users, corner }) => {
   const [posts, setPosts] = useState([]);
+  const [user, setUser] = useState({});
   const [lostItems, setLostItems] = useState([]);
   const [matches, setMatches] = useState([]);
   const [page, setPage] = useState(1);
@@ -61,19 +62,22 @@ const NewsFeed = ({ session, status, users, corner }) => {
   const [isLoadingSharedPosts, setIsLoadingSharedPosts] = useState(false);
   const [fetchedAllPostsOnce, setFetchedAllPostsOnce] = useState(false);
   const [fetchedSharedOnce, setFetchedSharedOnce] = useState(false);
-
+  const [fetchedOnce, setFetchedOnce] = useState(false);
   const observerRef = useRef();
   const abortControllerRef = useRef(null);
   const isFetchingRef = useRef(false);
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const roleColors = {
-    Student: "#4CAF50",
-    Parent: "#2196F3",
-    Faculty: "#FFC107",
-    "Security Guard": "#FF5722",
-  };
+  const fetchUser = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/users/${session?.user?.id}`);
+      const data = await response.json();
+      setUser(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [session?.user?.id]);
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -88,16 +92,6 @@ const NewsFeed = ({ session, status, users, corner }) => {
       console.error(err);
     }
   }, []);
-
-  const fetchLostItems = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/owner/${session?.user?.id}`);
-      const data = await res.json();
-      setLostItems(data.filter((item) => item?.item?.status === "Missing"));
-    } catch (err) {
-      console.error("Fetch lost items failed:", err);
-    }
-  }, [session?.user?.id]);
 
   const fetchLocations = useCallback(async () => {
     try {
@@ -249,19 +243,26 @@ const NewsFeed = ({ session, status, users, corner }) => {
       setFetchedSharedOnce(true);
     }
 
-    fetchLostItems();
-    fetchMatches();
-    fetchLocations();
+    if (!fetchedOnce) {
+      fetchMatches();
+      fetchLocations();
+      if (corner === "lost-item") {
+        fetchUser();
+      }
+      setFetchedOnce(true);
+    }
   }, [
     status,
     tabValue,
     fetchPosts,
     fetchSharedPosts,
-    fetchLostItems,
     fetchMatches,
     fetchLocations,
     fetchedAllPostsOnce,
     fetchedSharedOnce,
+    fetchUser,
+    fetchedOnce,
+    corner,
   ]);
 
   const birthdayToday = users.filter((user) => {
@@ -388,9 +389,8 @@ const NewsFeed = ({ session, status, users, corner }) => {
                       item={post?.isFinder ? post?.finder : post?.owner}
                       createdAt={post.createdAt}
                       isXs={isXs}
-                      lostItems={lostItems}
-                      roleColors={roleColors}
                       users={users}
+                      locationOptions={locationOptions}
                     />
                   </div>
                 ))}
@@ -448,6 +448,7 @@ const NewsFeed = ({ session, status, users, corner }) => {
                       users={users}
                       setOpenSnackbar={setOpenSnackbar}
                       setMessage={setMessage}
+                      locationOptions={locationOptions}
                     />
                   ))
                 ) : (
@@ -465,6 +466,8 @@ const NewsFeed = ({ session, status, users, corner }) => {
         onClose={() => setOpenLostRequestModal(false)}
         setOpenSnackbar={setOpenSnackbar}
         setMessage={setMessage}
+        refreshData={fetchUser}
+        user={user}
       />
       <PublishFoundItem
         locationOptions={locationOptions}

@@ -29,7 +29,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { format } from "date-fns";
+import {
+  format,
+  differenceInHours,
+  differenceInMinutes,
+  differenceInSeconds,
+} from "date-fns";
 
 const PublishLostItem = ({
   open,
@@ -38,16 +43,11 @@ const PublishLostItem = ({
   setMessage,
   fetchItems = null,
   locationOptions,
+  refreshData = null,
+  user,
 }) => {
   const [users, setUsers] = useState([]);
   const [name, setName] = useState("");
-  const [color, setColor] = useState([]);
-  const [size, setSize] = useState({ value: "", unit: "cm" });
-  const [sizeNotDetermined, setSizeNotDetermined] = useState(false);
-  const [category, setCategory] = useState();
-  const [material, setMaterial] = useState();
-  const [condition, setCondition] = useState();
-  const [distinctiveMarks, setDistinctiveMarks] = useState();
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [lostDateStart, setLostDateStart] = useState("");
@@ -56,7 +56,8 @@ const PublishLostItem = ({
   const [owner, setOwner] = useState(null);
   const [loading, setLoading] = useState(false);
   const [itemWhereabouts, setItemWhereabouts] = useState(false);
-  const [canUploadImages, setCanUploadImages] = useState(false);
+  const [reasonToReport, setReasonToReport] = useState("");
+  const [confirmAccuracy, setConfirmAccuracy] = useState(false);
   const { data: session, status } = useSession();
 
   const handleCheck = (e) => {
@@ -71,23 +72,6 @@ const PublishLostItem = ({
       setLocation("Unidentified");
       setLostDateStart("Unidentified");
       setLostDateEnd("Unidentified");
-    }
-  };
-  const handleCheckSize = (e) => {
-    const check = e.target.checked;
-    setSizeNotDetermined(check);
-
-    if (check) {
-      setSize({ value: "", unit: "cm" });
-    }
-  };
-
-  const handleCanUploadImages = (e) => {
-    const check = e.target.checked;
-    setCanUploadImages(check);
-
-    if (!check) {
-      setImages([]);
     }
   };
 
@@ -122,9 +106,10 @@ const PublishLostItem = ({
     setLoading(true);
 
     try {
-      if (canUploadImages && images.length === 0) {
+      if (images.length === 0) {
         setOpenSnackbar("danger");
         setMessage("Please upload at least one image.");
+        setLoading(false);
         return;
       }
 
@@ -136,31 +121,30 @@ const PublishLostItem = ({
         if (isNaN(startDate) || isNaN(endDate)) {
           setOpenSnackbar("danger");
           setMessage("Please provide valid start and end dates.");
+          setLoading(false);
           return;
         }
 
         if (startDate >= endDate) {
           setOpenSnackbar("danger");
           setMessage("The start date must be earlier than the end date.");
+          setLoading(false);
           return;
         }
 
         if (startDate > now) {
           setOpenSnackbar("danger");
           setMessage("The start date cannot be in the future.");
+          setLoading(false);
           return;
         }
       }
 
+      const isUser = session.user.permissions.includes("User Dashboard");
+
       let lostItemData = {
         isFoundItem: false,
         name,
-        color,
-        size: sizeNotDetermined ? "N/A" : `${size.value} ${size.unit}`,
-        category,
-        material,
-        condition,
-        distinctiveMarks,
         description,
         location: itemWhereabouts ? location : "Unidentified",
         date_time: itemWhereabouts
@@ -170,71 +154,57 @@ const PublishLostItem = ({
             )}`
           : "Unidentified",
         images,
-        status: session.user.permissions.includes("User Dashboard")
-          ? "Request"
-          : "Missing",
+        status: isUser ? "Request" : "Missing",
+        reasonForReporting: reasonToReport,
+        ...(isUser ? { dateRequest: new Date() } : { dateMissing: new Date() }),
       };
 
-      if (lostItemData.status === "Request") {
-        lostItemData.dateRequest = new Date();
-      } else {
-        lostItemData.dateMissing = new Date();
-      }
-
+      // Create lost item
       const response = await fetch("/api/lost-items", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(lostItemData),
       });
 
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ error: "Unexpected response format" }));
-        setOpenSnackbar("danger");
-        setMessage(`Failed to add found item: ${errorData.error}`);
+        const errorData = await response.json().catch(() => ({
+          error: "Unexpected response format",
+        }));
+        throw new Error(errorData.error || "Failed to create lost item");
       }
 
       const lostItemResponse = await response.json();
 
-      const ownerFormData = {
-        user: session.user.permissions.includes("User Dashboard")
-          ? session?.user?.id
-          : owner?._id,
-        item: lostItemResponse._id,
-      };
-
+      // Create owner reference
+      const ownerId = isUser ? session.user.id : owner?._id;
       const ownerResponse = await fetch("/api/owner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ownerFormData),
+        body: JSON.stringify({ user: ownerId, item: lostItemResponse._id }),
       });
 
       const ownerData = await ownerResponse.json();
 
-      if (session.user.permissions.includes("Admin Dashboard")) {
+      // Admin only: create post, notify and email
+      if (!isUser) {
         await Promise.all([
           fetch("/api/post", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              author: owner?._id,
+              author: ownerId,
               caption: description,
               item_name: name,
               isFinder: false,
-              owner: ownerData?._id,
+              owner: ownerData._id,
               createdAt: new Date(),
             }),
           }),
           fetch("/api/notification", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              receiver: owner._id,
+              receiver: ownerId,
               message: `The lost item (${name}) you reported to SASO has been published!`,
               type: "Lost Items",
               markAsRead: false,
@@ -243,9 +213,7 @@ const PublishLostItem = ({
           }),
           fetch("/api/send-email", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               to: owner.emailAddress,
               name: owner.firstname,
@@ -257,20 +225,27 @@ const PublishLostItem = ({
         ]);
       }
 
+      // Apply cooldown (e.g., 24 hours later)
+      const cooldownDate = new Date();
+      cooldownDate.setHours(cooldownDate.getHours() + 24); // 24-hour cooldown
+
+      await fetch(`/api/users/${ownerId}/cooldown`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ canUserReportLostItem: cooldownDate }),
+      });
+
       resetForm();
+      if (fetchItems) fetchItems();
+      if (refreshData) refreshData();
       setOpenSnackbar("success");
-      if (fetchItems) {
-        fetchItems();
-      }
       setMessage(
-        session.user.permissions.includes("User Dashboard")
-          ? "Item requested successfully!"
-          : "Item published successfully!"
+        isUser ? "Item requested successfully!" : "Item published successfully!"
       );
     } catch (error) {
-      console.error(error);
+      console.error("Submit error:", error);
       setOpenSnackbar("danger");
-      setMessage("An unexpected error occurred.");
+      setMessage(error.message || "An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -279,16 +254,8 @@ const PublishLostItem = ({
   const resetForm = async () => {
     await onClose();
     setName("");
-    setColor([]);
-    setSize({ value: "", unit: "cm" });
-    setSizeNotDetermined(false);
-    setCategory();
-    setMaterial();
-    setCondition();
-    setDistinctiveMarks();
     setDescription("");
     setItemWhereabouts(false);
-    setCanUploadImages(false);
     setLocation("");
     setLostDateStart("");
     setLostDateEnd("");
@@ -359,6 +326,56 @@ const PublishLostItem = ({
     setImages((prev) => prev.filter((_, i) => i !== index)); // Remove image by index
   };
 
+  const getCooldownMessage = () => {
+    const now = new Date();
+    const cooldownDate = new Date(user?.canUserReportLostItem);
+
+    if (cooldownDate > now) {
+      const totalMinutes = differenceInMinutes(cooldownDate, now);
+      const totalSeconds = differenceInSeconds(cooldownDate, now);
+      const hoursLeft = Math.floor(totalMinutes / 60);
+      const minutesLeft = totalMinutes % 60;
+
+      // Less than a minute left
+      if (totalSeconds < 60) {
+        return "Thank you! You can report again in less than a minute.";
+      }
+
+      // Only minutes left
+      if (hoursLeft === 0) {
+        return `Thank you! You can report again in ${minutesLeft} minute${
+          minutesLeft !== 1 ? "s" : ""
+        }.`;
+      }
+
+      // Hours and minutes
+      return `Thank you! You can report again in ${hoursLeft} hour${
+        hoursLeft !== 1 ? "s" : ""
+      } and ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""}.`;
+    }
+
+    return null;
+  };
+
+  const cooldownMessage = getCooldownMessage();
+
+  if (
+    session?.user?.permissions.includes("User Dashboard") &&
+    cooldownMessage
+  ) {
+    return (
+      <Modal open={open} onClose={onClose}>
+        <ModalDialog>
+          <ModalClose />
+          <Typography level="h4">Lost Item Reporting Cooldown</Typography>
+          <DialogContent sx={{ mt: 2 }}>
+            <Typography>{cooldownMessage}</Typography>
+          </DialogContent>
+        </ModalDialog>
+      </Modal>
+    );
+  }
+
   return (
     <>
       <Modal open={open} onClose={onClose}>
@@ -414,7 +431,16 @@ const PublishLostItem = ({
                     <Autocomplete
                       required
                       placeholder="Select owner"
-                      options={users || []} // Ensure users is an array
+                      options={
+                        users?.filter((user) => {
+                          const now = new Date();
+                          const cooldown = user?.canUserReportLostItem
+                            ? new Date(user.canUserReportLostItem)
+                            : null;
+
+                          return !cooldown || cooldown <= now;
+                        }) || []
+                      }
                       value={owner} // Ensure value corresponds to an option in users
                       onChange={(event, value) => {
                         setOwner(value); // Update state with selected user
@@ -431,11 +457,10 @@ const PublishLostItem = ({
                     />
                   </FormControl>
                 )}
-                <FormControl>
+                <FormControl required>
                   <FormLabel>Item Name</FormLabel>
                   <Input
                     placeholder="e.g. Wallet"
-                    required
                     type="text"
                     name="name"
                     value={name}
@@ -443,7 +468,7 @@ const PublishLostItem = ({
                   />
                 </FormControl>
 
-                <Grid container spacing={1}>
+                {/* <Grid container spacing={1}>
                   <Grid item xs={12}>
                     <FormControl>
                       <Box
@@ -701,15 +726,14 @@ const PublishLostItem = ({
                       </Select>
                     </FormControl>
                   </Grid>
-                </Grid>
-                <FormControl>
+                </Grid> */}
+                <FormControl required>
                   <FormLabel>Description</FormLabel>
                   <Textarea
                     placeholder="More details about the item..."
-                    required
                     type="text"
                     name="description"
-                    minRows={4}
+                    minRows={2}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
@@ -769,102 +793,124 @@ const PublishLostItem = ({
                   </>
                 )}
                 <FormControl>
-                  <Checkbox
-                    label="The owner has an image reference"
-                    checked={canUploadImages}
-                    onChange={handleCanUploadImages}
+                  <Box
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <FormLabel>Upload Images</FormLabel>
+                    {images?.length > 0 && (
+                      <Button
+                        size="sm"
+                        color="danger"
+                        onClick={() => setImages([])} // Clear all images
+                      >
+                        Discard All
+                      </Button>
+                    )}
+                  </Box>
+                  <Box
+                    {...getRootProps({ className: "dropzone" })}
+                    sx={{
+                      border: "2px dashed #888",
+                      borderRadius: "4px",
+                      padding: "20px",
+                      textAlign: "center",
+                      cursor: "pointer",
+                      backgroundColor: "#f9f9f9",
+                      mb: 2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fill, minmax(100px, 1fr))",
+                        gap: "10px",
+                      }}
+                    >
+                      {images.map((image, index) => (
+                        <Box key={index} sx={{ position: "relative" }}>
+                          <Image
+                            priority
+                            src={image}
+                            width={0}
+                            height={0}
+                            sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            style={{
+                              width: "100%",
+                              height: "auto",
+                              objectFit: "cover",
+                              borderRadius: "4px",
+                            }}
+                            alt={`Preview ${index + 1}`}
+                          />
+                          <Button
+                            size="sm"
+                            color="danger"
+                            sx={{
+                              position: "absolute",
+                              top: "5px",
+                              right: "5px",
+                              minWidth: "unset",
+                              padding: "2px",
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeImage(index);
+                            }}
+                          >
+                            ✕
+                          </Button>
+                        </Box>
+                      ))}
+                    </Box>
+                    <input
+                      {...getInputProps()}
+                      multiple
+                      style={{ display: "none" }}
+                    />
+                    <p>
+                      {images.length === 0 &&
+                        "Drag 'n' drop some files here, or click to select files"}
+                    </p>
+                  </Box>
+                </FormControl>
+                <FormControl required>
+                  <FormLabel>
+                    {session.user.permissions.includes("Admin Dashboard")
+                      ? "Remarks or reason for publishing this lost item"
+                      : "Why are you reporting this lost item?"}
+                  </FormLabel>
+
+                  <Textarea
+                    placeholder="e.g., Hoping someone may have found it..."
+                    minRows={2}
+                    value={reasonToReport}
+                    onChange={(e) => setReasonToReport(e.target.value)}
                   />
                 </FormControl>
-                {canUploadImages && (
-                  <FormControl>
-                    <Box
-                      sx={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        mb: 1,
-                      }}
-                    >
-                      <FormLabel>Upload Images</FormLabel>
-                      {images?.length > 0 && (
-                        <Button
-                          size="sm"
-                          color="danger"
-                          onClick={() => setImages([])} // Clear all images
-                        >
-                          Discard All
-                        </Button>
-                      )}
-                    </Box>
-                    <Box
-                      {...getRootProps({ className: "dropzone" })}
-                      sx={{
-                        border: "2px dashed #888",
-                        borderRadius: "4px",
-                        padding: "20px",
-                        textAlign: "center",
-                        cursor: "pointer",
-                        backgroundColor: "#f9f9f9",
-                        mb: 2,
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fill, minmax(100px, 1fr))",
-                          gap: "10px",
-                        }}
-                      >
-                        {images.map((image, index) => (
-                          <Box key={index} sx={{ position: "relative" }}>
-                            <Image
-                              priority
-                              src={image}
-                              width={0}
-                              height={0}
-                              sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                              style={{
-                                width: "100%",
-                                height: "auto",
-                                objectFit: "cover",
-                                borderRadius: "4px",
-                              }}
-                              alt={`Preview ${index + 1}`}
-                            />
-                            <Button
-                              size="sm"
-                              color="danger"
-                              sx={{
-                                position: "absolute",
-                                top: "5px",
-                                right: "5px",
-                                minWidth: "unset",
-                                padding: "2px",
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeImage(index);
-                              }}
-                            >
-                              ✕
-                            </Button>
-                          </Box>
-                        ))}
-                      </Box>
-                      <input
-                        {...getInputProps()}
-                        multiple
-                        style={{ display: "none" }}
-                      />
-                      <p>
-                        {images.length === 0 &&
-                          "Drag 'n' drop some files here, or click to select files"}
-                      </p>
-                    </Box>
+                {session?.user?.permissions.includes("User Dashboard") && (
+                  <FormControl required>
+                    <Checkbox
+                      checked={confirmAccuracy}
+                      onChange={(e) => setConfirmAccuracy(e.target.checked)}
+                      label="I confirm that the information I provided above is accurate and based on my best knowledge."
+                    />
                   </FormControl>
                 )}
-                <Button disabled={loading} loading={loading} type="submit">
+                <Button
+                  disabled={
+                    loading ||
+                    (!confirmAccuracy &&
+                      session.user.permissions.includes("User Dashboard"))
+                  }
+                  loading={loading}
+                  type="submit"
+                >
                   {session.user.permissions.includes("User Dashboard")
                     ? "Report"
                     : "Post"}

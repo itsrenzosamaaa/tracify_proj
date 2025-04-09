@@ -47,7 +47,7 @@ const ItemReservedModal = ({
     }
   };
 
-  const handleSubmit = async (e, foundItemId, lostItemId, matchedId) => {
+  const handleSubmit = async (e, foundItemId, matchedId) => {
     if (e?.preventDefault) {
       e.preventDefault();
     }
@@ -83,11 +83,6 @@ const ItemReservedModal = ({
       // Update found item status
       await makeRequest(`/api/found-items/${foundItemId}`, "PUT", {
         status: "Resolved",
-      });
-
-      // Update lost item status
-      await makeRequest(`/api/lost-items/${lostItemId}`, "PUT", {
-        status: "Claimed",
       });
 
       // Update match status
@@ -167,7 +162,7 @@ const ItemReservedModal = ({
     }
   };
 
-  const handleDecline = async (e, foundItemId, lostItemId, matchedItemId) => {
+  const handleDecline = async (e, foundItemId, matchedItemId) => {
     if (e && e.preventDefault) {
       e.preventDefault();
     }
@@ -193,9 +188,6 @@ const ItemReservedModal = ({
       };
 
       await makeRequest(`/api/found-items/${foundItemId}`, "PUT", {
-        status: "Decline Retrieval",
-      });
-      await makeRequest(`/api/lost-items/${lostItemId}`, "PUT", {
         status: "Decline Retrieval",
       });
       await makeRequest(`/api/match-items/${matchedItemId}`, "PUT", {
@@ -403,47 +395,6 @@ const ItemReservedModal = ({
                       handleDecline(
                         e,
                         row.finder.item._id,
-                        row.owner.item._id,
-                        row._id
-                      )
-                    }
-                    fullWidth
-                  >
-                    Confirm
-                  </Button>
-                </Box>
-              </ModalDialog>
-            </Modal>
-            <Modal
-              open={confirmationItemDecline}
-              onClose={() => setConfirmationItemDecline(false)}
-            >
-              <ModalDialog>
-                <ModalClose />
-                <Typography level="h4" gutterBottom>
-                  Decline
-                </Typography>
-                <Typography>
-                  Are you sure you want to decline the retrieval?
-                </Typography>
-                <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-                  <Button
-                    disabled={loading}
-                    color="danger"
-                    onClick={() => setConfirmationItemDecline(false)}
-                    fullWidth
-                    variant="outlined"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    disabled={loading}
-                    loading={loading}
-                    onClick={(e) =>
-                      handleDecline(
-                        e,
-                        row.finder.item._id,
-                        row.owner.item._id,
                         row._id
                       )
                     }
@@ -489,7 +440,6 @@ const ItemReservedModal = ({
                       handleSubmit(
                         e,
                         row.finder.item._id,
-                        row.owner.item._id,
                         row._id
                       )
                     }

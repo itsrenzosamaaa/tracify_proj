@@ -31,7 +31,7 @@ const ItemClaimRequestModal = ({
     useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e, lostItemId, matchedItemId) => {
+  const handleSubmit = async (e, matchedItemId) => {
     if (e?.preventDefault) e.preventDefault();
 
     try {
@@ -53,10 +53,6 @@ const ItemClaimRequestModal = ({
 
         return response.json();
       };
-
-      await makeRequest(`/api/lost-items/${lostItemId}`, "PUT", {
-        status: "Unclaimed",
-      });
       await makeRequest(`/api/match-items/${matchedItemId}`, "PUT", {
         request_status: "Approved",
       });
@@ -297,7 +293,7 @@ const ItemClaimRequestModal = ({
                     disabled={loading}
                     loading={loading}
                     onClick={(e) =>
-                      handleSubmit(e, row?.owner?.item?._id, row._id)
+                      handleSubmit(e, row._id)
                     }
                     fullWidth
                   >

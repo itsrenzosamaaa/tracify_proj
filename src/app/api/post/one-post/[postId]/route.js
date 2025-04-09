@@ -26,7 +26,7 @@ export async function GET(req, { params }) {
           path: "finder",
           populate: {
             path: "item",
-            select: "name images status location category",
+            select: "name images status location category questions",
           },
         },
         {

@@ -19,7 +19,6 @@ export async function GET(req, { params }) {
                 path: 'owner',
                 populate: [
                     { path: 'user', model: 'User' },
-                    { path: 'item', model: 'Item' }
                 ]
             });
 

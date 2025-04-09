@@ -9,6 +9,10 @@ import {
   Box,
   Snackbar,
   DialogContent,
+  Stack,
+  Input,
+  FormControl,
+  FormLabel,
 } from "@mui/joy";
 import React, { useState } from "react";
 import ItemDetails from "./ItemDetails";
@@ -24,6 +28,8 @@ const ItemValidatingModal = ({
 }) => {
   const [itemValidate, setItemValidate] = useState(null);
   const [itemInvalidate, setItemInvalidate] = useState(null);
+  const [publishConfirmation, setPublishConfirmation] = useState(null);
+  const [questions, setQuestions] = useState([""]);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e, id) => {
@@ -33,10 +39,20 @@ const ItemValidatingModal = ({
     setLoading(true);
 
     try {
+      if (questions.filter((q) => q.trim()).length === 0) {
+        setOpenSnackbar("danger");
+        setMessage("Please add at least one security question.");
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(`/api/found-items/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "Published" }),
+        body: JSON.stringify({
+          status: "Published",
+          questions: questions.map((q) => q.trim()).filter((q) => q !== ""),
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to update status");
@@ -226,6 +242,77 @@ const ItemValidatingModal = ({
               <ModalDialog>
                 <ModalClose />
                 <Typography level="h4" gutterbottom>
+                  Create Questions
+                </Typography>
+                <FormControl>
+                  <FormLabel>Security Question(s)</FormLabel>
+                  <Stack spacing={1}>
+                    {questions.map((question, index) => (
+                      <Box key={index} display="flex" gap={1}>
+                        <Input
+                          required
+                          fullWidth
+                          placeholder={`Enter question #${index + 1}`}
+                          value={question}
+                          onChange={(e) => {
+                            const updated = [...questions];
+                            updated[index] = e.target.value;
+                            setQuestions(updated);
+                          }}
+                        />
+                        <Button
+                          color="danger"
+                          size="sm"
+                          onClick={() =>
+                            setQuestions((prev) =>
+                              prev.filter((_, i) => i !== index)
+                            )
+                          }
+                          disabled={questions.length === 1}
+                        >
+                          ✕
+                        </Button>
+                      </Box>
+                    ))}
+                    <Button
+                      size="sm"
+                      variant="outlined"
+                      onClick={() => setQuestions([...questions, ""])}
+                    >
+                      + Add Another Question
+                    </Button>
+                  </Stack>
+                </FormControl>
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <Button
+                    loading={loading}
+                    disabled={loading}
+                    color="danger"
+                    onClick={() => setItemValidate(null)}
+                    fullWidth
+                    variant="outlined"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    loading={loading}
+                    disabled={loading}
+                    onClick={(e) => setPublishConfirmation(row.item._id)}
+                    fullWidth
+                  >
+                    Next
+                  </Button>
+                </Box>
+              </ModalDialog>
+            </Modal>
+
+            <Modal
+              open={publishConfirmation}
+              onClose={() => setPublishConfirmation(null)}
+            >
+              <ModalDialog>
+                <ModalClose />
+                <Typography level="h4" gutterbottom>
                   Confirmation
                 </Typography>
                 <Typography>
@@ -236,7 +323,7 @@ const ItemValidatingModal = ({
                     loading={loading}
                     disabled={loading}
                     color="danger"
-                    onClick={() => setItemValidate(null)}
+                    onClick={() => setPublishConfirmation(null)}
                     fullWidth
                     variant="outlined"
                   >

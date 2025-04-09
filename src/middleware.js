@@ -60,6 +60,6 @@ export const config = {
     "/lost-corner",
     "/found-corner",
     "/my-items/:path*",
-    "/post/:path",
+    "/post/:path*",
   ], // Add all necessary protected routes
 };

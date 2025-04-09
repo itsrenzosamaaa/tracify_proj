@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   role: {
-    type:  mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: "Role",
   },
   profile_picture: {
@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema({
   shareCount: {
     type: Number,
     default: 0,
+  },
+  canUserReportLostItem: {
+    type: Date,
+    default: Date.now,
   },
 });
 

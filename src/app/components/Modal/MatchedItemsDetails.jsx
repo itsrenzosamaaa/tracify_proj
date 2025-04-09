@@ -4,554 +4,326 @@ import React, { useState } from "react";
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
-  Stack,
   Avatar,
   Grid,
   Stepper,
   Step,
   Divider,
+  Table,
+  Sheet,
 } from "@mui/joy";
 import { format, isToday } from "date-fns";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { CldImage } from "next-cloudinary";
-import { useTheme, useMediaQuery } from "@mui/material";
+import {
+  useTheme,
+  useMediaQuery,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Paper,
+} from "@mui/material";
+
+const Section = ({ title, children }) => (
+  <Box sx={{ marginBottom: 4 }}>
+    <Typography
+      level="h5"
+      sx={{ marginBottom: 2, fontWeight: "bold", color: "primary.plainColor" }}
+    >
+      {title}
+    </Typography>
+    {children}
+  </Box>
+);
+
+const InfoCard = ({ avatarSrc, title, children }) => (
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 2,
+      padding: 2,
+      bgcolor: "background.level1",
+      borderRadius: "md",
+      boxShadow: "sm",
+    }}
+  >
+    <Avatar src={avatarSrc} sx={{ width: 80, height: 80, boxShadow: 2 }} />
+    <Box sx={{ width: "100%" }}>{children}</Box>
+  </Box>
+);
+
+const DetailsList = ({ data }) => (
+  <Box
+    sx={{
+      bgcolor: "background.level1",
+      borderRadius: "md",
+      boxShadow: "sm",
+      padding: 3,
+    }}
+  >
+    {Object.entries(data).map(([label, value]) => (
+      <Typography key={label}>
+        <strong>{label}:</strong> {value || "N/A"}
+      </Typography>
+    ))}
+  </Box>
+);
+
+const ImageGallery = ({ title, images, alt }) => (
+  <Section title={title}>
+    <Carousel showThumbs={false} useKeyboardArrows>
+      {images?.map((img, idx) => (
+        <Box key={idx} sx={{ display: "inline-block", margin: 1 }}>
+          <CldImage src={img} alt={alt} width={250} height={250} priority />
+        </Box>
+      ))}
+    </Carousel>
+  </Section>
+);
+
+const VerificationTable = ({ questions = [], answers = [] }) => (
+  <Box sx={{ overflowX: "auto" }}>
+    <Typography
+      level="h5"
+      sx={{ marginBottom: 2, fontWeight: "bold", color: "primary.plainColor" }}
+    >
+      Ownership Verification
+    </Typography>
+    <Table stickyHeader hoverRow sx={{ minWidth: 500 }}>
+      <TableHead>
+        <TableRow>
+          <TableCell>Security Question</TableCell>
+          <TableCell>Claimer&apos;s Answer</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {questions.map((q, i) => (
+          <TableRow key={i}>
+            <TableCell>{q}</TableCell>
+            <TableCell sx={{ color: "success.700", fontWeight: 600 }}>
+              {answers[i] || "No answer provided"}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </Box>
+);
+
+const TimelineStep = ({ label, timestamp, remark }) => (
+  <Step>
+    <Typography>
+      <strong>{label}</strong>
+    </Typography>
+    {remark && (
+      <Typography>
+        <strong>Remarks:</strong> {remark}
+      </Typography>
+    )}
+    <Typography>
+      {isToday(new Date(timestamp))
+        ? `Today, ${format(new Date(timestamp), "hh:mm a")}`
+        : format(new Date(timestamp), "MMMM dd, yyyy - hh:mm a")}
+    </Typography>
+  </Step>
+);
 
 const MatchedItemsDetails = ({ row }) => {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
+
   return (
-    <>
-      <Grid container spacing={2}>
-        <Grid item xs={12} lg={6}>
-          <Box sx={{ marginBottom: 4 }}>
+    <Grid container spacing={3}>
+      <Grid item xs={12} md={6}>
+        <Section title="Owner Information">
+          <InfoCard avatarSrc={row?.owner?.user?.profile_picture}>
             <Typography
-              level="h5"
+              fontWeight={700}
+              level={isXs ? "body-sm" : "body-md"}
               sx={{
-                marginBottom: 2,
-                fontWeight: "bold",
-                color: "primary.plainColor",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                width: "100%",
               }}
             >
-              Owner Information
+              {row?.owner?.user?.firstname} {row?.owner?.user?.lastname}
             </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 3,
-                padding: 2,
-                bgcolor: "background.level1",
-                borderRadius: "md",
-                boxShadow: "sm",
-              }}
-            >
-              <Avatar
-                alt={
-                  row?.owner?.user?.firstname && row?.owner?.user?.lastname
-                    ? `${row?.owner?.user?.firstname} ${row?.owner?.user?.lastname}'s Profile Picture`
-                    : "?"
-                }
-                src={row?.owner?.user?.profile_picture}
-                sx={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
-                  boxShadow: 2,
-                }}
-              />
-
-              {/* User Details */}
-              <Box sx={{ flex: 1, width: "100%" }}>
-                <Typography
-                  level={isXs ? "body-sm" : "body-md"}
-                  sx={{
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    width: "100%", // Ensure container width is respected
-                  }}
-                  fontWeight="700"
-                >
-                  {row?.owner?.user?.firstname && row?.owner?.user?.lastname
-                    ? `${row?.owner?.user?.firstname} ${row?.owner?.user?.lastname}`
-                    : "Deleted User"}
-                </Typography>
-                <Typography
-                  level={isXs ? "body-sm" : "body-md"}
-                  sx={{
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    width: "100%",
-                  }}
-                >
-                  {row?.owner?.user?.emailAddress
-                    ? row?.owner?.user?.emailAddress
-                    : "No Email Address"}
-                </Typography>
-                <Typography
-                  level={isXs ? "body-sm" : "body-md"}
-                  sx={{
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    width: "100%",
-                  }}
-                >
-                  {row?.owner?.user?.contactNumber
-                    ? row?.owner?.user?.contactNumber
-                    : "No Contact Number"}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-          <Box sx={{ marginBottom: 4 }}>
             <Typography
-              level="h5"
+              level={isXs ? "body-sm" : "body-md"}
               sx={{
-                marginBottom: 2,
-                fontWeight: "bold",
-                color: "primary.plainColor",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                width: "100%",
               }}
             >
-              Lost Item Information
+              {row?.owner?.user?.emailAddress}
             </Typography>
-            <Box
-              sx={{
-                bgcolor: "background.level1",
-                borderRadius: "md",
-                boxShadow: "sm",
-                padding: 3,
-              }}
-            >
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Item Name:</strong> {row.owner.item.name || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Color:</strong>{" "}
-                {row.owner.item.color.length > 0
-                  ? row.owner.item.color.join(", ")
-                  : "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Size:</strong> {row.owner.item.size || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Category:</strong> {row.owner.item.category || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Material:</strong> {row.owner.item.material || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Condition:</strong> {row.owner.item.condition || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Distinctive Marks:</strong>{" "}
-                {row.owner.item.distinctiveMarks || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Location:</strong> {row.owner.item.location || "N/A"}
-              </Typography>
-
-              {/* Description and Date/Time */}
-              <Divider sx={{ marginY: 2 }} />
-
-              <strong>Description:</strong>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                {row.owner.item.description || "N/A"}
-              </Typography>
-              <strong>Start Date Lost:</strong>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                {row.owner.item.date_time?.split(" to ")[0] || "Unidentified"}
-              </Typography>
-              <strong>End Date Lost:</strong>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                {row.owner.item.date_time?.split(" to ")[1] || "Unidentified"}
-              </Typography>
-            </Box>
-          </Box>
-        </Grid>
-        <Grid item xs={12} lg={6}>
-          <Box sx={{ marginBottom: 4 }}>
             <Typography
-              level="h5"
+              level={isXs ? "body-sm" : "body-md"}
               sx={{
-                marginBottom: 2,
-                fontWeight: "bold",
-                color: "primary.plainColor",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                width: "100%",
               }}
             >
-              Finder Information
+              {row?.owner?.user?.contactNumber}
             </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 3,
-                padding: 2,
-                bgcolor: "background.level1",
-                borderRadius: "md",
-                boxShadow: "sm",
-              }}
-            >
-              {/* Avatar */}
-              <Avatar
-                alt={
-                  row?.finder?.user?.firstname && row?.finder?.user?.lastname
-                    ? `${row?.finder?.user?.firstname} ${row?.finder?.user?.lastname}'s Profile Picture`
-                    : "?"
-                }
-                src={row?.finder?.user?.profile_picture}
-                sx={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
-                  boxShadow: 2,
-                }}
-              />
-
-              {/* User Details */}
-              <Box sx={{ flex: 1, width: "100%" }}>
-                <Typography
-                  level={isXs ? "body-sm" : "body-md"}
-                  sx={{
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    width: "100%", // Ensure container width is respected
-                  }}
-                  fontWeight="700"
-                >
-                  {row?.finder?.user?.firstname && row?.finder?.user?.lastname
-                    ? `${row?.finder?.user?.firstname} ${row?.finder?.user?.lastname}`
-                    : "Deleted User"}
-                </Typography>
-                <Typography
-                  level={isXs ? "body-sm" : "body-md"}
-                  sx={{
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    width: "100%",
-                  }}
-                >
-                  {row?.finder?.user?.emailAddress
-                    ? row?.finder?.user?.emailAddress
-                    : "No Email Address"}
-                </Typography>
-                <Typography
-                  level={isXs ? "body-sm" : "body-md"}
-                  sx={{
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    width: "100%",
-                  }}
-                >
-                  {row?.finder?.user?.contactNumber
-                    ? row?.finder?.user?.contactNumber
-                    : "No Contact Number"}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-          <Box sx={{ marginBottom: 4 }}>
-            <Typography
-              level="h5"
-              sx={{
-                marginBottom: 2,
-                fontWeight: "bold",
-                color: "primary.plainColor",
-              }}
-            >
-              Found Item Information
-            </Typography>
-            <Box
-              sx={{
-                bgcolor: "background.level1",
-                borderRadius: "md",
-                boxShadow: "sm",
-                padding: 3,
-              }}
-            >
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Item Name:</strong> {row.finder.item.name || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Color:</strong>{" "}
-                {row.finder.item.color.length > 0
-                  ? row.finder.item.color.join(", ")
-                  : "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Size:</strong> {row.finder.item.size || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Category:</strong> {row.finder.item.category || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Material:</strong> {row.finder.item.material || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Condition:</strong> {row.finder.item.condition || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Distinctive Marks:</strong>{" "}
-                {row.finder.item.distinctiveMarks || "N/A"}
-              </Typography>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                <strong>Location:</strong> {row.finder.item.location || "N/A"}
-              </Typography>
-
-              {/* Description and Date/Time */}
-              <Divider sx={{ marginY: 2 }} />
-
-              <strong>Description:</strong>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                {row.finder.item.description || "N/A"}
-              </Typography>
-              <strong>Date Found:</strong>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                {format(new Date(row.finder.item.date_time), "MMMM dd, yyyy")}
-              </Typography>
-              <strong>Time Found:</strong>
-              <Typography level={isXs ? "body-sm" : "body-md"}>
-                {format(new Date(row.finder.item.date_time), "hh:mm a")}
-              </Typography>
-            </Box>
-          </Box>
-        </Grid>
-        <Grid item xs={12}>
-          <Box sx={{ marginBottom: 4 }}>
-            <Typography
-              level="h5"
-              sx={{
-                marginBottom: 2,
-                fontWeight: "bold",
-                color: "primary.plainColor",
-              }}
-            >
-              Item Tracking History
-            </Typography>
-            <Box
-              sx={{
-                bgcolor: "background.level1",
-                borderRadius: "md",
-                boxShadow: "sm",
-                padding: 3,
-              }}
-            >
-              <Stepper orientation="vertical">
-                {row.dateCompleted && (
-                  <Step>
-                    <Typography
-                      level={isXs ? "body-sm" : isSm ? "body-md" : "body-lg"}
-                    >
-                      <strong>The item has been resolved!</strong>
-                    </Typography>
-                    <Typography
-                      level={isXs ? "body-xs" : isSm ? "body-sm" : "body-md"}
-                    >
-                      {isToday(new Date(row.dateCompleted))
-                        ? `Today, ${format(
-                            new Date(row.dateCompleted),
-                            "hh:mm a"
-                          )}`
-                        : format(
-                            new Date(row.dateCompleted),
-                            "MMMM dd, yyyy, hh:mm a"
-                          )}
-                    </Typography>
-                  </Step>
-                )}
-                {row.dateDeclined && (
-                  <Step>
-                    <Typography
-                      level={isXs ? "body-sm" : isSm ? "body-md" : "body-lg"}
-                    >
-                      <strong>
-                        {row.dateApproved
-                          ? "The claim process has been declined."
-                          : "The request has been declined."}
-                      </strong>
-                    </Typography>
-                    <Typography>
-                      <strong>Remarks: </strong>
-                      {row.remarks}
-                    </Typography>
-                    <Typography
-                      level={isXs ? "body-xs" : isSm ? "body-sm" : "body-md"}
-                    >
-                      {isToday(new Date(row.dateDeclined))
-                        ? `Today, ${format(
-                            new Date(row.dateDeclined),
-                            "hh:mm a"
-                          )}`
-                        : format(
-                            new Date(row.dateDeclined),
-                            "MMMM dd, yyyy, hh:mm a"
-                          )}
-                    </Typography>
-                  </Step>
-                )}
-                {row.dateCanceled && (
-                  <Step>
-                    <Typography
-                      level={isXs ? "body-sm" : isSm ? "body-md" : "body-lg"}
-                    >
-                      <strong>The request has been canceled.</strong>
-                    </Typography>
-                    <Typography
-                      level={isXs ? "body-sm" : isSm ? "body-md" : "body-lg"}
-                    >
-                      <strong>Remarks: </strong>
-                      {row.remarks}
-                    </Typography>
-                    <Typography
-                      level={isXs ? "body-xs" : isSm ? "body-sm" : "body-md"}
-                    >
-                      {isToday(new Date(row.dateCanceled))
-                        ? `Today, ${format(
-                            new Date(row.dateCanceled),
-                            "hh:mm a"
-                          )}`
-                        : format(
-                            new Date(row.dateCanceled),
-                            "MMMM dd, yyyy, hh:mm a"
-                          )}
-                    </Typography>
-                  </Step>
-                )}
-                {row.dateApproved && (
-                  <Step>
-                    <Typography
-                      level={isXs ? "body-sm" : isSm ? "body-md" : "body-lg"}
-                    >
-                      <strong>
-                        {row.datePending
-                          ? "The item has been approved!"
-                          : "The item has been matched!"}
-                      </strong>
-                    </Typography>
-                    <Typography
-                      level={isXs ? "body-xs" : isSm ? "body-sm" : "body-md"}
-                    >
-                      {isToday(new Date(row.dateApproved))
-                        ? `Today, ${format(
-                            new Date(row.dateApproved),
-                            "hh:mm a"
-                          )}`
-                        : format(
-                            new Date(row.dateApproved),
-                            "MMMM dd, yyyy, hh:mm a"
-                          )}
-                    </Typography>
-                  </Step>
-                )}
-                {row.datePending && (
-                  <Step>
-                    <Typography
-                      level={isXs ? "body-sm" : isSm ? "body-md" : "body-lg"}
-                    >
-                      <strong>The retrieval request has been sent!</strong>
-                    </Typography>
-                    <Typography
-                      level={isXs ? "body-xs" : isSm ? "body-sm" : "body-md"}
-                    >
-                      {isToday(new Date(row.datePending))
-                        ? `Today, ${format(
-                            new Date(row.datePending),
-                            "hh:mm a"
-                          )}`
-                        : format(
-                            new Date(row.datePending),
-                            "MMMM dd, yyyy, hh:mm a"
-                          )}
-                    </Typography>
-                  </Step>
-                )}
-              </Stepper>
-            </Box>
-          </Box>
-        </Grid>
-        <Grid item xs={12} lg={6}>
-          <Box>
-            <Typography
-              level="h5"
-              sx={{
-                marginBottom: 2,
-                fontWeight: "bold",
-                color: "primary.plainColor",
-              }}
-            >
-              Lost Item Image
-            </Typography>
-            <Carousel showThumbs={false} useKeyboardArrows>
-              {row.owner.item?.images?.map((image, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    overflow: "hidden",
-                    display: "inline-block",
-                    margin: 1, // Adds some spacing between images
-                  }}
-                >
-                  <CldImage
-                    priority
-                    src={image}
-                    width={250}
-                    height={250}
-                    alt={row.owner.item?.name || "Item Image"}
-                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
-                  />
-                </Box>
-              ))}
-            </Carousel>
-          </Box>
-        </Grid>
-        <Grid item xs={12} lg={6}>
-          <Box>
-            <Typography
-              level="h5"
-              sx={{
-                marginBottom: 2,
-                fontWeight: "bold",
-                color: "primary.plainColor",
-              }}
-            >
-              Found Item Image
-            </Typography>
-            <Carousel showThumbs={false} useKeyboardArrows>
-              {row.finder.item?.images?.map((image, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    overflow: "hidden",
-                    display: "inline-block",
-                    margin: 1, // Adds some spacing between images
-                  }}
-                >
-                  <CldImage
-                    priority
-                    src={image}
-                    width={250}
-                    height={250}
-                    alt={row.finder.item?.name || "Item Image"}
-                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
-                  />
-                </Box>
-              ))}
-            </Carousel>
-          </Box>
-        </Grid>
+          </InfoCard>
+        </Section>
+        <Section title="Lost Item Information">
+          <DetailsList
+            data={{
+              "Item Name": row.owner.item.name,
+              Color: row.owner.item.color?.join(", "),
+              Size: row.owner.item.size,
+              Category: row.owner.item.category,
+              Material: row.owner.item.material,
+              Condition: row.owner.item.condition,
+              "Distinctive Marks": row.owner.item.distinctiveMarks,
+              Location: row.owner.item.location,
+              Description: row.owner.item.description,
+              "Start Date Lost": row.owner.item.date_time?.split(" to ")[0],
+              "End Date Lost": row.owner.item.date_time?.split(" to ")[1],
+            }}
+          />
+        </Section>
       </Grid>
-    </>
+      <Grid item xs={12} md={6}>
+        <Section title="Finder Information">
+          <InfoCard avatarSrc={row?.finder?.user?.profile_picture}>
+            <Typography
+              fontWeight={700}
+              level={isXs ? "body-sm" : "body-md"}
+              sx={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                width: "100%",
+              }}
+            >
+              {row?.finder?.user?.firstname} {row?.finder?.user?.lastname}
+            </Typography>
+            <Typography
+              level={isXs ? "body-sm" : "body-md"}
+              sx={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                width: "100%",
+              }}
+            >
+              {row?.finder?.user?.emailAddress}
+            </Typography>
+            <Typography
+              level={isXs ? "body-sm" : "body-md"}
+              sx={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                width: "100%",
+              }}
+            >
+              {row?.finder?.user?.contactNumber}
+            </Typography>
+          </InfoCard>
+        </Section>
+        <Section title="Found Item Information">
+          <DetailsList
+            data={{
+              "Item Name": row.finder.item.name,
+              Color: row.finder.item.color?.join(", "),
+              Size: row.finder.item.size,
+              Category: row.finder.item.category,
+              Material: row.finder.item.material,
+              Condition: row.finder.item.condition,
+              "Distinctive Marks": row.finder.item.distinctiveMarks,
+              Location: row.finder.item.location,
+              Description: row.finder.item.description,
+              "Date Found": format(
+                new Date(row.finder.item.date_time),
+                "MMMM dd, yyyy"
+              ),
+              "Time Found": format(
+                new Date(row.finder.item.date_time),
+                "hh:mm a"
+              ),
+            }}
+          />
+        </Section>
+      </Grid>
+
+      <Grid item xs={12}>
+        <VerificationTable
+          questions={row?.finder?.item?.questions || []}
+          answers={row?.owner?.item?.answers || []}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <Section title="Item Tracking History">
+          <Box sx={{ bgcolor: "background.level1", p: 3, borderRadius: "md" }}>
+            <Stepper orientation="vertical">
+              {row.dateCompleted && (
+                <TimelineStep
+                  label="The item has been resolved."
+                  timestamp={row.dateCompleted}
+                />
+              )}
+              {row.dateDeclined && (
+                <TimelineStep
+                  label="The request has been declined."
+                  timestamp={row.dateDeclined}
+                  remark={row.remarks}
+                />
+              )}
+              {row.dateCanceled && (
+                <TimelineStep
+                  label="The request has been canceled."
+                  timestamp={row.dateCanceled}
+                  remark={row.remarks}
+                />
+              )}
+              {row.dateApproved && (
+                <TimelineStep
+                  label="The item has been approved."
+                  timestamp={row.dateApproved}
+                />
+              )}
+              {row.datePending && (
+                <TimelineStep
+                  label="The retrieval request has been sent."
+                  timestamp={row.datePending}
+                />
+              )}
+            </Stepper>
+          </Box>
+        </Section>
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <ImageGallery
+          title="Lost Item Image"
+          images={row.owner.item?.images || []}
+          alt={row.owner.item?.name || "Lost item"}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <ImageGallery
+          title="Found Item Image"
+          images={row.finder.item?.images || []}
+          alt={row.finder.item?.name || "Found item"}
+        />
+      </Grid>
+    </Grid>
   );
 };
 

@@ -31,7 +31,9 @@ export const authOptions = {
               lastname: account.lastname,
               profile_picture: account.profile_picture || "",
               email: account.emailAddress || "",
-              contact_number: account.contactNumber || "",
+              contactNumber: account.contactNumber || "",
+              canUserReportLostItem:
+                account.canUserReportLostItem || new Date(),
               roleName: account.role?.name || "Guest", // ✅ Default to "Guest" if no role
               permissions: account.role?.permissions || [], // ✅ Default to empty array if no permissions
             };
@@ -63,7 +65,9 @@ export const authOptions = {
           await dbConnect();
 
           // Fetch user details from database
-          const dbAccount = await User.findOne({ emailAddress: user.email }).populate("role");
+          const dbAccount = await User.findOne({
+            emailAddress: user.email,
+          }).populate("role");
 
           if (!dbAccount) {
             console.error("User not found in the database.");
@@ -74,7 +78,9 @@ export const authOptions = {
           user.firstname = dbAccount.firstname;
           user.lastname = dbAccount.lastname;
           user.profile_picture = dbAccount.profile_picture;
-          user.contact_number = dbAccount.contactNumber;
+          user.contactNumber = dbAccount.contactNumber;
+          user.canUserReportLostItem =
+            dbAccount.canUserReportLostItem || new Date();
           user.roleName = dbAccount.role?.name || "Guest";
           user.permissions = dbAccount.role?.permissions || [];
         }
@@ -99,7 +105,8 @@ export const authOptions = {
         token.firstname = user.firstname;
         token.lastname = user.lastname;
         token.profile_picture = user.profile_picture;
-        token.contactNumber = user.contact_number;
+        token.contactNumber = user.contactNumber;
+        token.canUserReportLostItem = user.canUserReportLostItem;
         token.email = user.email;
         token.roleName = user.roleName || "Guest";
         token.permissions = user.permissions || [];
@@ -114,6 +121,7 @@ export const authOptions = {
         session.user.lastname = token.lastname;
         session.user.profile_picture = token.profile_picture;
         session.user.contactNumber = token.contactNumber;
+        session.user.canUserReportLostItem = token.canUserReportLostItem;
         session.user.email = token.email;
         session.user.roleName = token.roleName || "Guest";
         session.user.permissions = token.permissions || [];

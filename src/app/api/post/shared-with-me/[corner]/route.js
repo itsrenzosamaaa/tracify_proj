@@ -65,7 +65,7 @@ export async function GET(req, { params }) {
           },
           {
             path: "finder",
-            populate: { path: "item", select: "name images status location" },
+            populate: { path: "item", select: "name images status location questions" },
           },
           {
             path: "owner",

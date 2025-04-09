@@ -56,6 +56,7 @@ const PublishFoundItem = ({
   const [finder, setFinder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [studentCheck, setStudentCheck] = useState(false);
+  const [questions, setQuestions] = useState([""]);
   const { data: session, status } = useSession();
 
   const fetchUsers = useCallback(async () => {
@@ -106,6 +107,16 @@ const PublishFoundItem = ({
     e.preventDefault();
     setLoading(true);
 
+    if (
+      session?.user?.permissions.includes("Admin Dashboard") &&
+      questions.filter((q) => q.trim()).length === 0
+    ) {
+      setOpenSnackbar("danger");
+      setMessage("Please add at least one security question.");
+      setLoading(false);
+      return;
+    }
+
     try {
       if (images.length === 0) {
         setOpenSnackbar("danger");
@@ -154,6 +165,9 @@ const PublishFoundItem = ({
         foundItemData.dateRequest = new Date();
       } else {
         foundItemData.datePublished = new Date();
+        foundItemData.questions = questions
+          .map((q) => q.trim())
+          .filter((q) => q !== "");
       }
 
       const response = await fetch("/api/found-items", {
@@ -189,20 +203,18 @@ const PublishFoundItem = ({
       const finderData = await finderResponse.json();
 
       if (session.user.permissions.includes("Admin Dashboard")) {
-        await Promise.all([
-          fetch("/api/post", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              author: studentCheck ? finder?._id : session.user?.id,
-              isFinder: true,
-              item_name: name,
-              caption: description,
-              finder: finderData?._id,
-              createdAt: new Date(),
-            }),
+        await fetch("/api/post", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            author: studentCheck ? finder?._id : session.user?.id,
+            isFinder: true,
+            item_name: name,
+            caption: description,
+            finder: finderData?._id,
+            createdAt: new Date(),
           }),
-        ]);
+        });
 
         if (studentCheck) {
           await Promise.all([
@@ -266,6 +278,7 @@ const PublishFoundItem = ({
     setFoundDate("");
     setImages([]);
     setFinder(null);
+    setQuestions([""]);
   };
 
   const onDrop = (acceptedFiles) => {
@@ -772,6 +785,48 @@ const PublishFoundItem = ({
                     </p>
                   </Box>
                 </FormControl>
+                {session?.user?.permissions.includes("Admin Dashboard") && (
+                  <FormControl>
+                    <FormLabel>Security Question(s)</FormLabel>
+                    <Stack spacing={1}>
+                      {questions.map((question, index) => (
+                        <Box key={index} display="flex" gap={1}>
+                          <Input
+                            required
+                            fullWidth
+                            placeholder={`Enter question #${index + 1}`}
+                            value={question}
+                            onChange={(e) => {
+                              const updated = [...questions];
+                              updated[index] = e.target.value;
+                              setQuestions(updated);
+                            }}
+                          />
+                          <Button
+                            color="danger"
+                            size="sm"
+                            onClick={() =>
+                              setQuestions((prev) =>
+                                prev.filter((_, i) => i !== index)
+                              )
+                            }
+                            disabled={questions.length === 1}
+                          >
+                            ✕
+                          </Button>
+                        </Box>
+                      ))}
+                      <Button
+                        size="sm"
+                        variant="outlined"
+                        onClick={() => setQuestions([...questions, ""])}
+                      >
+                        + Add Another Question
+                      </Button>
+                    </Stack>
+                  </FormControl>
+                )}
+
                 <Button loading={loading} disabled={loading} type="submit">
                   {session.user.permissions.includes("User Dashboard")
                     ? "Report"

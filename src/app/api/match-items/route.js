@@ -32,7 +32,6 @@ export async function GET() {
         path: "owner",
         populate: [
           { path: "user", model: "User" },
-          { path: "item", model: "Item" },
         ],
       });
 

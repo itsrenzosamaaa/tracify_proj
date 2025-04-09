@@ -26,7 +26,6 @@ export async function GET(req) {
 
     if (searchQuery) {
       matchStage.$or = [
-        { caption: { $regex: searchQuery, $options: "i" } },
         { item_name: { $regex: searchQuery, $options: "i" } },
       ];
     }

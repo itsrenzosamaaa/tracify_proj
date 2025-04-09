@@ -9,6 +9,7 @@ import {
   Button,
   Snackbar,
 } from "@mui/joy";
+import { format } from "date-fns";
 import React, { useState } from "react";
 
 const ConfirmationRetrievalRequest = ({
@@ -21,28 +22,70 @@ const ConfirmationRetrievalRequest = ({
   isAdmin,
   sharedBy,
   owner,
+  claimData,
+  lostDateStart,
+  lostDateEnd,
+  sizeNotDetermined,
+  itemWhereabouts,
+  location,
 }) => {
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  const handleSubmit = async (e, foundItemId, finderId, ownerId) => {
+  console.log(claimData)
+
+  const handleSubmit = async (e, finderId) => {
     if (e && e.preventDefault) {
       e.preventDefault();
     }
-
-    const newMatch = {
-      finder: finderId,
-      owner: ownerId,
-      request_status: "Pending",
-      datePending: new Date(),
-    };
-
-    if (![null, foundItem?.user, owner].includes(sharedBy)) {
-      newMatch.sharedBy = sharedBy;
-    }
-
     try {
+      if (![null, foundItem?.user, owner].includes(sharedBy)) {
+        newMatch.sharedBy = sharedBy;
+      }
+
+      const now = new Date();
+      const startDate = itemWhereabouts ? new Date(lostDateStart) : null;
+      const endDate = itemWhereabouts ? new Date(lostDateEnd) : null;
+
+      if (itemWhereabouts) {
+        if (isNaN(startDate) || isNaN(endDate)) {
+          setOpenSnackbar("danger");
+          setMessage("Please provide valid start and end dates.");
+          return;
+        }
+
+        if (startDate >= endDate) {
+          setOpenSnackbar("danger");
+          setMessage("The start date must be earlier than the end date.");
+          return;
+        }
+
+        if (startDate > now) {
+          setOpenSnackbar("danger");
+          setMessage("The start date cannot be in the future.");
+          return;
+        }
+      }
       setLoading(true);
+      const newMatch = {
+        finder: finderId,
+        owner: {
+          user: owner,
+          item: {
+            ...claimData,
+            size: sizeNotDetermined ? "N/A" : `${size.value} ${size.unit}`,
+            location: itemWhereabouts ? location : "Unidentified",
+            date_time: itemWhereabouts
+              ? `${format(startDate, "MMMM dd, yyyy hh:mm a")} to ${format(
+                  endDate,
+                  "MMMM dd, yyyy hh:mm a"
+                )}`
+              : "Unidentified",
+          },
+        },
+        request_status: "Pending",
+        datePending: new Date(),
+      };
       const makeRequest = async (url, method, body) => {
         const response = await fetch(url, {
           method,
@@ -61,18 +104,6 @@ const ConfirmationRetrievalRequest = ({
       };
 
       await makeRequest("/api/match-items", "POST", newMatch);
-      await makeRequest(`/api/found-items/${foundItemId}`, "PUT", {
-        status: "Matched",
-      });
-      if (!isAdmin) {
-        await makeRequest("/api/notification", "POST", {
-          receiver: foundItem.user,
-          message: `Someone matched their lost item to your found item (${foundItem.item.name}). Click here for review.`,
-          type: "Found Items",
-          markAsRead: false,
-          dateNotified: new Date(),
-        });
-      }
 
       onClose();
       closeModal();
@@ -107,9 +138,7 @@ const ConfirmationRetrievalRequest = ({
             <Button
               disabled={loading}
               loading={loading}
-              onClick={(e) =>
-                handleSubmit(e, foundItem.item._id, finder, lostItem)
-              }
+              onClick={(e) => handleSubmit(e, finder)}
               fullWidth
             >
               Send

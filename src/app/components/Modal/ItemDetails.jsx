@@ -54,6 +54,7 @@ import {
   HourglassBottom,
   ArrowDownward,
   ArrowForward,
+  HelpOutline,
 } from "@mui/icons-material";
 import Image from "next/image";
 
@@ -68,18 +69,31 @@ const ItemDetails = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [name, setName] = useState(row.item.name);
   const [color, setColor] = useState(row.item.color);
-  const [size, setSize] = useState({
-    value: row.item.size.split(" ")[0],
-    unit: row.item.size.split(" ")[1],
-  });
+  const [size, setSize] = useState(
+    row?.item?.isFoundItem
+      ? {
+          value: row.item.size.split(" ")[0],
+          unit: row.item.size.split(" ")[1],
+        }
+      : null
+  );
   const [sizeNotDetermined, setSizeNotDetermined] = useState(
     row.item.size === "N/A" ? true : false
   );
-  const [category, setCategory] = useState(row.item.category);
-  const [material, setMaterial] = useState(row.item.material);
-  const [condition, setCondition] = useState(row.item.condition);
+  const [category, setCategory] = useState(
+    row?.item?.isFoundItem ? row.item.category : null
+  );
+  const [material, setMaterial] = useState(
+    row?.item?.isFoundItem ? row.item.material : null
+  );
+  const [condition, setCondition] = useState(
+    row?.item?.isFoundItem ? row.item.condition : null
+  );
   const [distinctiveMarks, setDistinctiveMarks] = useState(
-    row.item.distinctiveMarks
+    row?.item?.isFoundItem ? row.item.distinctiveMarks : null
+  );
+  const [reasonForReporting, setReasonForReporting] = useState(
+    !row?.item?.isFoundItem ? row?.item?.reasonForReporting : null
   );
   const [itemWhereabouts, setItemWhereabouts] = useState(
     row.item.date_time === "Unidentified" &&
@@ -849,410 +863,554 @@ const ItemDetails = ({
         <Grid item xs={12}>
           <Box component="form" onSubmit={handleEdit}>
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                {isEditMode ? (
-                  <FormControl>
-                    <FormLabel>Item Name</FormLabel>
-                    <Input
-                      required
-                      placeholder="e.g. Wallet"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      fullWidth
-                    />
-                  </FormControl>
-                ) : (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Inventory2 fontSize="small" sx={{ mr: 0.5 }} />
-                    <Typography level={isXs ? "body-sm" : "body-md"}>
-                      <strong>Item Name: </strong> {row.item.name || "N/A"}
-                    </Typography>
-                  </Box>
-                )}
+              {row?.item?.isFoundItem ? (
+                <>
+                  <Grid item xs={12} md={6}>
+                    {isEditMode ? (
+                      <FormControl>
+                        <FormLabel>Item Name</FormLabel>
+                        <Input
+                          required
+                          placeholder="e.g. Wallet"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          fullWidth
+                        />
+                      </FormControl>
+                    ) : (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Inventory2 fontSize="small" sx={{ mr: 0.5 }} />
+                        <Typography level={isXs ? "body-sm" : "body-md"}>
+                          <strong>Item Name: </strong> {row.item.name || "N/A"}
+                        </Typography>
+                      </Box>
+                    )}
 
-                {isEditMode ? (
-                  <>
-                    <FormControl>
-                      <FormLabel>Color</FormLabel>
-                      <Select
-                        multiple
-                        fullWidth
-                        required
-                        value={color} // Controlled component
-                        renderValue={(selected) => (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              gap: "0.25rem",
+                    {isEditMode ? (
+                      <>
+                        <FormControl>
+                          <FormLabel>Color</FormLabel>
+                          <Select
+                            multiple
+                            fullWidth
+                            required
+                            value={color} // Controlled component
+                            renderValue={(selected) => (
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  gap: "0.25rem",
+                                }}
+                              >
+                                {selected.map((selectedOption, index) => (
+                                  <Chip
+                                    key={index}
+                                    variant="soft"
+                                    color="primary"
+                                  >
+                                    {selectedOption.label}
+                                  </Chip>
+                                ))}
+                              </Box>
+                            )}
+                            onChange={(e, value) => {
+                              setColor((prevValue) => {
+                                const selectedValues = value;
+                                return selectedValues;
+                              });
                             }}
                           >
-                            {selected.map((selectedOption, index) => (
-                              <Chip key={index} variant="soft" color="primary">
-                                {selectedOption.label}
-                              </Chip>
+                            <Option value="" disabled>
+                              Select Color
+                            </Option>
+                            {[
+                              "Black",
+                              "White",
+                              "Blue",
+                              "Red",
+                              "Brown",
+                              "Yellow",
+                              "Green",
+                              "Orange",
+                              "Violet",
+                              "Pink",
+                              "Gray",
+                              "Cyan",
+                              "Beige",
+                              "Gold",
+                              "Silver",
+                            ].map((option) => (
+                              <Option key={option} value={option}>
+                                {option}
+                              </Option>
                             ))}
-                          </Box>
-                        )}
-                        onChange={(e, value) => {
-                          setColor((prevValue) => {
-                            const selectedValues = value;
-                            return selectedValues;
-                          });
-                        }}
-                      >
-                        <Option value="" disabled>
-                          Select Color
-                        </Option>
-                        {[
-                          "Black",
-                          "White",
-                          "Blue",
-                          "Red",
-                          "Brown",
-                          "Yellow",
-                          "Green",
-                          "Orange",
-                          "Violet",
-                          "Pink",
-                          "Gray",
-                          "Cyan",
-                          "Beige",
-                          "Gold",
-                          "Silver",
-                        ].map((option) => (
-                          <Option key={option} value={option}>
-                            {option}
-                          </Option>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </>
-                ) : (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Palette fontSize="small" sx={{ mr: 0.5 }} />
-                    <Typography level={isXs ? "body-sm" : "body-md"}>
-                      <strong>Color: </strong>
-                      {row.item.color.length > 0
-                        ? row.item.color.join(", ")
-                        : "N/A"}
-                    </Typography>
-                  </Box>
-                )}
+                          </Select>
+                        </FormControl>
+                      </>
+                    ) : (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Palette fontSize="small" sx={{ mr: 0.5 }} />
+                        <Typography level={isXs ? "body-sm" : "body-md"}>
+                          <strong>Color: </strong>
+                          {row.item.color.length > 0
+                            ? row.item.color.join(", ")
+                            : "N/A"}
+                        </Typography>
+                      </Box>
+                    )}
 
-                {isEditMode ? (
-                  <>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 5,
-                        mb: 0.7,
-                      }}
-                    >
-                      <FormLabel>Size</FormLabel>
-                      <Checkbox
-                        size="sm"
-                        label="If N/A, check this"
-                        checked={sizeNotDetermined}
-                        onChange={handleCheck}
-                      />
-                    </Box>
-                    <Input
-                      disabled={sizeNotDetermined}
-                      type="number"
-                      required
-                      value={size.value}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "");
-                        setSize({ ...size, value });
-                      }}
-                      onKeyDown={(e) => {
-                        if (
-                          ["e", "E", "-", "+"].includes(e.key) ||
-                          (!/^\d$/.test(e.key) &&
-                            e.key !== "Backspace" &&
-                            e.key !== "Delete" &&
-                            e.key !== "ArrowLeft" &&
-                            e.key !== "ArrowRight")
-                        ) {
-                          e.preventDefault();
-                        }
-                      }}
-                      placeholder="Enter size"
-                      sx={{
-                        "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
-                          {
-                            display: "none",
-                          },
-                        "& input[type=number]": {
-                          MozAppearance: "textfield",
-                        },
-                      }}
-                      endDecorator={
-                        <Select
-                          disabled={sizeNotDetermined}
-                          variant="soft"
-                          size="small"
-                          value={size.unit}
-                          onChange={(e, newValue) =>
-                            setSize({ ...size, unit: newValue })
-                          }
-                          placeholder="Unit"
+                    {isEditMode ? (
+                      <>
+                        <Box
                           sx={{
-                            width: "40px",
-                            ml: 0.5,
-                            "& .MuiSelect-indicator": {
-                              display: "none",
-                            },
-                            "& .MuiSelect-button": {
-                              minHeight: "28px",
-                              textAlign: "center",
-                            },
-                            "& .MuiInputBase-input": {
-                              textAlign: "center",
-                            },
-                            "& .MuiOption-root": {
-                              textAlign: "center",
-                            },
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 5,
+                            mb: 0.7,
                           }}
                         >
-                          {["cm", "inch", "m", "ft", "kg", "g"].map((unit) => (
-                            <Option key={unit} value={unit}>
-                              {unit}
+                          <FormLabel>Size</FormLabel>
+                          <Checkbox
+                            size="sm"
+                            label="If N/A, check this"
+                            checked={sizeNotDetermined}
+                            onChange={handleCheck}
+                          />
+                        </Box>
+                        <Input
+                          disabled={sizeNotDetermined}
+                          type="number"
+                          required
+                          value={size.value}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "");
+                            setSize({ ...size, value });
+                          }}
+                          onKeyDown={(e) => {
+                            if (
+                              ["e", "E", "-", "+"].includes(e.key) ||
+                              (!/^\d$/.test(e.key) &&
+                                e.key !== "Backspace" &&
+                                e.key !== "Delete" &&
+                                e.key !== "ArrowLeft" &&
+                                e.key !== "ArrowRight")
+                            ) {
+                              e.preventDefault();
+                            }
+                          }}
+                          placeholder="Enter size"
+                          sx={{
+                            "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
+                              {
+                                display: "none",
+                              },
+                            "& input[type=number]": {
+                              MozAppearance: "textfield",
+                            },
+                          }}
+                          endDecorator={
+                            <Select
+                              disabled={sizeNotDetermined}
+                              variant="soft"
+                              size="small"
+                              value={size.unit}
+                              onChange={(e, newValue) =>
+                                setSize({ ...size, unit: newValue })
+                              }
+                              placeholder="Unit"
+                              sx={{
+                                width: "40px",
+                                ml: 0.5,
+                                "& .MuiSelect-indicator": {
+                                  display: "none",
+                                },
+                                "& .MuiSelect-button": {
+                                  minHeight: "28px",
+                                  textAlign: "center",
+                                },
+                                "& .MuiInputBase-input": {
+                                  textAlign: "center",
+                                },
+                                "& .MuiOption-root": {
+                                  textAlign: "center",
+                                },
+                              }}
+                            >
+                              {["cm", "inch", "m", "ft", "kg", "g"].map(
+                                (unit) => (
+                                  <Option key={unit} value={unit}>
+                                    {unit}
+                                  </Option>
+                                )
+                              )}
+                            </Select>
+                          }
+                        />
+                      </>
+                    ) : (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Straighten fontSize="small" sx={{ mr: 0.5 }} />
+                        <Typography level={isXs ? "body-sm" : "body-md"}>
+                          <strong>Size: </strong>
+                          {row.item.size || "N/A"}
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {isEditMode ? (
+                      <FormControl>
+                        <FormLabel>Category</FormLabel>
+                        <Select
+                          fullWidth
+                          required
+                          value={category}
+                          onChange={(e, value) => setCategory(value)}
+                          displayEmpty
+                        >
+                          <Option value="" disabled>
+                            Select Category
+                          </Option>
+                          {[
+                            "Electronics & Gadgets",
+                            "Clothing & Accessories",
+                            "Personal Items",
+                            "School & Office Supplies",
+                            "Books & Documents",
+                            "Sports & Recreational Equipment",
+                            "Jewelry & Valuables",
+                            "Miscellaneous",
+                          ].map((name) => (
+                            <Option key={name} value={name}>
+                              {name}
                             </Option>
                           ))}
                         </Select>
-                      }
-                    />
-                  </>
-                ) : (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Straighten fontSize="small" sx={{ mr: 0.5 }} />
-                    <Typography level={isXs ? "body-sm" : "body-md"}>
-                      <strong>Size: </strong>
-                      {row.item.size || "N/A"}
-                    </Typography>
-                  </Box>
-                )}
-
-                {isEditMode ? (
-                  <FormControl>
-                    <FormLabel>Category</FormLabel>
-                    <Select
-                      fullWidth
-                      required
-                      value={category}
-                      onChange={(e, value) => setCategory(value)}
-                      displayEmpty
-                    >
-                      <Option value="" disabled>
-                        Select Category
-                      </Option>
-                      {[
-                        "Electronics & Gadgets",
-                        "Clothing & Accessories",
-                        "Personal Items",
-                        "School & Office Supplies",
-                        "Books & Documents",
-                        "Sports & Recreational Equipment",
-                        "Jewelry & Valuables",
-                        "Miscellaneous",
-                      ].map((name) => (
-                        <Option key={name} value={name}>
-                          {name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </FormControl>
-                ) : (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Category fontSize="small" sx={{ mr: 0.5 }} />
-                    <Typography level={isXs ? "body-sm" : "body-md"}>
-                      <strong>Category: </strong> {row.item.category || "N/A"}
-                    </Typography>
-                  </Box>
-                )}
-              </Grid>
-              <Grid item xs={12} md={6}>
-                {isEditMode ? (
-                  <FormControl required>
-                    <FormLabel>Location</FormLabel>
-                    <Autocomplete
-                      disabled={!itemWhereabouts}
-                      options={locationOptions}
-                      value={location}
-                      onChange={(e, newValue) => setLocation(newValue)}
-                      renderInput={(params) => (
-                        <Input {...params} placeholder="Select location..." />
-                      )}
-                    />
-                  </FormControl>
-                ) : (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <LocationOn fontSize="small" sx={{ mr: 0.5 }} />
-                    <Typography level={isXs ? "body-sm" : "body-md"}>
-                      <strong>Location: </strong> {row.item.location || "N/A"}
-                    </Typography>
-                  </Box>
-                )}
-                {isEditMode ? (
-                  <FormControl>
-                    <FormLabel>Material</FormLabel>
-                    <Select
-                      fullWidth
-                      required
-                      value={material}
-                      onChange={(e, value) => setMaterial(value)}
-                      displayEmpty
-                    >
-                      <Option value="" disabled>
-                        Select Material
-                      </Option>
-                      {[
-                        "Leather",
-                        "Metal",
-                        "Plastic",
-                        "Fabric",
-                        "Wood",
-                        "Glass",
-                        "Ceramic",
-                        "Stone",
-                        "Rubber",
-                        "Silicone",
-                        "Paper",
-                        "Wool",
-                        "Cotton",
-                        "Nylon",
-                      ].map((name) => (
-                        <Option key={name} value={name}>
-                          {name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </FormControl>
-                ) : (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Build fontSize="small" sx={{ mr: 0.5 }} />
-                    <Typography level={isXs ? "body-sm" : "body-md"}>
-                      <strong>Material: </strong> {row.item.material || "N/A"}
-                    </Typography>
-                  </Box>
-                )}
-                {isEditMode ? (
-                  <FormControl>
-                    <FormLabel>Condition</FormLabel>
-                    <Select
-                      fullWidth
-                      required
-                      value={condition}
-                      onChange={(e, value) => setCondition(value)}
-                      displayEmpty
-                    >
-                      <Option value="" disabled>
-                        Select Condition
-                      </Option>
-                      {["New", "Damaged", "Old", "Used", "Broken", "Worn"].map(
-                        (name) => (
-                          <Option key={name} value={name}>
-                            {name}
+                      </FormControl>
+                    ) : (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Category fontSize="small" sx={{ mr: 0.5 }} />
+                        <Typography level={isXs ? "body-sm" : "body-md"}>
+                          <strong>Category: </strong>{" "}
+                          {row.item.category || "N/A"}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    {isEditMode ? (
+                      <FormControl required>
+                        <FormLabel>Location</FormLabel>
+                        <Autocomplete
+                          disabled={!itemWhereabouts}
+                          options={locationOptions}
+                          value={location}
+                          onChange={(e, newValue) => setLocation(newValue)}
+                          renderInput={(params) => (
+                            <Input
+                              {...params}
+                              placeholder="Select location..."
+                            />
+                          )}
+                        />
+                      </FormControl>
+                    ) : (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <LocationOn fontSize="small" sx={{ mr: 0.5 }} />
+                        <Typography level={isXs ? "body-sm" : "body-md"}>
+                          <strong>Location: </strong>{" "}
+                          {row.item.location || "N/A"}
+                        </Typography>
+                      </Box>
+                    )}
+                    {isEditMode ? (
+                      <FormControl>
+                        <FormLabel>Material</FormLabel>
+                        <Select
+                          fullWidth
+                          required
+                          value={material}
+                          onChange={(e, value) => setMaterial(value)}
+                          displayEmpty
+                        >
+                          <Option value="" disabled>
+                            Select Material
                           </Option>
-                        )
-                      )}
-                    </Select>
-                  </FormControl>
-                ) : (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <AssignmentTurnedIn fontSize="small" sx={{ mr: 0.5 }} />
-                    <Typography level={isXs ? "body-sm" : "body-md"}>
-                      <strong>Condition: </strong> {row.item.condition || "N/A"}
-                    </Typography>
-                  </Box>
-                )}
+                          {[
+                            "Leather",
+                            "Metal",
+                            "Plastic",
+                            "Fabric",
+                            "Wood",
+                            "Glass",
+                            "Ceramic",
+                            "Stone",
+                            "Rubber",
+                            "Silicone",
+                            "Paper",
+                            "Wool",
+                            "Cotton",
+                            "Nylon",
+                          ].map((name) => (
+                            <Option key={name} value={name}>
+                              {name}
+                            </Option>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Build fontSize="small" sx={{ mr: 0.5 }} />
+                        <Typography level={isXs ? "body-sm" : "body-md"}>
+                          <strong>Material: </strong>{" "}
+                          {row.item.material || "N/A"}
+                        </Typography>
+                      </Box>
+                    )}
+                    {isEditMode ? (
+                      <FormControl>
+                        <FormLabel>Condition</FormLabel>
+                        <Select
+                          fullWidth
+                          required
+                          value={condition}
+                          onChange={(e, value) => setCondition(value)}
+                          displayEmpty
+                        >
+                          <Option value="" disabled>
+                            Select Condition
+                          </Option>
+                          {[
+                            "New",
+                            "Damaged",
+                            "Old",
+                            "Used",
+                            "Broken",
+                            "Worn",
+                          ].map((name) => (
+                            <Option key={name} value={name}>
+                              {name}
+                            </Option>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <AssignmentTurnedIn fontSize="small" sx={{ mr: 0.5 }} />
+                        <Typography level={isXs ? "body-sm" : "body-md"}>
+                          <strong>Condition: </strong>{" "}
+                          {row.item.condition || "N/A"}
+                        </Typography>
+                      </Box>
+                    )}
 
-                {isEditMode ? (
-                  <FormControl>
-                    <FormLabel>Distinctive Marks</FormLabel>
-                    <Select
-                      fullWidth
-                      required
-                      value={distinctiveMarks}
-                      onChange={(e, value) => setDistinctiveMarks(value)}
-                      displayEmpty
-                    >
-                      <Option value="" disabled>
-                        Select Distinctive Marks
-                      </Option>
-                      {[
-                        "None",
-                        "Scratches",
-                        "Stickers",
-                        "Initials",
-                        "Keychain",
-                        "Dents",
-                        "Stains",
-                        "Fading",
-                        "Pen Marks",
-                      ].map((name) => (
-                        <Option key={name} value={name}>
-                          {name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </FormControl>
-                ) : (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Fingerprint fontSize="small" sx={{ mr: 0.5 }} />
-                    <Typography level={isXs ? "body-sm" : "body-md"}>
-                      <strong>Distinctive Marks: </strong>
-                      {row.item.distinctiveMarks || "N/A"}
-                    </Typography>
-                  </Box>
-                )}
-              </Grid>
+                    {isEditMode ? (
+                      <FormControl>
+                        <FormLabel>Distinctive Marks</FormLabel>
+                        <Select
+                          fullWidth
+                          required
+                          value={distinctiveMarks}
+                          onChange={(e, value) => setDistinctiveMarks(value)}
+                          displayEmpty
+                        >
+                          <Option value="" disabled>
+                            Select Distinctive Marks
+                          </Option>
+                          {[
+                            "None",
+                            "Scratches",
+                            "Stickers",
+                            "Initials",
+                            "Keychain",
+                            "Dents",
+                            "Stains",
+                            "Fading",
+                            "Pen Marks",
+                          ].map((name) => (
+                            <Option key={name} value={name}>
+                              {name}
+                            </Option>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Fingerprint fontSize="small" sx={{ mr: 0.5 }} />
+                        <Typography level={isXs ? "body-sm" : "body-md"}>
+                          <strong>Distinctive Marks: </strong>
+                          {row.item.distinctiveMarks || "N/A"}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Divider />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    {isEditMode ? (
+                      <FormControl>
+                        <FormLabel>Description</FormLabel>
+                        <Textarea
+                          minRows={2}
+                          value={description}
+                          placeholder="More details about the item..."
+                          onChange={(e) => setDescription(e.target.value)}
+                          fullWidth
+                        />
+                      </FormControl>
+                    ) : (
+                      <>
+                        <Typography
+                          level="h5"
+                          sx={{
+                            fontWeight: "bold",
+                            color: "primary.plainColor",
+                            mb: 1,
+                          }}
+                        >
+                          Description
+                        </Typography>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Description fontSize="small" sx={{ mr: 0.5 }} />
+                          <Typography level={isXs ? "body-sm" : "body-md"}>
+                            {row.item.description || "N/A"}
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+                  </Grid>
+                </>
+              ) : (
+                <>
+                  <Grid item xs={12}>
+                    {isEditMode ? (
+                      <FormControl>
+                        <FormLabel>Item Name</FormLabel>
+                        <Input
+                          required
+                          placeholder="e.g. Wallet"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          fullWidth
+                        />
+                      </FormControl>
+                    ) : (
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Inventory2 fontSize="small" sx={{ mr: 0.5 }} />
+                        <Typography level={isXs ? "body-sm" : "body-md"}>
+                          <strong>Item Name: </strong> {row.item.name || "N/A"}
+                        </Typography>
+                      </Box>
+                    )}
+                    {isEditMode ? (
+                      <FormControl>
+                        <FormLabel>Description</FormLabel>
+                        <Textarea
+                          minRows={2}
+                          value={description}
+                          placeholder="More details about the item..."
+                          onChange={(e) => setDescription(e.target.value)}
+                          fullWidth
+                        />
+                      </FormControl>
+                    ) : (
+                      <>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Description fontSize="small" sx={{ mr: 0.5 }} />
+                          <Typography level={isXs ? "body-sm" : "body-md"}>
+                            <strong>Description: </strong>{" "}
+                            {row.item.description || "N/A"}
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+                  </Grid>
+                  <Grid item xs={12}>
+                    {isEditMode ? (
+                      <FormControl>
+                        <FormLabel>Reason for Reporting</FormLabel>
+                        <Textarea
+                          minRows={2}
+                          value={reasonForReporting}
+                          onChange={(e) =>
+                            setReasonForReporting(e.target.value)
+                          }
+                          placeholder="e.g., Hoping someone may have found it..."
+                          fullWidth
+                        />
+                      </FormControl>
+                    ) : (
+                      <>
+                        <Typography
+                          level="h5"
+                          sx={{
+                            fontWeight: "bold",
+                            color: "primary.plainColor",
+                            mb: 1,
+                          }}
+                        >
+                          Reason
+                        </Typography>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <HelpOutline fontSize="small" sx={{ mr: 0.5 }} />
+                          <Typography level={isXs ? "body-sm" : "body-md"}>
+                            {row.item.reasonForReporting || "N/A"}
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+                  </Grid>
+                </>
+              )}
 
               <Grid item xs={12}>
                 <Divider />
               </Grid>
 
               <Grid item xs={12}>
-                {isEditMode ? (
-                  <FormControl>
-                    <FormLabel>Description</FormLabel>
-                    <Textarea
-                      minRows={2}
-                      value={description}
-                      placeholder="More details about the item..."
-                      onChange={(e) => setDescription(e.target.value)}
-                      fullWidth
-                    />
-                  </FormControl>
-                ) : (
+                {!row?.item?.isFoundItem && (
                   <>
-                    <Typography
-                      level="h5"
-                      sx={{
-                        fontWeight: "bold",
-                        color: "primary.plainColor",
-                        mb: 1,
-                      }}
-                    >
-                      Description
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Description fontSize="small" sx={{ mr: 0.5 }} />
-                      <Typography level={isXs ? "body-sm" : "body-md"}>
-                        {row.item.description || "N/A"}
-                      </Typography>
-                    </Box>
+                    {isEditMode ? (
+                      <FormControl required>
+                        <FormLabel>Location</FormLabel>
+                        <Autocomplete
+                          disabled={!itemWhereabouts}
+                          options={locationOptions}
+                          value={location}
+                          onChange={(e, newValue) => setLocation(newValue)}
+                          renderInput={(params) => (
+                            <Input
+                              {...params}
+                              placeholder="Select location..."
+                            />
+                          )}
+                        />
+                      </FormControl>
+                    ) : (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                          gap: 1,
+                          marginBottom: "1px",
+                        }}
+                      >
+                        <Tooltip title="Location">
+                          <LocationOn fontSize="small" sx={{ mr: 0.5 }} />
+                        </Tooltip>
+                        <Typography
+                          fontWeight={600}
+                          level={isXs ? "body-sm" : "body-md"}
+                        >
+                          {row.item.location || "N/A"}
+                        </Typography>
+                      </Box>
+                    )}
                   </>
                 )}
-              </Grid>
-
-              <Grid item xs={12}>
-                <Divider />
-              </Grid>
-
-              <Grid item xs={12}>
                 {row.item.isFoundItem ? (
                   isEditMode ? (
                     <>

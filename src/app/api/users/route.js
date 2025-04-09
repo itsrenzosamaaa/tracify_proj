@@ -169,6 +169,7 @@ export async function POST(request) {
         userData.resolvedItemCount = 0;
         userData.shareCount = 0;
         userData.birthday = null;
+        userData.canUserReportLostItem = Date.now();
 
         if (userData.password) {
           const saltRounds = 10;

@@ -33,7 +33,7 @@ export async function GET(req, { params }) {
             path: "finder",
             populate: {
               path: "item",
-              select: "name images status location date_time",
+              select: "name images status location date_time questions",
             },
           },
           {
