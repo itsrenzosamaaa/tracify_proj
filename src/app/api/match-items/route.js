@@ -6,34 +6,33 @@ import owner from "@/lib/models/owner";
 import user from "@/lib/models/user";
 import item from "@/lib/models/item";
 import role from "@/lib/models/role";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function GET() {
   try {
     await dbConnect();
 
-    const findMatchItems = await match_items
-      .find()
-      .populate({
-        path: "finder",
-        populate: [
-          {
-            path: "user",
-            model: "User",
-            populate: {
-              path: "role",
-              model: "Role", // or 'roles' based on your model name export
-              select: "permissions",
-            },
+    const findMatchItems = await match_items.find().populate({
+      path: "finder",
+      populate: [
+        {
+          path: "user",
+          model: "User",
+          populate: {
+            path: "role",
+            model: "Role", // or 'roles' based on your model name export
+            select: "permissions",
           },
-          { path: "item", model: "Item" },
-        ],
-      })
-      .populate({
-        path: "owner",
-        populate: [
-          { path: "user", model: "User" },
-        ],
-      });
+        },
+        { path: "item", model: "Item" },
+      ],
+    });
 
     return NextResponse.json(findMatchItems, { status: 200 });
   } catch (error) {
@@ -50,7 +49,24 @@ export async function POST(req) {
     await dbConnect();
     const matchedData = await req.json();
 
-    const newMatch = new match_items(matchedData);
+    const uploadedImages = [];
+    for (const image of matchedData.owner.item.images) {
+      const uploadResponse = await cloudinary.uploader.upload(image, {
+        folder: "lost_items",
+        public_id: `lost_${Date.now()}`,
+        overwrite: true,
+        transformation: [
+          { width: 800, height: 800, crop: "limit" },
+          { quality: "auto" },
+        ],
+      });
+      uploadedImages.push(uploadResponse.secure_url);
+    }
+
+    const newMatch = new match_items({
+      ...matchedData,
+      "matchedData.owner.item.images": uploadedImages,
+    });
     await newMatch.save();
 
     return NextResponse.json(

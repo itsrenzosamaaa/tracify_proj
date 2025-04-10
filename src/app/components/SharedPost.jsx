@@ -44,6 +44,7 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import DummyPhoto from "./DummyPhoto";
 
 const pulseGlow = keyframes`
   0% {
@@ -327,28 +328,33 @@ const SharedPost = ({
               borderRadius: "5px",
             }}
           >
-            <Carousel showThumbs={false} useKeyboardArrows>
-              {filteredOriginalPost?.item?.images?.map((image, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    overflow: "hidden",
-                    display: "inline-block",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => window.open(image || "#", "_blank")}
-                >
-                  <CldImage
-                    priority
-                    src={image}
-                    width={isXs ? 200 : 300}
-                    height={isXs ? 200 : 300}
-                    alt={filteredOriginalPost?.item?.name || "Item Image"}
-                    sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
-                  />
-                </Box>
-              ))}
-            </Carousel>
+            {originalPost?.isFinder ? (
+              <DummyPhoto category={item?.item?.category} isXs={isXs} />
+            ) : (
+              <Carousel showThumbs={false} useKeyboardArrows>
+                {filteredOriginalPost?.item?.images?.map((image, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      overflow: "hidden",
+                      display: "inline-block",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => window.open(image || "#", "_blank")}
+                  >
+                    <CldImage
+                      priority
+                      src={image}
+                      width={isXs ? 200 : 300}
+                      height={isXs ? 200 : 300}
+                      alt={filteredOriginalPost?.item?.name || "Item Image"}
+                      sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+                    />
+                  </Box>
+                ))}
+              </Carousel>
+            )}
+
             <Box sx={{ padding: 2 }}>
               <Box display="flex" alignItems="center" mb={2}>
                 {isMilestone ? (
@@ -623,7 +629,10 @@ const SharedPost = ({
                 multiple
                 placeholder="Select user"
                 options={users.filter(
-                  (user) => ![session?.user?.id, originalPost?.author?._id].includes(user._id)
+                  (user) =>
+                    ![session?.user?.id, originalPost?.author?._id].includes(
+                      user._id
+                    )
                 )}
                 value={selectedUsers}
                 onChange={(event, value, reason, details) => {

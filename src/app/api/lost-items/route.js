@@ -79,7 +79,6 @@ export async function POST(req) {
     const newLostItem = new item({
       ...lostItemData,
       images: uploadedImages,
-      edit: null,
     });
     await newLostItem.save();
 

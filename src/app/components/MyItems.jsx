@@ -20,6 +20,8 @@ import {
   Chip,
   Snackbar,
   AspectRatio,
+  FormControl,
+  FormLabel,
 } from "@mui/joy";
 import { Box, Card, CardContent } from "@mui/material";
 import { CldImage } from "next-cloudinary";
@@ -31,6 +33,9 @@ import CancelRequest from "./Modal/CancelRequest";
 import ItemDetails from "./Modal/ItemDetails";
 import { useTheme, useMediaQuery } from "@mui/material";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
+import ItemRetrievalDetails from "./Modal/ItemRetrievalDetails";
+import DummyPhoto from "./DummyPhoto";
+import { ArrowDownward } from "@mui/icons-material";
 
 const validTabs = [
   "found-item",
@@ -39,6 +44,7 @@ const validTabs = [
   "declined-item",
   "canceled-item",
   "requested-item",
+  "retrieval-item",
 ];
 
 const MyItemsComponent = ({ session, status }) => {
@@ -54,13 +60,11 @@ const MyItemsComponent = ({ session, status }) => {
   const [foundItems, setFoundItems] = useState([]);
   const [requestedItems, setRequestedItems] = useState([]);
   const [openDetails, setOpenDetails] = useState(null);
-  const [confirmationRetrievalModal, setConfirmationRetrievalModal] =
-    useState(null);
+  const [retrievalItems, setRetrievalItems] = useState([]);
   const [activeTab, setActiveTab] = useState("lost-item"); // State to track the active tab
   const [message, setMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(null);
-  const [openLostRequestModal, setOpenLostRequestModal] = useState(false);
-  const [openFoundRequestModal, setOpenFoundRequestModal] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("");
   const router = useRouter();
   const theme = useTheme();
   const isMd = useMediaQuery(theme.breakpoints.up("lg"));
@@ -88,15 +92,19 @@ const MyItemsComponent = ({ session, status }) => {
 
     try {
       // Fetch all required data concurrently
-      const [itemsResponse] = await Promise.all([
+      const [itemsResponse, retrievalResponse] = await Promise.all([
         fetch(`/api/items/${session.user.id}`),
+        fetch(`/api/match-items/owner/${session.user.id}`),
       ]);
 
-      if (!itemsResponse.ok) {
+      if (!itemsResponse.ok || !retrievalResponse.ok) {
         throw new Error("Failed to fetch data from one or more endpoints");
       }
 
-      const [itemsData] = await Promise.all([itemsResponse.json()]);
+      const [itemsData, retrievalData] = await Promise.all([
+        itemsResponse.json(),
+        retrievalResponse.json(),
+      ]);
 
       // Filter and categorize items before processing
       const lostItems = itemsData.filter(
@@ -131,10 +139,13 @@ const MyItemsComponent = ({ session, status }) => {
       setCanceledItems(
         itemsData.filter((item) => item.item.status === "Canceled")
       );
+      setRetrievalItems(retrievalData);
     } catch (error) {
       console.error("Error fetching items:", error);
     }
   }, [session?.user?.id]);
+
+  console.log(retrievalItems);
 
   const fetchLocations = useCallback(async () => {
     try {
@@ -157,6 +168,10 @@ const MyItemsComponent = ({ session, status }) => {
       fetchLocations();
     }
   }, [status, fetchItems, fetchLocations]);
+
+  const filteredRetrievalItems = retrievalItems.filter((item) =>
+    filterStatus ? item.request_status === filterStatus : true
+  );
 
   return (
     <>
@@ -207,6 +222,11 @@ const MyItemsComponent = ({ session, status }) => {
                 <Badge badgeContent={requestedItems.length}>
                   <Tab value="requested-item">
                     <Typography level="body-md">Requested Items</Typography>
+                  </Tab>
+                </Badge>
+                <Badge badgeContent={retrievalItems.length}>
+                  <Tab value="retrieval-item">
+                    <Typography level="body-md">Retrieval Items</Typography>
                   </Tab>
                 </Badge>
               </TabList>
@@ -325,6 +345,24 @@ const MyItemsComponent = ({ session, status }) => {
                 <ListItemDecorator>
                   <Chip color="danger" variant="solid">
                     {requestedItems.length}
+                  </Chip>
+                </ListItemDecorator>
+              )}
+            </Option>
+            <Option
+              value="retrieval-item"
+              label="Retrieval Items"
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              Retrieval Items
+              {retrievalItems.length > 0 && (
+                <ListItemDecorator>
+                  <Chip color="danger" variant="solid">
+                    {retrievalItems.length}
                   </Chip>
                 </ListItemDecorator>
               )}
@@ -1619,6 +1657,303 @@ const MyItemsComponent = ({ session, status }) => {
                   </Box>
                   <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                     No requested items available.
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    If you’re looking for something specific, please feel free
+                    to create a request.
+                  </Typography>
+                </Box>
+              )}
+            </Grid>
+          </>
+        )}
+        {activeTab === "retrieval-item" && (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "flex-start", sm: "center" },
+                justifyContent: "space-between",
+                gap: 2,
+                mb: 5,
+              }}
+            >
+              <Typography level="h4" gutterBottom>
+                Retrieval Items
+              </Typography>
+
+              <FormControl size="sm">
+                <FormLabel>Status Filter</FormLabel>
+                <Select
+                  value={filterStatus}
+                  onChange={(e, newValue) => setFilterStatus(newValue)}
+                  placeholder="All Statuses"
+                >
+                  <Option value="">All</Option>
+                  <Option value="Pending">Pending</Option>
+                  <Option value="Approved">Approved</Option>
+                  <Option value="Completed">Completed</Option>
+                  <Option value="Declined">Declined</Option>
+                  <Option value="Canceled">Canceled</Option>
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Grid container spacing={2}>
+              {filteredRetrievalItems.length > 0 ? (
+                filteredRetrievalItems.map((retrievalItem, index) => (
+                  <>
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                      <Card
+                        key={retrievalItem._id}
+                        variant="outlined"
+                        sx={{
+                          height: "100%",
+                          display: "flex",
+                          flexDirection: { xs: "row", sm: "column" },
+                          transition: "all 0.2s ease-in-out",
+                          "&:hover": {
+                            transform: "translateY(-4px)",
+                            boxShadow: "md",
+                            borderColor: "neutral.outlinedHoverBorder",
+                          },
+                        }}
+                      >
+                        <Box sx={{ position: "relative", flexShrink: 0 }}>
+                          {!isXs && (
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                top: 8,
+                                left: 8,
+                                zIndex: 1,
+                                backgroundColor: (() => {
+                                  switch (retrievalItem?.request_status) {
+                                    case "Pending":
+                                      return "#ffb74d"; // orange
+                                    case "Approved":
+                                      return "#64b5f6"; // blue
+                                    case "Completed":
+                                      return "#81c784"; // green
+                                    case "Declined":
+                                      return "#e57373"; // red
+                                    case "Canceled":
+                                      return "#bdbdbd"; // gray
+                                    default:
+                                      return "#90a4ae"; // default (blue-gray)
+                                  }
+                                })(),
+                                color: "#fff",
+                                px: 1,
+                                py: 0.5,
+                                borderRadius: 1,
+                                fontSize: "0.75rem",
+                                fontWeight: "bold",
+                                textShadow: "0px 0px 4px rgba(0, 0, 0, 0.7)",
+                              }}
+                            >
+                              {retrievalItem?.request_status}
+                            </Box>
+                          )}
+                          <AspectRatio
+                            ratio="4/3"
+                            sx={{ width: "100%", borderRadius: 2 }}
+                          >
+                            <DummyPhoto
+                              category={retrievalItem?.finder?.item?.category}
+                            />
+                          </AspectRatio>
+                        </Box>
+
+                        <CardContent
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: { xs: 1, sm: 2 },
+                            flexGrow: 1,
+                            p: { xs: 1.5, sm: 2 },
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <Typography
+                              level="h6"
+                              sx={{
+                                fontSize: { xs: "0.875rem", sm: "1.125rem" },
+                                fontWeight: 600,
+                              }}
+                            >
+                              {retrievalItem?.finder?.item?.name}
+                            </Typography>
+                            {isXs && (
+                              <Chip
+                                size="sm"
+                                variant="solid"
+                                color={(() => {
+                                  switch (retrievalItem?.request_status) {
+                                    case "Pending":
+                                      return "warning"; // orange
+                                    case "Approved":
+                                      return "primary"; // blue
+                                    case "Completed":
+                                      return "success"; // green
+                                    case "Declined":
+                                      return "danger"; // red
+                                    case "Canceled":
+                                      return "neutral"; // gray
+                                    default:
+                                      return "neutral";
+                                  }
+                                })()}
+                              >
+                                {retrievalItem?.request_status}
+                              </Chip>
+                            )}
+                          </Box>
+
+                          <Typography
+                            level="body2"
+                            sx={{
+                              color: "text.secondary",
+                              display: "-webkit-box",
+                              WebkitLineClamp: { xs: 2, sm: 3 },
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              flexGrow: 1,
+                            }}
+                          >
+                            Basta description
+                          </Typography>
+
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: 1,
+                              mt: 2,
+                            }}
+                          >
+                            <Button
+                              variant="contained"
+                              sx={{
+                                minWidth: 0,
+                                padding: "6px 8px",
+                                borderRadius: "8px",
+                              }}
+                              onClick={() => setOpenDetails(retrievalItem?._id)}
+                            >
+                              <InfoIcon color="action" />
+                            </Button>
+
+                            <Modal
+                              open={openDetails === retrievalItem?._id}
+                              onClose={() => setOpenDetails(null)}
+                            >
+                              <ModalDialog>
+                                <ModalClose />
+                                <Typography
+                                  level="h5"
+                                  sx={{ mb: 2, fontWeight: "bold" }}
+                                >
+                                  Item Details
+                                </Typography>
+                                <DialogContent
+                                  sx={{
+                                    paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+                                    maxHeight: "85.5vh",
+                                    height: "100%",
+                                    overflowX: "hidden",
+                                    overflowY: "scroll", // Always reserve space for scrollbar
+                                    // Default scrollbar styles (invisible)
+                                    "&::-webkit-scrollbar": {
+                                      width: "8px", // Always reserve 8px width
+                                    },
+                                    "&::-webkit-scrollbar-thumb": {
+                                      backgroundColor: "transparent", // Invisible by default
+                                      borderRadius: "4px",
+                                    },
+                                    // Show scrollbar on hover
+                                    "&:hover": {
+                                      "&::-webkit-scrollbar-thumb": {
+                                        backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                                      },
+                                    },
+                                    // Firefox
+                                    scrollbarWidth: "thin",
+                                    scrollbarColor: "transparent transparent", // Both track and thumb transparent
+                                    "&:hover": {
+                                      scrollbarColor:
+                                        "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+                                    },
+                                    // IE and Edge
+                                    msOverflowStyle: "-ms-autohiding-scrollbar",
+                                  }}
+                                >
+                                  <ItemRetrievalDetails
+                                    row={retrievalItem}
+                                    isXs={isXs}
+                                  />
+                                </DialogContent>
+                              </ModalDialog>
+                            </Modal>
+                            {/* <Button
+                              fullWidth
+                              color="danger"
+                              sx={{ padding: "6px 0" }}
+                              onClick={() =>
+                                setCancelRequestModal(retrievalItem._id)
+                              }
+                            >
+                              Cancel Request
+                            </Button> */}
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    {/* <CancelRequest
+                      open={cancelRequestModal}
+                      onClose={() => setCancelRequestModal(null)}
+                      item={retrievalItem.item}
+                      api={
+                        retrievalItem.item?.isFoundItem
+                          ? "found-items"
+                          : "lost-items"
+                      }
+                      refreshData={fetchItems}
+                      setMessage={setMessage}
+                      setOpenSnackbar={setOpenSnackbar}
+                    /> */}
+                  </>
+                ))
+              ) : (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "100%",
+                    height: "200px",
+                    border: "1px dashed #ccc",
+                    borderRadius: "8px",
+                    backgroundColor: "#f9f9f9",
+                    padding: 3,
+                    textAlign: "center", // Centers the content
+                    gap: 2, // Adds space between elements
+                  }}
+                >
+                  <Box sx={{ fontSize: 50, color: "#ccc" }}>
+                    <SearchOffIcon />{" "}
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                    No retrieval items available.
                   </Typography>
                   <Typography variant="body2" sx={{ color: "text.secondary" }}>
                     If you’re looking for something specific, please feel free

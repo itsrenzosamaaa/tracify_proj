@@ -78,6 +78,9 @@ const MatchItemsSchema = new mongoose.Schema({
     type: String,
     ref: "User",
   },
+  claimDate: {
+    type: Date,
+  },
 });
 
 export default mongoose.models.MatchItem ||

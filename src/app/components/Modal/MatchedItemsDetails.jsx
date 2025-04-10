@@ -85,7 +85,7 @@ const ImageGallery = ({ title, images, alt }) => (
   </Section>
 );
 
-const VerificationTable = ({ questions = [], answers = [] }) => (
+const VerificationTable = ({ questions, answers }) => (
   <Box sx={{ overflowX: "auto" }}>
     <Typography
       level="h5"
@@ -190,8 +190,14 @@ const MatchedItemsDetails = ({ row }) => {
               "Distinctive Marks": row.owner.item.distinctiveMarks,
               Location: row.owner.item.location,
               Description: row.owner.item.description,
-              "Start Date Lost": row.owner.item.date_time?.split(" to ")[0],
-              "End Date Lost": row.owner.item.date_time?.split(" to ")[1],
+              "Start Date Lost":
+                row?.owner?.item?.date_time === "Unidentified"
+                  ? "Unidentified"
+                  : row.owner.item.date_time?.split(" to ")[0],
+              "End Date Lost":
+                row?.owner?.item?.date_time === "Unidentified"
+                  ? "Unidentified"
+                  : row.owner.item.date_time?.split(" to ")[1],
             }}
           />
         </Section>
@@ -261,10 +267,13 @@ const MatchedItemsDetails = ({ row }) => {
       </Grid>
 
       <Grid item xs={12}>
-        <VerificationTable
-          questions={row?.finder?.item?.questions || []}
-          answers={row?.owner?.item?.answers || []}
-        />
+        {row?.finder?.item?.questions.length !== 0 &&
+          row?.owner?.item?.answers.length !== 0 && (
+            <VerificationTable
+              questions={row?.finder?.item?.questions || []}
+              answers={row?.owner?.item?.answers || []}
+            />
+          )}
       </Grid>
 
       <Grid item xs={12}>

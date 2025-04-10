@@ -12,10 +12,12 @@ import {
   RadioGroup,
   Radio,
   Stack,
+  Input,
 } from "@mui/joy";
 import React, { useState } from "react";
 import { FormControlLabel } from "@mui/material";
 import MatchedItemsDetails from "./MatchedItemsDetails";
+import { format } from "date-fns";
 
 const ItemClaimRequestModal = ({
   row,
@@ -29,6 +31,8 @@ const ItemClaimRequestModal = ({
     useState(null);
   const [confirmationDeclineModal, setConfirmationDeclineModal] =
     useState(null);
+  const [dateModal, setDateModal] = useState(null);
+  const [dateClaim, setDateClaim] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e, matchedItemId) => {
@@ -36,6 +40,17 @@ const ItemClaimRequestModal = ({
 
     try {
       setLoading(true);
+
+      const now = new Date();
+      const selectedDate = new Date(dateClaim);
+
+      if (now > selectedDate) {
+        setMessage("You cannot set a past date.");
+        setOpenSnackbar("danger");
+        return;
+      }
+
+      const readable = format(new Date(dateClaim), "MMMM dd, yyyy hh:mm a");
 
       const makeRequest = async (url, method, body) => {
         const response = await fetch(url, {
@@ -55,12 +70,13 @@ const ItemClaimRequestModal = ({
       };
       await makeRequest(`/api/match-items/${matchedItemId}`, "PUT", {
         request_status: "Approved",
+        claimDate: dateClaim,
       });
 
       const notificationData = [
         {
           receiver: row.owner.user._id,
-          message: `Your claim request of ${row.finder.item.name} has been approved. Please come to SASO for claiming an item.`,
+          message: `Your claim request of ${row.finder.item.name} has been approved. Please come to SASO at ${readable} for claiming an item.`,
           type: "Lost Items",
           markAsRead: false,
           dateNotified: new Date(),
@@ -91,6 +107,7 @@ const ItemClaimRequestModal = ({
           name: row.owner.user.firstname,
           link: "https://tlc-tracify.vercel.app/my-items#lost-item",
           itemName: row.finder.item.name,
+          date: readable,
           location: "SASO",
         });
       }
@@ -108,6 +125,11 @@ const ItemClaimRequestModal = ({
       setLoading(false);
     }
   };
+
+  if (dateClaim) {
+    const readable = format(new Date(dateClaim), "MMMM dd, yyyy hh:mm a");
+    console.log(readable);
+  }
 
   const handleDecline = async (e, foundItemId, matchedItemId) => {
     if (e && e.preventDefault) {
@@ -260,12 +282,44 @@ const ItemClaimRequestModal = ({
                 </Box>
               </ModalDialog>
             </Modal>
-            <Button
-              onClick={() => setConfirmationApproveModal(row._id)}
-              fullWidth
-            >
+            <Button onClick={() => setDateModal(row._id)} fullWidth>
               Approve
             </Button>
+            <Modal open={dateModal} onClose={() => setDateModal(null)}>
+              <ModalDialog>
+                <ModalClose />
+                <Typography level="h4" gutterBottom>
+                  Claim Date
+                </Typography>
+                <Typography>
+                  Please set a date when the claimant will claim the item.
+                </Typography>
+                <Input
+                  type="datetime-local"
+                  value={dateClaim}
+                  onChange={(e) => setDateClaim(e.target.value)}
+                />
+                <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+                  <Button
+                    disabled={loading}
+                    color="danger"
+                    onClick={() => setDateModal(null)}
+                    fullWidth
+                    variant="outlined"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    disabled={loading}
+                    loading={loading}
+                    onClick={(e) => setConfirmationApproveModal(row._id)}
+                    fullWidth
+                  >
+                    Confirm
+                  </Button>
+                </Box>
+              </ModalDialog>
+            </Modal>
             <Modal
               open={confirmationApproveModal}
               onClose={() => setConfirmationApproveModal(null)}
@@ -292,9 +346,7 @@ const ItemClaimRequestModal = ({
                   <Button
                     disabled={loading}
                     loading={loading}
-                    onClick={(e) =>
-                      handleSubmit(e, row._id)
-                    }
+                    onClick={(e) => handleSubmit(e, row._id)}
                     fullWidth
                   >
                     Confirm

@@ -1,8 +1,7 @@
 import { Box } from "@mui/joy";
 import Image from "next/image";
-import React from "react";
 
-const DummyPhoto = ({ category }) => {
+const DummyPhoto = ({ category, height = 220, width = "100%" }) => {
   const imageSource =
     category === "Electronics & Gadgets"
       ? "/electronics&gadgets.jpg"
@@ -23,27 +22,20 @@ const DummyPhoto = ({ category }) => {
   return (
     <Box
       sx={{
-        display: "flex",
-        justifyContent: "center",
-        width: "100%",
-        my: 2,
+        position: "relative",
+        width: width,
+        height: height,
+        borderRadius: 2,
+        overflow: "hidden",
       }}
     >
-      <Box
-        sx={{
-          position: "relative",
-          width: { xs: 180, sm: 220, md: 250 }, // responsive width
-          height: { xs: 180, sm: 220, md: 250 }, // responsive height
-        }}
-      >
-        <Image
-          src={imageSource}
-          alt={`Category Image: ${category}`}
-          fill
-          style={{ objectFit: "contain", borderRadius: 8 }}
-          sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
-        />
-      </Box>
+      <Image
+        src={imageSource}
+        alt={`Image of ${category}`}
+        fill
+        style={{ objectFit: "cover" }}
+        sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw"
+      />
     </Box>
   );
 };

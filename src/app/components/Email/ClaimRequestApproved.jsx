@@ -3,6 +3,7 @@ export default function ClaimRequestApproved({
   link,
   itemName,
   location,
+  date
 }) {
   return `
       <!DOCTYPE html>
@@ -90,7 +91,7 @@ export default function ClaimRequestApproved({
           <div class="body">
             <p>Dear <span class="highlight">${name}</span>,</p>
             <p>We are pleased to inform you that your claim request for item, <span class="highlight">${itemName}</span>, has been approved by the SASO.</p>
-            <p>Please go to <span class="highlight">${location}</span> for claiming your item.</p>
+            <p>Please go to <span class="highlight">${location}</span> at <span class="highlight">${date}</span> for claiming your item.</p>
             <p>For more details, click here:</p>
             <div class="button-container">
               <a href="${link}" class="button">View Item</a>

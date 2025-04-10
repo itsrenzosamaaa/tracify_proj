@@ -23,6 +23,7 @@ export async function POST(req) {
       remarks,
       sharedBy,
       caption,
+      date
     } = await req.json();
 
     if (!to || typeof to !== "string" || to.trim() === "") {
@@ -50,7 +51,7 @@ export async function POST(req) {
     } else if (type === "ItemSurrenderSuccess") {
       htmlContent = ItemSurrenderSuccess({ name, link, itemName, location });
     } else if (type === "ClaimRequestApproved") {
-      htmlContent = ClaimRequestApproved({ name, link, itemName, location });
+      htmlContent = ClaimRequestApproved({ name, link, itemName, location, date });
     } else if (type === "ClaimRequestDeclined") {
       htmlContent = ClaimRequestDeclined({ name, link, itemName });
     } else if (type === "ClaimProcessDeclined") {

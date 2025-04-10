@@ -45,47 +45,25 @@ const LostItemsList = ({
 
   // Calculate counts for each status
   const statusCounts = statusOptions.reduce((acc, currentStatus) => {
-    acc[currentStatus] =
-      currentStatus === "Pending Edits"
-        ? owners.filter(
-            (owner) =>
-              owner.item.status === "Missing" &&
-              owner.item.edit &&
-              Object.values(owner.item.edit).some((val) => {
-                if (Array.isArray(val)) return val.length > 0;
-                return val !== "" && val !== null && val !== undefined;
-              })
-          ).length
-        : owners.filter((owner) => owner.item.status === currentStatus).length;
+    acc[currentStatus] = owners.filter(
+      (owner) => owner.item.status === currentStatus
+    ).length;
     return acc;
   }, {});
 
   const filteredItems = owners.filter((owner) => {
     const item = owner.item;
 
-    const isPendingEdit =
-      item.edit &&
-      Object.values(item.edit).some((val) => {
-        if (Array.isArray(val)) return val.length > 0;
-        return val !== "" && val !== null && val !== undefined;
-      });
-
-    const matchesStatus =
-      status === "Pending Edits"
-        ? item?.status === "Missing" && isPendingEdit
-        : item?.status === status;
-
-    const matchesSubStatus =
-      status !== "Missing" ||
-      missingSubStatus === "All" ||
-      (missingSubStatus === "Pending Edits" && isPendingEdit);
+    const matchesStatus = item?.status === status;
 
     const matchesSearch =
       item?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      owner?.user?.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      owner?.user?.firstname
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       owner?.user?.lastname.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesStatus && matchesSubStatus && matchesSearch;
+    return matchesStatus && matchesSearch;
   });
 
   return (
@@ -208,48 +186,7 @@ const LostItemsList = ({
                 locationOptions={locationOptions}
               />
             </Box>
-            {status === "Missing" && (
-              <Box sx={{ display: "flex", gap: 1, my: 1 }}>
-                <Chip
-                  variant="outlined"
-                  color={missingSubStatus === "All" ? "primary" : "neutral"}
-                  onClick={() => setMissingSubStatus("All")}
-                  sx={{ cursor: "pointer" }}
-                >
-                  All
-                </Chip>
-                <Badge
-                  badgeContent="!"
-                  color="error"
-                  size="sm"
-                  invisible={
-                    !owners.some(
-                      (owner) =>
-                        owner.item.status === "Missing" &&
-                        owner.item.edit &&
-                        Object.values(owner.item.edit).some((val) =>
-                          Array.isArray(val)
-                            ? val.length > 0
-                            : val !== "" && val !== null
-                        )
-                    )
-                  }
-                >
-                  <Chip
-                    variant="outlined"
-                    color={
-                      missingSubStatus === "Pending Edits"
-                        ? "primary"
-                        : "neutral"
-                    }
-                    onClick={() => setMissingSubStatus("Pending Edits")}
-                    sx={{ cursor: "pointer" }}
-                  >
-                    Pending Edits
-                  </Chip>
-                </Badge>
-              </Box>
-            )}
+
             <Input
               startDecorator={<Search />}
               sx={{ mb: 3, width: isMobile ? "100%" : "30%" }}
