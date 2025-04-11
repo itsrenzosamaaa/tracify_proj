@@ -64,33 +64,51 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
     return null;
   };
 
-  const StarBadge = ({ color }) => (
+  const StarBadge = ({ color, count }) => (
     <Box
       sx={{
-        width: 16,
-        height: 16,
+        width: 24,
+        height: 24,
         backgroundColor: color,
         clipPath:
           "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
         border: "1px solid rgba(0,0,0,0.4)",
+        color: "#fff",
+        fontSize: "0.65rem",
+        fontWeight: "bold",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        lineHeight: 1,
         transition: "transform 0.3s ease-in-out",
         "&:hover": { transform: "scale(1.2)" },
       }}
-    />
+    >
+      {count}
+    </Box>
   );
 
-  const CircleBadge = ({ color }) => (
+  const CircleBadge = ({ color, count }) => (
     <Box
       sx={{
-        width: 12,
-        height: 12,
+        width: 20,
+        height: 20,
         borderRadius: "50%",
         backgroundColor: color,
         border: "1.5px solid white",
+        color: "#fff",
+        fontSize: "0.65rem",
+        fontWeight: "bold",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        lineHeight: 1,
         transition: "transform 0.3s ease-in-out",
         "&:hover": { transform: "scale(1.2)" },
       }}
-    />
+    >
+      {count}
+    </Box>
   );
 
   const GiftBadge = () => (
@@ -182,7 +200,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
           TransitionProps={{ timeout: 300 }}
         >
           <Box component="span">
-            <StarBadge color={resolvedBadge.color} />
+            <StarBadge color={resolvedBadge.color} count={resolvedItemCount} />
           </Box>
         </Tooltip>
       )}
@@ -196,7 +214,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
           TransitionProps={{ timeout: 300 }}
         >
           <Box component="span">
-            <CircleBadge color={shareBadge.color} />
+            <CircleBadge color={shareBadge.color} count={shareCount} />
           </Box>
         </Tooltip>
       )}

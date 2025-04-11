@@ -25,8 +25,10 @@ import {
   Stack,
   Input,
   FormHelperText,
+  Checkbox,
 } from "@mui/joy";
 import {
+  Grid,
   ImageList,
   ImageListItem,
   keyframes,
@@ -208,7 +210,6 @@ const SharedPost = ({
   
   ${introMessage}
   
-  🧾 Caption: ${caption || "No caption provided."}
   🔗 Link: https://tlc-tracify.vercel.app/post/${post?._id}
   
   ${callToAction}
@@ -341,8 +342,10 @@ const SharedPost = ({
       description.trim() &&
       (!itemWhereabouts || (location && lostDateStart && lostDateEnd)) &&
       images.length > 0 &&
-      (Array.isArray(item?.item?.questions)
-        ? item.item.questions.every((_, index) => answers[index]?.trim())
+      (Array.isArray(filteredOriginalPost?.item?.questions)
+        ? filteredOriginalPost.item.questions.every((_, index) =>
+            answers[index]?.trim()
+          )
         : true)
     );
   };
@@ -356,21 +359,12 @@ const SharedPost = ({
         <CardContent>
           {/* Author Info */}
           <Box display="flex" alignItems="center" mb={2}>
-            {isMilestone ? (
-              <HighlightAvatar
-                sx={{ mr: 2, backgroundColor: "#FFF9C4" }}
-                src={sharedBy?.profile_picture}
-                alt={sharedBy ? sharedBy?.firstname : "User"}
-                style={{ cursor: "pointer" }}
-              />
-            ) : (
-              <Avatar
-                sx={{ mr: 2 }}
-                src={sharedBy?.profile_picture}
-                alt={sharedBy ? sharedBy?.firstname : "User"}
-                style={{ cursor: "pointer" }}
-              />
-            )}
+            <Avatar
+              sx={{ mr: 2 }}
+              src={sharedBy?.profile_picture}
+              alt={sharedBy ? sharedBy?.firstname : "User"}
+              style={{ cursor: "pointer" }}
+            />
             <Box>
               <Box sx={{ display: "flex", gap: 2, maxWidth: "100%" }}>
                 <Tooltip
@@ -381,15 +375,11 @@ const SharedPost = ({
                     level={isXs ? "body-sm" : "body-md"}
                     fontWeight={700}
                     sx={{
-                      backgroundColor: isMilestone ? "#FFF9C4" : "transparent", // soft yellow
                       color: sharedBy?.role?.color || "inherit",
                       overflow: "hidden",
                       whiteSpace: "nowrap",
                       textOverflow: "ellipsis",
                       maxWidth: isXs ? "150px" : "auto",
-                      px: isMilestone ? 1 : 0, // horizontal padding
-                      py: isMilestone ? 0.5 : 0, // vertical padding
-                      borderRadius: isMilestone ? "6px" : 0,
                       transition: "background-color 0.3s ease",
                     }}
                   >
@@ -1112,24 +1102,26 @@ const SharedPost = ({
                 </p>
               </Box>
             </FormControl>
-            {Array.isArray(item?.item?.questions) &&
-              item.item.questions.length > 0 && (
+            {Array.isArray(filteredOriginalPost?.item?.questions) &&
+              filteredOriginalPost.item.questions.length > 0 && (
                 <Box sx={{ my: 2 }}>
                   <Stack spacing={2}>
-                    {item.item.questions.map((question, index) => (
-                      <FormControl key={index} required>
-                        <FormLabel>{question}</FormLabel>
-                        <Input
-                          placeholder="Enter your answer"
-                          value={answers[index] || ""}
-                          onChange={(e) => {
-                            const updated = [...answers];
-                            updated[index] = e.target.value;
-                            setAnswers(updated);
-                          }}
-                        />
-                      </FormControl>
-                    ))}
+                    {filteredOriginalPost.item.questions.map(
+                      (question, index) => (
+                        <FormControl key={index} required>
+                          <FormLabel>{question}</FormLabel>
+                          <Input
+                            placeholder="Enter your answer"
+                            value={answers[index] || ""}
+                            onChange={(e) => {
+                              const updated = [...answers];
+                              updated[index] = e.target.value;
+                              setAnswers(updated);
+                            }}
+                          />
+                        </FormControl>
+                      )
+                    )}
                   </Stack>
                 </Box>
               )}

@@ -192,7 +192,6 @@ const Post = ({
   
   ${introMessage}
   
-  🧾 Caption: ${caption || "No caption provided."}
   🔗 Link: https://tlc-tracify.vercel.app/post/${post?._id}
   
   ${callToAction}
