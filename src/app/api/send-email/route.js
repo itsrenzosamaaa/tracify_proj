@@ -22,7 +22,6 @@ export async function POST(req) {
       location,
       remarks,
       sharedBy,
-      caption,
       date
     } = await req.json();
 
@@ -59,7 +58,7 @@ export async function POST(req) {
     } else if (type === "ClaimProcessSuccess") {
       htmlContent = ClaimProcessSuccess({ name, link, itemName });
     } else if (type === "SharedItem") {
-      htmlContent = SharedItem({ name, link, itemName, sharedBy, caption });
+      htmlContent = SharedItem({ name, link, itemName, sharedBy });
     }
 
     // Configure your transporter

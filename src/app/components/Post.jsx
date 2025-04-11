@@ -253,7 +253,7 @@ const Post = ({
             type: "Shared Post",
             markAsRead: false,
             dateNotified: new Date(),
-            post: session?.user?.id !== post?.author?._id ? data._id : null,
+            post: data._id,
           });
 
           await fetch("/api/send-email", {
@@ -266,7 +266,6 @@ const Post = ({
               to: user.emailAddress,
               name: user.firstname,
               sharedBy: session?.user?.firstname,
-              caption: post.caption,
               itemName: item?.item?.name,
               link: `https://tlc-tracify.vercel.app/post/${data._id}`,
               subject: "An Item Has Been Shared With You via Tracify!",
@@ -352,7 +351,12 @@ const Post = ({
                     maxWidth: isXs ? "150px" : "auto",
                   }}
                 >
-                  Anonymous {post?.isFinder ? "Finder" : "Owner"}
+                  Anonymous{" "}
+                  {post?.isFinder
+                    ? "Finder"
+                    : !post?.isFinder
+                    ? "Owner"
+                    : "Unknown User"}
                 </Typography>
                 {/* <PreviewBadge
                   resolvedItemCount={author?.resolvedItemCount || 0}
@@ -1083,7 +1087,7 @@ const Post = ({
                 multiple
                 placeholder="Select user"
                 options={users.filter(
-                  (user) => ![session?.user?.id, author?._id].includes(user._id)
+                  (user) => ![session?.user?.id].includes(user._id)
                 )}
                 value={selectedUsers}
                 onChange={(event, value, reason, details) => {

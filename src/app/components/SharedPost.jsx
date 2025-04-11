@@ -45,6 +45,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import DummyPhoto from "./DummyPhoto";
+import { useDropzone } from "react-dropzone";
+import Image from "next/image";
 
 const pulseGlow = keyframes`
   0% {
@@ -84,7 +86,113 @@ const SharedPost = ({
   const [sharedCaption, setSharedCaption] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [name, setName] = useState("");
+  const [color, setColor] = useState([]);
+  const [size, setSize] = useState({ value: "", unit: "cm" });
+  const [sizeNotDetermined, setSizeNotDetermined] = useState(false);
+  const [category, setCategory] = useState();
+  const [material, setMaterial] = useState();
+  const [condition, setCondition] = useState();
+  const [distinctiveMarks, setDistinctiveMarks] = useState();
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState(null);
+  const [lostDateStart, setLostDateStart] = useState("");
+  const [lostDateEnd, setLostDateEnd] = useState("");
+  const [images, setImages] = useState([]);
+  const [answers, setAnswers] = useState([]);
+  const [itemWhereabouts, setItemWhereabouts] = useState(false);
   const inputRef = useRef();
+
+  const handleCheck = (e) => {
+    const check = e.target.checked;
+    setItemWhereabouts(check);
+
+    if (check) {
+      setLocation("");
+      setLostDateStart("");
+      setLostDateEnd("");
+    } else {
+      setLocation("Unidentified");
+      setLostDateStart("Unidentified");
+      setLostDateEnd("Unidentified");
+    }
+  };
+
+  const handleCheckSize = (e) => {
+    const check = e.target.checked;
+    setSizeNotDetermined(check);
+
+    if (check) {
+      setSize({ value: "", unit: "cm" });
+    }
+  };
+
+  const handleChange = (event, newValue) => {
+    setLocation(newValue);
+  };
+
+  const handleStartDateChange = (e) => {
+    const newStartDate = e.target.value;
+    setLostDateStart(newStartDate);
+
+    // Automatically set end date to the same day as the start date
+    if (newStartDate) {
+      const sameDayEndDate = new Date(newStartDate);
+
+      // Add 1 hour to the start date
+      sameDayEndDate.setHours(sameDayEndDate.getHours() + 1);
+
+      // Convert to Philippine time (UTC+8)
+      const offset = 8 * 60 * 60 * 1000; // UTC+8 offset in milliseconds
+      const phTime = new Date(sameDayEndDate.getTime() + offset);
+
+      // Format the date for input type="datetime-local"
+      const formattedDate = phTime.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm format
+
+      setLostDateEnd(formattedDate);
+    }
+  };
+
+  // Ensure that end date stays on the same day as the start date if it's manually changed
+  const handleEndDateChange = (e) => {
+    const newEndDate = e.target.value;
+    setLostDateEnd(newEndDate);
+  };
+
+  const onDrop = (acceptedFiles) => {
+    const validImageTypes = ["image/jpeg", "image/png", "image/gif"]; // Valid image types
+
+    const newImages = acceptedFiles
+      .filter((file) => validImageTypes.includes(file.type)) // Filter valid image files
+      .map((file) => {
+        const reader = new FileReader();
+        return new Promise((resolve) => {
+          reader.onloadend = () => {
+            resolve(reader.result); // Resolve the base64 URL
+          };
+          reader.readAsDataURL(file); // Convert file to base64 URL
+        });
+      });
+
+    Promise.all(newImages).then((base64Images) => {
+      setImages((prev) => [...prev, ...base64Images]); // Add new images to the state
+    });
+  };
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: {
+      "image/jpeg": [],
+      "image/png": [],
+      "image/gif": [],
+    },
+    multiple: true,
+    required: true,
+  });
+
+  const removeImage = (index) => {
+    setImages((prev) => prev.filter((_, i) => i !== index)); // Remove image by index
+  };
 
   const handleCopyLink = () => {
     const isLost = !originalPost?.isFinder; // true if it's a lost item
@@ -118,11 +226,6 @@ const SharedPost = ({
       });
   };
 
-  const isMilestone =
-    ((sharedBy?.resolvedItemCount || 0) >= 20 &&
-      (sharedBy?.shareCount || 0) >= 20) ||
-    ((originalPost?.author?.resolvedItemCount || 0) >= 20 &&
-      (originalPost?.author?.shareCount || 0) >= 20);
   const capitalizeWords = (str) =>
     str
       ?.toLowerCase()
@@ -139,6 +242,11 @@ const SharedPost = ({
     setLoading(true);
 
     try {
+      if (selectedUsers.length === 0) {
+        setOpenSnackbar("danger");
+        setMessage("Please select at least one user to share with.");
+        return;
+      }
       const response = await fetch("/api/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -164,8 +272,7 @@ const SharedPost = ({
             type: "Shared Post",
             markAsRead: false,
             dateNotified: new Date(),
-            post:
-              session?.user?.id !== originalPost?.author?._id ? data._id : null,
+            post: data._id,
           });
 
           await fetch("/api/send-email", {
@@ -178,7 +285,6 @@ const SharedPost = ({
               to: user?.emailAddress,
               name: user?.firstname,
               sharedBy: session?.user?.firstname,
-              caption: originalPost?.caption,
               itemName: filteredOriginalPost?.item?.name,
               link: `https://tlc-tracify.vercel.app/post/${data._id}`,
               subject: "An Item Has Been Shared With You via Tracify!",
@@ -221,6 +327,24 @@ const SharedPost = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const isFormValid = () => {
+    return (
+      name.trim() &&
+      color.length > 0 &&
+      (sizeNotDetermined || (size.value.trim() && size.unit)) &&
+      category &&
+      material &&
+      condition &&
+      distinctiveMarks &&
+      description.trim() &&
+      (!itemWhereabouts || (location && lostDateStart && lostDateEnd)) &&
+      images.length > 0 &&
+      (Array.isArray(item?.item?.questions)
+        ? item.item.questions.every((_, index) => answers[index]?.trim())
+        : true)
+    );
   };
 
   return (
@@ -329,7 +453,10 @@ const SharedPost = ({
             }}
           >
             {originalPost?.isFinder ? (
-              <DummyPhoto category={item?.item?.category} isXs={isXs} />
+              <DummyPhoto
+                category={filteredOriginalPost?.item?.category}
+                isXs={isXs}
+              />
             ) : (
               <Carousel showThumbs={false} useKeyboardArrows>
                 {filteredOriginalPost?.item?.images?.map((image, index) => (
@@ -357,68 +484,29 @@ const SharedPost = ({
 
             <Box sx={{ padding: 2 }}>
               <Box display="flex" alignItems="center" mb={2}>
-                {isMilestone ? (
-                  <HighlightAvatar
-                    sx={{ mr: 2, backgroundColor: "#FFF9C4" }}
-                    src={originalPost?.author?.profile_picture}
-                    alt={
-                      originalPost?.author
-                        ? originalPost?.author?.firstname
-                        : "User"
-                    }
-                    style={{ cursor: "pointer" }}
-                  />
-                ) : (
-                  <Avatar
-                    sx={{ mr: 2 }}
-                    src={originalPost?.author?.profile_picture}
-                    alt={
-                      originalPost?.author
-                        ? originalPost?.author.firstname
-                        : "User"
-                    }
-                    style={{ cursor: "pointer" }}
-                  />
-                )}
+                <Avatar
+                  sx={{ mr: 2 }}
+                  alt="User"
+                  style={{ cursor: "pointer" }}
+                />
                 <Box>
-                  <Box sx={{ display: "flex", gap: 2, maxWidth: "100%" }}>
-                    <Tooltip
-                      title={originalPost?.author?.role?.name || "Guest"}
-                      placement="top"
-                    >
-                      <Typography
-                        level={isXs ? "body-sm" : "body-md"}
-                        fontWeight={700}
-                        sx={{
-                          backgroundColor: isMilestone
-                            ? "#FFF9C4"
-                            : "transparent", // soft yellow
-                          color: originalPost?.author?.role?.color || "inherit",
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
-                          textOverflow: "ellipsis",
-                          maxWidth: isXs ? "150px" : "auto",
-                          px: isMilestone ? 1 : 0, // horizontal padding
-                          py: isMilestone ? 0.5 : 0, // vertical padding
-                          borderRadius: isMilestone ? "6px" : 0,
-                          transition: "background-color 0.3s ease",
-                        }}
-                      >
-                        {originalPost?.author?.firstname &&
-                        originalPost?.author?.lastname
-                          ? `${originalPost?.author?.firstname} ${originalPost?.author?.lastname}`
-                          : "Deleted User"}
-                      </Typography>
-                    </Tooltip>
-                    <PreviewBadge
-                      resolvedItemCount={
-                        originalPost?.author?.resolvedItemCount || 0
-                      }
-                      shareCount={originalPost?.author?.shareCount || 0}
-                      birthday={originalPost?.author?.birthday || null}
-                      inherit={false}
-                    />
-                  </Box>
+                  <Typography
+                    level={isXs ? "body-sm" : "body-md"}
+                    fontWeight={700}
+                    sx={{
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      maxWidth: isXs ? "150px" : "auto",
+                    }}
+                  >
+                    Anonymous{" "}
+                    {originalPost?.isFinder
+                      ? "Finder"
+                      : !originalPost?.isFinder
+                      ? "Owner"
+                      : "Unknown User"}
+                  </Typography>
 
                   <Typography
                     level={isXs ? "body-xs" : "body-sm"}
@@ -470,7 +558,9 @@ const SharedPost = ({
                 level={isXs ? "body-sm" : "body-md"}
                 sx={{ color: "text.secondary", mb: 2 }}
               >
-                {originalPost.caption}
+                {originalPost?.isFinder
+                  ? "An item has been found!"
+                  : "If you ever find this item, please surrender to SASO."}
               </Typography>
             </Box>
           </Box>
@@ -570,25 +660,484 @@ const SharedPost = ({
       >
         <ModalDialog>
           <ModalClose />
-          <DialogContent>
+          <DialogContent
+            sx={{
+              paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+              maxHeight: "85.5vh",
+              height: "100%",
+              overflowX: "hidden",
+              overflowY: "scroll", // Always reserve space for scrollbar
+              // Default scrollbar styles (invisible)
+              "&::-webkit-scrollbar": {
+                width: "8px", // Always reserve 8px width
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "transparent", // Invisible by default
+                borderRadius: "4px",
+              },
+              // Show scrollbar on hover
+              "&:hover": {
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                },
+              },
+              // Firefox
+              scrollbarWidth: "thin",
+              scrollbarColor: "transparent transparent", // Both track and thumb transparent
+              "&:hover": {
+                scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+              },
+              // IE and Edge
+              msOverflowStyle: "-ms-autohiding-scrollbar",
+            }}
+          >
             <Typography level="h4" gutterBottom>
               Send Claim Request
             </Typography>
-            <FormControl>
-              <FormLabel>Your Lost Item</FormLabel>
-              <Select
-                required
-                placeholder="Select your missing lost item"
-                value={selectedLostItem}
-                onChange={(e, value) => setSelectedLostItem(value)}
-              >
-                <Option value="">Unnamed Item</Option>
-              </Select>
+            <FormControl required>
+              <FormLabel>Item Name</FormLabel>
+              <Input
+                placeholder="e.g. Wallet"
+                type="text"
+                name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </FormControl>
+
+            <Grid container spacing={1}>
+              <Grid item xs={12}>
+                <FormControl required>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <FormLabel>Color</FormLabel>
+                    {color.length > 0 && (
+                      <Button
+                        color="danger"
+                        size="small"
+                        onClick={() => setColor([])}
+                      >
+                        Discard All
+                      </Button>
+                    )}
+                  </Box>
+                  <Select
+                    placeholder="Select Color..."
+                    multiple
+                    fullWidth
+                    required
+                    value={color}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: "flex", gap: "0.25rem" }}>
+                        {selected.map((selectedOption, index) => (
+                          <Chip key={index} variant="soft" color="primary">
+                            {selectedOption.label}
+                          </Chip>
+                        ))}
+                      </Box>
+                    )}
+                    onChange={(e, value) => setColor(value)}
+                  >
+                    <Option value="" disabled>
+                      Select Color
+                    </Option>
+                    {[
+                      "Black",
+                      "White",
+                      "Blue",
+                      "Red",
+                      "Brown",
+                      "Yellow",
+                      "Green",
+                      "Orange",
+                      "Violet",
+                      "Pink",
+                      "Gray",
+                      "Cyan",
+                      "Beige",
+                      "Gold",
+                      "Silver",
+                    ].map((name) => (
+                      <Option key={name} value={name}>
+                        {name}
+                      </Option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={6} sm={4}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    mb: 0.7,
+                  }}
+                >
+                  <FormLabel>Size</FormLabel>
+                  <Checkbox
+                    size="sm"
+                    label="N/A"
+                    checked={sizeNotDetermined}
+                    onChange={handleCheckSize}
+                  />
+                </Box>
+                <Input
+                  disabled={sizeNotDetermined}
+                  type="number"
+                  required
+                  value={size.value}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+                    setSize({ ...size, value });
+                  }}
+                  onKeyDown={(e) => {
+                    if (
+                      ["e", "E", "-", "+"].includes(e.key) ||
+                      (!/^\d$/.test(e.key) &&
+                        e.key !== "Backspace" &&
+                        e.key !== "Delete" &&
+                        e.key !== "ArrowLeft" &&
+                        e.key !== "ArrowRight")
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
+                  placeholder="Enter size"
+                  sx={{
+                    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
+                      {
+                        display: "none",
+                      },
+                    "& input[type=number]": {
+                      MozAppearance: "textfield",
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={6} sm={4}>
+                <FormControl required>
+                  <FormLabel>Unit</FormLabel>
+                  <Select
+                    disabled={sizeNotDetermined}
+                    value={size.unit}
+                    onChange={(e, newValue) =>
+                      setSize({ ...size, unit: newValue })
+                    }
+                    placeholder="Select Unit..."
+                  >
+                    {["cm", "inch", "m", "ft", "kg", "g"].map((unit) => (
+                      <Option key={unit} value={unit}>
+                        {unit}
+                      </Option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <FormControl required>
+                  <FormLabel>Category</FormLabel>
+                  <Select
+                    placeholder="Select Category..."
+                    required
+                    value={category}
+                    onChange={(e, value) => setCategory(value)}
+                  >
+                    <Option value="" disabled>
+                      Select Category
+                    </Option>
+                    {[
+                      "Electronics & Gadgets",
+                      "Clothing & Accessories",
+                      "Personal Items",
+                      "School & Office Supplies",
+                      "Books & Documents",
+                      "Sports & Recreational Equipment",
+                      "Jewelry & Valuables",
+                      "Miscellaneous",
+                    ].map((name) => (
+                      <Option key={name} value={name}>
+                        {name}
+                      </Option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <FormControl required>
+                  <FormLabel>Material</FormLabel>
+                  <Select
+                    placeholder="Select Material..."
+                    required
+                    value={material}
+                    onChange={(e, value) => setMaterial(value)}
+                  >
+                    <Option value="" disabled>
+                      Select Material
+                    </Option>
+                    {[
+                      "Leather",
+                      "Metal",
+                      "Plastic",
+                      "Fabric",
+                      "Wood",
+                      "Glass",
+                      "Ceramic",
+                      "Stone",
+                      "Rubber",
+                      "Silicone",
+                      "Paper",
+                      "Wool",
+                      "Cotton",
+                      "Nylon",
+                    ].map((name) => (
+                      <Option key={name} value={name}>
+                        {name}
+                      </Option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <FormControl required>
+                  <FormLabel>Condition</FormLabel>
+                  <Select
+                    placeholder="Select Condition..."
+                    required
+                    value={condition}
+                    onChange={(e, value) => setCondition(value)}
+                  >
+                    <Option value="" disabled>
+                      Select Condition
+                    </Option>
+                    {["New", "Damaged", "Old", "Used", "Broken", "Worn"].map(
+                      (name) => (
+                        <Option key={name} value={name}>
+                          {name}
+                        </Option>
+                      )
+                    )}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <FormControl required>
+                  <FormLabel>Distinctive Marks</FormLabel>
+                  <Select
+                    placeholder="Select Marks..."
+                    required
+                    value={distinctiveMarks}
+                    onChange={(e, value) => setDistinctiveMarks(value)}
+                  >
+                    <Option value="" disabled>
+                      Select Distinctive Marks
+                    </Option>
+                    {[
+                      "None",
+                      "Scratches",
+                      "Stickers",
+                      "Initials",
+                      "Keychain",
+                      "Dents",
+                      "Stains",
+                      "Fading",
+                      "Pen Marks",
+                    ].map((name) => (
+                      <Option key={name} value={name}>
+                        {name}
+                      </Option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+            <FormControl required>
+              <FormLabel>Description</FormLabel>
+              <Textarea
+                placeholder="More details about the item..."
+                required
+                type="text"
+                name="description"
+                minRows={4}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </FormControl>
+            <FormControl>
+              <Checkbox
+                label="The owner knows the item's whereabouts"
+                checked={itemWhereabouts}
+                onChange={handleCheck}
+              />
+            </FormControl>
+            {itemWhereabouts && (
+              <>
+                <FormControl required>
+                  <FormLabel>Lost Location</FormLabel>
+                  <Autocomplete
+                    placeholder="Select Location..."
+                    options={locationOptions}
+                    value={location}
+                    onChange={handleChange}
+                    renderInput={(params) => (
+                      <Input {...params} placeholder="Select location..." />
+                    )}
+                  />
+                </FormControl>
+                <Grid container spacing={1}>
+                  {/* Start Date and Time */}
+                  <Grid item xs={12} md={6}>
+                    <FormControl required>
+                      <FormLabel>Start Date and Time</FormLabel>
+                      <Input
+                        fullWidth
+                        required
+                        type="datetime-local" // Ensures the input is a date-time picker
+                        name="lostDateStart"
+                        value={lostDateStart} // State holding the start date-time value
+                        onChange={handleStartDateChange} // Update state with the selected date-time
+                      />
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    {/* End Date and Time */}
+                    <FormControl required>
+                      <FormLabel>End Date and Time</FormLabel>
+                      <Input
+                        fullWidth
+                        required
+                        type="datetime-local" // Ensures the input is a date-time picker
+                        name="lostDateEnd"
+                        value={lostDateEnd} // State holding the end date-time value
+                        onChange={handleEndDateChange} // Update state with the selected date-time
+                      />
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </>
+            )}
+            <FormControl required>
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  mb: 1,
+                }}
+              >
+                <FormLabel>Upload Images</FormLabel>
+                {images?.length > 0 && (
+                  <Button
+                    size="sm"
+                    color="danger"
+                    onClick={() => setImages([])} // Clear all images
+                  >
+                    Discard All
+                  </Button>
+                )}
+              </Box>
+              <Box
+                {...getRootProps({ className: "dropzone" })}
+                sx={{
+                  border: "2px dashed #888",
+                  borderRadius: "4px",
+                  padding: "20px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  backgroundColor: "#f9f9f9",
+                  mb: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(100px, 1fr))",
+                    gap: "10px",
+                  }}
+                >
+                  {images.map((image, index) => (
+                    <Box key={index} sx={{ position: "relative" }}>
+                      <Image
+                        priority
+                        src={image}
+                        width={0}
+                        height={0}
+                        sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        style={{
+                          width: "100%",
+                          height: "auto",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                        }}
+                        alt={`Preview ${index + 1}`}
+                      />
+                      <Button
+                        size="sm"
+                        color="danger"
+                        sx={{
+                          position: "absolute",
+                          top: "5px",
+                          right: "5px",
+                          minWidth: "unset",
+                          padding: "2px",
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeImage(index);
+                        }}
+                      >
+                        ✕
+                      </Button>
+                    </Box>
+                  ))}
+                </Box>
+                <input
+                  {...getInputProps()}
+                  multiple
+                  style={{ display: "none" }}
+                />
+                <p>
+                  {images.length === 0 &&
+                    "Drag 'n' drop some files here, or click to select files"}
+                </p>
+              </Box>
+            </FormControl>
+            {Array.isArray(item?.item?.questions) &&
+              item.item.questions.length > 0 && (
+                <Box sx={{ my: 2 }}>
+                  <Stack spacing={2}>
+                    {item.item.questions.map((question, index) => (
+                      <FormControl key={index} required>
+                        <FormLabel>{question}</FormLabel>
+                        <Input
+                          placeholder="Enter your answer"
+                          value={answers[index] || ""}
+                          onChange={(e) => {
+                            const updated = [...answers];
+                            updated[index] = e.target.value;
+                            setAnswers(updated);
+                          }}
+                        />
+                      </FormControl>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+
             <Button
               type="submit"
-              disabled={!selectedLostItem}
               onClick={() => setConfirmationRetrievalRequest(originalPost._id)}
+              disabled={!isFormValid()}
             >
               Next
             </Button>
@@ -609,6 +1158,23 @@ const SharedPost = ({
         }
         sharedBy={post?.isShared ? post?.sharedBy?._id : null}
         owner={session?.user?.id}
+        lostDateStart={lostDateStart}
+        lostDateEnd={lostDateEnd}
+        sizeNotDetermined={sizeNotDetermined}
+        itemWhereabouts={itemWhereabouts}
+        location={location}
+        claimData={{
+          name,
+          color,
+          size,
+          category,
+          material,
+          condition,
+          distinctiveMarks,
+          description,
+          answers,
+          images,
+        }}
       />
       <Modal
         open={sharePostModal === originalPost._id}
@@ -629,10 +1195,7 @@ const SharedPost = ({
                 multiple
                 placeholder="Select user"
                 options={users.filter(
-                  (user) =>
-                    ![session?.user?.id, originalPost?.author?._id].includes(
-                      user._id
-                    )
+                  (user) => ![session?.user?.id].includes(user._id)
                 )}
                 value={selectedUsers}
                 onChange={(event, value, reason, details) => {

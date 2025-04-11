@@ -1,7 +1,6 @@
 export default function SharedItem({
   name,
   sharedBy,
-  caption,
   itemName,
   link,
 }) {
@@ -81,9 +80,6 @@ export default function SharedItem({
             <p>Hi <span class="highlight">${name}</span>,</p>
             <p><span class="highlight">${sharedBy}</span> just shared an item post with you on <strong>Tracify</strong>.</p>
             <p><strong>Item:</strong> ${itemName}</p>
-            <p><strong>Message:</strong> ${
-              caption || "No message provided."
-            }</p>
             <div class="button-container">
               <a href="${link}" class="button">View Shared Post</a>
             </div>
