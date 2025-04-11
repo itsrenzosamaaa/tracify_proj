@@ -21,12 +21,11 @@ import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import GoogleLogo from "../../public/google.svg";
 import Link from "next/link";
 import { getSession, signIn, useSession } from "next-auth/react"; // Import signIn and useSession
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Paper } from "@mui/material";
 import Loading from "./components/Loading";
 import Authenticated from "./components/Authenticated";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 
 export default function Home() {
   const [text, setText] = useState("");
