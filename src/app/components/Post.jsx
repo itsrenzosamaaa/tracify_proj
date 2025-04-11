@@ -267,7 +267,7 @@ const Post = ({
               name: user.firstname,
               sharedBy: session?.user?.firstname,
               itemName: item?.item?.name,
-              link: `https://tlc-tracify.vercel.app/post/${data._id}`,
+              link: `https://tlc-tracify.vercel.app/?callbackUrl=/post/${data._id}`,
               subject: "An Item Has Been Shared With You via Tracify!",
             }),
           });

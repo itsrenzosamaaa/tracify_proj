@@ -66,9 +66,14 @@ const ItemReservedModal = ({
         if (!response.ok) {
           const errorData = await response.json();
 
-          // Gracefully handle missing user for increment route
-          if (response.status === 404 && errorData.error === "User not found") {
-            console.warn("Skipping increment: User not found.");
+          // Skip specific 404s for user or match auto-decline logic
+          if (
+            response.status === 404 &&
+            (errorData.error === "User not found" ||
+              errorData.message ===
+                "No matched items with Pending or Approved status found.")
+          ) {
+            console.warn(`Skipping: ${errorData.error || errorData.message}`);
             return null;
           }
 
@@ -89,6 +94,15 @@ const ItemReservedModal = ({
       await makeRequest(`/api/match-items/${matchedId}`, "PUT", {
         request_status: "Completed",
       });
+
+      await makeRequest(
+        `/api/match-items/auto-decline/${row?.finder?._id}`,
+        "PUT",
+        {
+          request_status: "Declined",
+          remarks: "The item has been claimed by the original owner.",
+        }
+      );
 
       // Prepare notification(s)
       const notificationData = [
@@ -143,7 +157,7 @@ const ItemReservedModal = ({
           to: row.owner.user.emailAddress,
           subject: "Claim Process Success",
           name: row.owner.user.firstname,
-          link: "https://tlc-tracify.vercel.app/my-items#completed-item",
+          link: "https://tlc-tracify.vercel.app/?callbackUrl=/my-items#completed-item",
           itemName: row.finder.item.name,
         });
       }
@@ -226,7 +240,7 @@ const ItemReservedModal = ({
           to: row.owner.user.emailAddress,
           subject: "Claim Process Declined",
           name: row.owner.user.firstname,
-          link: "tlc-tracify.vercel.app/my-items#lost-item",
+          link: "https://tlc-tracify.vercel.app/?callbackUrl=/my-items#lost-item",
           itemName: row.finder.item.name,
           remarks: declineRemarks,
         });
@@ -392,11 +406,7 @@ const ItemReservedModal = ({
                     disabled={loading}
                     loading={loading}
                     onClick={(e) =>
-                      handleDecline(
-                        e,
-                        row.finder.item._id,
-                        row._id
-                      )
+                      handleDecline(e, row.finder.item._id, row._id)
                     }
                     fullWidth
                   >
@@ -437,11 +447,7 @@ const ItemReservedModal = ({
                     disabled={loading}
                     loading={loading}
                     onClick={(e) =>
-                      handleSubmit(
-                        e,
-                        row.finder.item._id,
-                        row._id
-                      )
+                      handleSubmit(e, row.finder.item._id, row._id)
                     }
                     fullWidth
                   >

@@ -105,7 +105,7 @@ const ItemClaimRequestModal = ({
           to: row.owner.user.emailAddress,
           subject: "Claim Request Approved",
           name: row.owner.user.firstname,
-          link: "https://tlc-tracify.vercel.app/my-items#lost-item",
+          link: "https://tlc-tracify.vercel.app/?callbackUrl=/my-items#lost-item",
           itemName: row.finder.item.name,
           date: readable,
           location: "SASO",
@@ -176,7 +176,7 @@ const ItemClaimRequestModal = ({
           to: row.owner.user.emailAddress,
           subject: "Claim Request Declined",
           name: row.owner.user.firstname || "User",
-          link: "https://tlc-tracify.vercel.app/my-items#lost-item",
+          link: "https://tlc-tracify.vercel.app/?callbackUrl=/my-items#lost-item",
           itemName: row.finder.item.name,
         });
       }

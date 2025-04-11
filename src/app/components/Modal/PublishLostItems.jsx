@@ -217,7 +217,7 @@ const PublishLostItem = ({
             body: JSON.stringify({
               to: owner.emailAddress,
               name: owner.firstname,
-              link: "tlc-tracify.vercel.app",
+              link: "https://tlc-tracify.vercel.app/?callbackUrl=/my-items#lost-item",
               success: false,
               title: "Lost Item Published Successfully!",
             }),

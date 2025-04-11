@@ -235,7 +235,7 @@ const PublishFoundItem = ({
               body: JSON.stringify({
                 to: finder.emailAddress,
                 name: finder.firstname,
-                link: "tlc-tracify.vercel.app",
+                link: "https://tlc-tracify.vercel.app/?callbackUrl=/my-items#found-item",
                 success: true,
                 title: "Found Item Published Successfully!",
               }),
