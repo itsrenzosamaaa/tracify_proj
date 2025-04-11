@@ -26,6 +26,7 @@ import { Paper } from "@mui/material";
 import Loading from "./components/Loading";
 import Authenticated from "./components/Authenticated";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -33,7 +34,8 @@ export default function Home() {
   const [togglePassword, setTogglePassword] = useState("password");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const { data: session, status } = useSession(); // Use useSession to get session and status
   const router = useRouter();
 
@@ -51,7 +53,8 @@ export default function Home() {
       const result = await signIn("credentials", {
         redirect: false,
         username: text.trim(),
-        password: password,
+        password,
+        callbackUrl,
       });
 
       if (!result.ok) {
@@ -59,7 +62,7 @@ export default function Home() {
         setIsLoading(false);
       } else {
         await getSession();
-        router.push("/dashboard");
+        router.replace(result.url);
       }
     } catch (err) {
       setError("Something went wrong. Try again.");
@@ -70,7 +73,11 @@ export default function Home() {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
-      await signIn("google", { redirect: false, prompt: "select_account" });
+      await signIn("google", {
+        redirect: false,
+        prompt: "select_account",
+        callbackUrl,
+      });
     } catch (error) {
       setError("Google sign-in failed.");
     } finally {

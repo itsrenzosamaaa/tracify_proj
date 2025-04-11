@@ -211,7 +211,7 @@ const SharedPost = ({
   ${introMessage}
   
   🧾 Item Name: ${originalPost?.item_name || "No caption provided."}
-  🔗 Link: https://tlc-tracify.vercel.app/post/${post?._id}
+  🔗 Link: https://tlc-tracify.vercel.app/?callbackUrl=/post/${post?._id}
   
   ${callToAction}
   (Shared via Tracify)`;
