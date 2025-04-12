@@ -92,9 +92,6 @@ const ItemDetails = ({
   const [distinctiveMarks, setDistinctiveMarks] = useState(
     row?.item?.isFoundItem ? row.item.distinctiveMarks : null
   );
-  const [reasonForReporting, setReasonForReporting] = useState(
-    !row?.item?.isFoundItem ? row?.item?.reasonForReporting : null
-  );
   const [itemWhereabouts, setItemWhereabouts] = useState(
     row.item.date_time === "Unidentified" &&
       row.item.location === "Unidentified"
@@ -330,9 +327,7 @@ const ItemDetails = ({
                   row.item.status
                 )
                   ? "warning"
-                  : ["Declined", "Canceled"].includes(
-                      row.item.status
-                    )
+                  : ["Declined", "Canceled"].includes(row.item.status)
                   ? "danger"
                   : ["Published", "Matched"].includes(row.item.status)
                   ? "primary"
@@ -485,8 +480,6 @@ const ItemDetails = ({
                     Cancel
                   </Button>
                 ))}
-
-              
             </Box>
           </Box>
         </Grid>
@@ -957,46 +950,6 @@ const ItemDetails = ({
                       </>
                     )}
                   </Grid>
-                  {isEditMode ? (
-                    <FormControl>
-                      <FormLabel>Reason for Reporting</FormLabel>
-                      <Textarea
-                        minRows={2}
-                        value={reasonForReporting}
-                        onChange={(e) => setReasonForReporting(e.target.value)}
-                        placeholder="e.g., Hoping someone may have found it..."
-                        fullWidth
-                      />
-                    </FormControl>
-                  ) : (
-                    <>
-                      {row?.item?.reasonForReporting && (
-                        <>
-                          <Grid item xs={12}>
-                            <Divider />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <Typography
-                              level="h5"
-                              sx={{
-                                fontWeight: "bold",
-                                color: "primary.plainColor",
-                                mb: 1,
-                              }}
-                            >
-                              Reason for Reporting
-                            </Typography>
-                            <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <HelpOutline fontSize="small" sx={{ mr: 0.5 }} />
-                              <Typography level={isXs ? "body-sm" : "body-md"}>
-                                {row.item.reasonForReporting || "N/A"}
-                              </Typography>
-                            </Box>
-                          </Grid>
-                        </>
-                      )}
-                    </>
-                  )}
                 </>
               )}
 

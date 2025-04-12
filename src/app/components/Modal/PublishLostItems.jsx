@@ -56,7 +56,6 @@ const PublishLostItem = ({
   const [owner, setOwner] = useState(null);
   const [loading, setLoading] = useState(false);
   const [itemWhereabouts, setItemWhereabouts] = useState(false);
-  const [reasonToReport, setReasonToReport] = useState("");
   const [confirmAccuracy, setConfirmAccuracy] = useState(false);
   const { data: session, status } = useSession();
 
@@ -155,7 +154,6 @@ const PublishLostItem = ({
           : "Unidentified",
         images,
         status: isUser ? "Request" : "Missing",
-        reasonForReporting: reasonToReport,
         ...(isUser
           ? { dateRequest: new Date() }
           : {
@@ -889,20 +887,6 @@ const PublishLostItem = ({
                         "Drag 'n' drop some files here, or click to select files"}
                     </p>
                   </Box>
-                </FormControl>
-                <FormControl required>
-                  <FormLabel>
-                    {session.user.permissions.includes("Admin Dashboard")
-                      ? "Remarks or reason for publishing this lost item"
-                      : "Why are you reporting this lost item?"}
-                  </FormLabel>
-
-                  <Textarea
-                    placeholder="e.g., Hoping someone may have found it..."
-                    minRows={2}
-                    value={reasonToReport}
-                    onChange={(e) => setReasonToReport(e.target.value)}
-                  />
                 </FormControl>
                 {session?.user?.permissions.includes("User Dashboard") && (
                   <FormControl required>

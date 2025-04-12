@@ -43,9 +43,6 @@ const ItemSchema = new mongoose.Schema({
       type: String,
     },
   ],
-  reasonForReporting: {
-    type: String,
-  },
   reason: {
     type: String,
   },

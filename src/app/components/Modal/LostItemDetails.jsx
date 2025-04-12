@@ -46,10 +46,6 @@ const LostItemDetails = ({ lostItem, onClose }) => {
             <Typography>
               <strong>Date Range:</strong> {lostItem.item.date_time}
             </Typography>
-            <Typography>
-              <strong>Reason for Reporting:</strong>{" "}
-              {lostItem.item.reasonForReporting || "Not specified"}
-            </Typography>
             {!isExpired && (
               <Typography>
                 <strong>Published on:</strong>{" "}

@@ -52,6 +52,7 @@ const EditRole = ({
   const [selectedPermissions, setSelectedPermissions] = useState(
     role.permissions
   );
+  const [isStudentRole, setIsStudentRole] = useState(role.isStudentRole);
   const [loading, setLoading] = useState(false);
 
   // ✅ Toggle Permission Selection
@@ -90,6 +91,7 @@ const EditRole = ({
         name: name.trim(),
         color,
         permissions: selectedPermissions, // ✅ Store only selected permissions
+        isStudentRole,
       };
 
       // ✅ Fetch all users to check roles
@@ -255,6 +257,16 @@ const EditRole = ({
                         type="color"
                         value={color}
                         onChange={(e) => setColor(e.target.value)}
+                      />
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <FormControl required fullWidth sx={{ mb: 2 }}>
+                      <Checkbox
+                        label="Flag as a student role"
+                        checked={isStudentRole}
+                        onChange={(e) => setIsStudentRole(e.target.checked)}
                       />
                     </FormControl>
                   </Grid>

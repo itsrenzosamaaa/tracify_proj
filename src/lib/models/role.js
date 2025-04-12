@@ -14,6 +14,10 @@ const roleSchema = new mongoose.Schema({
       type: String,
     },
   ],
+  isStudentRole: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 export default mongoose.models.Role || mongoose.model("Role", roleSchema);

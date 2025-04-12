@@ -48,6 +48,7 @@ const AddRole = ({
   const [name, setName] = useState("");
   const [color, setColor] = useState("#000000");
   const [selectedPermissions, setSelectedPermissions] = useState([]);
+  const [isStudentRole, setIsStudentRole] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleToggleDashboard = (dashboard) => {
@@ -84,6 +85,7 @@ const AddRole = ({
       name: name.trim(),
       color,
       permissions: selectedPermissions,
+      isStudentRole,
     };
 
     try {
@@ -174,6 +176,16 @@ const AddRole = ({
                         type="color"
                         value={color}
                         onChange={(e) => setColor(e.target.value)}
+                      />
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <FormControl required fullWidth sx={{ mb: 2 }}>
+                      <Checkbox
+                        label="Flag as a student role"
+                        checked={isStudentRole}
+                        onChange={(e) => setIsStudentRole(e.target.checked)}
                       />
                     </FormControl>
                   </Grid>

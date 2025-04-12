@@ -32,10 +32,9 @@ export const authOptions = {
               profile_picture: account.profile_picture || "",
               email: account.emailAddress || "",
               contactNumber: account.contactNumber || "",
-              canUserReportLostItem:
-                account.canUserReportLostItem || new Date(),
               roleName: account.role?.name || "Guest", // ✅ Default to "Guest" if no role
               permissions: account.role?.permissions || [], // ✅ Default to empty array if no permissions
+              studentProfile: account.studentProfile || null,
             };
           } else {
             console.error("Invalid username or password");
@@ -79,10 +78,9 @@ export const authOptions = {
           user.lastname = dbAccount.lastname;
           user.profile_picture = dbAccount.profile_picture;
           user.contactNumber = dbAccount.contactNumber;
-          user.canUserReportLostItem =
-            dbAccount.canUserReportLostItem || new Date();
           user.roleName = dbAccount.role?.name || "Guest";
           user.permissions = dbAccount.role?.permissions || [];
+          user.studentProfile = dbAccount.studentProfile || null;
         }
         return true; // For credentials sign-in
       } catch (error) {
@@ -106,10 +104,10 @@ export const authOptions = {
         token.lastname = user.lastname;
         token.profile_picture = user.profile_picture;
         token.contactNumber = user.contactNumber;
-        token.canUserReportLostItem = user.canUserReportLostItem;
         token.email = user.email;
         token.roleName = user.roleName || "Guest";
         token.permissions = user.permissions || [];
+        token.studentProfile = user.studentProfile || null;
       }
       return token;
     },
@@ -121,10 +119,10 @@ export const authOptions = {
         session.user.lastname = token.lastname;
         session.user.profile_picture = token.profile_picture;
         session.user.contactNumber = token.contactNumber;
-        session.user.canUserReportLostItem = token.canUserReportLostItem;
         session.user.email = token.email;
         session.user.roleName = token.roleName || "Guest";
         session.user.permissions = token.permissions || [];
+        session.user.studentProfile = token.studentProfile || null;
       }
       return session;
     },

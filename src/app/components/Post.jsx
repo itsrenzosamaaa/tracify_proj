@@ -85,6 +85,8 @@ const Post = ({
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [itemWhereabouts, setItemWhereabouts] = useState(false);
+  const [shareTarget, setShareTarget] = useState("");
+  const [shareMode, setShareMode] = useState("specificUsers"); // default to specific
   const inputRef = useRef();
 
   const handleCheck = (e) => {
@@ -222,12 +224,54 @@ const Post = ({
     setLoading(true);
 
     try {
-      if (selectedUsers.length === 0) {
-        setOpenSnackbar("danger");
-        setMessage("Please select at least one user to share with.");
-        return;
+      let targetUsers = [];
+
+      if (shareMode === "specificUsers") {
+        if (selectedUsers.length === 0) {
+          setOpenSnackbar("danger");
+          setMessage("Please select at least one user to share with.");
+          setLoading(false);
+          return;
+        }
+        targetUsers = selectedUsers;
+      } else if (shareMode === "group") {
+        if (!shareTarget) {
+          setOpenSnackbar("danger");
+          setMessage("Please select a group to share with.");
+          setLoading(false);
+          return;
+        }
+
+        const profileField = `studentProfile.${shareTarget}`;
+        const sessionValue = session?.user?.studentProfile?.[shareTarget];
+
+        const res = await fetch(
+          `/api/users/group?type=${shareTarget}&value=${sessionValue}`
+        );
+        const allUsers = await res.json();
+
+        if (!sessionValue) {
+          setOpenSnackbar("danger");
+          setMessage("Your profile does not have a value for this group.");
+          setLoading(false);
+          return;
+        }
+
+        targetUsers = allUsers.filter(
+          (u) =>
+            u._id !== session?.user?.id && // exclude self
+            u.studentProfile?.[shareTarget] === sessionValue
+        );
+
+        if (targetUsers.length === 0) {
+          setOpenSnackbar("danger");
+          setMessage("No users found in that group.");
+          setLoading(false);
+          return;
+        }
       }
 
+      // Share Post
       const response = await fetch("/api/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -238,7 +282,7 @@ const Post = ({
           sharedBy: session?.user?.id,
           sharedAt: new Date(),
           originalPost: post?._id,
-          sharedTo: selectedUsers.map((u) => u._id),
+          sharedTo: targetUsers.map((u) => u._id),
         }),
       });
 
@@ -246,7 +290,7 @@ const Post = ({
       const notificationData = [];
 
       await Promise.all(
-        selectedUsers.map(async (user) => {
+        targetUsers.map(async (user) => {
           notificationData.push({
             receiver: user._id,
             message: `${session?.user?.firstname} ${session?.user?.lastname} shared a post with you.`,
@@ -255,24 +299,25 @@ const Post = ({
             dateNotified: new Date(),
             post: data._id,
           });
-
-          await fetch("/api/send-email", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              type: "SharedItem",
-              to: user.emailAddress,
-              name: user.firstname,
-              sharedBy: session?.user?.firstname,
-              itemName: item?.item?.name,
-              link: `https://tlc-tracify.vercel.app/?callbackUrl=/post/${data._id}`,
-              subject: "An Item Has Been Shared With You via Tracify!",
-            }),
-          });
         })
       );
+
+      // 📌 New bulk email request
+      await fetch("/api/send-email/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "SharedItem",
+          users: targetUsers.map((user) => ({
+            to: user.emailAddress,
+            name: user.firstname,
+          })),
+          sharedBy: session?.user?.firstname,
+          itemName: item?.item?.name,
+          link: `https://tlc-tracify.vercel.app/?callbackUrl=/post/${data._id}`,
+          subject: "An Item Has Been Shared With You via Tracify!",
+        }),
+      });
 
       if (
         (session?.user?.id !== post?.author?._id &&
@@ -289,15 +334,12 @@ const Post = ({
         });
       }
 
-      await Promise.all(
-        notificationData.map((notif) =>
-          fetch("/api/notification", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(notif),
-          })
-        )
-      );
+      // Replace /api/notification with a new route: /api/notifications/bulk
+      await fetch("/api/notification/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notificationData),
+      });
 
       setSharedCaption("");
       setSharePostModal(null);
@@ -306,6 +348,7 @@ const Post = ({
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage("An unexpected error occurred.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -1074,71 +1117,171 @@ const Post = ({
       >
         <ModalDialog>
           <ModalClose />
-          <Typography level={isXs ? "h5" : "h4"} fontWeight={700}>
+          <Typography level={isXs ? "h5" : "h4"} fontWeight={700} mb={1}>
             Share this Post
           </Typography>
           <Divider />
+
           <form onSubmit={handleSubmit}>
-            <Stack spacing={1}>
-              <Typography level="body-md" fontWeight={500}>
-                Share to a User
-              </Typography>
-              <Autocomplete
-                multiple
-                placeholder="Select user"
-                options={users.filter(
-                  (user) => ![session?.user?.id].includes(user._id)
-                )}
-                value={selectedUsers}
-                onChange={(event, value, reason, details) => {
-                  setSelectedUsers(value);
-                }}
-                getOptionLabel={(user) =>
-                  user?.firstname && user?.lastname
-                    ? `${user.firstname} ${user.lastname}`
-                    : ""
-                }
-                isOptionEqualToValue={(option, value) =>
-                  option._id === value?._id
-                }
-              />
+            <Stack spacing={2} mt={1}>
+              {/* SECTION: Mode Selection */}
+              <Box>
+                <Typography level="body-md" fontWeight={600} mb={0.5}>
+                  Sharing Options
+                </Typography>
+                {session?.user?.studentProfile &&
+                  Object.keys(session.user.studentProfile).length > 0 && (
+                    <FormControl fullWidth>
+                      <FormLabel>Select Share Mode</FormLabel>
+                      <Select
+                        value={shareMode}
+                        onChange={(e, val) => {
+                          setShareMode(val);
+                          setSelectedUsers([]);
+                          setShareTarget("");
+                        }}
+                        placeholder="Choose how to share"
+                      >
+                        <Option value="specificUsers">
+                          Share to Specific Users
+                        </Option>
+                        <Option value="group">Share to a Group</Option>
+                      </Select>
+                    </FormControl>
+                  )}
+              </Box>
 
-              <Textarea
-                minRows={2}
+              {/* SECTION: Share Group */}
+              {shareMode === "group" && (
+                <Box>
+                  <FormControl fullWidth>
+                    <FormLabel>Select Group</FormLabel>
+                    <Select
+                      value={shareTarget}
+                      onChange={(e, val) => setShareTarget(val)}
+                      placeholder="Choose target group"
+                    >
+                      {session?.user?.studentProfile?.category && (
+                        <Option value="category">
+                          Category ({session.user.studentProfile.category})
+                        </Option>
+                      )}
+                      {session?.user?.studentProfile?.gradeLevel && (
+                        <Option value="gradeLevel">
+                          Grade Level ({session.user.studentProfile.gradeLevel})
+                        </Option>
+                      )}
+                      {session?.user?.studentProfile?.strand && (
+                        <Option value="strand">
+                          Strand ({session.user.studentProfile.strand})
+                        </Option>
+                      )}
+                      {session?.user?.studentProfile?.yearLevel && (
+                        <Option value="yearLevel">
+                          Year Level ({session.user.studentProfile.yearLevel})
+                        </Option>
+                      )}
+                      {session?.user?.studentProfile?.department && (
+                        <Option value="department">
+                          Department ({session.user.studentProfile.department})
+                        </Option>
+                      )}
+                      {session?.user?.studentProfile?.course && (
+                        <Option value="course">
+                          Course ({session.user.studentProfile.course})
+                        </Option>
+                      )}
+                    </Select>
+                  </FormControl>
+                </Box>
+              )}
+
+              {/* SECTION: User Selection */}
+              {shareMode === "specificUsers" && (
+                <Box>
+                  <FormControl fullWidth>
+                    <FormLabel>Select Users</FormLabel>
+                    <Autocomplete
+                      multiple
+                      placeholder="Search and select users"
+                      options={users.filter(
+                        (user) => ![session?.user?.id].includes(user._id)
+                      )}
+                      value={selectedUsers}
+                      onChange={(event, value) => setSelectedUsers(value)}
+                      getOptionLabel={(user) =>
+                        user?.firstname && user?.lastname
+                          ? `${user.firstname} ${user.lastname}`
+                          : ""
+                      }
+                      isOptionEqualToValue={(option, value) =>
+                        option._id === value?._id
+                      }
+                    />
+                  </FormControl>
+                </Box>
+              )}
+
+              {/* SECTION: Caption */}
+              <Box>
+                <FormControl fullWidth>
+                  <FormLabel>Custom Message</FormLabel>
+                  <Textarea
+                    minRows={2}
+                    disabled={loading}
+                    placeholder="Say something about this post..."
+                    value={sharedCaption}
+                    onChange={(e) => setSharedCaption(e.target.value)}
+                  />
+                </FormControl>
+              </Box>
+
+              {/* Submit Button */}
+              <Button
                 disabled={loading}
-                placeholder="Say something about this..."
-                value={sharedCaption}
-                onChange={(e) => setSharedCaption(e.target.value)}
-              />
-
-              <Button disabled={loading} loading={loading} type="submit">
-                Share to User
+                loading={loading}
+                type="submit"
+                fullWidth
+                color="primary"
+              >
+                Share Now
               </Button>
+
+              <Divider />
+
+              {/* SECTION: Copy Link */}
+              <Box>
+                <Typography level="body-md" fontWeight={500} mb={0.5}>
+                  Copy Link
+                </Typography>
+                <Input
+                  value={`https://tlc-tracify.vercel.app/post/${post?._id}`}
+                  readOnly
+                  variant="soft"
+                  slotProps={{
+                    input: {
+                      ref: inputRef,
+                    },
+                  }}
+                  endDecorator={
+                    <Tooltip title="Copy to clipboard">
+                      <IconButton
+                        onClick={handleCopyLink}
+                        variant="plain"
+                        size="sm"
+                      >
+                        <ContentCopy fontSize="16px" />
+                      </IconButton>
+                    </Tooltip>
+                  }
+                />
+                <FormHelperText sx={{ mt: 0.5 }}>
+                  Paste this anywhere (Messenger, Gmail, Facebook, etc.) to
+                  spread the info publicly.
+                </FormHelperText>
+              </Box>
             </Stack>
           </form>
-
-          <Typography level="body-md" fontWeight={500}>
-            Copy Link
-          </Typography>
-          <Input
-            value={`https://tlc-tracify.vercel.app/post/${post?._id}`}
-            readOnly
-            slotProps={{
-              input: {
-                ref: inputRef,
-              },
-            }}
-            endDecorator={
-              <IconButton onClick={handleCopyLink} variant="plain" size="sm">
-                <ContentCopy fontSize="16px" />
-              </IconButton>
-            }
-          />
-
-          <FormHelperText>
-            You can paste this link anywhere (Messenger, Gmail, <br /> Facebook,
-            etc.) to spread the info publicly.
-          </FormHelperText>
         </ModalDialog>
       </Modal>
     </>
