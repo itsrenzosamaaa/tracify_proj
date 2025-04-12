@@ -11,6 +11,7 @@ import {
   Divider,
   Table,
   Sheet,
+  LinearProgress,
 } from "@mui/joy";
 import { format, isToday } from "date-fns";
 import { Carousel } from "react-responsive-carousel";
@@ -25,6 +26,7 @@ import {
   TableCell,
   Paper,
 } from "@mui/material";
+import { calculateMatchScore } from "@/utils/matchScore";
 
 const Section = ({ title, children }) => (
   <Box sx={{ marginBottom: 4 }}>
@@ -137,10 +139,60 @@ const MatchedItemsDetails = ({ row }) => {
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
-  console.log(row)
+  const score = calculateMatchScore(
+    row.owner.item,
+    row.finder.item,
+    row.owner.item.answers
+  );
 
   return (
     <Grid container spacing={3}>
+      <Grid item xs={12}>
+        <Section title="Matching Summary">
+          <Box
+            sx={{
+              backgroundColor:
+                score >= 85
+                  ? "success.softBg"
+                  : score >= 65
+                  ? "warning.softBg"
+                  : "danger.softBg",
+              padding: 2,
+              borderRadius: "md",
+              boxShadow: "sm",
+            }}
+          >
+            <Typography
+              fontWeight={700}
+              level={isXs ? "body-md" : "h5"}
+              color={
+                score >= 85
+                  ? "success.plainColor"
+                  : score >= 65
+                  ? "warning.plainColor"
+                  : "danger.plainColor"
+              }
+            >
+              Match Score: {score}%
+            </Typography>
+            <LinearProgress
+              value={score}
+              variant="determinate"
+              sx={{ height: 10, borderRadius: 5, my: 1 }}
+              color={
+                score >= 85 ? "success" : score >= 65 ? "warning" : "danger"
+              }
+            />
+            <Typography level="body-sm">
+              {score >= 85
+                ? "✅ Highly likely match."
+                : score >= 65
+                ? "⚠️ Needs manual verification."
+                : "❌ Low confidence match. SASO should verify further."}
+            </Typography>
+          </Box>
+        </Section>
+      </Grid>
       <Grid item xs={12} md={6}>
         <Section title="Owner Information">
           <InfoCard avatarSrc={row?.owner?.user?.profile_picture}>
@@ -154,7 +206,9 @@ const MatchedItemsDetails = ({ row }) => {
                 width: "100%",
               }}
             >
-              {row?.owner?.user?.firstname} {row?.owner?.user?.lastname}
+              {row?.owner?.user?.firstname && row?.owner?.user?.lastname
+                ? `${row.owner.user.firstname} ${row.owner.user.lastname}`
+                : "Unknown User"}
             </Typography>
             <Typography
               level={isXs ? "body-sm" : "body-md"}
@@ -165,7 +219,7 @@ const MatchedItemsDetails = ({ row }) => {
                 width: "100%",
               }}
             >
-              {row?.owner?.user?.emailAddress}
+              {row?.owner?.user?.emailAddress || "Unknown Email"}
             </Typography>
             <Typography
               level={isXs ? "body-sm" : "body-md"}
@@ -176,7 +230,7 @@ const MatchedItemsDetails = ({ row }) => {
                 width: "100%",
               }}
             >
-              {row?.owner?.user?.contactNumber}
+              {row?.owner?.user?.contactNumber || "Unknown Contact"}
             </Typography>
           </InfoCard>
         </Section>
@@ -217,7 +271,9 @@ const MatchedItemsDetails = ({ row }) => {
                 width: "100%",
               }}
             >
-              {row?.finder?.user?.firstname} {row?.finder?.user?.lastname}
+              {row?.finder?.user?.firstname && row?.finder?.user?.lastname
+                ? `${row.finder.user.firstname} ${row.finder.user.lastname}`
+                : "Unknown User"}
             </Typography>
             <Typography
               level={isXs ? "body-sm" : "body-md"}
@@ -228,7 +284,7 @@ const MatchedItemsDetails = ({ row }) => {
                 width: "100%",
               }}
             >
-              {row?.finder?.user?.emailAddress}
+              {row?.finder?.user?.emailAddress || "Unknown Email"}
             </Typography>
             <Typography
               level={isXs ? "body-sm" : "body-md"}
@@ -239,7 +295,7 @@ const MatchedItemsDetails = ({ row }) => {
                 width: "100%",
               }}
             >
-              {row?.finder?.user?.contactNumber}
+              {row?.finder?.user?.contactNumber || "Unknown Contact"}
             </Typography>
           </InfoCard>
         </Section>
