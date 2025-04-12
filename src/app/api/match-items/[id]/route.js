@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import match_items from "@/lib/models/match_items";
 import finder from "@/lib/models/finder";
+import owner from "@/lib/models/owner";
 
 export async function GET(req, { params }) {
   const { id } = params;
