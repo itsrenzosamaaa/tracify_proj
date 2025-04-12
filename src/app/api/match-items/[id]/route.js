@@ -3,6 +3,8 @@ import dbConnect from "@/lib/mongodb";
 import match_items from "@/lib/models/match_items";
 import finder from "@/lib/models/finder";
 import owner from "@/lib/models/owner";
+import item from "@/lib/models/item";
+import user from "@/lib/models/user";
 
 export async function GET(req, { params }) {
   const { id } = params;
