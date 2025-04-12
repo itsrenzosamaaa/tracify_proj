@@ -10,6 +10,11 @@ export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
   const isLoginPage = pathname === "/";
 
+  if (token && isLoginPage) {
+    const callbackUrl = request.nextUrl.searchParams.get("callbackUrl") || "/dashboard";
+    return NextResponse.redirect(new URL(callbackUrl, request.url));
+  }
+
   if (token) {
     // Restrict access to admin pages
     if (
