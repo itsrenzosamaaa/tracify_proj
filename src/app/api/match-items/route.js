@@ -18,21 +18,26 @@ export async function GET() {
   try {
     await dbConnect();
 
-    const findMatchItems = await match_items.find().populate({
-      path: "finder",
-      populate: [
-        {
-          path: "user",
-          model: "User",
-          populate: {
-            path: "role",
-            model: "Role", // or 'roles' based on your model name export
-            select: "permissions",
+    const findMatchItems = await match_items
+      .find()
+      .populate({
+        path: "finder",
+        populate: [
+          {
+            path: "user",
+            model: "User",
+            populate: {
+              path: "role",
+              model: "Role", // or 'roles' based on your model name export
+              select: "permissions",
+            },
           },
-        },
-        { path: "item", model: "Item" },
-      ],
-    });
+          { path: "item", model: "Item" },
+        ],
+      })
+      .populate({
+        path: "owner.user",
+      });
 
     return NextResponse.json(findMatchItems, { status: 200 });
   } catch (error) {

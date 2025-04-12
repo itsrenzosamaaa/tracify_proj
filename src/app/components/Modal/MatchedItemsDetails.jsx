@@ -137,6 +137,8 @@ const MatchedItemsDetails = ({ row }) => {
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
+  console.log(row)
+
   return (
     <Grid container spacing={3}>
       <Grid item xs={12} md={6}>
