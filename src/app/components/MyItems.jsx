@@ -36,6 +36,7 @@ import SearchOffIcon from "@mui/icons-material/SearchOff";
 import ItemRetrievalDetails from "./Modal/ItemRetrievalDetails";
 import DummyPhoto from "./DummyPhoto";
 import { ArrowDownward } from "@mui/icons-material";
+import LostItemDetails from "./Modal/LostItemDetails";
 
 const validTabs = [
   "found-item",
@@ -53,6 +54,7 @@ const MyItemsComponent = ({ session, status }) => {
     useState(null);
   const [invalidItemDetailsModal, setInvalidItemDetailsModal] = useState(null);
   const [cancelRequestModal, setCancelRequestModal] = useState(null);
+  const [lostItemModal, setLostItemModal] = useState(null);
   const [completedItems, setCompletedItems] = useState([]);
   const [declinedItems, setDeclinedItems] = useState([]);
   const [canceledItems, setCanceledItems] = useState([]);
@@ -382,134 +384,183 @@ const MyItemsComponent = ({ session, status }) => {
             <Grid container spacing={2}>
               {lostItems.length > 0 ? (
                 lostItems.map((lostItem, index) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                    <Card
-                      key={lostItem._id}
-                      variant="outlined"
-                      sx={{
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: { xs: "row", sm: "column" },
-                        transition: "all 0.2s ease-in-out",
-                        "&:hover": {
-                          transform: "translateY(-4px)",
-                          boxShadow: "md",
-                          borderColor: "neutral.outlinedHoverBorder",
-                        },
-                      }}
-                    >
-                      <Box sx={{ position: "relative", flexShrink: 0 }}>
-                        {!isXs && (
-                          <Box
-                            sx={{
-                              position: "absolute",
-                              top: 8,
-                              left: 8,
-                              zIndex: 1,
-                              backgroundColor: ["Unclaimed"].includes(
-                                lostItem.item.status
-                              )
-                                ? "orange"
-                                : "red",
-                              color: "#fff",
-                              px: 1,
-                              py: 0.5,
-                              borderRadius: 1,
-                              fontSize: "0.75rem",
-                              fontWeight: "bold",
-                              textShadow: "0px 0px 4px rgba(0, 0, 0, 0.7)",
-                            }}
-                          >
-                            {lostItem.item.status}
-                          </Box>
-                        )}
-                        <AspectRatio
-                          ratio="1"
-                          sx={{
-                            width: { xs: "120px", sm: "100%" },
-                            minWidth: { xs: "120px", sm: "auto" },
-                            minHeight: { xs: "120px", sm: "220px" },
-                          }}
-                        >
-                          <CldImage
-                            priority
-                            src={lostItem.item.images[0]}
-                            fill
-                            alt={lostItem.item.name || "Item Image"}
-                            sizes="(max-width: 600px) 120px, (max-width: 960px) 50vw, 33vw"
-                            style={{
-                              objectFit: "cover",
-                            }}
-                          />
-                        </AspectRatio>
-                      </Box>
-
-                      <CardContent
+                  <>
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                      <Card
+                        key={lostItem._id}
+                        variant="outlined"
                         sx={{
+                          height: "100%",
                           display: "flex",
-                          flexDirection: "column",
-                          gap: { xs: 1, sm: 2 },
-                          flexGrow: 1,
-                          p: { xs: 1.5, sm: 2 },
+                          flexDirection: { xs: "row", sm: "column" },
+                          transition: "all 0.2s ease-in-out",
+                          "&:hover": {
+                            transform: "translateY(-4px)",
+                            boxShadow: "md",
+                            borderColor: "neutral.outlinedHoverBorder",
+                          },
                         }}
                       >
-                        <Typography
-                          level="h6"
-                          sx={{
-                            fontSize: { xs: "0.875rem", sm: "1.125rem" },
-                            fontWeight: 600,
-                          }}
-                        >
-                          {lostItem.item.name}
-                        </Typography>
-
-                        {isXs && (
-                          <Chip
-                            size="sm"
-                            variant="solid"
-                            color={
-                              ["Unclaimed"].includes(lostItem.item.status)
-                                ? "warning"
-                                : "danger"
-                            }
+                        <Box sx={{ position: "relative", flexShrink: 0 }}>
+                          {!isXs && (
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                top: 8,
+                                left: 8,
+                                zIndex: 1,
+                                backgroundColor: ["Unclaimed"].includes(
+                                  lostItem.item.status
+                                )
+                                  ? "orange"
+                                  : "red",
+                                color: "#fff",
+                                px: 1,
+                                py: 0.5,
+                                borderRadius: 1,
+                                fontSize: "0.75rem",
+                                fontWeight: "bold",
+                                textShadow: "0px 0px 4px rgba(0, 0, 0, 0.7)",
+                              }}
+                            >
+                              {lostItem.item.status}
+                            </Box>
+                          )}
+                          <AspectRatio
+                            ratio="1"
+                            sx={{
+                              width: { xs: "120px", sm: "100%" },
+                              minWidth: { xs: "120px", sm: "auto" },
+                              minHeight: { xs: "120px", sm: "220px" },
+                            }}
                           >
-                            {lostItem.item.status}
-                          </Chip>
-                        )}
+                            <CldImage
+                              priority
+                              src={lostItem.item.images[0]}
+                              fill
+                              alt={lostItem.item.name || "Item Image"}
+                              sizes="(max-width: 600px) 120px, (max-width: 960px) 50vw, 33vw"
+                              style={{
+                                objectFit: "cover",
+                              }}
+                            />
+                          </AspectRatio>
+                        </Box>
 
-                        <Typography
-                          level="body2"
+                        <CardContent
                           sx={{
-                            color: "text.secondary",
-                            display: "-webkit-box",
-                            WebkitLineClamp: { xs: 2, sm: 3 },
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: { xs: 1, sm: 2 },
                             flexGrow: 1,
+                            p: { xs: 1.5, sm: 2 },
                           }}
                         >
-                          {lostItem.item.description}
+                          <Typography
+                            level="h6"
+                            sx={{
+                              fontSize: { xs: "0.875rem", sm: "1.125rem" },
+                              fontWeight: 600,
+                            }}
+                          >
+                            {lostItem.item.name}
+                          </Typography>
+
+                          {isXs && (
+                            <Chip
+                              size="sm"
+                              variant="solid"
+                              color={
+                                ["Unclaimed"].includes(lostItem.item.status)
+                                  ? "warning"
+                                  : "danger"
+                              }
+                            >
+                              {lostItem.item.status}
+                            </Chip>
+                          )}
+
+                          <Typography
+                            level="body2"
+                            sx={{
+                              color: "text.secondary",
+                              display: "-webkit-box",
+                              WebkitLineClamp: { xs: 2, sm: 3 },
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              flexGrow: 1,
+                            }}
+                          >
+                            {lostItem.item.description}
+                          </Typography>
+
+                          <Button
+                            fullWidth
+                            size="sm"
+                            onClick={() => setLostItemModal(lostItem.item._id)}
+                            sx={{
+                              mt: "auto",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            }}
+                          >
+                            View Details
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                    <Modal
+                      open={lostItemModal === lostItem.item._id}
+                      onClose={() => setLostItemModal(null)}
+                    >
+                      <ModalDialog
+                        sx={{
+                          borderRadius: 4,
+                          boxShadow: 6,
+                          padding: 3,
+                        }}
+                      >
+                        <ModalClose />
+                        <Typography level="h4" fontWeight="bold">
+                          Lost Item Details
                         </Typography>
 
-                        <Button
-                          fullWidth
-                          size="sm"
-                          onClick={() =>
-                            router.push(
-                              `my-items/lost-item/${lostItem.item._id}`
-                            )
-                          }
+                        <DialogContent
                           sx={{
-                            mt: "auto",
-                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+                            maxHeight: "85.5vh",
+                            height: "100%",
+                            overflowX: "hidden",
+                            overflowY: "scroll", // Always reserve space for scrollbar
+                            // Default scrollbar styles (invisible)
+                            "&::-webkit-scrollbar": {
+                              width: "8px", // Always reserve 8px width
+                            },
+                            "&::-webkit-scrollbar-thumb": {
+                              backgroundColor: "transparent", // Invisible by default
+                              borderRadius: "4px",
+                            },
+                            // Show scrollbar on hover
+                            "&:hover": {
+                              "&::-webkit-scrollbar-thumb": {
+                                backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                              },
+                            },
+                            // Firefox
+                            scrollbarWidth: "thin",
+                            scrollbarColor: "transparent transparent", // Both track and thumb transparent
+                            "&:hover": {
+                              scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+                            },
+                            // IE and Edge
+                            msOverflowStyle: "-ms-autohiding-scrollbar",
                           }}
                         >
-                          View Details
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+                          <LostItemDetails lostItem={lostItem} onClose={() => setLostItemModal(null)} />
+                        </DialogContent>
+                      </ModalDialog>
+                    </Modal>
+                  </>
                 ))
               ) : (
                 <Box

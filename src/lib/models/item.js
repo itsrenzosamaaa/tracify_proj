@@ -58,7 +58,7 @@ const ItemSchema = new mongoose.Schema({
       "Matched",
       "Resolved",
       "Missing",
-      "Unclaimed",
+      "Terminated",
       "Claimed",
       "Declined",
       "Canceled",
@@ -79,7 +79,7 @@ const ItemSchema = new mongoose.Schema({
   dateMissing: {
     type: Date,
   },
-  dateUnclaimed: {
+  dateTerminated: {
     type: Date,
   },
   dateClaimed: {
@@ -97,6 +97,15 @@ const ItemSchema = new mongoose.Schema({
   questions: [
     {
       type: String,
+    },
+  ],
+  dateLostItemPublished: {
+    type: Date,
+  },
+  trackRecords: [
+    {
+      status: { type: String },
+      dateStatus: { type: Date },
     },
   ],
 });

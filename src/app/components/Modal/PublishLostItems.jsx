@@ -156,7 +156,18 @@ const PublishLostItem = ({
         images,
         status: isUser ? "Request" : "Missing",
         reasonForReporting: reasonToReport,
-        ...(isUser ? { dateRequest: new Date() } : { dateMissing: new Date() }),
+        ...(isUser
+          ? { dateRequest: new Date() }
+          : {
+              dateMissing: new Date(),
+              dateLostItemPublished: new Date(),
+              trackRecords: [
+                {
+                  status: "Published",
+                  date: new Date(),
+                },
+              ],
+            }),
       };
 
       // Create lost item

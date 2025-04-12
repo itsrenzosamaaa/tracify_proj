@@ -7,7 +7,9 @@ export async function GET(req, { params }) {
   try {
     await dbConnect();
 
-    const findLostItem = await item.findById({ _id: id, isFoundItem: false }).lean();
+    const findLostItem = await item
+      .findById({ _id: id, isFoundItem: false })
+      .lean();
 
     return NextResponse.json(findLostItem, { status: 200 });
   } catch (error) {
@@ -27,20 +29,24 @@ export async function PUT(req, { params }) {
 
   try {
     const updateData = { status, ...fields };
-    if (status === 'Request') {
+    if (status === "Request") {
       updateData.dateRequest = new Date();
-    } else if (status === 'Missing') {
+    } else if (status === "Missing") {
       updateData.dateMissing = new Date();
-    } else if (status === 'Unclaimed') {
-      updateData.dateUnclaimed = new Date();
-    } else if (status === 'Decline Retrieval') {
-      updateData.dateUnclaimed = null;
-      updateData.status = 'Missing';
-    } else if (status === 'Claimed') {
+      updateData.dateLostItemPublished = new Date();
+      updateData.trackRecords = [
+        {
+          status: "Published",
+          date: new Date(),
+        },
+      ];
+    } else if (status === "Claimed") {
       updateData.dateClaimed = new Date();
-    } else if (status === 'Declined') {
+    } else if (status === "Terminated") {
+      updateData.dateTerminated = new Date();
+    } else if (status === "Declined") {
       updateData.dateDeclined = new Date();
-    } else if (status === 'Canceled') {
+    } else if (status === "Canceled") {
       updateData.dateCanceled = new Date();
     }
 
@@ -51,11 +57,17 @@ export async function PUT(req, { params }) {
     );
 
     if (!updateLostItem) {
-      return NextResponse.json({ message: 'Lost item not found' }, { status: 404 });
+      return NextResponse.json(
+        { message: "Lost item not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(updateLostItem);
   } catch (error) {
-    return NextResponse.json({ message: 'Error updating lost item' }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error updating lost item" },
+      { status: 500 }
+    );
   }
 }
