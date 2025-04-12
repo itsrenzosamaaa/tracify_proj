@@ -330,7 +330,7 @@ const ItemDetails = ({
                   row.item.status
                 )
                   ? "warning"
-                  : ["Declined", "Canceled", "Unclaimed"].includes(
+                  : ["Declined", "Canceled"].includes(
                       row.item.status
                     )
                   ? "danger"
@@ -1333,28 +1333,6 @@ const ItemDetails = ({
                           )}`
                         : format(
                             new Date(row.item.dateMatched),
-                            "MMMM dd, yyyy, hh:mm a"
-                          )}
-                    </Typography>
-                  </Step>
-                )}
-                {row.item.dateUnclaimed && (
-                  <Step>
-                    <Typography
-                      level={isXs ? "body-sm" : isSm ? "body-md" : "body-lg"}
-                    >
-                      <strong>The item has been tracked!</strong>
-                    </Typography>
-                    <Typography
-                      level={isXs ? "body-xs" : isSm ? "body-sm" : "body-md"}
-                    >
-                      {isToday(new Date(row.item.dateUnclaimed))
-                        ? `Today, ${format(
-                            new Date(row.item.dateUnclaimed),
-                            "hh:mm a"
-                          )}`
-                        : format(
-                            new Date(row.item.dateUnclaimed),
                             "MMMM dd, yyyy, hh:mm a"
                           )}
                     </Typography>

@@ -33,7 +33,7 @@ const FoundItemsPage = () => {
       const ownersData = await ownersRes.json();
       const filteredItems = ownersData.filter(
         (lostItem) =>
-          !["Unclaimed", "Claimed"].includes(lostItem?.item?.status) &&
+          !["Claimed"].includes(lostItem?.item?.status) &&
           !matchedLostItemIds.includes(lostItem?.item?._id)
       );
 

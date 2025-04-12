@@ -112,7 +112,7 @@ const MyItemsComponent = ({ session, status }) => {
       const lostItems = itemsData.filter(
         (item) =>
           !item.item.isFoundItem &&
-          ["Missing", "Unclaimed"].includes(item.item.status)
+          ["Missing"].includes(item.item.status)
       );
 
       const foundItems = itemsData.filter(
@@ -409,11 +409,7 @@ const MyItemsComponent = ({ session, status }) => {
                                 top: 8,
                                 left: 8,
                                 zIndex: 1,
-                                backgroundColor: ["Unclaimed"].includes(
-                                  lostItem.item.status
-                                )
-                                  ? "orange"
-                                  : "red",
+                                backgroundColor: "red",
                                 color: "#fff",
                                 px: 1,
                                 py: 0.5,
@@ -470,11 +466,7 @@ const MyItemsComponent = ({ session, status }) => {
                             <Chip
                               size="sm"
                               variant="solid"
-                              color={
-                                ["Unclaimed"].includes(lostItem.item.status)
-                                  ? "warning"
-                                  : "danger"
-                              }
+                              color="danger"
                             >
                               {lostItem.item.status}
                             </Chip>

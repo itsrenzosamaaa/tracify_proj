@@ -162,7 +162,6 @@ const ItemsTable = ({
                             : {
                                 Missing: row.item.dateMissing,
                                 Request: row.item.dateRequest,
-                                Unclaimed: row.item.dateUnclaimed,
                                 Declined: row.item.dateDeclined,
                                 Canceled: row.item.dateCanceled,
                               };
@@ -426,7 +425,6 @@ const ItemsTable = ({
                             : {
                                 Missing: row.item.dateMissing,
                                 Request: row.item.dateRequest,
-                                Unclaimed: row.item.dateUnclaimed,
                                 Declined: row.item.dateDeclined,
                                 Canceled: row.item.dateCanceled,
                               }[row.item.status]
@@ -435,7 +433,6 @@ const ItemsTable = ({
                                   {
                                     Missing: row.item.dateMissing,
                                     Request: row.item.dateRequest,
-                                    Unclaimed: row.item.dateUnclaimed,
                                     Declined: row.item.dateDeclined,
                                     Canceled: row.item.dateCanceled,
                                   }[row.item.status]
