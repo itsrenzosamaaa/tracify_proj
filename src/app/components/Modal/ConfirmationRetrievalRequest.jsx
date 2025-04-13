@@ -32,17 +32,11 @@ const ConfirmationRetrievalRequest = ({
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  console.log(claimData)
-
   const handleSubmit = async (e, finderId) => {
     if (e && e.preventDefault) {
       e.preventDefault();
     }
     try {
-      if (![null, foundItem?.user, owner].includes(sharedBy)) {
-        newMatch.sharedBy = sharedBy;
-      }
-
       const now = new Date();
       const startDate = itemWhereabouts ? new Date(lostDateStart) : null;
       const endDate = itemWhereabouts ? new Date(lostDateEnd) : null;
@@ -86,6 +80,11 @@ const ConfirmationRetrievalRequest = ({
         request_status: "Pending",
         datePending: new Date(),
       };
+
+      if (![null, foundItem?.user, owner].includes(sharedBy)) {
+        newMatch.sharedBy = sharedBy;
+      }
+
       const makeRequest = async (url, method, body) => {
         const response = await fetch(url, {
           method,

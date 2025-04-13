@@ -13,11 +13,17 @@ import {
   Radio,
   Stack,
   Input,
+  FormControl,
+  FormLabel,
+  Option,
+  Select,
+  Tooltip,
 } from "@mui/joy";
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FormControlLabel } from "@mui/material";
 import MatchedItemsDetails from "./MatchedItemsDetails";
 import { format } from "date-fns";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 const ItemClaimRequestModal = ({
   row,
@@ -34,6 +40,8 @@ const ItemClaimRequestModal = ({
   const [dateModal, setDateModal] = useState(null);
   const [dateClaim, setDateClaim] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recentLostItem, setRecentLostItem] = useState([]);
+  const [selectLostItem, setSelectLostItem] = useState(null);
 
   const handleSubmit = async (e, matchedItemId) => {
     if (e?.preventDefault) e.preventDefault();
@@ -68,10 +76,17 @@ const ItemClaimRequestModal = ({
 
         return response.json();
       };
-      await makeRequest(`/api/match-items/${matchedItemId}`, "PUT", {
+
+      const claimForm = {
         request_status: "Approved",
         claimDate: dateClaim,
-      });
+      };
+
+      if (selectLostItem) {
+        claimForm.owner.linkedItem = selectLostItem;
+      }
+
+      await makeRequest(`/api/match-items/${matchedItemId}`, "PUT", claimForm);
 
       const notificationData = [
         {
@@ -166,7 +181,7 @@ const ItemClaimRequestModal = ({
       await makeRequest("/api/notification", "POST", {
         receiver: row.owner.user._id,
         message: `Your claim request of ${row.finder.item.name} has been declined due to unmatched details.`,
-        type: "Lost Items",
+        type: "Retrieval Items",
         markAsRead: false,
         dateNotified: new Date(),
       });
@@ -194,6 +209,25 @@ const ItemClaimRequestModal = ({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (open === row._id && row?.owner?.user?._id) {
+      const fetchLostItems = async () => {
+        try {
+          const response = await fetch(`/api/owner/${row.owner.user._id}`);
+          if (!response.ok) throw new Error("Failed to fetch lost items");
+          const data = await response.json();
+          setRecentLostItem(
+            data.filter((lostItem) => lostItem?.item?.status === "Missing")
+          );
+        } catch (error) {
+          console.error("Error fetching lost items:", error);
+        }
+      };
+
+      fetchLostItems();
+    }
+  }, [open, row._id, row?.owner?.user?._id]);
 
   return (
     <>
@@ -289,16 +323,50 @@ const ItemClaimRequestModal = ({
               <ModalDialog>
                 <ModalClose />
                 <Typography level="h4" gutterBottom>
-                  Claim Date
+                  Claim Approval
                 </Typography>
-                <Typography>
-                  Please set a date when the claimant will claim the item.
-                </Typography>
-                <Input
-                  type="datetime-local"
-                  value={dateClaim}
-                  onChange={(e) => setDateClaim(e.target.value)}
-                />
+                <FormControl>
+                  <FormLabel>
+                    Please set a date when the claimant will claim the item.
+                  </FormLabel>
+                  <Input
+                    type="datetime-local"
+                    value={dateClaim}
+                    onChange={(e) => setDateClaim(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <FormLabel>
+                      Link a recent lost item
+                      <Typography
+                        component="span"
+                        level="body-sm"
+                        color="neutral"
+                      >
+                        &nbsp;(optional)
+                      </Typography>
+                    </FormLabel>
+                    <Tooltip
+                      title="Optional: Helps with item traceability if user has previously reported the lost item."
+                      arrow
+                    >
+                      <InfoOutlinedIcon fontSize="small" color="warning" />
+                    </Tooltip>
+                  </Box>
+                  <Select
+                    value={selectLostItem}
+                    onChange={(e, value) => setSelectLostItem(value)}
+                    placeholder="Select Lost Item"
+                  >
+                    {recentLostItem.map((owner) => (
+                      <Option key={owner?.item._id} value={owner?.item?._id}>
+                        {owner?.item?.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </FormControl>
+
                 <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
                   <Button
                     disabled={loading}
@@ -310,8 +378,7 @@ const ItemClaimRequestModal = ({
                     Cancel
                   </Button>
                   <Button
-                    disabled={loading}
-                    loading={loading}
+                    disabled={loading || !dateClaim}
                     onClick={(e) => setConfirmationApproveModal(row._id)}
                     fullWidth
                   >

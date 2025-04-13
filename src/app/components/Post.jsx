@@ -60,6 +60,7 @@ const Post = ({
   caption,
   isXs,
   users,
+  matches,
   locationOptions,
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);
@@ -192,13 +193,13 @@ const Post = ({
 
     const customMessage = `📣 ${itemType}
   
-  ${introMessage}
+${introMessage}
   
-  🧾 Item Name: ${post?.item_name || "No caption provided."}
-  🔗 Link: https://tlc-tracify.vercel.app/?callbackUrl=/post/${post?._id}
+🧾 Item Name: ${post?.item_name || "No caption provided."}
+🔗 Link: https://tlc-tracify.vercel.app/?callbackUrl=/post/${post?._id}
   
-  ${callToAction}
-  (Shared via Tracify)`;
+${callToAction}
+(Shared via Tracify)`;
 
     navigator.clipboard
       .writeText(customMessage)
@@ -372,6 +373,12 @@ const Post = ({
     );
   };
 
+  const hasSentClaim = matches.some(
+    (match) => match?.finder?.item?._id === item?.item?._id
+  );
+
+  console.log(hasSentClaim)
+
   return (
     <>
       <Card
@@ -517,7 +524,8 @@ const Post = ({
           >
             {/* Claim Section */}
             {session?.user?.id !== author?._id &&
-              post?.isFinder && ( // Ensure item is not already matched
+              post?.isFinder &&
+              !hasSentClaim && ( // Ensure item is not already matched
                 <>
                   <Box
                     onClick={() => setClaimModal(post._id)} // Replace with your actual handler function

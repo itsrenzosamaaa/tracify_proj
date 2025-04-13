@@ -79,6 +79,8 @@ const SharedPost = ({
   sharedAt,
   isXs,
   users,
+  matches,
+  locationOptions,
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);
   const [claimModal, setClaimModal] = useState(null);
@@ -397,6 +399,10 @@ const SharedPost = ({
     );
   };
 
+  const hasSentClaim = matches.some(
+    (match) => match?.finder?.item?._id === filteredOriginalPost?.item?._id
+  );
+
   return (
     <>
       <Card
@@ -618,7 +624,8 @@ const SharedPost = ({
           >
             {/* Claim Section */}
             {session?.user?.id !== originalPost?.author?._id &&
-              originalPost?.isFinder && (
+              originalPost?.isFinder &&
+              !hasSentClaim && (
                 <>
                   <Box
                     onClick={() => setClaimModal(originalPost._id)} // Replace with your actual handler function

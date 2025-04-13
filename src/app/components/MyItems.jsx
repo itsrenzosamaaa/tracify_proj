@@ -55,6 +55,7 @@ const MyItemsComponent = ({ session, status }) => {
   const [invalidItemDetailsModal, setInvalidItemDetailsModal] = useState(null);
   const [cancelRequestModal, setCancelRequestModal] = useState(null);
   const [lostItemModal, setLostItemModal] = useState(null);
+  const [foundItemModal, setFoundItemModal] = useState(null);
   const [completedItems, setCompletedItems] = useState([]);
   const [declinedItems, setDeclinedItems] = useState([]);
   const [canceledItems, setCanceledItems] = useState([]);
@@ -111,8 +112,7 @@ const MyItemsComponent = ({ session, status }) => {
       // Filter and categorize items before processing
       const lostItems = itemsData.filter(
         (item) =>
-          !item.item.isFoundItem &&
-          ["Missing"].includes(item.item.status)
+          !item.item.isFoundItem && ["Missing"].includes(item.item.status)
       );
 
       const foundItems = itemsData.filter(
@@ -463,11 +463,7 @@ const MyItemsComponent = ({ session, status }) => {
                           </Typography>
 
                           {isXs && (
-                            <Chip
-                              size="sm"
-                              variant="solid"
-                              color="danger"
-                            >
+                            <Chip size="sm" variant="solid" color="danger">
                               {lostItem.item.status}
                             </Chip>
                           )}
@@ -548,7 +544,10 @@ const MyItemsComponent = ({ session, status }) => {
                             msOverflowStyle: "-ms-autohiding-scrollbar",
                           }}
                         >
-                          <LostItemDetails lostItem={lostItem} onClose={() => setLostItemModal(null)} />
+                          <ItemDetails
+                            row={lostItem}
+                            onClose={() => setLostItemModal(null)}
+                          />
                         </DialogContent>
                       </ModalDialog>
                     </Modal>
@@ -712,11 +711,7 @@ const MyItemsComponent = ({ session, status }) => {
                         <Button
                           fullWidth
                           size="sm"
-                          onClick={() =>
-                            router.push(
-                              `my-items/found-item/${foundItem.item._id}`
-                            )
-                          }
+                          onClick={() => setFoundItemModal(foundItem.item._id)}
                           sx={{
                             mt: "auto",
                             fontSize: { xs: "0.75rem", sm: "0.875rem" },
@@ -726,6 +721,60 @@ const MyItemsComponent = ({ session, status }) => {
                         </Button>
                       </CardContent>
                     </Card>
+                    <Modal
+                      open={foundItemModal === foundItem.item._id}
+                      onClose={() => setFoundItemModal(null)}
+                    >
+                      <ModalDialog
+                        sx={{
+                          borderRadius: 4,
+                          boxShadow: 6,
+                          padding: 3,
+                        }}
+                      >
+                        <ModalClose />
+                        <Typography level="h4" fontWeight="bold">
+                          Found Item Details
+                        </Typography>
+
+                        <DialogContent
+                          sx={{
+                            paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+                            maxHeight: "85.5vh",
+                            height: "100%",
+                            overflowX: "hidden",
+                            overflowY: "scroll", // Always reserve space for scrollbar
+                            // Default scrollbar styles (invisible)
+                            "&::-webkit-scrollbar": {
+                              width: "8px", // Always reserve 8px width
+                            },
+                            "&::-webkit-scrollbar-thumb": {
+                              backgroundColor: "transparent", // Invisible by default
+                              borderRadius: "4px",
+                            },
+                            // Show scrollbar on hover
+                            "&:hover": {
+                              "&::-webkit-scrollbar-thumb": {
+                                backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                              },
+                            },
+                            // Firefox
+                            scrollbarWidth: "thin",
+                            scrollbarColor: "transparent transparent", // Both track and thumb transparent
+                            "&:hover": {
+                              scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+                            },
+                            // IE and Edge
+                            msOverflowStyle: "-ms-autohiding-scrollbar",
+                          }}
+                        >
+                          <ItemDetails
+                            row={foundItem}
+                            onClose={() => setFoundItemModal(null)}
+                          />
+                        </DialogContent>
+                      </ModalDialog>
+                    </Modal>
                   </Grid>
                 ))
               ) : (

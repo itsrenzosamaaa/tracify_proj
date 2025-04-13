@@ -460,8 +460,8 @@ const ItemDetails = ({
               Item Information
             </Typography>
             <Box sx={{ display: "flex", gap: 1 }}>
-              {(row.item.status === "Missing" ||
-                row.item.status === "Published" ||
+              {((["Missing", "Published"].includes(row?.item?.status) &&
+                session?.user?.permissions.includes("Admin Dashboard")) ||
                 (session.user.permissions.includes("User Dashboard") &&
                   row.item.status === "Request")) &&
                 (!isEditMode ? (

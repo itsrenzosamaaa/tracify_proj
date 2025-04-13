@@ -48,6 +48,10 @@ const MatchItemsSchema = new mongoose.Schema({
         type: [String],
       },
     },
+    linkedItem: {
+      type: String,
+      ref: "Item",
+    },
   },
   matched_date: {
     type: Date,

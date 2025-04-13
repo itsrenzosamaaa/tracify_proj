@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Box, Tooltip } from "@mui/joy";
 import { Fade } from "@mui/material";
@@ -9,58 +11,25 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
 
   const getResolvedLevel = () => {
     if (resolvedItemCount >= 20)
-      return {
-        shape: "star",
-        color: "#DAA520",
-        label: "Legendary Finder",
-        s,
-      };
+      return { shape: "star", color: "#DAA520", label: "Legendary Finder" };
     if (resolvedItemCount >= 10)
-      return {
-        shape: "star",
-        color: "#FFD700",
-        label: "Gold Resolver",
-      };
+      return { shape: "star", color: "#FFD700", label: "Gold Resolver" };
     if (resolvedItemCount >= 5)
-      return {
-        shape: "star",
-        color: "#C0C0C0",
-        label: "Silver Solver",
-      };
+      return { shape: "star", color: "#C0C0C0", label: "Silver Solver" };
     if (resolvedItemCount >= 1)
-      return {
-        shape: "star",
-        color: "#CD7F32",
-        label: "Bronze Seeker",
-      };
+      return { shape: "star", color: "#CD7F32", label: "Bronze Seeker" };
     return null;
   };
 
   const getShareLevel = () => {
     if (shareCount >= 20)
-      return {
-        shape: "circle",
-        color: "#DAA520",
-        label: "Master Broadcaster",
-      };
+      return { shape: "circle", color: "#DAA520", label: "Master Broadcaster" };
     if (shareCount >= 10)
-      return {
-        shape: "circle",
-        color: "#FFD700",
-        label: "Top Sharer",
-      };
+      return { shape: "circle", color: "#FFD700", label: "Top Sharer" };
     if (shareCount >= 5)
-      return {
-        shape: "circle",
-        color: "#C0C0C0",
-        label: "Amateur Sharer",
-      };
+      return { shape: "circle", color: "#C0C0C0", label: "Amateur Sharer" };
     if (shareCount >= 1)
-      return {
-        shape: "circle",
-        color: "#CD7F32",
-        label: "Rookie Sharer",
-      };
+      return { shape: "circle", color: "#CD7F32", label: "Rookie Sharer" };
     return null;
   };
 
@@ -120,7 +89,6 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
         borderRadius: "4px",
         position: "relative",
         border: "1px solid #d81b60",
-
         "&::before": {
           content: '""',
           position: "absolute",
@@ -129,7 +97,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
           transform: "translateX(-50%)",
           width: "2px",
           height: "100%",
-          backgroundColor: "#fff176", // vertical ribbon
+          backgroundColor: "#fff176",
         },
         "&::after": {
           content: '""',
@@ -139,7 +107,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
           transform: "translateY(-50%)",
           width: "100%",
           height: "2px",
-          backgroundColor: "#fff176", // horizontal ribbon
+          backgroundColor: "#fff176",
         },
         "& .bow": {
           position: "absolute",
@@ -177,6 +145,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
         borderRadius: 8,
       }}
     >
+      {/* 🎂 Birthday Badge */}
       {isBirthdayToday && (
         <Tooltip
           title="🎂 It's Your Special Day!"
@@ -191,6 +160,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
         </Tooltip>
       )}
 
+      {/* 🟨 Resolved Item Badge */}
       {resolvedBadge && (
         <Tooltip
           title={`${resolvedBadge.label}: ${resolvedItemCount}`}
@@ -205,6 +175,7 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
         </Tooltip>
       )}
 
+      {/* 🟦 Shared Item Badge */}
       {shareBadge && (
         <Tooltip
           title={`${shareBadge.label}: ${shareCount}`}

@@ -85,6 +85,12 @@ const ItemReservedModal = ({
         return response.json();
       };
 
+      if (row?.owner?.linkedItem) {
+        await makeRequest(`/api/lost-items/${row?.owner?.linkedItem}`, "PUT", {
+          status: "Claimed",
+        });
+      }
+
       // Update found item status
       await makeRequest(`/api/found-items/${foundItemId}`, "PUT", {
         status: "Resolved",
@@ -109,7 +115,7 @@ const ItemReservedModal = ({
         {
           receiver: row.owner.user._id,
           message: `Congratulations! The item (${row.owner.item.name}) has been successfully claimed.`,
-          type: "Completed Items",
+          type: "Retrieval Items",
           markAsRead: false,
           dateNotified: new Date(),
         },
@@ -137,11 +143,7 @@ const ItemReservedModal = ({
       }
 
       // Send notifications
-      await Promise.all(
-        notificationData.map((notif) =>
-          makeRequest("/api/notification", "POST", notif)
-        )
-      );
+      await makeRequest("/api/notification/bulk", "POST", notificationData);
 
       // Increment share count if sharedBy exists
       if (row?.sharedBy) {

@@ -85,13 +85,16 @@ const NewsFeed = ({ session, status, users, corner }) => {
       const data = await res.json();
       const filtered = data.filter(
         (match) =>
-          !["Completed", "Canceled", "Declined"].includes(match?.request_status)
+          match?.owner?.user?._id === session?.user?.id &&
+          ["Pending", "Approved"].includes(match?.request_status)
       );
       setMatches(filtered);
     } catch (err) {
       console.error(err);
     }
-  }, []);
+  }, [session?.user?.id]);
+
+  console.log(matches);
 
   const fetchLocations = useCallback(async () => {
     try {
@@ -449,6 +452,7 @@ const NewsFeed = ({ session, status, users, corner }) => {
                       setOpenSnackbar={setOpenSnackbar}
                       setMessage={setMessage}
                       locationOptions={locationOptions}
+                      matches={matches}
                     />
                   ))
                 ) : (

@@ -406,7 +406,7 @@ const ItemRetrievalTable = ({
                               );
                             }
 
-                            const status = row?.request_status === "Completed" ? "Claimed" : "Unclaimed";
+                            const status = row?.request_status === "Completed" ? "Claimed" : "For Claiming";
                             const chipColor =
                               status === "Claimed" ? "success" : "danger";
 
