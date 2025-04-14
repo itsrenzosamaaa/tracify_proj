@@ -74,6 +74,8 @@ const Post = ({
   const [name, setName] = useState("");
   const [color, setColor] = useState([]);
   const [size, setSize] = useState({ value: "", unit: "cm" });
+  const [sizeMode, setSizeMode] = useState("manual");
+  const [predefinedSize, setPredefinedSize] = useState("");
   const [sizeNotDetermined, setSizeNotDetermined] = useState(false);
   const [category, setCategory] = useState();
   const [material, setMaterial] = useState();
@@ -91,7 +93,7 @@ const Post = ({
   const [shareMode, setShareMode] = useState("specificUsers"); // default to specific
   const inputRef = useRef();
 
-  const handleCheck = (e) => {
+  const handleCheckItem = (e) => {
     const check = e.target.checked;
     setItemWhereabouts(check);
 
@@ -806,78 +808,92 @@ ${callToAction}
                 </FormControl>
               </Grid>
 
-              <Grid item xs={6} sm={4}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 5,
-                    mb: 0.7,
-                  }}
-                >
-                  <FormLabel>Size</FormLabel>
-                  <Checkbox
-                    size="sm"
-                    label="N/A"
-                    checked={sizeNotDetermined}
-                    onChange={handleCheckSize}
-                  />
-                </Box>
-                <Input
-                  disabled={sizeNotDetermined}
-                  type="number"
-                  required
-                  value={size.value}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "");
-                    setSize({ ...size, value });
-                  }}
-                  onKeyDown={(e) => {
-                    if (
-                      ["e", "E", "-", "+"].includes(e.key) ||
-                      (!/^\d$/.test(e.key) &&
-                        e.key !== "Backspace" &&
-                        e.key !== "Delete" &&
-                        e.key !== "ArrowLeft" &&
-                        e.key !== "ArrowRight")
-                    ) {
-                      e.preventDefault();
-                    }
-                  }}
-                  placeholder="Enter size"
-                  sx={{
-                    "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
-                      {
-                        display: "none",
-                      },
-                    "& input[type=number]": {
-                      MozAppearance: "textfield",
-                    },
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={6} sm={4}>
-                <FormControl required>
-                  <FormLabel>Unit</FormLabel>
+              <Grid item xs={12} sm={sizeMode === "manual" ? 4 : 6}>
+                <FormControl>
+                  <FormLabel>Size Mode</FormLabel>
                   <Select
-                    disabled={sizeNotDetermined}
-                    value={size.unit}
-                    onChange={(e, newValue) =>
-                      setSize({ ...size, unit: newValue })
-                    }
-                    placeholder="Select Unit..."
+                    value={sizeMode}
+                    onChange={(e, val) => {
+                      setSizeMode(val);
+                      if (val === "manual") {
+                        setPredefinedSize("");
+                      } else {
+                        setSize({ value: "", unit: "cm" });
+                        setSizeNotDetermined(false);
+                      }
+                    }}
                   >
-                    {["cm", "inch", "m", "ft", "kg", "g"].map((unit) => (
-                      <Option key={unit} value={unit}>
-                        {unit}
-                      </Option>
-                    ))}
+                    <Option value="manual">Manual</Option>
+                    <Option value="predefined">Predefined</Option>
                   </Select>
                 </FormControl>
               </Grid>
 
-              <Grid item xs={12} sm={4}>
+              {/* Manual Input Grid */}
+              {sizeMode === "manual" ? (
+                <>
+                  <Grid item xs={6} sm={4}>
+                    <FormControl>
+                      <FormLabel>Size Value</FormLabel>
+                      <Input
+                        disabled={sizeNotDetermined}
+                        type="number"
+                        required={!sizeNotDetermined}
+                        value={size.value}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "");
+                          setSize({ ...size, value });
+                        }}
+                        placeholder="Enter size"
+                      />
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <FormControl>
+                      <FormLabel>Unit</FormLabel>
+                      <Select
+                        disabled={sizeNotDetermined}
+                        value={size.unit}
+                        onChange={(e, newValue) =>
+                          setSize({ ...size, unit: newValue })
+                        }
+                      >
+                        {["cm", "inch", "m", "ft", "kg", "g"].map((unit) => (
+                          <Option key={unit} value={unit}>
+                            {unit}
+                          </Option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Checkbox
+                      label="I don't know the size (Set to N/A)"
+                      checked={sizeNotDetermined}
+                      onChange={handleCheckSize}
+                    />
+                  </Grid>
+                </>
+              ) : (
+                <Grid item xs={12} sm={6}>
+                  <FormControl required>
+                    <FormLabel>Predefined Size</FormLabel>
+                    <Select
+                      placeholder="Select a predefined size"
+                      value={predefinedSize}
+                      onChange={(e, value) => setPredefinedSize(value)}
+                    >
+                      {["XS", "S", "M", "L", "XL", "2XL"].map((sz) => (
+                        <Option key={sz} value={sz}>
+                          {sz}
+                        </Option>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              )}
+
+              <Grid item xs={12} sm={6}>
                 <FormControl required>
                   <FormLabel>Category</FormLabel>
                   <Select
@@ -906,7 +922,7 @@ ${callToAction}
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <FormControl required>
                   <FormLabel>Material</FormLabel>
                   <Select
@@ -941,7 +957,7 @@ ${callToAction}
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <FormControl required>
                   <FormLabel>Condition</FormLabel>
                   <Select
@@ -963,7 +979,7 @@ ${callToAction}
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <FormControl required>
                   <FormLabel>Distinctive Marks</FormLabel>
                   <Select
@@ -1010,7 +1026,7 @@ ${callToAction}
               <Checkbox
                 label="The owner knows the item's whereabouts"
                 checked={itemWhereabouts}
-                onChange={handleCheck}
+                onChange={handleCheckItem}
               />
             </FormControl>
             {itemWhereabouts && (
@@ -1197,7 +1213,13 @@ ${callToAction}
         lostDateEnd={lostDateEnd}
         sizeNotDetermined={sizeNotDetermined}
         itemWhereabouts={itemWhereabouts}
-        size={sizeNotDetermined ? "N/A" : `${size.value} ${size.unit}`}
+        size={
+          sizeMode === "manual"
+            ? sizeNotDetermined
+              ? "N/A"
+              : `${size.value} ${size.unit}`
+            : predefinedSize
+        }
         location={location}
         fetchMatches={fetchMatches}
         claimData={{

@@ -22,6 +22,7 @@ export async function GET(req) {
     let matchStage = {
       isShared: { $in: [true, false] },
       isFinder: { $in: [true] },
+      allowedToPost: { $in: [true] },
     };
 
     if (searchQuery) {

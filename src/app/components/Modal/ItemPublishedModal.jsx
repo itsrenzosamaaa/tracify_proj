@@ -29,6 +29,7 @@ const ItemPublishedModal = ({
   const [selectedOwner, setSelectedOwner] = useState(null);
   const [openSelectOwnerModal, setOpenSelectOwnerModal] = useState(false);
   const [confirmation, setConfirmation] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e, foundItemId) => {
     if (e?.preventDefault) {
@@ -71,6 +72,7 @@ const ItemPublishedModal = ({
       // Update found item status
       await makeRequest(`/api/found-items/${foundItemId}`, "PUT", {
         status: "Resolved",
+        receivedBy: selectedOwner?._id,
       });
 
       // Prepare notification(s)
@@ -209,7 +211,11 @@ const ItemPublishedModal = ({
               isOptionEqualToValue={(option, value) => option.id === value?.id}
             />
           </FormControl>
-          <Button fullWidth disabled={setSelectedOwner === null} onClick={() => setConfirmation(true)}>
+          <Button
+            fullWidth
+            disabled={setSelectedOwner === null}
+            onClick={() => setConfirmation(true)}
+          >
             Next
           </Button>
         </ModalDialog>
@@ -228,11 +234,18 @@ const ItemPublishedModal = ({
               variant="outlined"
               color="danger"
               onClick={() => setConfirmation(false)}
+              disabled={loading}
+              loading={loading}
             >
               Cancel
             </Button>
-            <Button fullWidth onClick={(e) => handleSubmit(e, row?.item?._id)}>
-              Next
+            <Button
+              disabled={loading}
+              loading={loading}
+              fullWidth
+              onClick={(e) => handleSubmit(e, row?.item?._id)}
+            >
+              Confirm
             </Button>
           </Box>
         </ModalDialog>

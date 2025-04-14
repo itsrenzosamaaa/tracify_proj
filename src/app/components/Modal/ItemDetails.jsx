@@ -69,17 +69,37 @@ const ItemDetails = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [name, setName] = useState(row.item.name);
   const [color, setColor] = useState(row.item.color);
-  const [size, setSize] = useState(
-    row?.item?.isFoundItem
-      ? {
-          value: row.item.size.split(" ")[0],
-          unit: row.item.size.split(" ")[1],
-        }
-      : null
-  );
-  const [sizeNotDetermined, setSizeNotDetermined] = useState(
-    row.item.size === "N/A" ? true : false
-  );
+  const [sizeMode, setSizeMode] = useState(() => {
+    return ["XS", "S", "M", "L", "XL", "2XL"].includes(row.item.size)
+      ? "predefined"
+      : "manual";
+  });
+
+  const [sizeNotDetermined, setSizeNotDetermined] = useState(() => {
+    return row.item.size === "N/A";
+  });
+
+  const [size, setSize] = useState(() => {
+    if (
+      !row?.item?.isFoundItem ||
+      sizeMode === "predefined" ||
+      sizeNotDetermined
+    )
+      return { value: "", unit: "cm" };
+
+    const [val, unit] = row.item.size.split(" ");
+    return {
+      value: val,
+      unit: unit,
+    };
+  });
+
+  const [predefinedSize, setPredefinedSize] = useState(() => {
+    return ["XS", "S", "M", "L", "XL", "2XL"].includes(row.item.size)
+      ? row.item.size
+      : "";
+  });
+
   const [category, setCategory] = useState(
     row?.item?.isFoundItem ? row.item.category : null
   );
@@ -147,7 +167,7 @@ const ItemDetails = ({
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isMd = useMediaQuery(theme.breakpoints.up("md"));
-  
+
   const handleCheck = (e) => {
     const check = e.target.checked;
     setSizeNotDetermined(check);
@@ -247,7 +267,12 @@ const ItemDetails = ({
       const formData = {
         name,
         color,
-        size: sizeNotDetermined ? "N/A" : `${size.value} ${size.unit}`,
+        size:
+          sizeMode === "predefined"
+            ? predefinedSize
+            : sizeNotDetermined
+            ? "N/A"
+            : `${size.value} ${size.unit}`,
         category,
         material,
         condition,
@@ -584,91 +609,115 @@ const ItemDetails = ({
 
                     {isEditMode ? (
                       <>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 5,
-                            mb: 0.7,
-                          }}
-                        >
-                          <FormLabel>Size</FormLabel>
-                          <Checkbox
-                            size="sm"
-                            label="If N/A, check this"
-                            checked={sizeNotDetermined}
-                            onChange={handleCheck}
-                          />
-                        </Box>
-                        <Input
-                          disabled={sizeNotDetermined}
-                          type="number"
-                          required
-                          value={size.value}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "");
-                            setSize({ ...size, value });
-                          }}
-                          onKeyDown={(e) => {
-                            if (
-                              ["e", "E", "-", "+"].includes(e.key) ||
-                              (!/^\d$/.test(e.key) &&
-                                e.key !== "Backspace" &&
-                                e.key !== "Delete" &&
-                                e.key !== "ArrowLeft" &&
-                                e.key !== "ArrowRight")
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                          placeholder="Enter size"
-                          sx={{
-                            "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
-                              {
-                                display: "none",
-                              },
-                            "& input[type=number]": {
-                              MozAppearance: "textfield",
-                            },
-                          }}
-                          endDecorator={
-                            <Select
-                              disabled={sizeNotDetermined}
-                              variant="soft"
-                              size="small"
-                              value={size.unit}
-                              onChange={(e, newValue) =>
-                                setSize({ ...size, unit: newValue })
+                        {/* Size Mode Switch */}
+                        <FormControl sx={{ mb: 1 }}>
+                          <FormLabel>Size Mode</FormLabel>
+                          <Select
+                            value={sizeMode}
+                            onChange={(e, val) => {
+                              setSizeMode(val);
+                              if (val === "manual") {
+                                setPredefinedSize("");
+                              } else {
+                                setSize({ value: "", unit: "cm" });
+                                setSizeNotDetermined(false);
                               }
-                              placeholder="Unit"
+                            }}
+                          >
+                            <Option value="manual">Manual</Option>
+                            <Option value="predefined">Predefined</Option>
+                          </Select>
+                        </FormControl>
+
+                        {sizeMode === "manual" ? (
+                          <>
+                            <Box
                               sx={{
-                                width: "40px",
-                                ml: 0.5,
-                                "& .MuiSelect-indicator": {
-                                  display: "none",
-                                },
-                                "& .MuiSelect-button": {
-                                  minHeight: "28px",
-                                  textAlign: "center",
-                                },
-                                "& .MuiInputBase-input": {
-                                  textAlign: "center",
-                                },
-                                "& .MuiOption-root": {
-                                  textAlign: "center",
-                                },
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                                mb: 0.7,
                               }}
                             >
-                              {["cm", "inch", "m", "ft", "kg", "g"].map(
-                                (unit) => (
-                                  <Option key={unit} value={unit}>
-                                    {unit}
-                                  </Option>
-                                )
-                              )}
+                              <FormLabel>Manual Size</FormLabel>
+                              <Checkbox
+                                size="sm"
+                                label="N/A"
+                                checked={sizeNotDetermined}
+                                onChange={handleCheck}
+                              />
+                            </Box>
+                            <Input
+                              disabled={sizeNotDetermined}
+                              type="number"
+                              required={!sizeNotDetermined}
+                              value={size.value}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, "");
+                                setSize({ ...size, value });
+                              }}
+                              onKeyDown={(e) => {
+                                if (
+                                  ["e", "E", "-", "+"].includes(e.key) ||
+                                  (!/^\d$/.test(e.key) &&
+                                    e.key !== "Backspace" &&
+                                    e.key !== "Delete" &&
+                                    e.key !== "ArrowLeft" &&
+                                    e.key !== "ArrowRight")
+                                ) {
+                                  e.preventDefault();
+                                }
+                              }}
+                              placeholder="Enter size"
+                              sx={{
+                                "& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button":
+                                  {
+                                    display: "none",
+                                  },
+                                "& input[type=number]": {
+                                  MozAppearance: "textfield",
+                                },
+                              }}
+                              endDecorator={
+                                <Select
+                                  disabled={sizeNotDetermined}
+                                  variant="soft"
+                                  size="small"
+                                  value={size.unit}
+                                  onChange={(e, newValue) =>
+                                    setSize({ ...size, unit: newValue })
+                                  }
+                                  sx={{
+                                    width: "50px",
+                                    ml: 0.5,
+                                  }}
+                                >
+                                  {["cm", "inch", "m", "ft", "kg", "g"].map(
+                                    (unit) => (
+                                      <Option key={unit} value={unit}>
+                                        {unit}
+                                      </Option>
+                                    )
+                                  )}
+                                </Select>
+                              }
+                            />
+                          </>
+                        ) : (
+                          <FormControl required sx={{ mt: 1 }}>
+                            <FormLabel>Predefined Size</FormLabel>
+                            <Select
+                              value={predefinedSize}
+                              onChange={(e, value) => setPredefinedSize(value)}
+                            >
+                              {["XS", "S", "M", "L", "XL", "2XL"].map((sz) => (
+                                <Option key={sz} value={sz}>
+                                  {sz}
+                                </Option>
+                              ))}
                             </Select>
-                          }
-                        />
+                          </FormControl>
+                        )}
                       </>
                     ) : (
                       <Box sx={{ display: "flex", alignItems: "center" }}>
