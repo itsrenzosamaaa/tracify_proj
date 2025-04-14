@@ -377,7 +377,7 @@ ${callToAction}
     (match) => match?.finder?.item?._id === item?.item?._id
   );
 
-  console.log(hasSentClaim)
+  console.log(hasSentClaim);
 
   return (
     <>
@@ -401,13 +401,13 @@ ${callToAction}
                     maxWidth: isXs ? "150px" : "auto",
                   }}
                 >
-                  Anonymous{" "}
-                  {post?.isFinder
-                    ? "Finder"
-                    : !post?.isFinder
-                    ? "Owner"
+                  {post?.isFinder === true
+                    ? "Item Finder"
+                    : post?.isFinder === false
+                    ? "Item Owner"
                     : "Unknown User"}
                 </Typography>
+
                 {/* <PreviewBadge
                   resolvedItemCount={author?.resolvedItemCount || 0}
                   shareCount={author?.shareCount || 0}
@@ -455,14 +455,103 @@ ${callToAction}
           </Box>
 
           {/* Post Caption */}
-          <Typography
-            level={isXs ? "body-sm" : "body-md"}
-            sx={{ color: "text.secondary", mb: 2 }}
-          >
-            {post?.isFinder
-              ? "An item has been found!"
-              : "If you ever find this item, please surrender to SASO."}
-          </Typography>
+          <Box sx={{ mb: 2 }}>
+            {post?.isFinder ? (
+              <>
+                <Typography
+                  level={isXs ? "body-sm" : "body-md"}
+                  sx={{ color: "text.secondary", mt: 1 }}
+                >
+                  This item has been safely secured by the finder.
+                </Typography>
+
+                <Typography
+                  level={isXs ? "body-sm" : "body-md"}
+                  sx={{ mt: 1, color: "text.secondary" }}
+                  fontWeight={700}
+                >
+                  Please coordinate with SASO for proper return.
+                </Typography>
+              </>
+            ) : (
+              (() => {
+                const dateTime = item?.item?.date_time;
+                const locationValue = item?.item?.location;
+                const captionText = post?.caption?.trim();
+
+                let datePart = "";
+                let timeRange = "";
+
+                if (dateTime && dateTime !== "Unidentified") {
+                  const [start, end] = dateTime.split(" to ");
+                  const startDate = new Date(start);
+                  const endDate = new Date(end);
+                  const isSameDate =
+                    startDate.toDateString() === endDate.toDateString();
+
+                  if (isSameDate) {
+                    datePart = `on ${format(startDate, "MMMM d, yyyy")}`;
+                    timeRange = ` between ${format(
+                      startDate,
+                      "hh:mm a"
+                    )} and ${format(endDate, "hh:mm a")}`;
+                  } else {
+                    datePart = `from ${format(
+                      startDate,
+                      "MMMM d, yyyy hh:mm a"
+                    )} to ${format(endDate, "MMMM d, yyyy hh:mm a")}`;
+                  }
+                }
+
+                return (
+                  <>
+                    {captionText && (
+                      <>
+                        <Typography
+                          level={isXs ? "body-sm" : "body-md"}
+                          sx={{ fontWeight: 700, color: "text.secondary" }}
+                        >
+                          Description:
+                        </Typography>
+                        <Typography
+                          level={isXs ? "body-sm" : "body-md"}
+                          sx={{ fontStyle: "italic", color: "text.secondary" }}
+                        >
+                          "{captionText}"
+                        </Typography>
+                      </>
+                    )}
+
+                    {!captionText && (
+                      <Typography
+                        level={isXs ? "body-sm" : "body-md"}
+                        sx={{ color: "text.secondary" }}
+                      >
+                        The owner is seeking help in locating this item.
+                      </Typography>
+                    )}
+
+                    {datePart && (
+                      <Typography
+                        level={isXs ? "body-sm" : "body-md"}
+                        sx={{ color: "text.secondary" }}
+                      >
+                        It was lost {datePart}
+                        {timeRange}.
+                      </Typography>
+                    )}
+
+                    <Typography
+                      level={isXs ? "body-sm" : "body-md"}
+                      sx={{ fontWeight: 700, color: "text.secondary", mt: 1 }}
+                    >
+                      If found, please surrender the item to SASO.
+                    </Typography>
+                  </>
+                );
+              })()
+            )}
+          </Box>
 
           {/* Item Details */}
           {/* <Typography level="h6" sx={{ fontWeight: "bold", mb: 1 }}>

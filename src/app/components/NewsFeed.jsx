@@ -94,8 +94,6 @@ const NewsFeed = ({ session, status, users, corner }) => {
     }
   }, [session?.user?.id]);
 
-  console.log(matches);
-
   const fetchLocations = useCallback(async () => {
     try {
       const res = await fetch("/api/location");

@@ -65,11 +65,11 @@ export async function GET(req, { params }) {
           },
           {
             path: "finder",
-            populate: { path: "item", select: "name images status location questions" },
+            populate: { path: "item", select: "name images status location questions category date_time distinctiveMarks" },
           },
           {
             path: "owner",
-            populate: { path: "item", select: "name images status location" },
+            populate: { path: "item", select: "name images status location category date_time distinctiveMarks" },
           },
         ],
       },

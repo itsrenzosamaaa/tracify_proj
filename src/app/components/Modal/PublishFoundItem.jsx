@@ -57,6 +57,7 @@ const PublishFoundItem = ({
   const [loading, setLoading] = useState(false);
   const [studentCheck, setStudentCheck] = useState(false);
   const [questions, setQuestions] = useState([""]);
+  const [allowedToPost, setAllowedToPost] = useState(false);
   const { data: session, status } = useSession();
 
   const fetchUsers = useCallback(async () => {
@@ -207,6 +208,7 @@ const PublishFoundItem = ({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            allowedToPost,
             author: studentCheck ? finder?._id : session.user?.id,
             isFinder: true,
             item_name: name,
@@ -824,6 +826,16 @@ const PublishFoundItem = ({
                         + Add Another Question
                       </Button>
                     </Stack>
+                  </FormControl>
+                )}
+
+                {session.user?.permissions.includes("Admin Dashboard") && (
+                  <FormControl>
+                    <Checkbox
+                      label="Allowed to post in found corner"
+                      checked={allowedToPost}
+                      onChange={(e) => setAllowedToPost(e.target.checked)}
+                    />
                   </FormControl>
                 )}
 

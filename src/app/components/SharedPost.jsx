@@ -543,11 +543,10 @@ const SharedPost = ({
                       maxWidth: isXs ? "150px" : "auto",
                     }}
                   >
-                    Anonymous{" "}
-                    {originalPost?.isFinder
-                      ? "Finder"
-                      : !originalPost?.isFinder
-                      ? "Owner"
+                    {originalPost?.isFinder === true
+                      ? "Item Finder"
+                      : originalPost?.isFinder === false
+                      ? "Item Owner"
                       : "Unknown User"}
                   </Typography>
 
@@ -597,14 +596,133 @@ const SharedPost = ({
                   {filteredOriginalPost?.item?.location}
                 </Chip>
               </Box>
-              <Typography
-                level={isXs ? "body-sm" : "body-md"}
-                sx={{ color: "text.secondary", mb: 2 }}
-              >
-                {originalPost?.isFinder
-                  ? "An item has been found!"
-                  : "If you ever find this item, please surrender to SASO."}
-              </Typography>
+              <Box sx={{ mb: 2 }}>
+                {originalPost?.isFinder ? (
+                  <>
+                    <Typography
+                      level={isXs ? "body-sm" : "body-md"}
+                      fontWeight={700}
+                      sx={{ color: "text.secondary" }}
+                    >
+                      🔍 Found Item Notice
+                    </Typography>
+                    <Typography
+                      level={isXs ? "body-sm" : "body-md"}
+                      sx={{ color: "text.secondary", mt: 1 }}
+                    >
+                      This item has been securely turned over by a finder.
+                    </Typography>
+                    {post?.caption?.trim() && (
+                      <>
+                        <Typography
+                          level={isXs ? "body-sm" : "body-md"}
+                          fontWeight={700}
+                          sx={{ mt: 1, color: "text.secondary" }}
+                        >
+                          Message from the Finder:
+                        </Typography>
+                        <Typography
+                          level={isXs ? "body-sm" : "body-md"}
+                          sx={{
+                            fontStyle: "italic",
+                            color: "text.secondary",
+                          }}
+                        >
+                          "{post.caption}"
+                        </Typography>
+                      </>
+                    )}
+                    <Typography
+                      level={isXs ? "body-sm" : "body-md"}
+                      fontWeight={700}
+                      sx={{ mt: 2, color: "text.secondary" }}
+                    >
+                      Please coordinate with SASO for proper claiming.
+                    </Typography>
+                  </>
+                ) : (
+                  (() => {
+                    const dateTime = originalPost?.owner?.item?.date_time;
+                    const locationValue = originalPost?.owner?.item?.location;
+                    const captionText = post?.caption?.trim();
+                  
+                    let datePart = "";
+                    let timeRange = "";
+
+                    if (dateTime && dateTime !== "Unidentified") {
+                      const [start, end] = dateTime.split(" to ");
+                      const startDate = new Date(start);
+                      const endDate = new Date(end);
+                      const isSameDate =
+                        startDate.toDateString() === endDate.toDateString();
+
+                      if (isSameDate) {
+                        datePart = `on ${format(startDate, "MMMM d, yyyy")}`;
+                        timeRange = ` between ${format(
+                          startDate,
+                          "hh:mm a"
+                        )} and ${format(endDate, "hh:mm a")}`;
+                      } else {
+                        datePart = `from ${format(
+                          startDate,
+                          "MMMM d, yyyy hh:mm a"
+                        )} to ${format(endDate, "MMMM d, yyyy hh:mm a")}`;
+                      }
+                    }
+
+                    return (
+                      <>
+                        {captionText && (
+                          <>
+                            <Typography
+                              level={isXs ? "body-sm" : "body-md"}
+                              sx={{ fontWeight: 700, color: "text.secondary" }}
+                            >
+                              Description:
+                            </Typography>
+                            <Typography
+                              level={isXs ? "body-sm" : "body-md"}
+                              sx={{
+                                fontStyle: "italic",
+                                color: "text.secondary",
+                              }}
+                            >
+                              "{captionText}"
+                            </Typography>
+                          </>
+                        )}
+
+                        {!captionText && (
+                          <Typography
+                            level={isXs ? "body-sm" : "body-md"}
+                            sx={{ mt: 1, color: "text.secondary" }}
+                          >
+                            The owner is seeking help in locating this item.
+                          </Typography>
+                        )}
+
+                        {datePart && (
+                          <Typography
+                            level={isXs ? "body-sm" : "body-md"}
+                            sx={{ color: "text.secondary" }}
+                          >
+                            It was lost {datePart}
+                            {timeRange}.
+                          </Typography>
+                        )}
+
+                        <Typography
+                          level={isXs ? "body-sm" : "body-md"}
+                          fontWeight={700}
+                          sx={{ mt: 2, color: "text.secondary" }}
+                        >
+                          If found, please surrender the item to SASO.
+                        </Typography>
+                      </>
+                    );
+                  })()
+                )}
+              </Box>
             </Box>
           </Box>
 

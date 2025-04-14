@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema(
   {
+    allowedToPost: {
+      type: Boolean,
+    },
     author: {
       type: String,
       ref: "User",

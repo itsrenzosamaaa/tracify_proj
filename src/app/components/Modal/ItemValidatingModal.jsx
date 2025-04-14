@@ -13,6 +13,7 @@ import {
   Input,
   FormControl,
   FormLabel,
+  Checkbox,
 } from "@mui/joy";
 import React, { useState } from "react";
 import ItemDetails from "./ItemDetails";
@@ -30,6 +31,7 @@ const ItemValidatingModal = ({
   const [itemInvalidate, setItemInvalidate] = useState(null);
   const [publishConfirmation, setPublishConfirmation] = useState(null);
   const [questions, setQuestions] = useState([""]);
+  const [allowedToPost, setAllowedToPost] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e, id) => {
@@ -61,6 +63,7 @@ const ItemValidatingModal = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          allowedToPost,
           author: row?.user?._id,
           isFinder: true,
           item_name: row?.item?.name,
@@ -282,6 +285,13 @@ const ItemValidatingModal = ({
                       + Add Another Question
                     </Button>
                   </Stack>
+                </FormControl>
+                <FormControl>
+                  <Checkbox
+                    label="Allowed to post in found corner"
+                    checked={allowedToPost}
+                    onChange={(e) => setAllowedToPost(e.target.checked)}
+                  />
                 </FormControl>
                 <Box sx={{ display: "flex", gap: 2 }}>
                   <Button
