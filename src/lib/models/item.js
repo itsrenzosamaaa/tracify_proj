@@ -91,6 +91,10 @@ const ItemSchema = new mongoose.Schema({
   dateCanceled: {
     type: Date,
   },
+  receivedBy: {
+    type: String,
+    ref: "User",
+  },
   questions: [
     {
       type: String,

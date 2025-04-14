@@ -147,7 +147,7 @@ const ItemDetails = ({
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isMd = useMediaQuery(theme.breakpoints.up("md"));
-
+  
   const handleCheck = (e) => {
     const check = e.target.checked;
     setSizeNotDetermined(check);
@@ -1158,6 +1158,26 @@ const ItemDetails = ({
               )}
             </Grid>
           </Box>
+        </Grid>
+
+        <Grid item xs={12}>
+          {row?.item?.status === "Resolved" && (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 1,
+                marginBottom: "1px",
+              }}
+            >
+              <Typography>Received by:</Typography>
+              <Typography fontWeight={600} level={isXs ? "body-sm" : "body-md"}>
+                {`${row?.item?.receivedBy?.firstname} ${row?.item?.receivedBy?.lastname}` ||
+                  "Unknown Owner"}
+              </Typography>
+            </Box>
+          )}
         </Grid>
 
         {/* Publishing Details */}

@@ -18,6 +18,8 @@ const PostPage = ({ params }) => {
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const { id } = params;
   const [users, setUsers] = useState([]);
+  const [matches, setMatches] = useState([]);
+  const [locationOptions, setLocationOptions] = useState([]);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -29,6 +31,31 @@ const PostPage = ({ params }) => {
       setUsers(filterUsers);
     } catch (error) {
       console.error(error);
+    }
+  }, []);
+
+  const fetchMatches = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/match-items`);
+      const data = await res.json();
+      const filtered = data.filter(
+        (match) =>
+          match?.owner?.user?._id === session?.user?.id &&
+          ["Pending", "Approved"].includes(match?.request_status)
+      );
+      setMatches(filtered);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [session?.user?.id]);
+
+  const fetchLocations = useCallback(async () => {
+    try {
+      const res = await fetch("/api/location");
+      const data = await res.json();
+      setLocationOptions(data.reduce((acc, loc) => [...acc, ...loc.areas], []));
+    } catch (err) {
+      console.error(err);
     }
   }, []);
 
@@ -45,8 +72,10 @@ const PostPage = ({ params }) => {
     if (status === "authenticated") {
       fetchPost();
       fetchUsers();
+      fetchMatches();
+      fetchLocations();
     }
-  }, [status, fetchPost, fetchUsers]);
+  }, [status, fetchPost, fetchUsers, fetchLocations, fetchMatches]);
 
   return (
     <>
@@ -56,7 +85,9 @@ const PostPage = ({ params }) => {
             <Loading />
           ) : post?.isShared ? (
             <>
-              <Typography level="h3" sx={{ mb: 2 }}>Shared To You</Typography>
+              <Typography level="h3" sx={{ mb: 2 }}>
+                Shared To You
+              </Typography>
               <SharedPost
                 setOpenSnackbar={setOpenSnackbar}
                 setMessage={setMessage}
@@ -68,12 +99,18 @@ const PostPage = ({ params }) => {
                 sharedAt={post.sharedAt}
                 isXs={isXs}
                 users={users}
+                locationOptions={locationOptions}
+                matches={matches}
+                fetchMatches={fetchMatches}
               />
             </>
           ) : (
             <>
-              <Typography level="h3" sx={{ mb: 2 }}>Post</Typography>
+              <Typography level="h3" sx={{ mb: 2 }}>
+                Post
+              </Typography>
               <Post
+                matches={matches}
                 setOpenSnackbar={setOpenSnackbar}
                 setMessage={setMessage}
                 session={session}
@@ -84,6 +121,8 @@ const PostPage = ({ params }) => {
                 createdAt={post.createdAt}
                 isXs={isXs}
                 users={users}
+                locationOptions={locationOptions}
+                fetchMatches={fetchMatches}
               />
             </>
           )}

@@ -266,11 +266,6 @@ const NewsFeed = ({ session, status, users, corner }) => {
     corner,
   ]);
 
-  const birthdayToday = users.filter((user) => {
-    if (!user?.birthday) return false;
-    return dayjs(user.birthday).format("MM-DD") === dayjs().format("MM-DD");
-  });
-
   return (
     <>
       <GlobalStyles styles={{ "*": { pointerEvents: "auto" } }} />
@@ -379,7 +374,6 @@ const NewsFeed = ({ session, status, users, corner }) => {
                     ref={index === posts.length - 1 ? lastPostElementRef : null}
                   >
                     <Post
-                      refreshData={fetchMatches}
                       matches={matches}
                       setOpenSnackbar={setOpenSnackbar}
                       setMessage={setMessage}
@@ -392,6 +386,7 @@ const NewsFeed = ({ session, status, users, corner }) => {
                       isXs={isXs}
                       users={users}
                       locationOptions={locationOptions}
+                      fetchMatches={fetchMatches}
                     />
                   </div>
                 ))}
@@ -451,6 +446,7 @@ const NewsFeed = ({ session, status, users, corner }) => {
                       setMessage={setMessage}
                       locationOptions={locationOptions}
                       matches={matches}
+                      fetchMatches={fetchMatches}
                     />
                   ))
                 ) : (

@@ -94,6 +94,7 @@ const ItemReservedModal = ({
       // Update found item status
       await makeRequest(`/api/found-items/${foundItemId}`, "PUT", {
         status: "Resolved",
+        receivedBy: row?.owner?.user?._id,
       });
 
       // Update match status

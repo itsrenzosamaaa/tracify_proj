@@ -81,6 +81,7 @@ const SharedPost = ({
   users,
   matches,
   locationOptions,
+  fetchMatches,
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);
   const [claimModal, setClaimModal] = useState(null);
@@ -645,7 +646,7 @@ const SharedPost = ({
                     const dateTime = originalPost?.owner?.item?.date_time;
                     const locationValue = originalPost?.owner?.item?.location;
                     const captionText = post?.caption?.trim();
-                  
+
                     let datePart = "";
                     let timeRange = "";
 
@@ -1312,6 +1313,8 @@ const SharedPost = ({
         open={confirmationRetrievalRequest === originalPost._id}
         onClose={() => setConfirmationRetrievalRequest(null)}
         closeModal={() => setClaimModal(null)}
+        setMessage={setMessage}
+        setOpenSnackbar={setOpenSnackbar}
         foundItem={filteredOriginalPost}
         lostItem={selectedLostItem}
         finder={filteredOriginalPost?._id}
@@ -1327,10 +1330,11 @@ const SharedPost = ({
         sizeNotDetermined={sizeNotDetermined}
         itemWhereabouts={itemWhereabouts}
         location={location}
+        size={sizeNotDetermined ? "N/A" : `${size.value} ${size.unit}`}
+        fetchMatches={fetchMatches}
         claimData={{
           name,
           color,
-          size,
           category,
           material,
           condition,

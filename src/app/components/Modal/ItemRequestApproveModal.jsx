@@ -229,7 +229,7 @@ const ItemRequestApproveModal = ({
             level="h4"
             sx={{ marginBottom: 2, fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
           >
-            Approve Item Request
+            Approve Item Report
           </Typography>
           <DialogContent
             sx={{

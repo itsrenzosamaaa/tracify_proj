@@ -24,7 +24,7 @@ import {
   TablePagination,
   useMediaQuery,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects";
 import ItemRequestApproveModal from "../Modal/ItemRequestApproveModal";
 import ItemValidatingModal from "../Modal/ItemValidatingModal";
@@ -52,10 +52,25 @@ const ItemsTable = ({
   const [openValidatingModal, setOpenValidatingModal] = useState(null);
   const [openPublishedModal, setOpenPublishedModal] = useState(null);
   const [openMissingModal, setOpenMissingModal] = useState(null);
+  const [openResolvedModal, setOpenResolvedModal] = useState(null);
   const [openClaimRequestModal, setOpenClaimRequestModal] = useState(null);
   const [openReservedModal, setOpenReservedModal] = useState(null);
   const [rowsPerPage, setRowsPerPage] = useState(5); // Tracks rows per page
   const isMobile = useMediaQuery("(max-width:600px)");
+  const [owners, setOwners] = useState([]);
+
+  useEffect(() => {
+    const fetchOwners = async () => {
+      try {
+        const response = await fetch("/api/users");
+        const data = await response.json();
+        setOwners(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchOwners();
+  }, []);
 
   // Handle changing the page
   const handleChangePage = (event, newPage) => {
@@ -71,7 +86,8 @@ const ItemsTable = ({
   const sortedData = [...items].sort((a, b) => {
     const getLatestDate = (row) => {
       return new Date(
-        row.item.datePublished ||
+        row.item.dateResolved ||
+          row.item.datePublished ||
           row.item.dateValidating ||
           row.item.dateRequest ||
           row.item.dateMissing ||
@@ -100,6 +116,7 @@ const ItemsTable = ({
     snackbarMessage,
     isOpenSnackbar,
     locationOptions,
+    users,
   }) => {
     return (
       status === row.item.status && (
@@ -116,6 +133,7 @@ const ItemsTable = ({
             setMessage={snackbarMessage}
             setOpenSnackbar={isOpenSnackbar}
             locationOptions={locationOptions}
+            users={users}
           />
         </>
       )
@@ -153,6 +171,7 @@ const ItemsTable = ({
                         {(() => {
                           const dateMap = row.item.isFoundItem
                             ? {
+                                Resolved: row.item.dateResolved,
                                 Published: row.item.datePublished,
                                 Request: row.item.dateRequest,
                                 "Surrender Pending": row.item.dateValidating,
@@ -214,6 +233,18 @@ const ItemsTable = ({
                         isOpenSnackbar={setOpenSnackbar}
                       />
                       <ModalButton
+                        status="Resolved"
+                        row={row}
+                        setModal={setOpenResolvedModal}
+                        modalState={openResolvedModal}
+                        ModalComponent={ItemPublishedModal}
+                        isSession={session}
+                        fetchItems={fetchItems}
+                        snackbarMessage={setMessage}
+                        isOpenSnackbar={setOpenSnackbar}
+                        locationOptions={locationOptions}
+                      />
+                      <ModalButton
                         status="Published"
                         row={row}
                         setModal={setOpenPublishedModal}
@@ -224,6 +255,7 @@ const ItemsTable = ({
                         snackbarMessage={setMessage}
                         isOpenSnackbar={setOpenSnackbar}
                         locationOptions={locationOptions}
+                        users={owners}
                       />
                       <ModalButton
                         status="Declined"
@@ -402,6 +434,7 @@ const ItemsTable = ({
                         <TableCell sx={{ width: "25%" }}>
                           {row.item.isFoundItem
                             ? {
+                                Resolved: row.item.dateResolved,
                                 Published: row.item.datePublished,
                                 Request: row.item.dateRequest,
                                 "Surrender Pending": row.item.dateValidating,
@@ -411,6 +444,7 @@ const ItemsTable = ({
                               ? format(
                                   new Date(
                                     {
+                                      Resolved: row.item.dateResolved,
                                       Published: row.item.datePublished,
                                       Request: row.item.dateRequest,
                                       "Surrender Pending":
@@ -489,6 +523,19 @@ const ItemsTable = ({
                             row={row}
                             setModal={setOpenPublishedModal}
                             modalState={openPublishedModal}
+                            ModalComponent={ItemPublishedModal}
+                            isSession={session}
+                            fetchItems={fetchItems}
+                            snackbarMessage={setMessage}
+                            isOpenSnackbar={setOpenSnackbar}
+                            locationOptions={locationOptions}
+                            users={owners}
+                          />
+                          <ModalButton
+                            status="Resolved"
+                            row={row}
+                            setModal={setOpenResolvedModal}
+                            modalState={openResolvedModal}
                             ModalComponent={ItemPublishedModal}
                             isSession={session}
                             fetchItems={fetchItems}

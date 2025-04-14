@@ -31,14 +31,14 @@ const FoundItemsList = ({
   setOpenSnackbar,
   setMessage,
 }) => {
-  const [status, setStatus] = useState("Published");
+  const [status, setStatus] = useState("Resolved");
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // Track search input
   const [currentPage, setCurrentPage] = useState(1); // Tracks current page
   const isMobile = useMediaQuery("(max-width:600px)");
 
   // Define status options
-  const statusOptions = ["Published", "Request", "Declined", "Canceled"]; // Group 'Request' and 'Surrender Pending'
+  const statusOptions = ["Resolved", "Published", "Request", "Declined", "Canceled"]; // Group 'Request' and 'Surrender Pending'
   const requestStatuses = ["Request", "Surrender Pending"];
 
   // Count how many items have each status

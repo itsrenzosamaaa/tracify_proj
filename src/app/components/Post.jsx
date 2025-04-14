@@ -62,6 +62,7 @@ const Post = ({
   users,
   matches,
   locationOptions,
+  fetchMatches,
 }) => {
   const [sharePostModal, setSharePostModal] = useState(null);
   const [claimModal, setClaimModal] = useState(null);
@@ -517,7 +518,7 @@ ${callToAction}
                           level={isXs ? "body-sm" : "body-md"}
                           sx={{ fontStyle: "italic", color: "text.secondary" }}
                         >
-                          "&quot;{captionText}&quot;
+                          &quot;{captionText}&quot;
                         </Typography>
                       </>
                     )}
@@ -1181,6 +1182,8 @@ ${callToAction}
       <ConfirmationRetrievalRequest
         open={confirmationRetrievalRequest === post._id}
         onClose={() => setConfirmationRetrievalRequest(null)}
+        setMessage={setMessage}
+        setOpenSnackbar={setOpenSnackbar}
         closeModal={() => setClaimModal(null)}
         foundItem={item}
         lostItem={selectedLostItem}
@@ -1194,11 +1197,12 @@ ${callToAction}
         lostDateEnd={lostDateEnd}
         sizeNotDetermined={sizeNotDetermined}
         itemWhereabouts={itemWhereabouts}
+        size={sizeNotDetermined ? "N/A" : `${size.value} ${size.unit}`}
         location={location}
+        fetchMatches={fetchMatches}
         claimData={{
           name,
           color,
-          size,
           category,
           material,
           condition,

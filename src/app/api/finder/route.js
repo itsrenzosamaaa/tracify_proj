@@ -3,7 +3,7 @@ import dbConnect from "@/lib/mongodb";
 import finder from "@/lib/models/finder";
 import item from "@/lib/models/item";
 import user from "@/lib/models/user";
-import roles from "@/lib/models/location";
+import role from "@/lib/models/role";
 import { nanoid } from "nanoid";
 
 export async function GET() {
@@ -15,10 +15,20 @@ export async function GET() {
       .populate({
         path: "user",
         model: "User",
+        populate: {
+          path: "role",
+          model: "Role", // or 'roles' based on your model name export
+          select: "permissions",
+        },
       })
       .populate({
         path: "item",
         model: "Item",
+        populate: {
+          path: "receivedBy",
+          model: "User", // or 'roles' based on your model name export
+          select: "firstname lastname",
+        },
       });
 
     return NextResponse.json(findFinders, { status: 200 });

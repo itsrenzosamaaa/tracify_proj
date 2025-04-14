@@ -13,12 +13,30 @@ const FoundItemsPage = () => {
   const [message, setMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(null);
 
-  const fetchItems = useCallback(async () => {
+  const fetchAllData = useCallback(async () => {
     setIsFetchingItems(true);
     try {
-      const response = await fetch("/api/finder");
-      const data = await response.json();
-      setFinders(data);
+      const [matchesRes, findersRes] = await Promise.all([
+        fetch("/api/match-items"),
+        fetch("/api/finder"),
+      ]);
+
+      const matchesData = await matchesRes.json();
+      const filteredMatches = matchesData.filter((match) =>
+        ["Pending", "Approved"].includes(match?.request_status)
+      );
+
+      const matchedLostItemIds = filteredMatches
+        .map((match) => match?.finder?.item?._id)
+        .filter(Boolean);
+
+      const findersData = await findersRes.json();
+      const filteredItems = findersData.filter(
+        (lostItem) =>
+          !matchedLostItemIds.includes(lostItem?.item?._id)
+      );
+
+      setFinders(filteredItems);
     } catch (error) {
       console.error(error);
     } finally {
@@ -43,10 +61,10 @@ const FoundItemsPage = () => {
 
   useEffect(() => {
     if (status === "authenticated") {
-      fetchItems();
+      fetchAllData();
       fetchLocations();
     }
-  }, [status, fetchItems, fetchLocations]);
+  }, [status, fetchAllData, fetchLocations]);
 
   if (status === "loading") {
     return null;
@@ -57,7 +75,7 @@ const FoundItemsPage = () => {
       <FoundItemsList
         locationOptions={locationOptions}
         finders={finders}
-        fetchItems={fetchItems}
+        fetchItems={fetchAllData}
         session={session}
         isFetchingItems={isFetchingItems}
         setMessage={setMessage}

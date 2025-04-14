@@ -16,13 +16,17 @@ const ConfirmationRetrievalRequest = ({
   open,
   onClose,
   closeModal,
+  setMessage,
+  setOpenSnackbar,
   foundItem,
   lostItem,
   finder,
   isAdmin,
   sharedBy,
+  size,
   owner,
   claimData,
+  fetchMatches,
   lostDateStart,
   lostDateEnd,
   sizeNotDetermined,
@@ -30,7 +34,6 @@ const ConfirmationRetrievalRequest = ({
   location,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const handleSubmit = async (e, finderId) => {
     if (e && e.preventDefault) {
@@ -67,7 +70,7 @@ const ConfirmationRetrievalRequest = ({
           user: owner,
           item: {
             ...claimData,
-            size: sizeNotDetermined ? "N/A" : `${size.value} ${size.unit}`,
+            size,
             location: itemWhereabouts ? location : "Unidentified",
             date_time: itemWhereabouts
               ? `${format(startDate, "MMMM dd, yyyy hh:mm a")} to ${format(
@@ -106,7 +109,9 @@ const ConfirmationRetrievalRequest = ({
 
       onClose();
       closeModal();
-      setOpenSnackbar(true);
+      setOpenSnackbar("success");
+      setMessage("Item retrieval request sent!");
+      fetchMatches();
       return;
     } catch (error) {
       console.error(error);
@@ -145,20 +150,6 @@ const ConfirmationRetrievalRequest = ({
           </Box>
         </ModalDialog>
       </Modal>
-      <Snackbar
-        autoHideDuration={5000}
-        open={openSnackbar}
-        variant="solid"
-        color="success"
-        onClose={(event, reason) => {
-          if (reason === "clickaway") {
-            return;
-          }
-          setOpenSnackbar(false);
-        }}
-      >
-        Item retrieval request sent!
-      </Snackbar>
     </>
   );
 };

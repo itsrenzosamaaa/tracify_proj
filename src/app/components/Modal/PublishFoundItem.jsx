@@ -281,6 +281,7 @@ const PublishFoundItem = ({
     setImages([]);
     setFinder(null);
     setQuestions([""]);
+    setAllowedToPost(false)
   };
 
   const onDrop = (acceptedFiles) => {
