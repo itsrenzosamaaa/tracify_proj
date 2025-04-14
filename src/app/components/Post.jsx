@@ -185,7 +185,7 @@ const Post = ({
   };
 
   const handleCopyLink = () => {
-    const isLost = !post?.isFinder; // true if it's a lost item
+    const isLost = !post?.isFinder;
     const itemType = isLost ? "Lost Item Alert 🚨" : "Found Item Notice 🟢";
     const introMessage = isLost
       ? "Have you seen this item?"
@@ -194,12 +194,52 @@ const Post = ({
       ? "Let's help the owner recover it!"
       : "Help us locate the rightful owner!";
 
+    const itemName = post?.item_name || "Unnamed Item";
+    const description = post?.caption || "No description provided.";
+    const location = item?.item?.location || "No location info available.";
+    const dateTime = item?.item?.date_time;
+
+    let details = `🧾 Item Name: ${itemName}`;
+
+    if (isLost) {
+      let datePart = "";
+      let timeRange = "";
+
+      if (dateTime && dateTime !== "Unidentified") {
+        const [start, end] = dateTime.split(" to ");
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const isSameDate = startDate.toDateString() === endDate.toDateString();
+
+        if (isSameDate) {
+          datePart = `on ${format(startDate, "MMMM d, yyyy")}`;
+          timeRange = ` between ${format(startDate, "hh:mm a")} and ${format(
+            endDate,
+            "hh:mm a"
+          )}`;
+        } else {
+          datePart = `from ${format(
+            startDate,
+            "MMMM d, yyyy hh:mm a"
+          )} to ${format(endDate, "MMMM d, yyyy hh:mm a")}`;
+        }
+      }
+
+      details += `\n🗨 Description: ${description}`;
+      if (datePart) details += `\n📅 Lost ${datePart}${timeRange}`;
+      details += `\n📍 Location: ${location}`;
+    } else {
+      details += `\n📍 Found At: ${location}`;
+    }
+
+    const fullUrl = `https://tlc-tracify.vercel.app/?callbackUrl=/post/${post?._id}`;
+
     const customMessage = `📣 ${itemType}
   
 ${introMessage}
   
-🧾 Item Name: ${post?.item_name || "No caption provided."}
-🔗 Link: https://tlc-tracify.vercel.app/?callbackUrl=/post/${post?._id}
+${details}
+🔗 View here: ${fullUrl}
   
 ${callToAction}
 (Shared via Tracify)`;
@@ -214,6 +254,13 @@ ${callToAction}
         setOpenSnackbar("danger");
         setMessage("Failed to copy message.");
       });
+
+    // Optional: Open WhatsApp Share
+    // const encodedMsg = encodeURIComponent(customMessage);
+    // window.open(`https://wa.me/?text=${encodedMsg}`, "_blank");
+
+    // Optional: Open Facebook Messenger (Note: user must be logged in)
+    // window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}`, "_blank");
   };
 
   const capitalizeWords = (str) =>
@@ -1047,7 +1094,7 @@ ${callToAction}
                   {/* Start Date and Time */}
                   <Grid item xs={12} md={6}>
                     <FormControl required>
-                      <FormLabel>Start Date and Time</FormLabel>
+                      <FormLabel>Start of Possible Loss Timeframe</FormLabel>
                       <Input
                         fullWidth
                         required
@@ -1062,7 +1109,7 @@ ${callToAction}
                   <Grid item xs={12} md={6}>
                     {/* End Date and Time */}
                     <FormControl required>
-                      <FormLabel>End Date and Time</FormLabel>
+                      <FormLabel>End of Possible Loss Timeframe</FormLabel>
                       <Input
                         fullWidth
                         required

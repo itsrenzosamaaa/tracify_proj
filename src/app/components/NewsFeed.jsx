@@ -234,6 +234,15 @@ const NewsFeed = ({ session, status, users, corner }) => {
   useEffect(() => {
     if (status !== "authenticated") return;
 
+    if (!fetchedOnce) {
+      fetchMatches();
+      fetchLocations();
+      if (corner === "lost-item") {
+        fetchUser();
+      }
+      setFetchedOnce(true);
+    }
+
     if (tabValue === 0 && !fetchedAllPostsOnce) {
       fetchPosts("", true);
       setFetchedAllPostsOnce(true);
@@ -242,15 +251,6 @@ const NewsFeed = ({ session, status, users, corner }) => {
     if (tabValue === 1 && !fetchedSharedOnce) {
       fetchSharedPosts();
       setFetchedSharedOnce(true);
-    }
-
-    if (!fetchedOnce) {
-      fetchMatches();
-      fetchLocations();
-      if (corner === "lost-item") {
-        fetchUser();
-      }
-      setFetchedOnce(true);
     }
   }, [
     status,

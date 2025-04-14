@@ -37,6 +37,7 @@ import ItemRetrievalDetails from "./Modal/ItemRetrievalDetails";
 import DummyPhoto from "./DummyPhoto";
 import { ArrowDownward } from "@mui/icons-material";
 import LostItemDetails from "./Modal/LostItemDetails";
+import CancelRetrievalRequest from "./Modal/CancelRetrievalRequest";
 
 const validTabs = [
   "found-item",
@@ -59,6 +60,7 @@ const MyItemsComponent = ({ session, status }) => {
   const [completedItems, setCompletedItems] = useState([]);
   const [declinedItems, setDeclinedItems] = useState([]);
   const [canceledItems, setCanceledItems] = useState([]);
+  const [cancelModal, setCancelModal] = useState(null);
   const [lostItems, setLostItems] = useState([]);
   const [foundItems, setFoundItems] = useState([]);
   const [requestedItems, setRequestedItems] = useState([]);
@@ -1921,7 +1923,7 @@ const MyItemsComponent = ({ session, status }) => {
                               flexGrow: 1,
                             }}
                           >
-                            Basta description
+                            {retrievalItem?.owner?.item?.description}
                           </Typography>
 
                           <Box
@@ -1932,96 +1934,104 @@ const MyItemsComponent = ({ session, status }) => {
                               mt: 2,
                             }}
                           >
-                            <Button
-                              variant="contained"
-                              sx={{
-                                minWidth: 0,
-                                padding: "6px 8px",
-                                borderRadius: "8px",
-                              }}
-                              onClick={() => setOpenDetails(retrievalItem?._id)}
-                            >
-                              <InfoIcon color="action" />
-                            </Button>
-
-                            <Modal
-                              open={openDetails === retrievalItem?._id}
-                              onClose={() => setOpenDetails(null)}
-                            >
-                              <ModalDialog>
-                                <ModalClose />
-                                <Typography
-                                  level="h5"
-                                  sx={{ mb: 2, fontWeight: "bold" }}
-                                >
-                                  Item Details
-                                </Typography>
-                                <DialogContent
+                            {retrievalItem?.request_status === "Pending" ? (
+                              <>
+                                <Button
+                                  variant="contained"
                                   sx={{
-                                    paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
-                                    maxHeight: "85.5vh",
-                                    height: "100%",
-                                    overflowX: "hidden",
-                                    overflowY: "scroll", // Always reserve space for scrollbar
-                                    // Default scrollbar styles (invisible)
-                                    "&::-webkit-scrollbar": {
-                                      width: "8px", // Always reserve 8px width
-                                    },
-                                    "&::-webkit-scrollbar-thumb": {
-                                      backgroundColor: "transparent", // Invisible by default
-                                      borderRadius: "4px",
-                                    },
-                                    // Show scrollbar on hover
-                                    "&:hover": {
-                                      "&::-webkit-scrollbar-thumb": {
-                                        backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
-                                      },
-                                    },
-                                    // Firefox
-                                    scrollbarWidth: "thin",
-                                    scrollbarColor: "transparent transparent", // Both track and thumb transparent
-                                    "&:hover": {
-                                      scrollbarColor:
-                                        "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
-                                    },
-                                    // IE and Edge
-                                    msOverflowStyle: "-ms-autohiding-scrollbar",
+                                    minWidth: 0,
+                                    padding: "6px 8px",
+                                    borderRadius: "8px",
                                   }}
+                                  onClick={() =>
+                                    setOpenDetails(retrievalItem?._id)
+                                  }
                                 >
-                                  <ItemRetrievalDetails
-                                    row={retrievalItem}
-                                    isXs={isXs}
-                                  />
-                                </DialogContent>
-                              </ModalDialog>
-                            </Modal>
-                            {/* <Button
-                              fullWidth
-                              color="danger"
-                              sx={{ padding: "6px 0" }}
-                              onClick={() =>
-                                setCancelRequestModal(retrievalItem._id)
-                              }
-                            >
-                              Cancel Request
-                            </Button> */}
+                                  <InfoIcon color="action" />
+                                </Button>
+
+                                <Button
+                                  fullWidth
+                                  color="danger"
+                                  onClick={() =>
+                                    setCancelModal(retrievalItem?._id)
+                                  }
+                                >
+                                  Cancel Request
+                                </Button>
+                              </>
+                            ) : (
+                              <Button
+                                fullWidth
+                                onClick={() =>
+                                  setOpenDetails(retrievalItem?._id)
+                                }
+                              >
+                                View Details
+                              </Button>
+                            )}
                           </Box>
                         </CardContent>
                       </Card>
                     </Grid>
-                    {/* <CancelRequest
-                      open={cancelRequestModal}
-                      onClose={() => setCancelRequestModal(null)}
-                      item={retrievalItem.item}
-                      api={
-                        retrievalItem.item?.isFoundItem
-                          ? "found-items"
-                          : "lost-items"
-                      }
-                      refreshData={fetchItems}
+                    <Modal
+                      open={openDetails === retrievalItem?._id}
+                      onClose={() => setOpenDetails(null)}
+                    >
+                      <ModalDialog>
+                        <ModalClose />
+                        <Typography
+                          level="h5"
+                          sx={{ mb: 2, fontWeight: "bold" }}
+                        >
+                          Item Details
+                        </Typography>
+                        <DialogContent
+                          sx={{
+                            paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+                            maxHeight: "85.5vh",
+                            height: "100%",
+                            overflowX: "hidden",
+                            overflowY: "scroll", // Always reserve space for scrollbar
+                            // Default scrollbar styles (invisible)
+                            "&::-webkit-scrollbar": {
+                              width: "8px", // Always reserve 8px width
+                            },
+                            "&::-webkit-scrollbar-thumb": {
+                              backgroundColor: "transparent", // Invisible by default
+                              borderRadius: "4px",
+                            },
+                            // Show scrollbar on hover
+                            "&:hover": {
+                              "&::-webkit-scrollbar-thumb": {
+                                backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                              },
+                            },
+                            // Firefox
+                            scrollbarWidth: "thin",
+                            scrollbarColor: "transparent transparent", // Both track and thumb transparent
+                            "&:hover": {
+                              scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+                            },
+                            // IE and Edge
+                            msOverflowStyle: "-ms-autohiding-scrollbar",
+                          }}
+                        >
+                          <ItemRetrievalDetails
+                            row={retrievalItem}
+                            isXs={isXs}
+                          />
+                        </DialogContent>
+                      </ModalDialog>
+                    </Modal>
+                    <CancelRetrievalRequest
+                      open={cancelModal === retrievalItem?._id}
+                      onClose={() => setCancelModal(null)}
+                      matchItem={retrievalItem}
                       setMessage={setMessage}
                       setOpenSnackbar={setOpenSnackbar}
-                    /> */}
+                      refreshData={fetchItems}
+                    />
                   </>
                 ))
               ) : (

@@ -3,6 +3,7 @@
 import React from "react";
 import { Box, Tooltip, Typography } from "@mui/joy";
 import dayjs from "dayjs";
+import GroupsIcon from "@mui/icons-material/Groups";
 
 const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
   const isBirthdayToday =
@@ -12,47 +13,26 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
     if (resolvedItemCount >= 20)
       return {
         icon: "⭐",
-        description: "You've returned 20+ items. You're a Legendary Finder!",
+        description: "Legendary Finder — returned 20+ items.",
       };
     if (resolvedItemCount >= 10)
-      return {
-        icon: "⭐",
-        description: "You've returned 10+ items. Great work, Gold Resolver!",
-      };
+      return { icon: "⭐", description: "Top Resolver — returned 10+ items." };
     if (resolvedItemCount >= 5)
-      return {
-        icon: "⭐",
-        description: "You've returned 5+ items. You're a Silver Solver!",
-      };
+      return { icon: "⭐", description: "Amateur Solver — returned 5+ items." };
     if (resolvedItemCount >= 1)
-      return {
-        icon: "⭐",
-        description: "You've resolved your first item. You're a Bronze Seeker!",
-      };
+      return { icon: "⭐", description: "Rookie Seeker — resolved 1 item." };
     return null;
   };
 
   const getShareSymbol = () => {
     if (shareCount >= 20)
-      return {
-        icon: "⚪",
-        description: "Shared over 20 posts! You're a Master Broadcaster.",
-      };
+      return { description: "Master Broadcaster — shared 20+ posts." };
     if (shareCount >= 10)
-      return {
-        icon: "⚪",
-        description: "You've shared 10+ posts. You're a Top Sharer.",
-      };
+      return { description: "Top Sharer — shared 10+ posts." };
     if (shareCount >= 5)
-      return {
-        icon: "⚪",
-        description: "You've shared 5+ posts. You're an Amateur Sharer.",
-      };
+      return { description: "Amateur Sharer — shared 5+ posts." };
     if (shareCount >= 1)
-      return {
-        icon: "⚪",
-        description: "First share done. You're a Rookie Sharer!",
-      };
+      return { description: "Rookie Sharer — shared 1 post." };
     return null;
   };
 
@@ -67,54 +47,69 @@ const PreviewBadge = ({ resolvedItemCount, shareCount, birthday, inherit }) => {
       sx={{
         display: "flex",
         alignItems: "center",
-        gap: 0.75,
-        flexWrap: "wrap",
+        gap: 0.5,
         backgroundColor: inherit ? "transparent" : "#f5f5f5",
-        px: 1,
+        px: 0.5,
         py: 0.25,
-        borderRadius: 8,
+        borderRadius: 6,
       }}
     >
-      {isBirthdayToday && (
-        <Tooltip
-          title="🎂 It's your birthday! Wishing you a special day!"
-          arrow
-        >
-          <Typography fontSize="sm" sx={{ cursor: "default" }}>
-            🎁
-          </Typography>
-        </Tooltip>
-      )}
-
+      {/* ⭐ Resolved Badge */}
       {resolved && (
         <Tooltip title={resolved.description} arrow>
-          <Typography
-            fontSize="sm"
+          <Box
             sx={{
-              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: 0.25,
               px: 0.5,
-              cursor: "default",
-              whiteSpace: "nowrap",
+              py: 0.2,
+              fontSize: "0.675rem",
+              height: 22,
+              lineHeight: 1,
             }}
           >
-            {resolvedItemCount} {resolved.icon}
-          </Typography>
+            <Typography fontSize="xs" sx={{ fontWeight: 500 }}>
+              {resolvedItemCount}
+            </Typography>
+            <Typography fontSize="xs">{resolved.icon}</Typography>
+          </Box>
         </Tooltip>
       )}
 
+      {/* 👥 Sharer Badge */}
       {shared && (
         <Tooltip title={shared.description} arrow>
-          <Typography
-            fontSize="sm"
+          <Box
             sx={{
-              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: 0.25,
               px: 0.5,
-              cursor: "default",
-              whiteSpace: "nowrap",
+              py: 0.2,
+              fontSize: "0.675rem",
+              height: 22,
+              lineHeight: 1,
             }}
           >
-            {shareCount} {shared.icon}
-          </Typography>
+            <Typography fontSize="xs" sx={{ fontWeight: 500 }}>
+              {shareCount}
+            </Typography>
+            <Box
+              sx={{
+                width: 14,
+                height: 14,
+                borderRadius: "50%",
+                backgroundColor: "#1976d2",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+              }}
+            >
+              <GroupsIcon sx={{ fontSize: 10 }} />
+            </Box>
+          </Box>
         </Tooltip>
       )}
     </Box>

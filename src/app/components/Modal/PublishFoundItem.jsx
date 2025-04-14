@@ -547,7 +547,13 @@ const PublishFoundItem = ({
                       </Grid>
                       <Grid item xs={12}>
                         <Checkbox
-                          label="I don't know the size (Set to N/A)"
+                          label={
+                            session?.user?.permissions.includes(
+                              "Admin Dashboard"
+                            )
+                              ? "Size not determined (Set to N/A)"
+                              : "I don't know the size (Set to N/A)"
+                          }
                           checked={sizeNotDetermined}
                           onChange={handleCheck}
                         />

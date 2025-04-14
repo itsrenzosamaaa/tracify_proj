@@ -200,7 +200,16 @@ const AvatarWithName = ({
         </Box>
 
         {/* User Info */}
-        <Box sx={{ textAlign: "center", mt: 1 }}>
+        <Box
+          sx={{
+            textAlign: "center",
+            display: "flex",
+            alignItem: "center",
+            flexDirection: "column",
+            justifyContent: "center",
+            mt: 1,
+          }}
+        >
           <Typography level="body-lg" fontWeight="500">
             {profile.firstname} {profile.lastname}
           </Typography>

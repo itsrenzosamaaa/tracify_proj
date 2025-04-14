@@ -772,7 +772,7 @@ const PublishLostItem = ({
                       {/* Start Date and Time */}
                       <Grid item xs={12} md={6}>
                         <FormControl required>
-                          <FormLabel>Start Date and Time</FormLabel>
+                          <FormLabel>Start of Possible Loss Timeframe</FormLabel>
                           <Input
                             fullWidth
                             required
@@ -787,7 +787,7 @@ const PublishLostItem = ({
                       <Grid item xs={12} md={6}>
                         {/* End Date and Time */}
                         <FormControl required>
-                          <FormLabel>End Date and Time</FormLabel>
+                          <FormLabel>End of Possible Loss Timeframe</FormLabel>
                           <Input
                             fullWidth
                             required

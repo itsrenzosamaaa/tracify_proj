@@ -1151,7 +1151,7 @@ const ItemDetails = ({
                               gap: 1,
                             }}
                           >
-                            <Tooltip title="Lost Start Date">
+                            <Tooltip title="Start of Possible Loss Timeframe">
                               <CalendarToday
                                 fontSize="small"
                                 sx={{ mr: 0.5 }}
@@ -1172,7 +1172,7 @@ const ItemDetails = ({
                               gap: 1,
                             }}
                           >
-                            <Tooltip title="Lost End Date">
+                            <Tooltip title="End of Possible Loss Timeframe">
                               <HourglassBottom
                                 fontSize="small"
                                 sx={{ mr: 0.5 }}
