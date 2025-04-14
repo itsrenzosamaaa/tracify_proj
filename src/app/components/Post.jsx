@@ -517,7 +517,7 @@ ${callToAction}
                           level={isXs ? "body-sm" : "body-md"}
                           sx={{ fontStyle: "italic", color: "text.secondary" }}
                         >
-                          "{captionText}"
+                          "&quot;{captionText}&quot;
                         </Typography>
                       </>
                     )}

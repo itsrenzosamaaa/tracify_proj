@@ -628,7 +628,7 @@ const SharedPost = ({
                             color: "text.secondary",
                           }}
                         >
-                          "{post.caption}"
+                          &quot;{post.caption}&quot;
                         </Typography>
                       </>
                     )}
@@ -687,7 +687,7 @@ const SharedPost = ({
                                 color: "text.secondary",
                               }}
                             >
-                              "{captionText}"
+                              &quot;{captionText}&quot;
                             </Typography>
                           </>
                         )}
