@@ -88,7 +88,7 @@ const ItemPublishedModal = ({
           dateNotified: new Date(),
         });
 
-        if (row.finder.user._id) {
+        if (row.user._id) {
           await makeRequest(`/api/users/${row.user._id}/increment`, "PUT", {
             increment: "found-item",
           });
