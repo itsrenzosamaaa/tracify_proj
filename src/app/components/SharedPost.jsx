@@ -392,23 +392,6 @@ ${callToAction}
         }),
       });
 
-      // Notify original author
-      if (
-        (session?.user?.id !== originalPost?.author?._id &&
-          originalPost?.author?.role?.permissions.includes("User Dashboard")) ||
-        originalPost?.author !== null
-      ) {
-        notificationData.push({
-          receiver: originalPost?.author?._id,
-          message: `${session?.user?.firstname} ${session?.user?.lastname} shared your post.`,
-          type: "Shared Post",
-          markAsRead: false,
-          dateNotified: new Date(),
-          post:
-            session?.user?.id !== originalPost?.author?._id ? data._id : null,
-        });
-      }
-
       // Send all notifications in bulk
       await fetch("/api/notification/bulk", {
         method: "POST",
@@ -430,16 +413,22 @@ ${callToAction}
   };
 
   const isFormValid = () => {
+    const isSizeValid = sizeNotDetermined
+      ? true
+      : sizeMode === "predefined"
+      ? predefinedSize
+      : size.value.trim() && size.unit;
+
     return (
       name.trim() &&
       color.length > 0 &&
-      (sizeNotDetermined || (size.value.trim() && size.unit)) &&
+      isSizeValid &&
       category &&
       material &&
       condition &&
       distinctiveMarks &&
       description.trim() &&
-      (!itemWhereabouts || (location && lostDateStart && lostDateEnd)) &&
+      (!itemWhereabouts || (location && lostStartDate && lostEndDate)) &&
       images.length > 0 &&
       (Array.isArray(filteredOriginalPost?.item?.questions)
         ? filteredOriginalPost.item.questions.every((_, index) =>
