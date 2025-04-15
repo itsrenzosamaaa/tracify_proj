@@ -99,7 +99,8 @@ const ItemPublishedModal = ({
       await makeRequest("/api/notification/bulk", "POST", notificationData);
 
       // Close modals, refresh data, and show success notification
-      setConfirmationItemClaimed(false);
+      setConfirmation(false);
+      setOpenSelectOwnerModal(false)
       onClose();
       await refreshData();
       setOpenSnackbar("success");
@@ -229,7 +230,7 @@ const ItemPublishedModal = ({
           <Typography>
             Are you sure you want to mark this item as resolved?
           </Typography>
-          <Box>
+          <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
             <Button
               variant="outlined"
               color="danger"
