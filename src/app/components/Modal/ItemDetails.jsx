@@ -411,7 +411,7 @@ const ItemDetails = ({
                       >
                         <strong>Found something?</strong> Please surrender the
                         item as soon as you can to help reunite it with its
-                        owner. Here's where to go:
+                        owner. Here&apos;s where to go:
                       </Typography>
 
                       <Typography
