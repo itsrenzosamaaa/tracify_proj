@@ -31,7 +31,7 @@ const ItemValidatingModal = ({
   const [itemInvalidate, setItemInvalidate] = useState(null);
   const [publishConfirmation, setPublishConfirmation] = useState(null);
   const [questions, setQuestions] = useState([""]);
-  const [allowedToPost, setAllowedToPost] = useState(false);
+  const [allowedToPost, setAllowedToPost] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e, id) => {
