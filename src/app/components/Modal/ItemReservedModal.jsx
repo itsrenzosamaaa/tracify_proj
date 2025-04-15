@@ -168,9 +168,9 @@ const ItemReservedModal = ({
       // Close modals, refresh data, and show success notification
       setConfirmationItemClaimed(false);
       onClose();
-      await refreshData();
       setOpenSnackbar("success");
       setMessage("The item has been returned to the owner!");
+      await refreshData();
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage(`Error updating items: ${error.message}`);
@@ -253,9 +253,9 @@ const ItemReservedModal = ({
       setConfirmationItemDecline(false);
       setDeclineModal(false);
       onClose();
-      await refreshData(); // Renamed from fetch to be more descriptive
       setOpenSnackbar("success");
       setMessage("The item has not successfully returned to the owner.");
+      await refreshData(); // Renamed from fetch to be more descriptive
     } catch (error) {
       setOpenSnackbar("danger"); // Display error message
       setMessage("Error updating items:", error.message);

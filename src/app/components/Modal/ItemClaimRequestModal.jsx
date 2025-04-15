@@ -199,9 +199,9 @@ const ItemClaimRequestModal = ({
       // Close modals and refresh data
       setConfirmationApproveModal(null);
       onClose();
-      refreshData(); // Renamed from fetch to be more descriptive
       setOpenSnackbar("success");
       setMessage("The retrieval request has been declined.");
+      refreshData(); // Renamed from fetch to be more descriptive
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage(`Error updating items: ${error.message}`);

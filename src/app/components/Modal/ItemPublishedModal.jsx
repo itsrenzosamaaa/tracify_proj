@@ -100,11 +100,11 @@ const ItemPublishedModal = ({
 
       // Close modals, refresh data, and show success notification
       setConfirmation(false);
-      setOpenSelectOwnerModal(false)
+      setOpenSelectOwnerModal(false);
       onClose();
-      await refreshData();
       setOpenSnackbar("success");
       setMessage("The item has been returned to the owner!");
+      await refreshData();
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage(`Error updating items: ${error.message}`);

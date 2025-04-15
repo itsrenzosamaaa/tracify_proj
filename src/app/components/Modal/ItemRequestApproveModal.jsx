@@ -206,9 +206,9 @@ const ItemRequestApproveModal = ({
       setConfirmationDeclineModal(null);
       setReasonModal(null);
       setDeclineReason("");
-      await refreshData();
       setOpenSnackbar("success");
       setMessage("Item request declined successfully!");
+      await refreshData();
     } catch (error) {
       console.error("Error in handleDecline:", error);
       setOpenSnackbar("danger");

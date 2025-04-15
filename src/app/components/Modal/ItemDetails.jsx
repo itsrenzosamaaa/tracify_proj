@@ -321,10 +321,10 @@ const ItemDetails = ({
       }
 
       // Refresh and update UI
-      await refreshData();
-      setIsEditMode(false);
       setOpenSnackbar("success");
       setMessage("Item details updated successfully!");
+      setIsEditMode(false);
+      await refreshData();
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage(error.message);
