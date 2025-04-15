@@ -33,13 +33,6 @@ export async function PUT(req, { params }) {
       updateData.dateRequest = new Date();
     } else if (status === "Missing") {
       updateData.dateMissing = new Date();
-      updateData.dateLostItemPublished = new Date();
-      updateData.trackRecords = [
-        {
-          status: "Published",
-          date: new Date(),
-        },
-      ];
     } else if (status === "Claimed") {
       updateData.dateClaimed = new Date();
     } else if (status === "Terminated") {
