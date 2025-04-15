@@ -158,13 +158,6 @@ const PublishLostItem = ({
           ? { dateRequest: new Date() }
           : {
               dateMissing: new Date(),
-              dateLostItemPublished: new Date(),
-              trackRecords: [
-                {
-                  status: "Published",
-                  date: new Date(),
-                },
-              ],
             }),
       };
 
@@ -772,7 +765,9 @@ const PublishLostItem = ({
                       {/* Start Date and Time */}
                       <Grid item xs={12} md={6}>
                         <FormControl required>
-                          <FormLabel>Start of Possible Loss Timeframe</FormLabel>
+                          <FormLabel>
+                            Start of Possible Loss Timeframe
+                          </FormLabel>
                           <Input
                             fullWidth
                             required
