@@ -450,7 +450,7 @@ const ItemDetails = ({
                           color: "text.secondary",
                         }}
                       >
-                        Let’s work together to return the item to its rightful
+                        Let&apos;s work together to return the item to its rightful
                         owner 💙
                       </Typography>
                     </Box>
@@ -522,7 +522,7 @@ const ItemDetails = ({
                             Talk to SASO Staff
                           </Typography>
                           <Typography level="body-sm" color="text.secondary">
-                            Inform the officer-in-charge that you’re
+                            Inform the officer-in-charge that you&apos;re
                             surrendering a found item.
                           </Typography>
                         </Box>
