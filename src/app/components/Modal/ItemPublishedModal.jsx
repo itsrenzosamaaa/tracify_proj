@@ -236,6 +236,7 @@ const ItemPublishedModal = ({
               onClick={() => setConfirmation(false)}
               disabled={loading}
               loading={loading}
+              fullWidth
             >
               Cancel
             </Button>
