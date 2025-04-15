@@ -11,7 +11,7 @@ export async function PUT(req, { params }) {
   try {
     const updateData = { request_status, ...fields };
     if (request_status === "Declined") {
-      updateData.dateDeclined = now;
+      updateData.dateDeclined = new Date();
     }
 
     // ✅ Only update matched items with status "Pending" or "Approved"
