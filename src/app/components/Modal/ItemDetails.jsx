@@ -30,6 +30,8 @@ import {
   DialogContent,
   Modal,
   Badge,
+  Card,
+  StepIndicator,
 } from "@mui/joy";
 import { CldImage } from "next-cloudinary";
 import { format, subDays, isBefore, isAfter, isToday } from "date-fns";
@@ -164,9 +166,9 @@ const ItemDetails = ({
   const [rejectSuggestion, setRejectSuggestion] = useState(false);
   const [approveSuggestion, setApproveSuggestion] = useState(false);
   const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  const isMd = useMediaQuery(theme.breakpoints.up("md"));
 
   const handleCheck = (e) => {
     const check = e.target.checked;
@@ -384,6 +386,176 @@ const ItemDetails = ({
         <Grid item xs={12}>
           <Divider />
         </Grid>
+
+        {row?.item.status === "Surrender Pending" &&
+          session?.user?.id === row?.user?._id && (
+            <Grid item xs={12}>
+              <Card
+                variant="outlined"
+                sx={{
+                  p: 3,
+                  boxShadow: 2,
+                  maxWidth: "100%",
+                  mx: "auto",
+                  borderRadius: "lg",
+                  bgcolor: "background.level1",
+                }}
+              >
+                <Grid container spacing={3} alignItems="flex-start">
+                  {/* Left Side: Instructions */}
+                  <Grid item xs={12} md={5}>
+                    <Box>
+                      <Typography
+                        level="body-md"
+                        sx={{ mb: 1.5, lineHeight: 1.8 }}
+                      >
+                        <strong>Found something?</strong> Please surrender the
+                        item as soon as you can to help reunite it with its
+                        owner. Here's where to go:
+                      </Typography>
+
+                      <Typography
+                        level="body-lg"
+                        fontWeight="lg"
+                        sx={{ mb: 1 }}
+                      >
+                        🎯 Surrender Point:
+                      </Typography>
+                      <Typography level="body-md" sx={{ mb: 0.5 }}>
+                        📍 <strong>SASO Office</strong>
+                      </Typography>
+                      <Typography level="body-md" sx={{ mb: 0.5 }}>
+                        🏢 <strong>1st Floor, FJN Building</strong>
+                      </Typography>
+
+                      <Typography
+                        level="body-lg"
+                        fontWeight="lg"
+                        sx={{ mt: 2, mb: 1 }}
+                      >
+                        📞 Contact Info:
+                      </Typography>
+                      <Typography level="body-md">
+                        📧 <strong>Email:</strong> saso@thelewiscollege.edu.ph
+                      </Typography>
+                      <Typography level="body-md">
+                        📱 <strong>Phone:</strong> 0912 345 6789
+                      </Typography>
+
+                      <Typography
+                        level="body-sm"
+                        sx={{
+                          mt: 2,
+                          fontStyle: "italic",
+                          color: "text.secondary",
+                        }}
+                      >
+                        Let’s work together to return the item to its rightful
+                        owner 💙
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  {/* Divider (only for large screens) */}
+                  <Grid
+                    item
+                    md={1}
+                    sx={{ display: { xs: "none", md: "block" } }}
+                  >
+                    <Divider orientation="vertical" />
+                  </Grid>
+
+                  {/* Right Side: Stepper */}
+                  <Grid item xs={12} md={6}>
+                    <Typography
+                      level="title-md"
+                      fontWeight="bold"
+                      sx={{ mb: 2 }}
+                    >
+                      🧭 Step-by-Step Guide
+                    </Typography>
+
+                    <Stepper
+                      orientation="vertical"
+                      sx={{
+                        gap: 3,
+                        "--StepIndicator-size": "32px",
+                      }}
+                    >
+                      <Step
+                        orientation="vertical"
+                        indicator={
+                          <StepIndicator variant="soft" color="primary">
+                            1
+                          </StepIndicator>
+                        }
+                      >
+                        <Box sx={{ pl: 1 }}>
+                          <Typography
+                            level="title-sm"
+                            fontWeight="lg"
+                            sx={{ mb: 0.5 }}
+                          >
+                            Visit the Office
+                          </Typography>
+                          <Typography level="body-sm" color="text.secondary">
+                            Head over to the SASO Office located at the 1st
+                            Floor of the FJN Building.
+                          </Typography>
+                        </Box>
+                      </Step>
+
+                      <Step
+                        orientation="vertical"
+                        indicator={
+                          <StepIndicator variant="soft" color="primary">
+                            2
+                          </StepIndicator>
+                        }
+                      >
+                        <Box sx={{ pl: 1 }}>
+                          <Typography
+                            level="title-sm"
+                            fontWeight="lg"
+                            sx={{ mb: 0.5 }}
+                          >
+                            Talk to SASO Staff
+                          </Typography>
+                          <Typography level="body-sm" color="text.secondary">
+                            Inform the officer-in-charge that you’re
+                            surrendering a found item.
+                          </Typography>
+                        </Box>
+                      </Step>
+
+                      <Step
+                        orientation="vertical"
+                        indicator={
+                          <StepIndicator variant="soft" color="primary">
+                            3
+                          </StepIndicator>
+                        }
+                      >
+                        <Box sx={{ pl: 1 }}>
+                          <Typography
+                            level="title-sm"
+                            fontWeight="lg"
+                            sx={{ mb: 0.5 }}
+                          >
+                            Confirm Submission
+                          </Typography>
+                          <Typography level="body-sm" color="text.secondary">
+                            Once the item has been officially turned in, your
+                            part is complete!
+                          </Typography>
+                        </Box>
+                      </Step>
+                    </Stepper>
+                  </Grid>
+                </Grid>
+              </Card>
+            </Grid>
+          )}
 
         {session?.user?.id !== row?.user?._id && (
           <>
