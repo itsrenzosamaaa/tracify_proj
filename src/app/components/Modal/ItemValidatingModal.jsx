@@ -41,7 +41,7 @@ const ItemValidatingModal = ({
     setLoading(true);
 
     try {
-      if (questions.filter((q) => q.trim()).length === 0) {
+      if (allowedToPost && questions.filter((q) => q.trim()).length === 0) {
         setOpenSnackbar("danger");
         setMessage("Please add at least one security question.");
         setLoading(false);
@@ -54,6 +54,7 @@ const ItemValidatingModal = ({
         body: JSON.stringify({
           status: "Published",
           questions: questions.map((q) => q.trim()).filter((q) => q !== ""),
+          allowedToPost,
         }),
       });
 
@@ -245,52 +246,57 @@ const ItemValidatingModal = ({
               <ModalDialog>
                 <ModalClose />
                 <Typography level="h4" gutterbottom>
-                  Create Questions
+                  Before Publishing
                 </Typography>
-                <FormControl>
-                  <FormLabel>Security Question(s)</FormLabel>
-                  <Stack spacing={1}>
-                    {questions.map((question, index) => (
-                      <Box key={index} display="flex" gap={1}>
-                        <Input
-                          required
-                          fullWidth
-                          placeholder={`Enter question #${index + 1}`}
-                          value={question}
-                          onChange={(e) => {
-                            const updated = [...questions];
-                            updated[index] = e.target.value;
-                            setQuestions(updated);
-                          }}
-                        />
-                        <Button
-                          color="danger"
-                          size="sm"
-                          onClick={() =>
-                            setQuestions((prev) =>
-                              prev.filter((_, i) => i !== index)
-                            )
-                          }
-                          disabled={questions.length === 1}
-                        >
-                          ✕
-                        </Button>
-                      </Box>
-                    ))}
-                    <Button
-                      size="sm"
-                      variant="outlined"
-                      onClick={() => setQuestions([...questions, ""])}
-                    >
-                      + Add Another Question
-                    </Button>
-                  </Stack>
-                </FormControl>
+                {allowedToPost && (
+                  <FormControl>
+                    <FormLabel>Security Question(s)</FormLabel>
+                    <Stack spacing={1}>
+                      {questions.map((question, index) => (
+                        <Box key={index} display="flex" gap={1}>
+                          <Input
+                            required
+                            fullWidth
+                            placeholder={`Enter question #${index + 1}`}
+                            value={question}
+                            onChange={(e) => {
+                              const updated = [...questions];
+                              updated[index] = e.target.value;
+                              setQuestions(updated);
+                            }}
+                          />
+                          <Button
+                            color="danger"
+                            size="sm"
+                            onClick={() =>
+                              setQuestions((prev) =>
+                                prev.filter((_, i) => i !== index)
+                              )
+                            }
+                            disabled={questions.length === 1}
+                          >
+                            ✕
+                          </Button>
+                        </Box>
+                      ))}
+                      <Button
+                        size="sm"
+                        variant="outlined"
+                        onClick={() => setQuestions([...questions, ""])}
+                      >
+                        + Add Another Question
+                      </Button>
+                    </Stack>
+                  </FormControl>
+                )}
                 <FormControl>
                   <Checkbox
                     label="Allowed to post in found corner"
                     checked={allowedToPost}
-                    onChange={(e) => setAllowedToPost(e.target.checked)}
+                    onChange={(e) => {
+                      setAllowedToPost(e.target.checked);
+                      setQuestions([""]);
+                    }}
                   />
                 </FormControl>
                 <Box sx={{ display: "flex", gap: 2 }}>

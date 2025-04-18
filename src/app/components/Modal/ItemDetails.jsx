@@ -160,11 +160,12 @@ const ItemDetails = ({
     }
     return ""; // Default value if item is found
   });
-  const [openSuggestionModal, setOpenSuggestionModal] = useState(false);
+  const [allowPosting, setAllowPosting] = useState(
+    row?.item?.allowedToPost || false
+  );
+  const [questions, setQuestions] = useState(row?.item?.questions || [""]);
+
   const [loading, setLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [rejectSuggestion, setRejectSuggestion] = useState(false);
-  const [approveSuggestion, setApproveSuggestion] = useState(false);
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
@@ -291,6 +292,23 @@ const ItemDetails = ({
           : "Unidentified",
       };
 
+      const postFormData = {
+        isFinder: row?.item?.isFoundItem ? true : false,
+        item_name: name,
+        caption: description,
+      };
+
+      if (
+        row.item.isFoundItem &&
+        session?.user?.permissions.includes("Admin Dashboard")
+      ) {
+        postFormData.allowedToPost = allowPosting;
+        formData.allowedToPost = allowPosting;
+        formData.questions = allowPosting
+          ? questions.filter((q) => q.trim())
+          : [];
+      }
+
       // API request
       const response = await fetch(
         `/api/${row.item.isFoundItem ? "found-items" : "lost-items"}/${
@@ -312,11 +330,7 @@ const ItemDetails = ({
         await fetch(`api/post/${row._id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            isFinder: row?.item?.isFoundItem ? true : false,
-            item_name: name,
-            caption: description,
-          }),
+          body: JSON.stringify(postFormData),
         });
       }
 
@@ -324,7 +338,7 @@ const ItemDetails = ({
       setOpenSnackbar("success");
       setMessage("Item details updated successfully!");
       setIsEditMode(false);
-      await refreshData();
+      refreshData();
     } catch (error) {
       setOpenSnackbar("danger");
       setMessage(error.message);
@@ -450,8 +464,8 @@ const ItemDetails = ({
                           color: "text.secondary",
                         }}
                       >
-                        Let&apos;s work together to return the item to its rightful
-                        owner 💙
+                        Let&apos;s work together to return the item to its
+                        rightful owner 💙
                       </Typography>
                     </Box>
                   </Grid>
@@ -1363,6 +1377,90 @@ const ItemDetails = ({
                   })()
                 )}
               </Grid>
+
+              {session?.user?.permissions.includes("Admin Dashboard") ? (
+                isEditMode ? (
+                  <>
+                    <Grid item xs={12}>
+                      <Checkbox
+                        checked={allowPosting}
+                        onChange={(e) => {
+                          setAllowPosting(e.target.checked);
+                          setQuestions(row?.item?.questions || [""]);
+                        }}
+                        label="Allow this item to be posted"
+                      />
+                    </Grid>
+
+                    {allowPosting ? (
+                      <Grid item xs={12}>
+                        <FormControl>
+                          <FormLabel>Verification Questions</FormLabel>
+                          {questions.map((q, index) => (
+                            <Box
+                              key={index}
+                              sx={{ mb: 1, display: "flex", gap: 1 }}
+                            >
+                              <Input
+                                placeholder={`Question ${index + 1}`}
+                                value={q}
+                                onChange={(e) => {
+                                  const updated = [...questions];
+                                  updated[index] = e.target.value;
+                                  setQuestions(updated);
+                                }}
+                                fullWidth
+                              />
+                              <Button
+                                variant="soft"
+                                color="danger"
+                                onClick={() => {
+                                  const updated = questions.filter(
+                                    (_, i) => i !== index
+                                  );
+                                  setQuestions(updated);
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            </Box>
+                          ))}
+
+                          <Button
+                            variant="soft"
+                            size="sm"
+                            onClick={() => setQuestions([...questions, ""])}
+                          >
+                            + Add Question
+                          </Button>
+                        </FormControl>
+                      </Grid>
+                    ) : null}
+                  </>
+                ) : allowPosting && questions.length > 0 ? (
+                  <Grid item xs={12}>
+                    <Typography
+                      level="h5"
+                      sx={{
+                        fontWeight: "bold",
+                        color: "primary.plainColor",
+                      }}
+                    >
+                      Verification Questions
+                    </Typography>
+                    <List>
+                      {questions.map((q, index) => (
+                        <ListItem key={index}>
+                          <ListItemDecorator>
+                            <HelpOutline fontSize="small" />
+                          </ListItemDecorator>
+                          {q}
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Grid>
+                ) : null
+              ) : null}
 
               {/* Submit Button */}
               {isEditMode && (

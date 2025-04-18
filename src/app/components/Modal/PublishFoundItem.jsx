@@ -57,7 +57,7 @@ const PublishFoundItem = ({
   const [loading, setLoading] = useState(false);
   const [studentCheck, setStudentCheck] = useState(false);
   const [questions, setQuestions] = useState([""]);
-  const [allowedToPost, setAllowedToPost] = useState(false);
+  const [allowedToPost, setAllowedToPost] = useState(true);
   const [sizeMode, setSizeMode] = useState("manual"); // 'manual' or 'predefined'
   const [predefinedSize, setPredefinedSize] = useState("");
   const { data: session, status } = useSession();
@@ -176,6 +176,7 @@ const PublishFoundItem = ({
         foundItemData.questions = questions
           .map((q) => q.trim())
           .filter((q) => q !== "");
+        foundItemData.allowedToPost = allowedToPost;
       }
 
       const response = await fetch("/api/found-items", {
@@ -288,7 +289,7 @@ const PublishFoundItem = ({
     setImages([]);
     setFinder(null);
     setQuestions([""]);
-    setAllowedToPost(false);
+    setAllowedToPost(true);
   };
 
   const onDrop = (acceptedFiles) => {
@@ -819,54 +820,58 @@ const PublishFoundItem = ({
                     </p>
                   </Box>
                 </FormControl>
-                {session?.user?.permissions.includes("Admin Dashboard") && (
-                  <FormControl>
-                    <FormLabel>Security Question(s)</FormLabel>
-                    <Stack spacing={1}>
-                      {questions.map((question, index) => (
-                        <Box key={index} display="flex" gap={1}>
-                          <Input
-                            required
-                            fullWidth
-                            placeholder={`Enter question #${index + 1}`}
-                            value={question}
-                            onChange={(e) => {
-                              const updated = [...questions];
-                              updated[index] = e.target.value;
-                              setQuestions(updated);
-                            }}
-                          />
-                          <Button
-                            color="danger"
-                            size="sm"
-                            onClick={() =>
-                              setQuestions((prev) =>
-                                prev.filter((_, i) => i !== index)
-                              )
-                            }
-                            disabled={questions.length === 1}
-                          >
-                            ✕
-                          </Button>
-                        </Box>
-                      ))}
-                      <Button
-                        size="sm"
-                        variant="outlined"
-                        onClick={() => setQuestions([...questions, ""])}
-                      >
-                        + Add Another Question
-                      </Button>
-                    </Stack>
-                  </FormControl>
-                )}
+                {session?.user?.permissions.includes("Admin Dashboard") &&
+                  allowedToPost && (
+                    <FormControl>
+                      <FormLabel>Security Question(s)</FormLabel>
+                      <Stack spacing={1}>
+                        {questions.map((question, index) => (
+                          <Box key={index} display="flex" gap={1}>
+                            <Input
+                              required
+                              fullWidth
+                              placeholder={`Enter question #${index + 1}`}
+                              value={question}
+                              onChange={(e) => {
+                                const updated = [...questions];
+                                updated[index] = e.target.value;
+                                setQuestions(updated);
+                              }}
+                            />
+                            <Button
+                              color="danger"
+                              size="sm"
+                              onClick={() =>
+                                setQuestions((prev) =>
+                                  prev.filter((_, i) => i !== index)
+                                )
+                              }
+                              disabled={questions.length === 1}
+                            >
+                              ✕
+                            </Button>
+                          </Box>
+                        ))}
+                        <Button
+                          size="sm"
+                          variant="outlined"
+                          onClick={() => setQuestions([...questions, ""])}
+                        >
+                          + Add Another Question
+                        </Button>
+                      </Stack>
+                    </FormControl>
+                  )}
 
                 {session.user?.permissions.includes("Admin Dashboard") && (
                   <FormControl>
                     <Checkbox
                       label="Allowed to post in found corner"
                       checked={allowedToPost}
-                      onChange={(e) => setAllowedToPost(e.target.checked)}
+                      onChange={(e) => {
+                        setAllowedToPost(e.target.checked);
+                        setQuestions([""]);
+                      }}
                     />
                   </FormControl>
                 )}

@@ -100,15 +100,9 @@ const ItemSchema = new mongoose.Schema({
       type: String,
     },
   ],
-  dateLostItemPublished: {
-    type: Date,
+  allowedToPost: {
+    type: Boolean,
   },
-  trackRecords: [
-    {
-      status: { type: String },
-      dateStatus: { type: Date },
-    },
-  ],
 });
 
 export default mongoose.models.Item || mongoose.model("Item", ItemSchema);

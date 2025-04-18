@@ -99,12 +99,12 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   const { id } = params;
-  const { isFinder, item_name, caption } = await req.json();
+  const { isFinder, item_name, caption, allowedToPost } = await req.json();
 
   await dbConnect();
 
   try {
-    const updateData = { isFinder, item_name, caption };
+    const updateData = { isFinder, item_name, caption, allowedToPost };
 
     const query = isFinder ? { finder: id } : { owner: id };
 
