@@ -269,12 +269,36 @@ const ItemReservedModal = ({
       <Modal open={open === row._id} onClose={onClose}>
         <ModalDialog>
           <ModalClose />
-          <Typography
-            level="h4"
-            sx={{ marginBottom: 2, fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              mb: 2, // margin bottom for spacing below the header
+              flexWrap: "wrap", // ensures wrapping on small screens
+              gap: 3,
+            }}
           >
-            Reserved Item Details
-          </Typography>
+            <Typography
+              level="h4"
+              sx={{
+                fontSize: { xs: "1.25rem", sm: "1.5rem" },
+              }}
+            >
+              Reserved Item Details
+            </Typography>
+
+            {row.owner.linkedItem && (
+              <Chip
+                color="primary"
+                variant="soft"
+                size="sm"
+                sx={{ fontWeight: 500, width: "fit-content" }}
+              >
+                Linked Item: {row.owner.linkedItem.name || "Unnamed"}
+              </Chip>
+            )}
+          </Box>
+
           <DialogContent
             sx={{
               paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width

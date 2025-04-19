@@ -37,32 +37,31 @@ const LostItemsList = ({
   const [status, setStatus] = useState("Missing");
   const [open, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:600px)");
-  const [currentPage, setCurrentPage] = useState(1); // Tracks current page
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [missingSubStatus, setMissingSubStatus] = useState("All");
 
-  const statusOptions = ["Missing", "Request", "Declined", "Canceled"];
+  const activeStatuses = ["Missing", "Request"];
+  const archivedStatuses = ["Claimed", "Declined", "Canceled"];
 
-  // Calculate counts for each status
-  const statusCounts = statusOptions.reduce((acc, currentStatus) => {
-    acc[currentStatus] = owners.filter(
-      (owner) => owner.item.status === currentStatus
-    ).length;
-    return acc;
-  }, {});
+  const statusCounts = [...activeStatuses, ...archivedStatuses].reduce(
+    (acc, currentStatus) => {
+      acc[currentStatus] = owners.filter(
+        (owner) => owner.item.status === currentStatus
+      ).length;
+      return acc;
+    },
+    {}
+  );
 
   const filteredItems = owners.filter((owner) => {
     const item = owner.item;
-
     const matchesStatus = item?.status === status;
-
     const matchesSearch =
       item?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       owner?.user?.firstname
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
       owner?.user?.lastname.toLowerCase().includes(searchQuery.toLowerCase());
-
     return matchesStatus && matchesSearch;
   });
 
@@ -90,7 +89,7 @@ const LostItemsList = ({
                   <IconButton
                     size="small"
                     onClick={() => fetchItems()}
-                    sx={{ p: 0.5, mt: "-2px" }} // Optional vertical tweak
+                    sx={{ p: 0.5, mt: "-2px" }}
                   >
                     <Refresh fontSize="small" />
                   </IconButton>
@@ -98,78 +97,125 @@ const LostItemsList = ({
 
                 <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 1 }}>
                   {isMobile ? (
-                    <>
-                      <Select
-                        value={status}
-                        onChange={(e, newValue) => {
-                          setStatus(newValue);
-                          setCurrentPage(1);
-                        }}
-                        size="sm"
-                      >
-                        {statusOptions.map((name) => (
-                          <Option key={name} value={name}>
-                            {name} ({statusCounts[name] || 0})
-                          </Option>
-                        ))}
-                      </Select>
-                    </>
+                    <Select
+                      value={status}
+                      onChange={(e, newValue) => {
+                        setStatus(newValue);
+                        setCurrentPage(1);
+                      }}
+                      size="sm"
+                    >
+                      {[...activeStatuses, ...archivedStatuses].map((name) => (
+                        <Option key={name} value={name}>
+                          {name} ({statusCounts[name] || 0})
+                        </Option>
+                      ))}
+                    </Select>
                   ) : (
-                    <>
-                      <RadioGroup
-                        name="status-selection"
-                        aria-labelledby="status-selection"
-                        orientation="horizontal"
-                        sx={{ display: "flex", gap: 1 }}
-                      >
-                        {statusOptions.map((name) => {
-                          const checked = status === name;
-                          const itemCount = statusCounts[name];
+                    <RadioGroup
+                      name="status-selection"
+                      aria-labelledby="status-selection"
+                      orientation="horizontal"
+                      sx={{ display: "flex", gap: 1 }}
+                    >
+                      {/* Active Statuses */}
+                      {activeStatuses.map((name) => {
+                        const checked = status === name;
+                        const itemCount = statusCounts[name];
 
-                          const chipContent = (
-                            <Chip
-                              key={name}
-                              variant="plain"
+                        const chipContent = (
+                          <Chip
+                            key={name}
+                            variant="plain"
+                            color={checked ? "primary" : "neutral"}
+                            onClick={() => setStatus(name)}
+                            sx={{ cursor: "pointer" }}
+                          >
+                            <Radio
+                              variant="outlined"
                               color={checked ? "primary" : "neutral"}
-                              onClick={() => setStatus(name)}
-                              sx={{ cursor: "pointer" }}
-                            >
-                              <Radio
-                                variant="outlined"
-                                color={checked ? "primary" : "neutral"}
-                                disableIcon
-                                overlay
-                                label={name}
-                                value={name}
-                                checked={checked}
-                                onChange={(event) => {
-                                  if (event.target.checked) {
-                                    setStatus(name);
-                                  }
-                                }}
-                              />
-                            </Chip>
-                          );
+                              disableIcon
+                              overlay
+                              label={name}
+                              value={name}
+                              checked={checked}
+                              onChange={(event) => {
+                                if (event.target.checked) setStatus(name);
+                              }}
+                            />
+                          </Chip>
+                        );
 
-                          return itemCount > 0 ? (
-                            <Badge
-                              key={name}
-                              badgeContent={itemCount}
-                              color="error"
-                            >
-                              {chipContent}
-                            </Badge>
-                          ) : (
-                            <React.Fragment key={name}>
-                              {chipContent}
-                            </React.Fragment>
-                          );
-                        })}
-                      </RadioGroup>
-                    </>
+                        return itemCount > 0 ? (
+                          <Badge
+                            key={name}
+                            badgeContent={itemCount}
+                            color="error"
+                          >
+                            {chipContent}
+                          </Badge>
+                        ) : (
+                          <React.Fragment key={name}>
+                            {chipContent}
+                          </React.Fragment>
+                        );
+                      })}
+
+                      {/* Divider */}
+                      <Typography
+                        level="body-sm"
+                        sx={{ mx: 1, fontWeight: 600, color: "#888" }}
+                      >
+                        |
+                      </Typography>
+
+                      {/* Archived Statuses */}
+                      {archivedStatuses.map((name) => {
+                        const checked = status === name;
+                        const itemCount = statusCounts[name];
+
+                        const chipContent = (
+                          <Chip
+                            key={name}
+                            variant="plain"
+                            color={checked ? "primary" : "neutral"}
+                            onClick={() => setStatus(name)}
+                            sx={{ cursor: "pointer" }}
+                          >
+                            <Radio
+                              variant="outlined"
+                              color={checked ? "primary" : "neutral"}
+                              disableIcon
+                              overlay
+                              label={name}
+                              value={name}
+                              checked={checked}
+                              onChange={(event) => {
+                                if (event.target.checked) setStatus(name);
+                              }}
+                            />
+                          </Chip>
+                        );
+
+                        return itemCount > 0 ? (
+                          <Badge
+                            key={name}
+                            badgeContent={itemCount}
+                            color="error"
+                          >
+                            {chipContent}
+                          </Badge>
+                        ) : (
+                          <React.Fragment key={name}>
+                            {chipContent}
+                          </React.Fragment>
+                        );
+                      })}
+                    </RadioGroup>
                   )}
                 </Box>
               </FormControl>
+
               <Button
                 size="small"
                 startDecorator={<AddIcon />}
@@ -177,6 +223,7 @@ const LostItemsList = ({
               >
                 Post Lost Item
               </Button>
+
               <PublishLostItem
                 open={open}
                 onClose={() => setOpen(false)}
@@ -194,6 +241,7 @@ const LostItemsList = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+
             {!isFetchingItems ? (
               <ItemsTable
                 locationOptions={locationOptions}
@@ -217,9 +265,7 @@ const LostItemsList = ({
                   height: 300,
                 }}
               >
-                <Typography level="title-md" sx={{ mr: 2 }}>
-                  Loading items...
-                </Typography>
+                <Typography level="title-md">Loading items...</Typography>
                 <CircularProgress size={28} />
               </Box>
             )}

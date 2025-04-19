@@ -179,6 +179,7 @@ const ItemsTable = ({
                                 Canceled: row.item.dateCanceled,
                               }
                             : {
+                                Claimed: row.item.dateClaimed,
                                 Missing: row.item.dateMissing,
                                 Request: row.item.dateRequest,
                                 Declined: row.item.dateDeclined,
@@ -281,6 +282,18 @@ const ItemsTable = ({
                       />
                       <ModalButton
                         status="Missing"
+                        row={row}
+                        setModal={setOpenMissingModal}
+                        modalState={openMissingModal}
+                        ModalComponent={ItemMissingModal}
+                        isSession={session}
+                        fetchItems={fetchItems}
+                        snackbarMessage={setMessage}
+                        isOpenSnackbar={setOpenSnackbar}
+                        locationOptions={locationOptions}
+                      />
+                      <ModalButton
+                        status="Claimed"
                         row={row}
                         setModal={setOpenMissingModal}
                         modalState={openMissingModal}
@@ -457,6 +470,7 @@ const ItemsTable = ({
                                 )
                               : "N/A"
                             : {
+                                Claimed: row.item.dateClaimed,
                                 Missing: row.item.dateMissing,
                                 Request: row.item.dateRequest,
                                 Declined: row.item.dateDeclined,
@@ -465,6 +479,7 @@ const ItemsTable = ({
                             ? format(
                                 new Date(
                                   {
+                                    Claimed: row.item.dateClaimed,
                                     Missing: row.item.dateMissing,
                                     Request: row.item.dateRequest,
                                     Declined: row.item.dateDeclined,
@@ -567,6 +582,18 @@ const ItemsTable = ({
                           />
                           <ModalButton
                             status="Missing"
+                            row={row}
+                            setModal={setOpenMissingModal}
+                            modalState={openMissingModal}
+                            ModalComponent={ItemMissingModal}
+                            isSession={session}
+                            fetchItems={fetchItems}
+                            snackbarMessage={setMessage}
+                            isOpenSnackbar={setOpenSnackbar}
+                            locationOptions={locationOptions}
+                          />
+                          <ModalButton
+                            status="Claimed"
                             row={row}
                             setModal={setOpenMissingModal}
                             modalState={openMissingModal}

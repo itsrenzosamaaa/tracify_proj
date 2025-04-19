@@ -1378,7 +1378,8 @@ const ItemDetails = ({
                 )}
               </Grid>
 
-              {session?.user?.permissions.includes("Admin Dashboard") ? (
+              {session?.user?.permissions.includes("Admin Dashboard") &&
+              row?.item?.isFoundItem ? (
                 isEditMode ? (
                   <>
                     <Grid item xs={12}>

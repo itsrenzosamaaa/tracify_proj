@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   Grid,
@@ -11,13 +13,12 @@ import {
   Select,
   Option,
   Input,
-  Snackbar,
   IconButton,
   Typography,
 } from "@mui/joy";
 import { Paper, Badge, useMediaQuery, CircularProgress } from "@mui/material";
-import ItemsTable from "./Table/ItemsTable";
 import AddIcon from "@mui/icons-material/Add";
+import ItemsTable from "./Table/ItemsTable";
 import PublishFoundItem from "./Modal/PublishFoundItem";
 import TitleBreadcrumbs from "./Title/TitleBreadcrumbs";
 import { Refresh, Search } from "@mui/icons-material";
@@ -31,46 +32,48 @@ const FoundItemsList = ({
   setOpenSnackbar,
   setMessage,
 }) => {
-  const [status, setStatus] = useState("Resolved");
+  const [status, setStatus] = useState("Published");
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(""); // Track search input
-  const [currentPage, setCurrentPage] = useState(1); // Tracks current page
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const isMobile = useMediaQuery("(max-width:600px)");
 
-  // Define status options
-  const statusOptions = ["Resolved", "Published", "Request", "Declined", "Canceled"]; // Group 'Request' and 'Surrender Pending'
+  const activeStatuses = ["Published", "Request"];
+  const archivedStatuses = ["Resolved", "Declined", "Canceled"];
   const requestStatuses = ["Request", "Surrender Pending"];
 
-  // Count how many items have each status
-  const statusCounts = statusOptions.reduce((acc, currentStatus) => {
-    if (currentStatus === "Request") {
-      acc["Request"] = finders.filter((finder) =>
-        requestStatuses.includes(finder.item.status)
-      ).length;
-    } else {
-      acc[currentStatus] = finders.filter(
-        (finder) => finder.item.status === currentStatus
-      ).length;
-    }
-    return acc;
-  }, {});
+  const statusCounts = [...activeStatuses, ...archivedStatuses].reduce(
+    (acc, currentStatus) => {
+      if (currentStatus === "Request") {
+        acc["Request"] = finders.filter((finder) =>
+          requestStatuses.includes(finder.item.status)
+        ).length;
+      } else {
+        acc[currentStatus] = finders.filter(
+          (finder) => finder.item.status === currentStatus
+        ).length;
+      }
+      return acc;
+    },
+    {}
+  );
 
-  // Filter items based on selected status and search query
   const filteredItems = finders.filter((finder) => {
     const matchesStatus =
       status === "Request"
         ? requestStatuses.includes(finder.item.status)
         : finder.item.status === status;
 
-    // Search across multiple fields (name, description, category, location, etc.)
     const matchesSearch =
       finder?.item?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      finder?.user?.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      finder?.user?.firstname
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       finder?.user?.lastname.toLowerCase().includes(searchQuery.toLowerCase());
+
     return matchesStatus && matchesSearch;
   });
 
-  // Render chips for status selection
   const StatusChip = ({ name, count, isChecked }) => (
     <Badge badgeContent={count} color="error" key={name}>
       <Chip
@@ -90,9 +93,7 @@ const FoundItemsList = ({
           label={name}
           value={name}
           checked={isChecked}
-          onChange={() => {
-            setStatus(name);
-          }}
+          onChange={() => setStatus(name)}
         />
       </Chip>
     </Badge>
@@ -121,8 +122,8 @@ const FoundItemsList = ({
                   <FormLabel sx={{ mb: 0 }}>Filter by Status</FormLabel>
                   <IconButton
                     size="small"
-                    onClick={() => fetchItems()}
-                    sx={{ p: 0.5, mt: "-2px" }} // Optional vertical tweak
+                    onClick={fetchItems}
+                    sx={{ p: 0.5, mt: "-2px" }}
                   >
                     <Refresh fontSize="small" />
                   </IconButton>
@@ -132,10 +133,13 @@ const FoundItemsList = ({
                   {isMobile ? (
                     <Select
                       value={status}
-                      onChange={(e, newValue) => setStatus(newValue)}
+                      onChange={(e, newValue) => {
+                        setStatus(newValue);
+                        setCurrentPage(1);
+                      }}
                       size="sm"
                     >
-                      {statusOptions.map((name) => (
+                      {[...activeStatuses, ...archivedStatuses].map((name) => (
                         <Option key={name} value={name}>
                           {name} ({statusCounts[name] || 0})
                         </Option>
@@ -144,33 +148,41 @@ const FoundItemsList = ({
                   ) : (
                     <RadioGroup
                       name="status-selection"
-                      aria-labelledby="status-selection"
                       orientation="horizontal"
-                      sx={{ display: "flex", gap: 1 }}
+                      sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}
                     >
-                      {statusOptions.map((name) => {
-                        const isChecked = status === name;
-                        const itemCount = statusCounts[name];
-                        return itemCount > 0 ? (
-                          <StatusChip
-                            key={name}
-                            name={name}
-                            count={itemCount}
-                            isChecked={isChecked}
-                          />
-                        ) : (
-                          <StatusChip
-                            key={name}
-                            name={name}
-                            count={0}
-                            isChecked={isChecked}
-                          />
-                        );
-                      })}
+                      {/* Active */}
+                      {activeStatuses.map((name) => (
+                        <StatusChip
+                          key={name}
+                          name={name}
+                          count={statusCounts[name]}
+                          isChecked={status === name}
+                        />
+                      ))}
+
+                      {/* Divider */}
+                      <Typography
+                        level="body-sm"
+                        sx={{ mx: 1, fontWeight: 600, color: "#888" }}
+                      >
+                        |
+                      </Typography>
+
+                      {/* Archived */}
+                      {archivedStatuses.map((name) => (
+                        <StatusChip
+                          key={name}
+                          name={name}
+                          count={statusCounts[name]}
+                          isChecked={status === name}
+                        />
+                      ))}
                     </RadioGroup>
                   )}
                 </Box>
               </FormControl>
+
               <Button
                 size="small"
                 startDecorator={<AddIcon />}
@@ -178,6 +190,7 @@ const FoundItemsList = ({
               >
                 Post Found Item
               </Button>
+
               <PublishFoundItem
                 open={open}
                 onClose={() => setOpen(false)}
@@ -187,13 +200,13 @@ const FoundItemsList = ({
                 locationOptions={locationOptions}
               />
             </Box>
-            {/* Search Input */}
+
             <Input
               startDecorator={<Search />}
               sx={{ mb: 3, width: isMobile ? "100%" : "30%" }}
               placeholder="Search for items"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)} // Update search query
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
 
             {!isFetchingItems ? (
@@ -220,9 +233,7 @@ const FoundItemsList = ({
                   height: 300,
                 }}
               >
-                <Typography level="title-md" sx={{ mr: 2 }}>
-                  Loading items...
-                </Typography>
+                <Typography level="title-md">Loading items...</Typography>
                 <CircularProgress size={28} />
               </Box>
             )}

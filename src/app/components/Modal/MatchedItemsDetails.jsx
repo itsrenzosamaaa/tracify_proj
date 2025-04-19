@@ -12,6 +12,7 @@ import {
   Table,
   Sheet,
   LinearProgress,
+  Chip,
 } from "@mui/joy";
 import { format, isToday } from "date-fns";
 import { Carousel } from "react-responsive-carousel";
@@ -193,6 +194,7 @@ const MatchedItemsDetails = ({ row }) => {
           </Box>
         </Section>
       </Grid>
+
       <Grid item xs={12} md={6}>
         <Section title="Owner Information">
           <InfoCard avatarSrc={row?.owner?.user?.profile_picture}>

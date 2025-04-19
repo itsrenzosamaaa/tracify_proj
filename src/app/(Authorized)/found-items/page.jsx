@@ -32,8 +32,7 @@ const FoundItemsPage = () => {
 
       const findersData = await findersRes.json();
       const filteredItems = findersData.filter(
-        (lostItem) =>
-          !matchedLostItemIds.includes(lostItem?.item?._id)
+        (lostItem) => !matchedLostItemIds.includes(lostItem?.item?._id)
       );
 
       setFinders(filteredItems);

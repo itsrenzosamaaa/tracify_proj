@@ -18,6 +18,7 @@ import {
   Option,
   Select,
   Tooltip,
+  FormHelperText,
 } from "@mui/joy";
 import React, { useState, useEffect, useCallback } from "react";
 import { FormControlLabel } from "@mui/material";
@@ -42,6 +43,8 @@ const ItemClaimRequestModal = ({
   const [loading, setLoading] = useState(false);
   const [recentLostItem, setRecentLostItem] = useState([]);
   const [selectLostItem, setSelectLostItem] = useState(null);
+
+  console.log(selectLostItem);
 
   const handleSubmit = async (e, matchedItemId) => {
     if (e?.preventDefault) e.preventDefault();
@@ -83,7 +86,10 @@ const ItemClaimRequestModal = ({
       };
 
       if (selectLostItem) {
-        claimForm.owner.linkedItem = selectLostItem;
+        claimForm.owner = {
+          ...row.owner, // preserve user and item
+          linkedItem: selectLostItem._id, // add new field
+        };
       }
 
       await makeRequest(`/api/match-items/${matchedItemId}`, "PUT", claimForm);
@@ -134,6 +140,7 @@ const ItemClaimRequestModal = ({
       setOpenSnackbar("success");
       setMessage("The retrieval request has been approved!");
     } catch (error) {
+      console.error(error);
       setOpenSnackbar("danger");
       setMessage(`Error updating items: ${error.message}`);
     } finally {
@@ -325,47 +332,136 @@ const ItemClaimRequestModal = ({
                 <Typography level="h4" gutterBottom>
                   Claim Approval
                 </Typography>
-                <FormControl>
-                  <FormLabel>
-                    Please set a date when the claimant will claim the item.
-                  </FormLabel>
-                  <Input
-                    type="datetime-local"
-                    value={dateClaim}
-                    onChange={(e) => setDateClaim(e.target.value)}
-                  />
-                </FormControl>
-                <FormControl>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <DialogContent
+                  sx={{
+                    paddingRight: "calc(0 + 8px)", // Add extra padding to account for scrollbar width
+                    maxHeight: "85.5vh",
+                    height: "100%",
+                    overflowX: "hidden",
+                    overflowY: "scroll", // Always reserve space for scrollbar
+                    // Default scrollbar styles (invisible)
+                    "&::-webkit-scrollbar": {
+                      width: "8px", // Always reserve 8px width
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      backgroundColor: "transparent", // Invisible by default
+                      borderRadius: "4px",
+                    },
+                    // Show scrollbar on hover
+                    "&:hover": {
+                      "&::-webkit-scrollbar-thumb": {
+                        backgroundColor: "rgba(0, 0, 0, 0.4)", // Only change the thumb color on hover
+                      },
+                    },
+                    // Firefox
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "transparent transparent", // Both track and thumb transparent
+                    "&:hover": {
+                      scrollbarColor: "rgba(0, 0, 0, 0.4) transparent", // Show thumb on hover
+                    },
+                    // IE and Edge
+                    msOverflowStyle: "-ms-autohiding-scrollbar",
+                  }}
+                >
+                  <FormControl>
                     <FormLabel>
-                      Link a recent lost item
-                      <Typography
-                        component="span"
-                        level="body-sm"
-                        color="neutral"
-                      >
-                        &nbsp;(optional)
-                      </Typography>
+                      Please set a date when the claimant will claim the item.
                     </FormLabel>
-                    <Tooltip
-                      title="Optional: Helps with item traceability if user has previously reported the lost item."
-                      arrow
+                    <Input
+                      type="datetime-local"
+                      value={dateClaim}
+                      onChange={(e) => setDateClaim(e.target.value)}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <FormLabel>
+                        Link a recent lost item
+                        <Typography
+                          component="span"
+                          level="body-sm"
+                          color="neutral"
+                        >
+                          &nbsp;(optional)
+                        </Typography>
+                      </FormLabel>
+                      <Tooltip
+                        title="Optional: Helps with item traceability if user has previously reported the lost item."
+                        arrow
+                      >
+                        <InfoOutlinedIcon fontSize="small" color="warning" />
+                      </Tooltip>
+                    </Box>
+                    <Select
+                      value={selectLostItem}
+                      onChange={(e, value) => setSelectLostItem(value)}
+                      placeholder="Select Lost Item"
                     >
-                      <InfoOutlinedIcon fontSize="small" color="warning" />
-                    </Tooltip>
-                  </Box>
-                  <Select
-                    value={selectLostItem}
-                    onChange={(e, value) => setSelectLostItem(value)}
-                    placeholder="Select Lost Item"
-                  >
-                    {recentLostItem.map((owner) => (
-                      <Option key={owner?.item._id} value={owner?.item?._id}>
-                        {owner?.item?.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </FormControl>
+                      {recentLostItem.map((owner) => (
+                        <Option key={owner?.item._id} value={owner?.item}>
+                          {owner?.item?.name}
+                        </Option>
+                      ))}
+                    </Select>
+                    <FormHelperText>
+                      Note: The claimant will be notified via email and in-app
+                      notification once the request is approved.
+                    </FormHelperText>
+                  </FormControl>
+
+                  {selectLostItem && (
+                    <Box
+                      sx={{
+                        mt: 2,
+                        px: 2,
+                        py: 1,
+                        borderRadius: "md",
+                        backgroundColor: "neutral.softBg",
+                        border: "1px solid",
+                        borderColor: "neutral.outlinedBorder",
+                      }}
+                    >
+                      <Typography
+                        fontWeight="lg"
+                        level="body-md"
+                        sx={{ mb: 1 }}
+                      >
+                        Linked Lost Item Details
+                      </Typography>
+                      <Typography level="body-sm">
+                        <strong>Name:</strong> {selectLostItem?.name}
+                      </Typography>
+                      <Typography level="body-sm">
+                        <strong>Color:</strong>{" "}
+                        {selectLostItem?.color?.length
+                          ? selectLostItem.color.join(", ")
+                          : "N/A"}
+                      </Typography>
+                      <Typography level="body-sm">
+                        <strong>Size:</strong> {selectLostItem?.size || "N/A"}
+                      </Typography>
+                      <Typography level="body-sm">
+                        <strong>Category:</strong>{" "}
+                        {selectLostItem?.category || "N/A"}
+                      </Typography>
+                      <Typography level="body-sm">
+                        <strong>Location:</strong>{" "}
+                        {selectLostItem?.location || "N/A"}
+                      </Typography>
+                      <Typography level="body-sm">
+                        <strong>Description:</strong>{" "}
+                        {selectLostItem?.description || "N/A"}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {/* <Box>
+                  <Typography level="body-sm" sx={{ mt: 2 }}>
+                    Note: The claimant will be notified via email and in-app
+                    notification once the request is approved.
+                  </Typography>
+                </Box> */}
+                </DialogContent>
 
                 <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
                   <Button

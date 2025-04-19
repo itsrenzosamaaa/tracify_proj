@@ -37,6 +37,9 @@ export async function GET() {
       })
       .populate({
         path: "owner.user",
+      })
+      .populate({
+        path: "owner.linkedItem",
       });
 
     return NextResponse.json(findMatchItems, { status: 200 });

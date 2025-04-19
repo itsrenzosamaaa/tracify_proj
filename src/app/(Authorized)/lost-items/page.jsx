@@ -23,17 +23,16 @@ const FoundItemsPage = () => {
 
       const matchesData = await matchesRes.json();
       const filteredMatches = matchesData.filter(
-        (match) => match?.request_status === "Pending"
+        (match) => match?.request_status === "Approved"
       );
 
       const matchedLostItemIds = filteredMatches
-        .map((match) => match?.owner?.item?._id)
+        .map((match) => match?.owner?.linkedItem?._id)
         .filter(Boolean);
 
       const ownersData = await ownersRes.json();
       const filteredItems = ownersData.filter(
         (lostItem) =>
-          !["Claimed"].includes(lostItem?.item?.status) &&
           !matchedLostItemIds.includes(lostItem?.item?._id)
       );
 

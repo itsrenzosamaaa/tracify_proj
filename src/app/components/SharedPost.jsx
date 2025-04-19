@@ -1038,7 +1038,7 @@ ${callToAction}
                 </Grid>
               )}
 
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <FormControl required>
                   <FormLabel>Category</FormLabel>
                   <Select
@@ -1067,7 +1067,7 @@ ${callToAction}
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <FormControl required>
                   <FormLabel>Material</FormLabel>
                   <Select
@@ -1102,7 +1102,7 @@ ${callToAction}
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <FormControl required>
                   <FormLabel>Condition</FormLabel>
                   <Select
@@ -1124,7 +1124,7 @@ ${callToAction}
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <FormControl required>
                   <FormLabel>Distinctive Marks</FormLabel>
                   <Select
