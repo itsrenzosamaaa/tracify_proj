@@ -248,11 +248,11 @@ const MatchedItemsDetails = ({ row }) => {
               "Distinctive Marks": row.owner.item.distinctiveMarks,
               Location: row.owner.item.location,
               Description: row.owner.item.description,
-              "Start Date Lost":
+              "Start Timeframe":
                 row?.owner?.item?.date_time === "Unidentified"
                   ? "Unidentified"
                   : row.owner.item.date_time?.split(" to ")[0],
-              "End Date Lost":
+              "End Timeframe":
                 row?.owner?.item?.date_time === "Unidentified"
                   ? "Unidentified"
                   : row.owner.item.date_time?.split(" to ")[1],

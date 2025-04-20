@@ -180,7 +180,7 @@ const ItemRetrievalDetails = ({ row, isXs }) => {
           <Box sx={{ display: "flex", flexDirection: "column" }}>
             <InfoRow
               icon={<CalendarToday />}
-              label="Start Date"
+              label="Start Timeframe"
               value={
                 row?.owner?.item?.date_time !== "Unidentified"
                   ? row?.owner?.item?.date_time?.split(" to ")[0]
@@ -190,7 +190,7 @@ const ItemRetrievalDetails = ({ row, isXs }) => {
             />
             <InfoRow
               icon={<HourglassBottom />}
-              label="End Date"
+              label="End Timeframe"
               value={
                 row?.owner?.item?.date_time !== "Unidentified"
                   ? row?.owner?.item?.date_time?.split(" to ")[1]
