@@ -883,24 +883,7 @@ const PublishLostItem = ({
                     </p>
                   </Box>
                 </FormControl>
-                {session?.user?.permissions.includes("User Dashboard") && (
-                  <FormControl required>
-                    <Checkbox
-                      checked={confirmAccuracy}
-                      onChange={(e) => setConfirmAccuracy(e.target.checked)}
-                      label="I confirm that the information I provided above is accurate and based on my best knowledge."
-                    />
-                  </FormControl>
-                )}
-                <Button
-                  disabled={
-                    loading ||
-                    (!confirmAccuracy &&
-                      session.user.permissions.includes("User Dashboard"))
-                  }
-                  loading={loading}
-                  type="submit"
-                >
+                <Button disabled={loading} loading={loading} type="submit">
                   {session.user.permissions.includes("User Dashboard")
                     ? "Report"
                     : "Post"}

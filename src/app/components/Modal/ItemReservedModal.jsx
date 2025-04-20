@@ -85,10 +85,14 @@ const ItemReservedModal = ({
         return response.json();
       };
 
-      if (row?.owner?.linkedItem) {
-        await makeRequest(`/api/lost-items/${row?.owner?.linkedItem}`, "PUT", {
-          status: "Claimed",
-        });
+      if (row?.owner?.linkedItem && row.owner.linkedItem._id) {
+        await makeRequest(
+          `/api/lost-items/${row.owner.linkedItem._id}`,
+          "PUT",
+          {
+            status: "Claimed",
+          }
+        );
       }
 
       // Update found item status

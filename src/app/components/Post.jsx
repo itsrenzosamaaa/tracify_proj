@@ -26,6 +26,7 @@ import {
   FormHelperText,
   Stack,
   Checkbox,
+  Snackbar,
 } from "@mui/joy";
 import {
   Grid,
@@ -33,6 +34,7 @@ import {
   ImageListItem,
   keyframes,
   styled,
+  CircularProgress,
 } from "@mui/material";
 import { Share, Send, ContentCopy } from "@mui/icons-material";
 import { Carousel } from "react-responsive-carousel";
@@ -91,6 +93,7 @@ const Post = ({
   const [itemWhereabouts, setItemWhereabouts] = useState(false);
   const [shareTarget, setShareTarget] = useState("");
   const [shareMode, setShareMode] = useState("specificUsers"); // default to specific
+  const [progressMessage, setProgressMessage] = useState(""); // 👈 New state
   const inputRef = useRef();
 
   const handleCheckItem = (e) => {
@@ -323,6 +326,7 @@ ${callToAction}
       }
 
       // Share Post
+      setProgressMessage("Creating shared post...");
       const response = await fetch("/api/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -354,6 +358,7 @@ ${callToAction}
       );
 
       // 📌 New bulk email request
+      setProgressMessage("Sending email to users...");
       await fetch("/api/send-email/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -371,6 +376,7 @@ ${callToAction}
       });
 
       // Replace /api/notification with a new route: /api/notifications/bulk
+      setProgressMessage("Sending notifications...");
       await fetch("/api/notification/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -381,7 +387,9 @@ ${callToAction}
       setSharePostModal(null);
       setOpenSnackbar("success");
       setMessage("Post shared successfully!");
+      setProgressMessage("");
     } catch (error) {
+      setProgressMessage("");
       setOpenSnackbar("danger");
       setMessage("An unexpected error occurred.");
       console.error(error);
@@ -406,7 +414,7 @@ ${callToAction}
       condition &&
       distinctiveMarks &&
       description.trim() &&
-      (!itemWhereabouts || (location && lostStartDate && lostEndDate)) &&
+      (!itemWhereabouts || (location && lostDateStart && lostDateEnd)) &&
       images.length > 0 &&
       (Array.isArray(item?.item?.questions)
         ? item.item.questions.every((_, index) => answers[index]?.trim())
@@ -1443,6 +1451,24 @@ ${callToAction}
           </form>
         </ModalDialog>
       </Modal>
+      <Snackbar
+        autoHideDuration={null}
+        open={!!progressMessage}
+        variant="soft"
+        color="primary"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          fontSize: "16px",
+          fontWeight: 500,
+          px: 2,
+          py: 1,
+        }}
+      >
+        <CircularProgress size={20} color="primary" />
+        {progressMessage}
+      </Snackbar>
     </>
   );
 };
