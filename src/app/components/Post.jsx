@@ -470,15 +470,7 @@ ${callToAction}
             </Box>
           </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap", // allow chips to wrap to next line
-              gap: 1,
-              width: "100%", // full width container
-              overflow: "hidden",
-            }}
-          >
+          <Box display="flex" gap={1} mb={2}>
             <Chip
               variant="solid"
               size={isXs ? "sm" : "md"}
@@ -491,15 +483,21 @@ ${callToAction}
               )}{" "}
               {post?.isFinder ? "Found Item" : "Lost Item"}
             </Chip>
-            <Chip variant="solid" size={isXs ? "sm" : "md"} color="primary">
-              <ShoppingBagIcon fontSize={isXs ? "12px" : "20px"} />{" "}
-              {capitalizeWords(post?.item_name)}
-            </Chip>
             <Chip variant="solid" size={isXs ? "sm" : "md"} color="neutral">
               <LocationOnIcon fontSize={isXs ? "12px" : "20px"} />
               {item?.item?.location}
             </Chip>
           </Box>
+          <Typography
+            sx={{
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#1565c0",
+              mb: 1,
+            }}
+          >
+            {capitalizeWords(post?.item_name)}
+          </Typography>
 
           {/* Post Caption */}
           <Box sx={{ mb: 2 }}>
@@ -562,7 +560,10 @@ ${callToAction}
                         </Typography>
                         <Typography
                           level={isXs ? "body-sm" : "body-md"}
-                          sx={{ fontStyle: "italic", color: "text.secondary" }}
+                          sx={{
+                            fontStyle: "italic",
+                            color: "text.secondary",
+                          }}
                         >
                           &quot;{captionText}&quot;
                         </Typography>
@@ -581,7 +582,7 @@ ${callToAction}
                     {datePart && (
                       <Typography
                         level={isXs ? "body-sm" : "body-md"}
-                        sx={{ color: "text.secondary" }}
+                        sx={{ color: "text.secondary", mb: 1 }}
                       >
                         It was lost {datePart}
                         {timeRange}.
@@ -589,8 +590,9 @@ ${callToAction}
                     )}
 
                     <Typography
-                      level={isXs ? "body-sm" : "body-md"}
-                      sx={{ fontWeight: 700, color: "text.secondary", mt: 1 }}
+                      fontWeight="bold"
+                      textAlign="left"
+                      sx={{ color: "text.primary", mt: 0.5 }}
                     >
                       If found, please surrender the item to SASO.
                     </Typography>

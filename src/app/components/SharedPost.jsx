@@ -620,15 +620,7 @@ ${callToAction}
                   </Typography>
                 </Box>
               </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap", // allow chips to wrap to next line
-                  gap: 1,
-                  width: "100%", // full width container
-                  overflow: "hidden",
-                }}
-              >
+              <Box display="flex" gap={1} mb={2}>
                 <Chip
                   variant="solid"
                   size={isXs ? "sm" : "md"}
@@ -641,15 +633,21 @@ ${callToAction}
                   )}{" "}
                   {originalPost?.isFinder ? "Found Item" : "Lost Item"}
                 </Chip>
-                <Chip variant="solid" size={isXs ? "sm" : "md"} color="primary">
-                  <ShoppingBagIcon fontSize={isXs ? "12px" : "20px"} />{" "}
-                  {capitalizeWords(originalPost?.item_name)}
-                </Chip>
                 <Chip variant="solid" size={isXs ? "sm" : "md"} color="neutral">
                   <LocationOnIcon fontSize={isXs ? "12px" : "20px"} />
                   {filteredOriginalPost?.item?.location}
                 </Chip>
               </Box>
+              <Typography
+                sx={{
+                  fontSize: "24px",
+                  fontWeight: "bold",
+                  color: "#1565c0",
+                  mb: 1,
+                }}
+              >
+                {capitalizeWords(originalPost?.item_name)}
+              </Typography>
               <Box sx={{ mb: 2 }}>
                 {originalPost?.isFinder ? (
                   <>
